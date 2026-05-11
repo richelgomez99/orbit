@@ -33,6 +33,7 @@ class CapsuleApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        enableVisualRefitForDebugBuilds()
         // T090a — schedule the soft-delete retention worker in the default
         // process only. Enqueuing once per boot here is safe: WorkManager
         // dedupes by unique-work-name, so subsequent launches KEEP the
@@ -235,5 +236,11 @@ class CapsuleApplication : Application(), Configuration.Provider {
         val info = am.runningAppProcesses ?: return false
         val me = info.firstOrNull { it.pid == pid } ?: return false
         return me.processName == "$packageName:ml"
+    }
+
+    private fun enableVisualRefitForDebugBuilds() {
+        if (BuildConfig.DEBUG) {
+            RuntimeFlags.useNewVisualLanguage = true
+        }
     }
 }
