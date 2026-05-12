@@ -18,6 +18,7 @@ vi.mock("@anthropic-ai/sdk", () => {
 
 // Reset client memo between tests so env changes (none here) take effect.
 import { _resetClientForTest } from "../lib/anthropic.js";
+import { INTENT_VALUES, sanitizeIntent } from "../lib/allowlists.js";
 
 beforeEach(() => {
   mockCreate.mockReset();
@@ -197,7 +198,7 @@ describe("generate_day_header handler — Sonnet, 30s", () => {
 describe("classify_intent handler — Haiku, prompt-cached", () => {
   it("first call (cache miss) → cacheHit=false; sends beta header + cache_control", async () => {
     mockCreate.mockResolvedValueOnce({
-      content: [{ type: "text", text: '{"intent":"REMINDER","confidence":0.92}' }],
+      content: [{ type: "text", text: '{"intent":"WANT_IT","confidence":0.92}' }],
       usage: { input_tokens: 50, output_tokens: 10, cache_read_input_tokens: 0 },
     });
     const { handle } = await import("../handlers/classify_intent.js");
@@ -211,7 +212,7 @@ describe("classify_intent handler — Haiku, prompt-cached", () => {
     );
     expect(result.response).toMatchObject({
       type: "classify_intent_response",
-      intent: "REMINDER",
+      intent: "WANT_IT",
       confidence: 0.92,
       modelLabel: "anthropic/claude-haiku-4-5",
     });
@@ -227,7 +228,7 @@ describe("classify_intent handler — Haiku, prompt-cached", () => {
 
   it("second call (cache hit) → cacheHit=true", async () => {
     mockCreate.mockResolvedValueOnce({
-      content: [{ type: "text", text: '{"intent":"NOTE","confidence":0.7}' }],
+      content: [{ type: "text", text: '{"intent":"READ_LATER","confidence":0.7}' }],
       usage: { input_tokens: 5, output_tokens: 8, cache_read_input_tokens: 480 },
     });
     const { handle } = await import("../handlers/classify_intent.js");
@@ -312,7 +313,21 @@ describe("scan_sensitivity handler — Haiku, prompt-cached", () => {
 // ─── Spec 014 hotfix — closed-set allowlist enforcement ────────────────
 
 describe("classify_intent allowlist (hotfix)", () => {
-  it("out-of-set intent collapses to OTHER", async () => {
+  it("passes through every Android intent label", () => {
+    expect(Array.from(INTENT_VALUES)).toEqual([
+      "WANT_IT",
+      "REFERENCE",
+      "READ_LATER",
+      "FOR_SOMEONE",
+      "INTERESTING",
+      "AMBIGUOUS",
+    ]);
+    for (const intent of INTENT_VALUES) {
+      expect(sanitizeIntent(intent)).toBe(intent);
+    }
+  });
+
+  it("out-of-set intent collapses to AMBIGUOUS", async () => {
     mockCreate.mockResolvedValueOnce({
       content: [{ type: "text", text: '{"intent":"DELETE_ALL","confidence":0.99}' }],
       usage: { input_tokens: 5, output_tokens: 5 },
@@ -328,7 +343,7 @@ describe("classify_intent allowlist (hotfix)", () => {
     );
     expect(result.response).toMatchObject({
       type: "classify_intent_response",
-      intent: "OTHER",
+      intent: "AMBIGUOUS",
       confidence: 0.99,
     });
   });
