@@ -3,6 +3,7 @@ package com.capsule.app.data.ipc;
 
 import com.capsule.app.data.ipc.IntentEnvelopeDraftParcel;
 import com.capsule.app.data.ipc.StateSnapshotParcel;
+import com.capsule.app.data.ipc.SealResultParcel;
 import com.capsule.app.data.ipc.EnvelopeViewParcel;
 import com.capsule.app.data.ipc.DayPageParcel;
 import com.capsule.app.data.ipc.IEnvelopeObserver;
@@ -20,6 +21,11 @@ interface IEnvelopeRepository {
         in StateSnapshotParcel state
     );
 
+    SealResultParcel sealWithResult(
+        in IntentEnvelopeDraftParcel draft,
+        in StateSnapshotParcel state
+    );
+
     // ---- Read path (called by :ui) ----
     void observeDay(String isoDate, IEnvelopeObserver observer);
     void stopObserving(IEnvelopeObserver observer);
@@ -27,6 +33,8 @@ interface IEnvelopeRepository {
 
     // ---- Mutate path (called by :ui) ----
     void reassignIntent(String envelopeId, String newIntentName, String reasonOpt);
+    String getLatestNote(String envelopeId);
+    boolean createOrUpdateLatestNote(String envelopeId, String text);
     void archive(String envelopeId);
     void delete(String envelopeId);
     boolean undo(String envelopeId);

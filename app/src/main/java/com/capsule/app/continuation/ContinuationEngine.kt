@@ -9,6 +9,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.capsule.app.settings.PrivacyPreferences
+import com.capsule.app.net.CanonicalUrlHasher
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -317,7 +318,7 @@ class ContinuationEngine(
             val seen = LinkedHashSet<String>()
             URL_REGEX.findAll(text).forEach { m ->
                 val cleaned = TRAILING_PUNCT_REGEX.replace(m.value, "")
-                if (cleaned.isNotBlank()) seen.add(cleaned)
+                if (cleaned.isNotBlank()) seen.add(CanonicalUrlHasher.unwrapKnownRedirect(cleaned))
             }
             return seen.toList()
         }

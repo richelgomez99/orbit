@@ -44,6 +44,7 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.capsule.app.audit.AuditLogWriter
 import com.capsule.app.data.OrbitDatabase
 import com.capsule.app.data.model.AuditAction
+import com.capsule.app.diary.EnvelopeDetailActivity
 import com.capsule.app.overlay.BubbleUI
 import com.capsule.app.overlay.CaptureSheetUI
 import com.capsule.app.overlay.DismissTargetMetrics
@@ -228,7 +229,7 @@ class CapsuleOverlayService : LifecycleService() {
         overlayLifecycleOwner.onCreate()
 
         val displayMetrics = resources.displayMetrics
-        val screenWidth = displayMetrics.widthPixels
+        val screenWidth = currentScreenBounds().width
         // Bubble size is 56dp, convert to pixels
         val bubbleWidthPx = (56 * displayMetrics.density).toInt()
 
@@ -334,7 +335,13 @@ class CapsuleOverlayService : LifecycleService() {
             stopSelf()
         }
 
-        val screenHeight = displayMetrics.heightPixels
+        vm.onOpenExistingEnvelope = { envelopeId ->
+            openExistingEnvelope(envelopeId, startNote = false)
+        }
+
+        vm.onAddNoteToExistingEnvelope = { envelopeId ->
+            openExistingEnvelope(envelopeId, startNote = true)
+        }
 
         lifecycleScope.launch {
             vm.bubbleState.collectLatest { bubbleState ->
@@ -456,20 +463,21 @@ class CapsuleOverlayService : LifecycleService() {
                         onTap = { vm.onBubbleTap() },
                         onDragStart = { vm.onBubbleDragStart() },
                         onDrag = { dx, dy ->
+                            val bounds = currentScreenBounds()
                             vm.onBubbleDrag(
                                 dx = dx,
                                 dy = dy,
-                                screenWidth = screenWidth,
-                                screenHeight = screenHeight,
+                                screenWidth = bounds.width,
+                                screenHeight = bounds.height,
                                 bubbleSizePx = bubbleWidthPx,
                                 dismissTargetMetrics = computeDismissTargetMetrics(
-                                    screenWidth = screenWidth,
-                                    screenHeight = screenHeight,
+                                    screenWidth = bounds.width,
+                                    screenHeight = bounds.height,
                                     bubbleSizePx = bubbleWidthPx
                                 )
                             )
                         },
-                        onDragEnd = { vm.onBubbleDragEnd(screenWidth, bubbleWidthPx) }
+                        onDragEnd = { vm.onBubbleDragEnd(currentScreenBounds().width, bubbleWidthPx) }
                     )
                 }
 
@@ -629,8 +637,10 @@ class CapsuleOverlayService : LifecycleService() {
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             // NOT_FOCUSABLE: keyboards in other apps still work.
+            // NOT_TOUCH_MODAL: taps outside compact pill bounds pass through.
             // LAYOUT_NO_LIMITS: allowed to extend behind system bars.
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
@@ -664,11 +674,8 @@ class CapsuleOverlayService : LifecycleService() {
 
     private fun postCaptureWidthFor(ui: PostCaptureUi): Int = when (ui) {
         is PostCaptureUi.ChipRow -> WindowManager.LayoutParams.MATCH_PARENT
-        is PostCaptureUi.None,
-        is PostCaptureUi.SilentWrapPill,
-        is PostCaptureUi.UndoPill,
-        is PostCaptureUi.RemovedConfirmation,
-        is PostCaptureUi.AlreadyInDiary -> WindowManager.LayoutParams.WRAP_CONTENT
+        is PostCaptureUi.ReclassifyChipRow -> WindowManager.LayoutParams.MATCH_PARENT
+        else -> WindowManager.LayoutParams.WRAP_CONTENT
     }
 
     private fun hidePostCaptureOverlay() {
@@ -681,6 +688,33 @@ class CapsuleOverlayService : LifecycleService() {
         postCaptureView = null
         postCaptureParams = null
     }
+
+    private fun openExistingEnvelope(envelopeId: String, startNote: Boolean) {
+        val intent = EnvelopeDetailActivity.newIntent(
+            context = applicationContext,
+            envelopeId = envelopeId,
+            dayLocal = null,
+            startNote = startNote
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { startActivity(intent) }
+            .onFailure { Log.e(TAG, "Failed to open existing envelope $envelopeId", it) }
+    }
+
+    private fun currentScreenBounds(): ScreenBounds {
+        val bounds = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            windowManager.currentWindowMetrics.bounds
+        } else {
+            null
+        }
+        if (bounds != null) return ScreenBounds(bounds.width(), bounds.height())
+        val metrics = resources.displayMetrics
+        return ScreenBounds(metrics.widthPixels, metrics.heightPixels)
+    }
+
+    private data class ScreenBounds(
+        val width: Int,
+        val height: Int,
+    )
 
     // ---- T042: :ml EnvelopeRepositoryService bind/unbind lifecycle ----
 

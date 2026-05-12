@@ -1,5 +1,6 @@
 package com.capsule.app.ui.primitives
 
+import com.capsule.app.net.CanonicalUrlHasher
 import java.net.URI
 import java.util.Locale
 
@@ -37,7 +38,8 @@ object SourceIdentityResolver {
             .map { it.trim(',', '.', ')', ']', '}', '>', '"', '\'') }
             .any { token ->
                 val candidate = if (token.contains("://")) token else "https://$token"
-                val host = runCatching { URI(candidate).host?.lowercase(Locale.ROOT) }.getOrNull()
+                val resolved = CanonicalUrlHasher.unwrapKnownRedirect(candidate)
+                val host = runCatching { URI(resolved).host?.lowercase(Locale.ROOT) }.getOrNull()
                     ?: return@any false
                 host == "youtu.be" ||
                     host == "youtube.com" ||

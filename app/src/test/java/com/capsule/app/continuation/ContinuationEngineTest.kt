@@ -46,6 +46,12 @@ class ContinuationEngineTest {
     }
 
     @Test
+    fun `extractUrls unwraps Google share redirect targets`() {
+        val input = "shared https://www.google.com/url?q=https%3A%2F%2Fexample.com%2Fstory%3Fkeep%3D1&sa=D"
+        assertEquals(listOf("https://example.com/story?keep=1"), ContinuationEngine.extractUrls(input))
+    }
+
+    @Test
     fun `extractUrls accepts http in addition to https`() {
         // The URL_HYDRATE gateway will reject http via UrlValidator (T061);
         // the engine itself is inclusive so audit trails capture the attempt.

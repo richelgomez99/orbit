@@ -2,6 +2,7 @@ package com.capsule.app.net
 
 import java.net.URI
 import java.net.URISyntaxException
+import java.net.URLDecoder
 import java.security.MessageDigest
 import java.util.Locale
 
@@ -12,10 +13,11 @@ import java.util.Locale
  *
  * Canonicalization rules (see tasks.md T066a / spec.md Clarification Q2):
  * - scheme/host lowercased
+ * - leading `www.` stripped from hosts
  * - fragment stripped
  * - query params named `utm_*`, `fbclid`, `gclid` stripped
  * - remaining query params sorted lexicographically by name, preserving value
- * - trailing `/` on the path stripped (unless path is empty or `/`)
+ * - trailing `/` on the path stripped, including root `/`
  * - default ports (80/443) stripped
  *
  * The function is intentionally tolerant — malformed URLs still produce a stable
@@ -26,14 +28,17 @@ object CanonicalUrlHasher {
 
     private val TRACKING_PARAM_EXACT: Set<String> = setOf("fbclid", "gclid")
     private const val TRACKING_PARAM_PREFIX: String = "utm_"
+    private const val MAX_UNWRAP_DEPTH: Int = 3
 
     fun hash(rawUrl: String): String {
         val canonical = canonicalize(rawUrl)
         return sha256Hex(canonical)
     }
 
+    fun unwrapKnownRedirect(rawUrl: String): String = unwrapKnownRedirect(rawUrl.trim(), depth = 0)
+
     internal fun canonicalize(rawUrl: String): String {
-        val trimmed = rawUrl.trim()
+        val trimmed = unwrapKnownRedirect(rawUrl)
         val uri: URI = try {
             URI(trimmed)
         } catch (_: URISyntaxException) {
@@ -41,7 +46,10 @@ object CanonicalUrlHasher {
         }
 
         val scheme = uri.scheme?.lowercase(Locale.ROOT) ?: return trimmed.lowercase(Locale.ROOT)
-        val host = uri.host?.lowercase(Locale.ROOT) ?: return trimmed.lowercase(Locale.ROOT)
+        val host = uri.host
+            ?.lowercase(Locale.ROOT)
+            ?.removePrefix("www.")
+            ?: return trimmed.lowercase(Locale.ROOT)
 
         val port = uri.port
         val portPart = when {
@@ -54,7 +62,7 @@ object CanonicalUrlHasher {
         val rawPath = uri.rawPath.orEmpty()
         val path = when {
             rawPath.isEmpty() -> ""
-            rawPath == "/" -> "/"
+            rawPath == "/" -> ""
             rawPath.endsWith('/') -> rawPath.trimEnd('/')
             else -> rawPath
         }
@@ -72,6 +80,69 @@ object CanonicalUrlHasher {
                 append(queryPart)
             }
         }
+    }
+
+    private fun unwrapKnownRedirect(rawUrl: String, depth: Int): String {
+        if (rawUrl.isBlank() || depth >= MAX_UNWRAP_DEPTH) return rawUrl
+        val uri = try {
+            URI(rawUrl)
+        } catch (_: URISyntaxException) {
+            return rawUrl
+        }
+        val host = uri.host?.lowercase(Locale.ROOT)?.trimEnd('.') ?: return rawUrl
+        val path = uri.rawPath.orEmpty()
+
+        val target = when {
+            isGoogleAmpPath(host, path) -> googleAmpTarget(path)
+            isGoogleRedirectPath(host, path) -> firstHttpQueryTarget(uri.rawQuery, "url", "q", "u")
+            isYouTubeRedirectPath(host, path) -> firstHttpQueryTarget(uri.rawQuery, "q", "url")
+            else -> null
+        } ?: return rawUrl
+
+        if (target == rawUrl) return rawUrl
+        return unwrapKnownRedirect(target, depth + 1)
+    }
+
+    private fun isGoogleRedirectPath(host: String, path: String): Boolean =
+        isGoogleHost(host) && (path == "/url" || path == "/imgres")
+
+    private fun isGoogleAmpPath(host: String, path: String): Boolean =
+        isGoogleHost(host) && (path.startsWith("/amp/s/") || path.startsWith("/amp/"))
+
+    private fun isGoogleHost(host: String): Boolean =
+        host == "google.com" || host.endsWith(".google.com") || host.startsWith("www.google.")
+
+    private fun isYouTubeRedirectPath(host: String, path: String): Boolean =
+        (host == "youtube.com" || host.endsWith(".youtube.com")) && path == "/redirect"
+
+    private fun googleAmpTarget(path: String): String? {
+        val rawTarget = when {
+            path.startsWith("/amp/s/") -> "https://" + path.removePrefix("/amp/s/")
+            path.startsWith("/amp/") -> "http://" + path.removePrefix("/amp/")
+            else -> null
+        } ?: return null
+        return rawTarget.takeIf { it.isHttpUrl() }
+    }
+
+    private fun firstHttpQueryTarget(rawQuery: String?, vararg names: String): String? {
+        if (rawQuery.isNullOrEmpty()) return null
+        val wanted = names.map { it.lowercase(Locale.ROOT) }.toSet()
+        return rawQuery.split('&').firstNotNullOfOrNull { piece ->
+            val idx = piece.indexOf('=')
+            if (idx <= 0) return@firstNotNullOfOrNull null
+            val name = piece.substring(0, idx).lowercase(Locale.ROOT)
+            if (name !in wanted) return@firstNotNullOfOrNull null
+            val decoded = decodeQueryComponent(piece.substring(idx + 1)).trim()
+            decoded.takeIf { it.isHttpUrl() }
+        }
+    }
+
+    private fun decodeQueryComponent(value: String): String =
+        runCatching { URLDecoder.decode(value, Charsets.UTF_8.name()) }.getOrDefault(value)
+
+    private fun String.isHttpUrl(): Boolean {
+        val scheme = runCatching { URI(this).scheme?.lowercase(Locale.ROOT) }.getOrNull()
+        return scheme == "http" || scheme == "https"
     }
 
     private fun canonicalQuery(rawQuery: String?): String {

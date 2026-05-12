@@ -45,15 +45,21 @@ class CanonicalUrlHasherTest {
     }
 
     @Test
-    fun hash_stripsTrailingSlash_butPreservesRoot() {
+    fun hash_stripsTrailingSlash_includingRoot() {
         val a = CanonicalUrlHasher.hash("https://example.com/path/")
         val b = CanonicalUrlHasher.hash("https://example.com/path")
         assertEquals(a, b)
 
         val root1 = CanonicalUrlHasher.hash("https://example.com/")
         val rootEmpty = CanonicalUrlHasher.hash("https://example.com")
-        // Per canonicalize: root "/" is preserved, empty path is stripped.
-        assertNotEquals(root1, rootEmpty)
+        assertEquals(root1, rootEmpty)
+    }
+
+    @Test
+    fun hash_stripsWwwHostPrefix() {
+        val a = CanonicalUrlHasher.hash("https://www.example.com/a")
+        val b = CanonicalUrlHasher.hash("https://example.com/a")
+        assertEquals(a, b)
     }
 
     @Test
@@ -103,5 +109,33 @@ class CanonicalUrlHasherTest {
         val a = CanonicalUrlHasher.hash("HTTPS://example.com/a")
         val b = CanonicalUrlHasher.hash("https://example.com/a")
         assertEquals(a, b)
+    }
+
+    @Test
+    fun unwrapKnownRedirect_extractsGoogleUrlTarget() {
+        val wrapped = "https://www.google.com/url?sa=t&source=web&url=https%3A%2F%2Fexample.com%2Fstory%3Futm_source%3Dshare"
+        assertEquals(
+            "https://example.com/story?utm_source=share",
+            CanonicalUrlHasher.unwrapKnownRedirect(wrapped)
+        )
+    }
+
+    @Test
+    fun hash_googleRedirect_matchesTargetCanonicalHash() {
+        val wrapped = "https://www.google.com/url?q=https%3A%2F%2Fexample.com%2Fstory%3Futm_source%3Dshare%26keep%3D1"
+        val direct = "https://example.com/story?keep=1"
+        assertEquals(CanonicalUrlHasher.hash(direct), CanonicalUrlHasher.hash(wrapped))
+    }
+
+    @Test
+    fun unwrapKnownRedirect_extractsGoogleAmpTarget() {
+        val wrapped = "https://www.google.com/amp/s/example.com/story/"
+        assertEquals("https://example.com/story/", CanonicalUrlHasher.unwrapKnownRedirect(wrapped))
+    }
+
+    @Test
+    fun unwrapKnownRedirect_extractsYouTubeRedirectTarget() {
+        val wrapped = "https://www.youtube.com/redirect?q=https%3A%2F%2Fyoutu.be%2Fabc123&event=video_description"
+        assertEquals("https://youtu.be/abc123", CanonicalUrlHasher.unwrapKnownRedirect(wrapped))
     }
 }

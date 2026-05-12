@@ -55,4 +55,13 @@ class SourceIdentityResolverTest {
         assertTrue(SourceIdentityResolver.containsYouTubeUrl("youtu.be/abc123"))
         assertTrue(SourceIdentityResolver.containsYouTubeUrl("music.youtube.com/watch?v=abc123"))
     }
+
+    @Test
+    fun youtubeDetectionCoversGoogleWrappedLinks() {
+        assertTrue(
+            SourceIdentityResolver.containsYouTubeUrl(
+                "https://www.google.com/url?q=https%3A%2F%2Fyoutu.be%2Fabc123&sa=D"
+            )
+        )
+    }
 }

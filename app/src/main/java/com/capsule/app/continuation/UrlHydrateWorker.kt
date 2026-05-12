@@ -62,8 +62,9 @@ class UrlHydrateWorker(
             ?: return Result.failure()
         val url = inputData.getString(ContinuationEngine.KEY_URL)
             ?: return Result.failure()
+        val hydrationUrl = CanonicalUrlHasher.unwrapKnownRedirect(url)
 
-        val outcome = runHydration(applicationContext, url)
+        val outcome = runHydration(applicationContext, hydrationUrl)
 
         // T066 completion — write-back through the :ml repository binder.
         // NETWORK_FETCH is emitted upstream by NetworkGatewayImpl (T063);
@@ -81,7 +82,7 @@ class UrlHydrateWorker(
         }
         if (writeBack) {
             val ok = outcome.classification == Classification.SUCCESS
-            val canonicalUrl = outcome.fetch?.finalUrl ?: url
+            val canonicalUrl = outcome.fetch?.finalUrl ?: hydrationUrl
             val canonicalUrlHash = runCatching {
                 CanonicalUrlHasher.hash(canonicalUrl)
             }.getOrNull()

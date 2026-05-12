@@ -36,6 +36,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,6 +44,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +70,7 @@ import com.capsule.app.data.model.toIntentOrAmbiguous
 import com.capsule.app.diary.EnvelopeDetailUiState
 import com.capsule.app.diary.EnvelopeDetailViewModel
 import com.capsule.app.diary.IntentHistoryRow
+import com.capsule.app.net.CanonicalUrlHasher
 import com.capsule.app.settings.QuietRule
 import com.capsule.app.settings.QuietSettingsColors
 import com.capsule.app.ui.IntentChipPicker
@@ -105,7 +108,8 @@ import java.util.Locale
 fun EnvelopeDetailScreen(
     viewModel: EnvelopeDetailViewModel,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    startNote: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
     val finished by viewModel.finished.collectAsState()
@@ -120,6 +124,18 @@ fun EnvelopeDetailScreen(
 
     var menuOpen by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var noteDialogOpen by remember { mutableStateOf(false) }
+    var noteDraft by remember { mutableStateOf("") }
+    var consumedStartNote by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state, startNote) {
+        val ready = state as? EnvelopeDetailUiState.Ready
+        if (startNote && !consumedStartNote && ready != null) {
+            noteDraft = ready.latestNote.orEmpty()
+            noteDialogOpen = true
+            consumedStartNote = true
+        }
+    }
 
     if (LocalRuntimeFlags.current.useNewVisualLanguage) {
         QuietEnvelopeDetailScreen(
@@ -133,12 +149,15 @@ fun EnvelopeDetailScreen(
             onDelete = viewModel::onDelete,
             onReassign = { picked -> viewModel.onReassignIntent(picked.name) },
             onRetry = viewModel::onRetryHydration,
+            onEditNote = {
+                val ready = state as? EnvelopeDetailUiState.Ready
+                noteDraft = ready?.latestNote.orEmpty()
+                noteDialogOpen = true
+            },
             modifier = modifier,
         )
-        return
-    }
-
-    Scaffold(
+    } else {
+        Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -225,33 +244,67 @@ fun EnvelopeDetailScreen(
                 is EnvelopeDetailUiState.Error -> ErrorBox(s.message)
                 is EnvelopeDetailUiState.Ready -> ReadyContent(
                     envelope = s.envelope,
+                    latestNote = s.latestNote,
                     intentHistory = s.intentHistory,
                     auditTrail = s.auditTrail,
                     onReassign = { picked -> viewModel.onReassignIntent(picked.name) },
-                    onRetry = { viewModel.onRetryHydration() }
+                    onRetry = { viewModel.onRetryHydration() },
+                    onEditNote = {
+                        noteDraft = s.latestNote.orEmpty()
+                        noteDialogOpen = true
+                    }
                 )
             }
         }
+        }
+
+        if (confirmDelete) {
+            AlertDialog(
+                onDismissRequest = { confirmDelete = false },
+                title = { Text("Delete this capture?") },
+                text = {
+                    Text(
+                        "It moves to the trash and is permanently removed after 30 days. " +
+                            "You can restore it from Settings \u2192 Trash until then."
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        confirmDelete = false
+                        viewModel.onDelete()
+                    }) { Text("Delete") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmDelete = false }) { Text("Cancel") }
+                }
+            )
+        }
     }
 
-    if (confirmDelete) {
+    if (noteDialogOpen) {
         AlertDialog(
-            onDismissRequest = { confirmDelete = false },
-            title = { Text("Delete this capture?") },
+            onDismissRequest = { noteDialogOpen = false },
+            title = { Text("Capture note") },
             text = {
-                Text(
-                    "It moves to the trash and is permanently removed after 30 days. " +
-                        "You can restore it from Settings \u2192 Trash until then."
+                OutlinedTextField(
+                    value = noteDraft,
+                    onValueChange = { noteDraft = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Note") },
+                    minLines = 3
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    confirmDelete = false
-                    viewModel.onDelete()
-                }) { Text("Delete") }
+                TextButton(
+                    enabled = noteDraft.isNotBlank(),
+                    onClick = {
+                        noteDialogOpen = false
+                        viewModel.onSaveNote(noteDraft)
+                    }
+                ) { Text("Save") }
             },
             dismissButton = {
-                TextButton(onClick = { confirmDelete = false }) { Text("Cancel") }
+                TextButton(onClick = { noteDialogOpen = false }) { Text("Cancel") }
             }
         )
     }
@@ -269,6 +322,7 @@ private fun QuietEnvelopeDetailScreen(
     onDelete: () -> Unit,
     onReassign: (Intent) -> Unit,
     onRetry: () -> Unit,
+    onEditNote: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -380,10 +434,12 @@ private fun QuietEnvelopeDetailScreen(
             is EnvelopeDetailUiState.Error -> QuietErrorBox(state.message)
             is EnvelopeDetailUiState.Ready -> QuietReadyContent(
                 envelope = state.envelope,
+                latestNote = state.latestNote,
                 intentHistory = state.intentHistory,
                 auditTrail = state.auditTrail,
                 onReassign = onReassign,
                 onRetry = onRetry,
+                onEditNote = onEditNote,
             )
         }
     }
@@ -454,10 +510,12 @@ private fun QuietErrorBox(message: String) {
 @Composable
 private fun QuietReadyContent(
     envelope: EnvelopeViewParcel,
+    latestNote: String?,
     intentHistory: List<IntentHistoryRow>,
     auditTrail: List<AuditEntryParcel>,
     onReassign: (Intent) -> Unit,
     onRetry: () -> Unit,
+    onEditNote: () -> Unit,
 ) {
     val context = LocalContext.current
     LazyColumn(
@@ -475,6 +533,10 @@ private fun QuietReadyContent(
             }
         }
 
+        item(key = "note") {
+            QuietNoteBlock(note = latestNote, onEdit = onEditNote)
+        }
+
         if (envelope.contentType == "IMAGE" && !envelope.imageUri.isNullOrBlank()) {
             item(key = "image") {
                 AsyncImage(
@@ -489,8 +551,9 @@ private fun QuietReadyContent(
             }
         }
 
-        val title = envelope.title
-        val summary = envelope.summary
+        val detailUrl = detailUrlFor(envelope)
+        val title = envelope.title.usefulEnrichmentOrNull(envelope.canonicalUrl, envelope.domain)
+        val summary = envelope.summary.usefulEnrichmentOrNull(envelope.canonicalUrl, envelope.domain)
         if (!title.isNullOrBlank() || !summary.isNullOrBlank()) {
             item(key = "enrichment") {
                 QuietDetailSection(label = "Enriched") {
@@ -518,11 +581,11 @@ private fun QuietReadyContent(
             }
         }
 
-        val domain = envelope.domain
+        val domain = detailUrl?.domainFromUrl() ?: envelope.domain
         if (!domain.isNullOrBlank()) {
             item(key = "domain") {
                 QuietDomainRow(domain = domain, onTap = {
-                    val url = envelope.canonicalUrl ?: firstUrlIn(envelope.textContent)
+                    val url = detailUrlFor(envelope)
                     if (!url.isNullOrBlank()) openUrl(context, url)
                 })
             }
@@ -582,6 +645,21 @@ private fun QuietReadyContent(
         }
 
         item(key = "footer-spacer") { Spacer(Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+private fun QuietNoteBlock(note: String?, onEdit: () -> Unit) {
+    QuietDetailSection(label = if (note.isNullOrBlank()) "Add note" else "Note") {
+        Text(
+            text = note?.takeIf { it.isNotBlank() } ?: "Add note",
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .clickable(onClick = onEdit)
+                .padding(vertical = 4.dp),
+            color = if (note.isNullOrBlank()) QuietSettingsColors.Accent else QuietSettingsColors.Cream,
+            style = quietBodyStyle(),
+        )
     }
 }
 
@@ -766,10 +844,12 @@ private fun ErrorBox(message: String) {
 @Composable
 private fun ReadyContent(
     envelope: EnvelopeViewParcel,
+    latestNote: String?,
     intentHistory: List<IntentHistoryRow>,
     auditTrail: List<AuditEntryParcel>,
     onReassign: (Intent) -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onEditNote: () -> Unit
 ) {
     val context = LocalContext.current
     LazyColumn(
@@ -794,6 +874,10 @@ private fun ReadyContent(
             )
         }
 
+        item(key = "note") {
+            NoteBlock(note = latestNote, onEdit = onEditNote)
+        }
+
         // 4. IMAGE thumbnail.
         if (envelope.contentType == "IMAGE" && !envelope.imageUri.isNullOrBlank()) {
             item(key = "image") {
@@ -810,7 +894,7 @@ private fun ReadyContent(
         }
 
         // 5. Title.
-        val title = envelope.title
+        val title = envelope.title.usefulEnrichmentOrNull(envelope.canonicalUrl, envelope.domain)
         if (!title.isNullOrBlank()) {
             item(key = "title") {
                 Text(
@@ -823,7 +907,7 @@ private fun ReadyContent(
         }
 
         // 6. Summary.
-        val summary = envelope.summary
+        val summary = envelope.summary.usefulEnrichmentOrNull(envelope.canonicalUrl, envelope.domain)
         if (!summary.isNullOrBlank()) {
             item(key = "summary") {
                 Text(
@@ -835,11 +919,11 @@ private fun ReadyContent(
         }
 
         // 7. Domain chip.
-        val domain = envelope.domain
+        val domain = detailUrlFor(envelope)?.domainFromUrl() ?: envelope.domain
         if (!domain.isNullOrBlank()) {
             item(key = "domain") {
                 DomainChip(domain = domain, onTap = {
-                    val url = envelope.canonicalUrl ?: firstUrlIn(envelope.textContent)
+                    val url = detailUrlFor(envelope)
                     if (!url.isNullOrBlank()) openUrl(context, url)
                 })
             }
@@ -904,6 +988,35 @@ private fun ReadyContent(
         }
 
         item(key = "footer-spacer") { Spacer(Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+private fun NoteBlock(note: String?, onEdit: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onEdit),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = if (note.isNullOrBlank()) "Add note" else "Note",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+            if (!note.isNullOrBlank()) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
     }
 }
 
@@ -1009,10 +1122,11 @@ private fun String.humanize(): String =
         .replaceFirstChar { it.titlecase(Locale.ROOT) }
 
 private fun buildDetailSubtitle(env: EnvelopeViewParcel): String {
-    val app = env.appCategory.let {
-        if (it == "UNKNOWN_SOURCE") "an app"
-        else it.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { c -> c.titlecase(Locale.ROOT) }
-    }
+    val app = env.sourceAppLabel?.trim()?.takeIf { it.isNotBlank() }
+        ?: env.appCategory.let {
+            if (it == "UNKNOWN_SOURCE") "an app"
+            else it.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { c -> c.titlecase(Locale.ROOT) }
+        }
     val activity = env.activityState
         .takeUnless { it == "UNKNOWN" }
         ?.lowercase(Locale.ROOT)
@@ -1039,14 +1153,37 @@ private val URL_REGEX = Regex(
     """https?://[A-Za-z0-9._~:/?#\[\]@!${'$'}&'()*+,;=%\-]+""",
     RegexOption.IGNORE_CASE
 )
+private val URL_TRAILING_PUNCT_REGEX = Regex("""[.,;:!?)\]}>'"`]+$""")
 
 private fun containsUrl(text: String?): Boolean =
     !text.isNullOrBlank() && URL_REGEX.containsMatchIn(text)
 
 private fun firstUrlIn(text: String?): String? {
     if (text.isNullOrBlank()) return null
-    return URL_REGEX.find(text)?.value
+    val cleaned = URL_REGEX.find(text)?.value?.let { URL_TRAILING_PUNCT_REGEX.replace(it, "") }
+    return cleaned?.let { CanonicalUrlHasher.unwrapKnownRedirect(it) }
 }
+
+private fun detailUrlFor(envelope: EnvelopeViewParcel): String? =
+    (envelope.canonicalUrl ?: firstUrlIn(envelope.textContent))
+        ?.let { CanonicalUrlHasher.unwrapKnownRedirect(it) }
+
+private fun String?.usefulEnrichmentOrNull(rawUrl: String?, domain: String?): String? {
+    val value = this?.trim()?.takeIf { it.isNotBlank() } ?: return null
+    val urlLower = rawUrl.orEmpty().lowercase(Locale.ROOT)
+    val domainLower = domain.orEmpty().lowercase(Locale.ROOT)
+    val valueLower = value.lowercase(Locale.ROOT)
+    val googleWrapper = "google." in domainLower || "google." in urlLower
+    val redirectBoilerplate = valueLower == "google" ||
+        "redirect notice" in valueLower ||
+        "google search" in valueLower ||
+        "before you continue" in valueLower ||
+        "enable javascript" in valueLower
+    return value.takeUnless { googleWrapper && redirectBoilerplate }
+}
+
+private fun String.domainFromUrl(): String? =
+    runCatching { Uri.parse(this).host?.removePrefix("www.")?.takeIf { it.isNotBlank() } }.getOrNull()
 
 private fun openUrl(context: Context, url: String) {
     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url))

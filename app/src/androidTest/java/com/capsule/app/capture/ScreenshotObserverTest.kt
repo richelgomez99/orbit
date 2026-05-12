@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.capsule.app.data.ipc.IEnvelopeObserver
 import com.capsule.app.data.ipc.IEnvelopeRepository
 import com.capsule.app.data.ipc.IntentEnvelopeDraftParcel
+import com.capsule.app.data.ipc.SealResultParcel
 import com.capsule.app.data.ipc.StateSnapshotParcel
 import com.capsule.app.data.ipc.EnvelopeViewParcel
 import com.capsule.app.data.model.ActivityState
@@ -122,10 +123,17 @@ class ScreenshotObserverTest {
             return "test-envelope-${seals.size}"
         }
 
+        override fun sealWithResult(
+            draft: IntentEnvelopeDraftParcel,
+            state: StateSnapshotParcel
+        ): SealResultParcel = SealResultParcel.created(seal(draft, state))
+
         // ---- Unused surface: every other method errors so mis-use is loud. ----
         override fun observeDay(isoDate: String, observer: IEnvelopeObserver) = error("unused")
         override fun stopObserving(observer: IEnvelopeObserver) = error("unused")
         override fun getEnvelope(envelopeId: String): EnvelopeViewParcel = error("unused")
+        override fun getLatestNote(envelopeId: String): String? = error("unused")
+        override fun createOrUpdateLatestNote(envelopeId: String, text: String): Boolean = error("unused")
         override fun reassignIntent(envelopeId: String, newIntentName: String, reasonOpt: String?) = error("unused")
         override fun archive(envelopeId: String) = error("unused")
         override fun delete(envelopeId: String) = error("unused")

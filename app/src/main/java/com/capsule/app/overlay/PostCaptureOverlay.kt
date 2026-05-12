@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,10 +27,10 @@ fun PostCaptureOverlay(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.postCaptureUi.collectAsState()
-    val rootModifier = if (state is PostCaptureUi.ChipRow) {
+    val layoutModifier = if (state is PostCaptureUi.ChipRow || state is PostCaptureUi.ReclassifyChipRow) {
         modifier.fillMaxWidth()
     } else {
-        modifier
+        modifier.wrapContentSize()
     }
 
     AnimatedContent(
@@ -39,7 +40,7 @@ fun PostCaptureOverlay(
         },
         contentKey = { it::class },
         label = "postCaptureUi",
-        modifier = rootModifier
+        modifier = layoutModifier
     ) { ui ->
         when (ui) {
             is PostCaptureUi.None -> Box(Modifier)
@@ -50,6 +51,18 @@ fun PostCaptureOverlay(
                     previewText = ui.previewText,
                     onChipTap = viewModel::onChipTapped,
                     onTimeout = viewModel::onChipRowTimeout
+                )
+            }
+            is PostCaptureUi.ReclassifyChipRow -> SwipeToDismissBox(
+                onDismiss = viewModel::onDuplicateReclassifyTimeout
+            ) {
+                ChipRow(
+                    previewText = ui.previewText,
+                    onChipTap = { intent ->
+                        viewModel.onDuplicateReclassifyChipTapped(ui.existingEnvelopeId, intent)
+                    },
+                    onTimeout = viewModel::onDuplicateReclassifyTimeout,
+                    countdownMillis = OverlayMotion.UNDO_WINDOW_MS
                 )
             }
             is PostCaptureUi.SilentWrapPill -> SwipeToDismissBox(
@@ -75,6 +88,13 @@ fun PostCaptureOverlay(
             )
             is PostCaptureUi.AlreadyInDiary -> AlreadyInDiaryPill(
                 onExpire = viewModel::onConfirmationExpired
+            )
+            is PostCaptureUi.AlreadySaved -> AlreadySavedPill(
+                matchedBy = ui.matchedBy,
+                onAddNote = { viewModel.onAlreadySavedAddNote(ui.existingEnvelopeId) },
+                onReclassify = { viewModel.onAlreadySavedReclassify(ui.existingEnvelopeId) },
+                onOpen = { viewModel.onAlreadySavedOpen(ui.existingEnvelopeId) },
+                onExpire = viewModel::onAlreadySavedExpired
             )
         }
     }
