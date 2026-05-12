@@ -89,6 +89,7 @@ class CapsuleOverlayService : LifecycleService() {
     private var viewModel: OverlayViewModel? = null
     private var dismissTargetView: ComposeView? = null
     private var postCaptureView: ComposeView? = null
+    private var postCaptureParams: WindowManager.LayoutParams? = null
     private val tapStateCollector: StateSnapshotCollector by lazy {
         StateSnapshotCollector.create(applicationContext)
     }
@@ -365,7 +366,8 @@ class CapsuleOverlayService : LifecycleService() {
                 if (ui is PostCaptureUi.None) {
                     hidePostCaptureOverlay()
                 } else {
-                    showPostCaptureOverlay(vm)
+                    showPostCaptureOverlay(vm, ui)
+                    syncPostCaptureOverlayLayout(ui)
                 }
             }
         }
@@ -600,14 +602,14 @@ class CapsuleOverlayService : LifecycleService() {
     }
 
     /**
-     * Mount the [PostCaptureOverlay] in its own full-width window anchored
-     * to the bottom of the screen. The window is touchable (for chip taps +
+     * Mount the [PostCaptureOverlay] in its own bottom-anchored window.
+     * The window is touchable (for chip taps +
      * undo) but does not absorb background touches thanks to
-     * `FLAG_NOT_FOCUSABLE`. It spans `MATCH_PARENT` width with `WRAP_CONTENT`
-     * height so the pill is always fully visible regardless of where the
-     * bubble sits.
+     * `FLAG_NOT_FOCUSABLE`. Chip rows get the available screen width;
+     * compact pills wrap visible content so they do not block taps across
+     * the whole row.
      */
-    private fun showPostCaptureOverlay(vm: OverlayViewModel) {
+    private fun showPostCaptureOverlay(vm: OverlayViewModel, ui: PostCaptureUi) {
         if (postCaptureView != null) return
 
         val targetView = ComposeView(this).apply {
@@ -623,7 +625,7 @@ class CapsuleOverlayService : LifecycleService() {
 
         val bottomMarginPx = (24 * resources.displayMetrics.density).toInt()
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
+            postCaptureWidthFor(ui),
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             // NOT_FOCUSABLE: keyboards in other apps still work.
@@ -639,9 +641,34 @@ class CapsuleOverlayService : LifecycleService() {
         try {
             windowManager.addView(targetView, params)
             postCaptureView = targetView
+            postCaptureParams = params
         } catch (e: Exception) {
             Log.e(TAG, "Failed to show post-capture overlay", e)
         }
+    }
+
+    private fun syncPostCaptureOverlayLayout(ui: PostCaptureUi) {
+        val targetView = postCaptureView ?: return
+        val params = postCaptureParams ?: return
+        val desiredWidth = postCaptureWidthFor(ui)
+        if (params.width == desiredWidth) return
+
+        params.width = desiredWidth
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        try {
+            windowManager.updateViewLayout(targetView, params)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to resize post-capture overlay", e)
+        }
+    }
+
+    private fun postCaptureWidthFor(ui: PostCaptureUi): Int = when (ui) {
+        is PostCaptureUi.ChipRow -> WindowManager.LayoutParams.MATCH_PARENT
+        is PostCaptureUi.None,
+        is PostCaptureUi.SilentWrapPill,
+        is PostCaptureUi.UndoPill,
+        is PostCaptureUi.RemovedConfirmation,
+        is PostCaptureUi.AlreadyInDiary -> WindowManager.LayoutParams.WRAP_CONTENT
     }
 
     private fun hidePostCaptureOverlay() {
@@ -652,6 +679,7 @@ class CapsuleOverlayService : LifecycleService() {
             Log.e(TAG, "Failed to hide post-capture overlay", e)
         }
         postCaptureView = null
+        postCaptureParams = null
     }
 
     // ---- T042: :ml EnvelopeRepositoryService bind/unbind lifecycle ----

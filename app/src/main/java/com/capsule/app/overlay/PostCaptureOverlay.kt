@@ -26,6 +26,11 @@ fun PostCaptureOverlay(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.postCaptureUi.collectAsState()
+    val rootModifier = if (state is PostCaptureUi.ChipRow) {
+        modifier.fillMaxWidth()
+    } else {
+        modifier
+    }
 
     AnimatedContent(
         targetState = state,
@@ -34,7 +39,7 @@ fun PostCaptureOverlay(
         },
         contentKey = { it::class },
         label = "postCaptureUi",
-        modifier = modifier.fillMaxWidth()
+        modifier = rootModifier
     ) { ui ->
         when (ui) {
             is PostCaptureUi.None -> Box(Modifier)
