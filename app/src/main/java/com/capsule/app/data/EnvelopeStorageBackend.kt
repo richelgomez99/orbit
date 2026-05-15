@@ -1,11 +1,20 @@
 package com.capsule.app.data
 
 import com.capsule.app.data.entity.AuditLogEntryEntity
+import com.capsule.app.data.entity.CanonicalUrlEntity
+import com.capsule.app.data.entity.CaptureUnderstandingEntity
 import com.capsule.app.data.entity.ContinuationEntity
 import com.capsule.app.data.entity.ContinuationResultEntity
+import com.capsule.app.data.entity.CorrectionFeedbackEntity
+import com.capsule.app.data.entity.DeletionInvalidationEntity
 import com.capsule.app.data.entity.EnvelopeNoteEntity
+import com.capsule.app.data.entity.EvidenceBundleEntity
 import com.capsule.app.data.entity.IntentEnvelopeEntity
 import com.capsule.app.data.entity.IntentEnvelopeWithResults
+import com.capsule.app.data.entity.SourceIdentityEntity
+import com.capsule.app.data.entity.UnderstandingDepthPolicyOverrideEntity
+import com.capsule.app.data.entity.UnderstandingJobEntity
+import com.capsule.app.understanding.UnderstandingJobStatus
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -238,6 +247,60 @@ interface EnvelopeStorageBackend {
         continuations: List<ContinuationEntity>,
         auditEntries: List<AuditLogEntryEntity>
     )
+
+    // ---- Capture understanding substrate (004) ----
+
+    suspend fun writeCaptureUnderstandingRecords(
+        sourceIdentities: List<SourceIdentityEntity> = emptyList(),
+        canonicalUrls: List<CanonicalUrlEntity> = emptyList(),
+        evidenceBundles: List<EvidenceBundleEntity> = emptyList(),
+        jobs: List<UnderstandingJobEntity> = emptyList(),
+        understandings: List<CaptureUnderstandingEntity> = emptyList(),
+        feedback: List<CorrectionFeedbackEntity> = emptyList(),
+        policyOverrides: List<UnderstandingDepthPolicyOverrideEntity> = emptyList(),
+        invalidations: List<DeletionInvalidationEntity> = emptyList(),
+        auditEntries: List<AuditLogEntryEntity> = emptyList()
+    ) {
+        error("writeCaptureUnderstandingRecords not implemented")
+    }
+
+    suspend fun getCurrentSourceIdentity(captureId: String): SourceIdentityEntity? = null
+
+    suspend fun getCurrentCaptureUnderstanding(captureId: String): CaptureUnderstandingEntity? = null
+
+    suspend fun listEvidencePage(
+        captureId: String,
+        limit: Int,
+        offset: Int
+    ): List<EvidenceBundleEntity> = emptyList()
+
+    suspend fun countEvidence(captureId: String): Int = 0
+
+    suspend fun getLatestCaptureUnderstandingOverride(
+        captureId: String
+    ): UnderstandingDepthPolicyOverrideEntity? = null
+
+    suspend fun getLatestDomainSuppression(
+        domainSuppressionKey: String
+    ): UnderstandingDepthPolicyOverrideEntity? = null
+
+    suspend fun updateUnderstandingJobStatus(
+        jobId: String,
+        status: UnderstandingJobStatus,
+        attemptCount: Int,
+        traceIdsJson: String,
+        failureCode: String?,
+        userVisibleReason: String?,
+        startedAt: Long?,
+        finishedAt: Long?
+    ): Int = 0
+
+    suspend fun invalidateCaptureUnderstandingRecords(
+        captureId: String,
+        invalidatedAt: Long,
+        invalidation: DeletionInvalidationEntity,
+        auditEntry: AuditLogEntryEntity?
+    ): Int = 0
 
     // ---- Diagnostics ----
 

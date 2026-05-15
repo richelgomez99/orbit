@@ -11,6 +11,7 @@ import com.capsule.app.data.dao.AuditLogDao
 import com.capsule.app.data.dao.ClusterDao
 import com.capsule.app.data.dao.ContinuationDao
 import com.capsule.app.data.dao.ContinuationResultDao
+import com.capsule.app.data.dao.CaptureUnderstandingDao
 import com.capsule.app.data.dao.EnvelopeNoteDao
 import com.capsule.app.data.dao.IntentEnvelopeDao
 import com.capsule.app.data.dao.SkillUsageDao
@@ -18,13 +19,21 @@ import com.capsule.app.data.entity.ActionExecutionEntity
 import com.capsule.app.data.entity.ActionProposalEntity
 import com.capsule.app.data.entity.AppFunctionSkillEntity
 import com.capsule.app.data.entity.AuditLogEntryEntity
+import com.capsule.app.data.entity.CanonicalUrlEntity
+import com.capsule.app.data.entity.CaptureUnderstandingEntity
 import com.capsule.app.data.entity.ClusterEntity
 import com.capsule.app.data.entity.ClusterMemberEntity
 import com.capsule.app.data.entity.ContinuationEntity
 import com.capsule.app.data.entity.ContinuationResultEntity
+import com.capsule.app.data.entity.CorrectionFeedbackEntity
+import com.capsule.app.data.entity.DeletionInvalidationEntity
 import com.capsule.app.data.entity.EnvelopeNoteEntity
+import com.capsule.app.data.entity.EvidenceBundleEntity
 import com.capsule.app.data.entity.IntentEnvelopeEntity
+import com.capsule.app.data.entity.SourceIdentityEntity
 import com.capsule.app.data.entity.SkillUsageEntity
+import com.capsule.app.data.entity.UnderstandingDepthPolicyOverrideEntity
+import com.capsule.app.data.entity.UnderstandingJobEntity
 import com.capsule.app.data.security.KeystoreKeyProvider
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
@@ -42,9 +51,18 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         // 002 amendment Phase 11 — Cluster Engine
         ClusterEntity::class,
         ClusterMemberEntity::class,
-        EnvelopeNoteEntity::class
+        EnvelopeNoteEntity::class,
+        // 004 — Capture Understanding
+        SourceIdentityEntity::class,
+        CanonicalUrlEntity::class,
+        EvidenceBundleEntity::class,
+        UnderstandingDepthPolicyOverrideEntity::class,
+        UnderstandingJobEntity::class,
+        CaptureUnderstandingEntity::class,
+        CorrectionFeedbackEntity::class,
+        DeletionInvalidationEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class OrbitDatabase : RoomDatabase() {
@@ -63,6 +81,9 @@ abstract class OrbitDatabase : RoomDatabase() {
 
     // 002 amendment Phase 11
     abstract fun clusterDao(): ClusterDao
+
+    // 004 — Capture Understanding
+    abstract fun captureUnderstandingDao(): CaptureUnderstandingDao
 
     companion object {
         private const val DB_NAME = "orbit.db"
@@ -109,7 +130,8 @@ abstract class OrbitDatabase : RoomDatabase() {
                     MIGRATION_3_4,
                     MIGRATION_4_5,
                     MIGRATION_5_6,
-                    MIGRATION_6_7
+                    MIGRATION_6_7,
+                    MIGRATION_7_8
                 )
                 .build()
         }

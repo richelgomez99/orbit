@@ -5,10 +5,16 @@ import com.capsule.app.ai.extract.ActionExtractor
 import com.capsule.app.ai.extract.ExtractOutcome
 import com.capsule.app.audit.AuditLogWriter
 import com.capsule.app.continuation.ContinuationEngine
+import com.capsule.app.data.entity.CanonicalUrlEntity
+import com.capsule.app.data.entity.CaptureUnderstandingEntity
 import com.capsule.app.data.entity.ContinuationEntity
 import com.capsule.app.data.entity.EnvelopeNoteEntity
+import com.capsule.app.data.entity.EvidenceBundleEntity
 import com.capsule.app.data.entity.IntentEnvelopeEntity
+import com.capsule.app.data.entity.SourceIdentityEntity
 import com.capsule.app.data.entity.StateSnapshot
+import com.capsule.app.data.entity.UnderstandingJobEntity
+import com.capsule.app.data.ipc.CaptureUnderstandingSummaryParcel
 import com.capsule.app.data.ipc.EnvelopeViewParcel
 import com.capsule.app.data.ipc.IEnvelopeObserver
 import com.capsule.app.data.ipc.IEnvelopeRepository
@@ -24,6 +30,20 @@ import com.capsule.app.data.model.ContinuationType
 import com.capsule.app.data.model.Intent
 import com.capsule.app.data.model.IntentSource
 import com.capsule.app.net.CanonicalUrlHasher
+import com.capsule.app.net.ProviderMetadataResolver
+import com.capsule.app.understanding.AcquisitionDepth
+import com.capsule.app.understanding.AcquisitionMethod
+import com.capsule.app.understanding.CanonicalUrlRole
+import com.capsule.app.understanding.CaptureUnderstandingStatus
+import com.capsule.app.understanding.DeletionInvalidationCascade
+import com.capsule.app.understanding.EvidenceKind
+import com.capsule.app.understanding.EvidenceRetentionClass
+import com.capsule.app.understanding.EvidenceStatus
+import com.capsule.app.understanding.LimitationCode
+import com.capsule.app.understanding.RetryEligibility
+import com.capsule.app.understanding.SourceIdentityResolver
+import com.capsule.app.understanding.UnderstandingDepth
+import com.capsule.app.understanding.UnderstandingJobStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -36,6 +56,7 @@ import android.database.sqlite.SQLiteConstraintException
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -303,6 +324,28 @@ class EnvelopeRepositoryImpl(
             return SealResultParcel.alreadySaved(existing.id, matchedBy)
         }
 
+        runCatching {
+            val records = buildInitialUnderstandingRecords(
+                envelope = envelope,
+                urls = urls,
+                now = now
+            )
+            runBlocking {
+                backend.writeCaptureUnderstandingRecords(
+                    sourceIdentities = records.sourceIdentities,
+                    canonicalUrls = records.canonicalUrls,
+                    evidenceBundles = records.evidenceBundles,
+                    jobs = records.jobs,
+                    understandings = records.understandings
+                )
+            }
+        }.onFailure { t ->
+            android.util.Log.w(
+                "EnvelopeRepository",
+                "Initial understanding records skipped for $id: ${t.message}"
+            )
+        }
+
         // T068 — AFTER the Room txn commits, hand each PENDING row to the
         // engine so WorkManager picks it up. Done outside the txn because
         // WorkManager owns its own durability; enqueueing inside a Room
@@ -355,7 +398,15 @@ class EnvelopeRepositoryImpl(
         // Detail screen needs hydrated title/summary too — prefer the
         // dedupe-shared result if set, otherwise the envelope's own latest.
         val latest = backend.getLatestResultForEnvelope(envelopeId, entity.sharedContinuationResultId)
-        entity.toViewParcel(latest)
+        val understanding = backend.getCurrentCaptureUnderstanding(envelopeId)
+        val sourceIdentity = backend.getCurrentSourceIdentity(envelopeId)
+        val evidenceCount = backend.countEvidence(envelopeId)
+        entity.toViewParcel(
+            latestResult = latest,
+            understanding = understanding,
+            sourceIdentity = sourceIdentity,
+            evidenceCount = evidenceCount
+        )
     }
 
     override fun getLatestNote(envelopeId: String): String? = runBlocking {
@@ -474,6 +525,29 @@ class EnvelopeRepositoryImpl(
                 envelopeId = envelopeId
             )
             backend.softDeleteTransaction(envelopeId, now, audit)
+            runCatching {
+                val invalidationAudit = auditWriter.build(
+                    action = AuditAction.ENVELOPE_INVALIDATED,
+                    description = "Capture understanding invalidated after delete",
+                    envelopeId = envelopeId,
+                    extraJson = """{"reason":"capture_deleted"}"""
+                )
+                backend.invalidateCaptureUnderstandingRecords(
+                    captureId = envelopeId,
+                    invalidatedAt = now,
+                    invalidation = DeletionInvalidationCascade.captureDeleted(
+                        captureId = envelopeId,
+                        auditTraceId = invalidationAudit.id,
+                        atMillis = now
+                    ),
+                    auditEntry = invalidationAudit
+                )
+            }.onFailure { t ->
+                android.util.Log.w(
+                    "EnvelopeRepository",
+                    "Understanding invalidation failed for $envelopeId: ${t.message}"
+                )
+            }
             // T075 — DIGEST provenance cascade. Procedural because the
             // FK is a JSON array, not a SQL relation. Runs in its own
             // transaction (after the soft-delete commits) so a cascade
@@ -1007,8 +1081,206 @@ class EnvelopeRepositoryImpl(
         return arr.toString()
     }
 
+    private data class InitialUnderstandingRecords(
+        val sourceIdentities: List<SourceIdentityEntity>,
+        val canonicalUrls: List<CanonicalUrlEntity>,
+        val evidenceBundles: List<EvidenceBundleEntity>,
+        val jobs: List<UnderstandingJobEntity>,
+        val understandings: List<CaptureUnderstandingEntity>
+    )
+
+    private fun buildInitialUnderstandingRecords(
+        envelope: IntentEnvelopeEntity,
+        urls: List<String>,
+        now: Long
+    ): InitialUnderstandingRecords {
+        val evidence = mutableListOf<EvidenceBundleEntity>()
+        val canonicalUrls = urls.mapIndexed { index, url ->
+            CanonicalUrlEntity(
+                id = UUID.randomUUID().toString(),
+                captureId = envelope.id,
+                originalUrl = url,
+                normalizedUrl = normalizedDisplayUrl(url),
+                canonicalUrlHash = CanonicalUrlHasher.hash(url),
+                role = if (index == 0) CanonicalUrlRole.PRIMARY else CanonicalUrlRole.SUPPORTING,
+                providerFamily = if (ProviderMetadataResolver.isYouTubeUrl(url.withDefaultScheme())) "youtube" else null,
+                host = url.hostLabel(),
+                normalizationVersion = 1,
+                detectedAt = now,
+                hydratedAt = null,
+                isEligibleForDuplicateMatching = !envelope.isDeleted && !envelope.isArchived,
+                invalidatedAt = null
+            )
+        }
+
+        val primaryUrlEvidenceId = urls.firstOrNull()?.let {
+            UUID.randomUUID().toString().also { evidenceId ->
+                evidence += EvidenceBundleEntity(
+                    id = evidenceId,
+                    captureId = envelope.id,
+                    kind = EvidenceKind.SAVED_URL,
+                    sourceReference = it,
+                    acquisitionDepth = AcquisitionDepth.BASIC,
+                    acquisitionMethod = AcquisitionMethod.LOCAL_CAPTURE,
+                    confidence = 0.8f,
+                    contentHash = CanonicalUrlHasher.hash(it),
+                    retentionClass = EvidenceRetentionClass.LOCAL_REFERENCE_ONLY,
+                    status = EvidenceStatus.READY,
+                    limitationsJson = limitationsJson(listOf(LimitationCode.METADATA_ONLY)),
+                    createdAt = now
+                )
+            }
+        }
+
+        val savedArtifactEvidenceId = when {
+            envelope.contentType == ContentType.TEXT && !envelope.textContent.isNullOrBlank() ->
+                UUID.randomUUID().toString().also { evidenceId ->
+                    evidence += EvidenceBundleEntity(
+                        id = evidenceId,
+                        captureId = envelope.id,
+                        kind = EvidenceKind.SAVED_TEXT,
+                        sourceReference = "intent_envelope:${envelope.id}:textContent",
+                        acquisitionDepth = AcquisitionDepth.BASIC,
+                        acquisitionMethod = AcquisitionMethod.LOCAL_CAPTURE,
+                        confidence = 0.85f,
+                        contentHash = envelope.textContentSha256,
+                        retentionClass = EvidenceRetentionClass.LOCAL_RAW_ALLOWED,
+                        status = EvidenceStatus.READY,
+                        limitationsJson = "[]",
+                        createdAt = now
+                    )
+                }
+            envelope.contentType == ContentType.IMAGE && !envelope.imageUri.isNullOrBlank() ->
+                UUID.randomUUID().toString().also { evidenceId ->
+                    evidence += EvidenceBundleEntity(
+                        id = evidenceId,
+                        captureId = envelope.id,
+                        kind = EvidenceKind.SCREENSHOT_REFERENCE,
+                        sourceReference = envelope.imageUri,
+                        acquisitionDepth = AcquisitionDepth.BASIC,
+                        acquisitionMethod = AcquisitionMethod.LOCAL_CAPTURE,
+                        confidence = 0.65f,
+                        contentHash = null,
+                        retentionClass = EvidenceRetentionClass.LOCAL_REFERENCE_ONLY,
+                        status = EvidenceStatus.LIMITED,
+                        limitationsJson = limitationsJson(listOf(LimitationCode.VISUAL_ONLY)),
+                        createdAt = now
+                    )
+                }
+            else -> null
+        }
+
+        val evidenceIds = listOfNotNull(primaryUrlEvidenceId, savedArtifactEvidenceId)
+        val resolvedSource = SourceIdentityResolver.resolve(
+            SourceIdentityResolver.Input(
+                urls = urls,
+                foregroundAppLabel = envelope.state.sourceAppLabel,
+                genericCategory = envelope.state.appCategory.name,
+                evidenceIds = evidenceIds
+            )
+        )
+        val sourceIdentity = SourceIdentityEntity(
+            id = UUID.randomUUID().toString(),
+            captureId = envelope.id,
+            version = 1,
+            providerKey = resolvedSource.providerKey,
+            providerLabel = resolvedSource.providerLabel,
+            originAppLabel = resolvedSource.originAppLabel,
+            genericCategory = resolvedSource.genericCategory,
+            displayLabel = resolvedSource.displayLabel,
+            secondaryLabel = resolvedSource.secondaryLabel,
+            glyphKind = resolvedSource.glyphKind,
+            confidence = resolvedSource.confidence,
+            evidenceIdsJson = jsonArray(evidenceIds),
+            limitationsJson = limitationsJson(resolvedSource.limitations),
+            resolverVersion = SourceIdentityResolver.RESOLVER_VERSION,
+            createdAt = now
+        )
+
+        val job = UnderstandingJobEntity(
+            id = UUID.randomUUID().toString(),
+            captureId = envelope.id,
+            requestedDepth = UnderstandingDepth.BASIC,
+            effectiveDepth = UnderstandingDepth.BASIC,
+            status = UnderstandingJobStatus.LIMITED,
+            policyDecision = "allowed_local_basic",
+            retryEligibility = if (urls.isNotEmpty()) RetryEligibility.RETRYABLE else RetryEligibility.NOT_RETRYABLE,
+            attemptCount = 0,
+            maxAttempts = 1,
+            traceIdsJson = "[]",
+            failureCode = null,
+            userVisibleReason = null,
+            startedAt = now,
+            finishedAt = now,
+            createdAt = now
+        )
+
+        val limitations = buildList {
+            addAll(resolvedSource.limitations)
+            if (urls.isNotEmpty()) add(LimitationCode.METADATA_ONLY)
+            if (envelope.contentType == ContentType.IMAGE) add(LimitationCode.VISUAL_ONLY)
+        }.distinct()
+        val compactSummary = when {
+            envelope.contentType == ContentType.TEXT && urls.isEmpty() ->
+                envelope.textContent?.trim()?.takeIf { it.isNotBlank() }?.take(600)
+            else -> null
+        }
+        val understanding = CaptureUnderstandingEntity(
+            id = UUID.randomUUID().toString(),
+            captureId = envelope.id,
+            jobId = job.id,
+            version = 1,
+            status = if (compactSummary == null || limitations.isNotEmpty()) {
+                CaptureUnderstandingStatus.LIMITED
+            } else {
+                CaptureUnderstandingStatus.PARTIAL
+            },
+            title = null,
+            compactSummary = compactSummary,
+            basedOnEvidenceIdsJson = jsonArray(evidenceIds),
+            sourceIdentityId = sourceIdentity.id,
+            confidence = if (compactSummary == null) 0.55f else 0.75f,
+            limitationsJson = limitationsJson(limitations),
+            depthUsed = UnderstandingDepth.BASIC,
+            extractorProvenance = "local-seal-v1",
+            producedAt = now
+        )
+
+        return InitialUnderstandingRecords(
+            sourceIdentities = listOf(sourceIdentity),
+            canonicalUrls = canonicalUrls,
+            evidenceBundles = evidence,
+            jobs = listOf(job),
+            understandings = listOf(understanding)
+        )
+    }
+
+    private fun normalizedDisplayUrl(url: String): String = url.withDefaultScheme()
+
+    private fun String.withDefaultScheme(): String =
+        if (contains("://")) this else "https://$this"
+
+    private fun String.hostLabel(): String? = runCatching {
+        java.net.URI(withDefaultScheme()).host
+            ?.lowercase(Locale.ROOT)
+            ?.trimEnd('.')
+            ?.removePrefix("www.")
+    }.getOrNull()
+
+    private fun jsonArray(values: List<String>): String {
+        val arr = JSONArray()
+        values.forEach { arr.put(it) }
+        return arr.toString()
+    }
+
+    private fun limitationsJson(values: List<LimitationCode>): String =
+        jsonArray(values.map { it.name })
+
     private fun IntentEnvelopeEntity.toViewParcel(
-        latestResult: com.capsule.app.data.entity.ContinuationResultEntity? = null
+        latestResult: com.capsule.app.data.entity.ContinuationResultEntity? = null,
+        understanding: CaptureUnderstandingEntity? = null,
+        sourceIdentity: SourceIdentityEntity? = null,
+        evidenceCount: Int = 0
     ): EnvelopeViewParcel = EnvelopeViewParcel(
         id = id,
         contentType = contentType.name,
@@ -1019,10 +1291,10 @@ class EnvelopeRepositoryImpl(
         createdAtMillis = createdAt,
         dayLocal = dayLocal,
         isArchived = isArchived,
-        title = latestResult?.title,
+        title = understanding?.title ?: latestResult?.title,
         domain = latestResult?.domain,
         excerpt = latestResult?.excerpt,
-        summary = latestResult?.summary,
+        summary = understanding?.compactSummary ?: latestResult?.summary,
         appCategory = state.appCategory.name,
         activityState = state.activityState.name,
         hourLocal = state.hourLocal,
@@ -1031,8 +1303,85 @@ class EnvelopeRepositoryImpl(
         intentHistoryJson = intentHistoryJson,
         canonicalUrl = latestResult?.canonicalUrl,
         deletedAtMillis = deletedAt,
-        todoMetaJson = todoMetaJson
+        todoMetaJson = todoMetaJson,
+        captureUnderstandingSummary = buildUnderstandingSummaryParcel(
+            envelopeId = id,
+            understanding = understanding,
+            sourceIdentity = sourceIdentity,
+            evidenceCount = evidenceCount
+        )
     )
+
+    private fun buildUnderstandingSummaryParcel(
+        envelopeId: String,
+        understanding: CaptureUnderstandingEntity?,
+        sourceIdentity: SourceIdentityEntity?,
+        evidenceCount: Int
+    ): CaptureUnderstandingSummaryParcel? {
+        if (understanding == null && sourceIdentity == null && evidenceCount == 0) return null
+        val limitations = understanding?.limitationsJson ?: sourceIdentity?.limitationsJson
+        return CaptureUnderstandingSummaryParcel.bounded(
+            captureId = envelopeId,
+            sourceIdentityId = sourceIdentity?.id,
+            understandingId = understanding?.id,
+            currentJobId = understanding?.jobId,
+            sourceLabel = sourceIdentity?.displayLabel ?: "Unknown source",
+            secondarySourceLabel = sourceIdentity?.secondaryLabel,
+            glyphKind = sourceIdentity?.glyphKind?.name ?: "UNKNOWN",
+            title = understanding?.title,
+            compactSummary = understanding?.compactSummary,
+            status = understanding?.status?.name ?: "LIMITED",
+            confidenceBand = confidenceBand(understanding?.confidence ?: sourceIdentity?.confidence),
+            limitationCodes = limitationCodes(limitations),
+            limitationSummary = limitationSummary(limitations),
+            depthUsed = understanding?.depthUsed?.name ?: "BASIC",
+            retryEligible = understanding?.status?.name in setOf("LIMITED", "FAILED"),
+            correctionAvailable = understanding != null || sourceIdentity != null,
+            evidenceSummaryCount = evidenceCount,
+            evidencePageToken = null
+        )
+    }
+
+    private fun confidenceBand(confidence: Float?): String? = when {
+        confidence == null -> null
+        confidence >= 0.85f -> "HIGH"
+        confidence >= 0.55f -> "MEDIUM"
+        else -> "LOW"
+    }
+
+    private fun limitationCodes(json: String?): List<String> {
+        if (json.isNullOrBlank()) return emptyList()
+        return runCatching {
+            val arr = JSONArray(json)
+            buildList {
+                for (index in 0 until arr.length()) {
+                    when (val value = arr.opt(index)) {
+                        is String -> add(value)
+                        is JSONObject -> value.optString("code")
+                            .takeIf { it.isNotBlank() }
+                            ?.let(::add)
+                    }
+                }
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    private fun limitationSummary(json: String?): String? {
+        if (json.isNullOrBlank()) return null
+        return runCatching {
+            val arr = JSONArray(json)
+            buildList {
+                for (index in 0 until arr.length()) {
+                    when (val value = arr.opt(index)) {
+                        is String -> add(value.lowercase(Locale.ROOT).replace('_', ' '))
+                        is JSONObject -> value.optString("summary")
+                            .takeIf { it.isNotBlank() }
+                            ?.let(::add)
+                    }
+                }
+            }.joinToString(separator = "; ").takeIf { it.isNotBlank() }
+        }.getOrNull()
+    }
 
     /** Equality by the underlying IBinder identity so observer lifecycles cancel cleanly. */
     // Lifted to top-level [IBinderKey] in v1.1 (003) so [ActionsRepositoryDelegate]

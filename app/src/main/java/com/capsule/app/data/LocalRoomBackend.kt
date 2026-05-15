@@ -2,11 +2,20 @@ package com.capsule.app.data
 
 import androidx.room.withTransaction
 import com.capsule.app.data.entity.AuditLogEntryEntity
+import com.capsule.app.data.entity.CanonicalUrlEntity
+import com.capsule.app.data.entity.CaptureUnderstandingEntity
 import com.capsule.app.data.entity.ContinuationEntity
 import com.capsule.app.data.entity.ContinuationResultEntity
+import com.capsule.app.data.entity.CorrectionFeedbackEntity
+import com.capsule.app.data.entity.DeletionInvalidationEntity
 import com.capsule.app.data.entity.EnvelopeNoteEntity
+import com.capsule.app.data.entity.EvidenceBundleEntity
 import com.capsule.app.data.entity.IntentEnvelopeEntity
 import com.capsule.app.data.entity.IntentEnvelopeWithResults
+import com.capsule.app.data.entity.SourceIdentityEntity
+import com.capsule.app.data.entity.UnderstandingDepthPolicyOverrideEntity
+import com.capsule.app.data.entity.UnderstandingJobEntity
+import com.capsule.app.understanding.UnderstandingJobStatus
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
@@ -25,6 +34,7 @@ class LocalRoomBackend(
     private val continuationResultDao = database.continuationResultDao()
     private val noteDao = database.envelopeNoteDao()
     private val auditDao = database.auditLogDao()
+    private val captureUnderstandingDao = database.captureUnderstandingDao()
 
     override suspend fun sealTransaction(
         envelope: IntentEnvelopeEntity,
@@ -331,6 +341,94 @@ class LocalRoomBackend(
             for (c in continuations) continuationDao.insert(c)
             for (a in auditEntries) auditDao.insert(a)
         }
+    }
+
+    override suspend fun writeCaptureUnderstandingRecords(
+        sourceIdentities: List<SourceIdentityEntity>,
+        canonicalUrls: List<CanonicalUrlEntity>,
+        evidenceBundles: List<EvidenceBundleEntity>,
+        jobs: List<UnderstandingJobEntity>,
+        understandings: List<CaptureUnderstandingEntity>,
+        feedback: List<CorrectionFeedbackEntity>,
+        policyOverrides: List<UnderstandingDepthPolicyOverrideEntity>,
+        invalidations: List<DeletionInvalidationEntity>,
+        auditEntries: List<AuditLogEntryEntity>
+    ) {
+        database.withTransaction {
+            sourceIdentities.forEach { captureUnderstandingDao.insertSourceIdentity(it) }
+            canonicalUrls.forEach { captureUnderstandingDao.insertCanonicalUrl(it) }
+            evidenceBundles.forEach { captureUnderstandingDao.insertEvidenceBundle(it) }
+            jobs.forEach { captureUnderstandingDao.insertUnderstandingJob(it) }
+            understandings.forEach { captureUnderstandingDao.insertCaptureUnderstanding(it) }
+            feedback.forEach { captureUnderstandingDao.insertCorrectionFeedback(it) }
+            policyOverrides.forEach { captureUnderstandingDao.upsertDepthPolicyOverride(it) }
+            invalidations.forEach { captureUnderstandingDao.insertDeletionInvalidation(it) }
+            auditEntries.forEach { auditDao.insert(it) }
+        }
+    }
+
+    override suspend fun getCurrentSourceIdentity(captureId: String): SourceIdentityEntity? =
+        captureUnderstandingDao.currentSourceIdentity(captureId)
+
+    override suspend fun getCurrentCaptureUnderstanding(captureId: String): CaptureUnderstandingEntity? =
+        captureUnderstandingDao.currentUnderstanding(captureId)
+
+    override suspend fun listEvidencePage(
+        captureId: String,
+        limit: Int,
+        offset: Int
+    ): List<EvidenceBundleEntity> = captureUnderstandingDao.evidencePage(captureId, limit, offset)
+
+    override suspend fun countEvidence(captureId: String): Int =
+        captureUnderstandingDao.evidenceCount(captureId)
+
+    override suspend fun getLatestCaptureUnderstandingOverride(
+        captureId: String
+    ): UnderstandingDepthPolicyOverrideEntity? =
+        captureUnderstandingDao.latestCaptureOverride(captureId)
+
+    override suspend fun getLatestDomainSuppression(
+        domainSuppressionKey: String
+    ): UnderstandingDepthPolicyOverrideEntity? =
+        captureUnderstandingDao.latestDomainSuppression(domainSuppressionKey)
+
+    override suspend fun updateUnderstandingJobStatus(
+        jobId: String,
+        status: UnderstandingJobStatus,
+        attemptCount: Int,
+        traceIdsJson: String,
+        failureCode: String?,
+        userVisibleReason: String?,
+        startedAt: Long?,
+        finishedAt: Long?
+    ): Int = captureUnderstandingDao.updateJobStatus(
+        jobId = jobId,
+        status = status,
+        attemptCount = attemptCount,
+        traceIdsJson = traceIdsJson,
+        failureCode = failureCode,
+        userVisibleReason = userVisibleReason,
+        startedAt = startedAt,
+        finishedAt = finishedAt
+    )
+
+    override suspend fun invalidateCaptureUnderstandingRecords(
+        captureId: String,
+        invalidatedAt: Long,
+        invalidation: DeletionInvalidationEntity,
+        auditEntry: AuditLogEntryEntity?
+    ): Int {
+        var affected = 0
+        database.withTransaction {
+            affected += captureUnderstandingDao.invalidateSourceIdentities(captureId, invalidatedAt)
+            affected += captureUnderstandingDao.invalidateCanonicalUrls(captureId, invalidatedAt)
+            affected += captureUnderstandingDao.invalidateEvidence(captureId, invalidatedAt)
+            affected += captureUnderstandingDao.invalidateJobs(captureId, invalidatedAt)
+            affected += captureUnderstandingDao.invalidateUnderstandings(captureId, invalidatedAt)
+            captureUnderstandingDao.insertDeletionInvalidation(invalidation)
+            if (auditEntry != null) auditDao.insert(auditEntry)
+        }
+        return affected
     }
 
     override suspend fun countAll(): Int = envelopeDao.countAll()

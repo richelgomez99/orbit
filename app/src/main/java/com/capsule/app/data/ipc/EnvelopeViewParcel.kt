@@ -42,7 +42,9 @@ data class EnvelopeViewParcel(
     /** T064 (003 US2) — derived to-do JSON: `{items:[…], derivedFromProposalId}`. Null for non-todo envelopes. */
     val todoMetaJson: String? = null,
     /** User-facing foreground app label captured from Usage Access, e.g. "YouTube". */
-    val sourceAppLabel: String? = null
+    val sourceAppLabel: String? = null,
+    /** 004 — compact, content-free understanding state for detail/list surfaces. */
+    val captureUnderstandingSummary: CaptureUnderstandingSummaryParcel? = null
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -67,7 +69,11 @@ data class EnvelopeViewParcel(
         canonicalUrl = parcel.readString(),
         deletedAtMillis = parcel.readLong().takeIf { it != 0L },
         todoMetaJson = parcel.readString(),
-        sourceAppLabel = parcel.readString()
+        sourceAppLabel = parcel.readString(),
+        captureUnderstandingSummary = parcel.readParcelable(
+            CaptureUnderstandingSummaryParcel::class.java.classLoader,
+            CaptureUnderstandingSummaryParcel::class.java
+        )
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -93,6 +99,7 @@ data class EnvelopeViewParcel(
         parcel.writeLong(deletedAtMillis ?: 0L)
         parcel.writeString(todoMetaJson)
         parcel.writeString(sourceAppLabel)
+        parcel.writeParcelable(captureUnderstandingSummary, flags)
     }
 
     override fun describeContents(): Int = 0

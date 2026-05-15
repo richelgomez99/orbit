@@ -339,3 +339,213 @@ internal val MIGRATION_6_7: Migration = object : Migration(6, 7) {
         )
     }
 }
+
+/** v8 — spec 004 Capture Understanding derived-record substrate. */
+internal val MIGRATION_7_8: Migration = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS source_identity (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                version INTEGER NOT NULL,
+                providerKey TEXT,
+                providerLabel TEXT,
+                originAppLabel TEXT,
+                genericCategory TEXT,
+                displayLabel TEXT NOT NULL,
+                secondaryLabel TEXT,
+                glyphKind TEXT NOT NULL,
+                confidence REAL,
+                evidenceIdsJson TEXT NOT NULL,
+                limitationsJson TEXT NOT NULL,
+                resolverVersion INTEGER NOT NULL,
+                createdAt INTEGER NOT NULL,
+                supersededAt INTEGER,
+                invalidatedAt INTEGER,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_source_identity_captureId ON source_identity(captureId)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_source_identity_captureId_version ON source_identity(captureId, version)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_source_identity_captureId_invalidatedAt_supersededAt ON source_identity(captureId, invalidatedAt, supersededAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_source_identity_providerKey ON source_identity(providerKey)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS canonical_url (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                originalUrl TEXT NOT NULL,
+                normalizedUrl TEXT NOT NULL,
+                canonicalUrlHash TEXT NOT NULL,
+                role TEXT NOT NULL,
+                providerFamily TEXT,
+                host TEXT,
+                normalizationVersion INTEGER NOT NULL,
+                detectedAt INTEGER NOT NULL,
+                hydratedAt INTEGER,
+                isEligibleForDuplicateMatching INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_canonical_url_captureId ON canonical_url(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_canonical_url_canonicalUrlHash ON canonical_url(canonicalUrlHash)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_canonical_url_captureId_role_invalidatedAt ON canonical_url(captureId, role, invalidatedAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_canonical_url_canonicalUrlHash_isEligibleForDuplicateMatching ON canonical_url(canonicalUrlHash, isEligibleForDuplicateMatching)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_canonical_url_host ON canonical_url(host)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS evidence_bundle (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                kind TEXT NOT NULL,
+                sourceReference TEXT,
+                acquisitionDepth TEXT NOT NULL,
+                acquisitionMethod TEXT NOT NULL,
+                confidence REAL,
+                contentHash TEXT,
+                retentionClass TEXT NOT NULL,
+                status TEXT NOT NULL,
+                limitationsJson TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_evidence_bundle_captureId ON evidence_bundle(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_evidence_bundle_captureId_status_invalidatedAt ON evidence_bundle(captureId, status, invalidatedAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_evidence_bundle_kind ON evidence_bundle(kind)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_evidence_bundle_sourceReference ON evidence_bundle(sourceReference)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS understanding_depth_policy_override (
+                id TEXT NOT NULL PRIMARY KEY,
+                scope TEXT NOT NULL,
+                captureId TEXT,
+                depth TEXT NOT NULL,
+                overrideKind TEXT,
+                domainSuppressionKey TEXT,
+                cloudAllowed INTEGER NOT NULL,
+                reason TEXT,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_depth_policy_override_captureId ON understanding_depth_policy_override(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_depth_policy_override_domainSuppressionKey ON understanding_depth_policy_override(domainSuppressionKey)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_depth_policy_override_scope_domainSuppressionKey_updatedAt ON understanding_depth_policy_override(scope, domainSuppressionKey, updatedAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_depth_policy_override_captureId_updatedAt ON understanding_depth_policy_override(captureId, updatedAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS understanding_job (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                requestedDepth TEXT NOT NULL,
+                effectiveDepth TEXT NOT NULL,
+                status TEXT NOT NULL,
+                policyDecision TEXT NOT NULL,
+                retryEligibility TEXT NOT NULL,
+                attemptCount INTEGER NOT NULL,
+                maxAttempts INTEGER NOT NULL,
+                traceIdsJson TEXT NOT NULL,
+                failureCode TEXT,
+                userVisibleReason TEXT,
+                startedAt INTEGER,
+                finishedAt INTEGER,
+                createdAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_job_captureId ON understanding_job(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_job_captureId_status_createdAt ON understanding_job(captureId, status, createdAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_understanding_job_policyDecision ON understanding_job(policyDecision)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS capture_understanding (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                jobId TEXT,
+                version INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                title TEXT,
+                compactSummary TEXT,
+                basedOnEvidenceIdsJson TEXT NOT NULL,
+                sourceIdentityId TEXT,
+                confidence REAL,
+                limitationsJson TEXT NOT NULL,
+                depthUsed TEXT NOT NULL,
+                extractorProvenance TEXT,
+                producedAt INTEGER NOT NULL,
+                supersededAt INTEGER,
+                invalidatedAt INTEGER,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE,
+                FOREIGN KEY(jobId) REFERENCES understanding_job(id) ON DELETE SET NULL,
+                FOREIGN KEY(sourceIdentityId) REFERENCES source_identity(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_captureId ON capture_understanding(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_jobId ON capture_understanding(jobId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_sourceIdentityId ON capture_understanding(sourceIdentityId)")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_capture_understanding_captureId_version ON capture_understanding(captureId, version)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_captureId_status_invalidatedAt_supersededAt ON capture_understanding(captureId, status, invalidatedAt, supersededAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS correction_feedback (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                understandingId TEXT,
+                sourceIdentityId TEXT,
+                feedbackKind TEXT NOT NULL,
+                targetReference TEXT,
+                note TEXT,
+                createdAt INTEGER NOT NULL,
+                resolvedByUnderstandingId TEXT,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE,
+                FOREIGN KEY(understandingId) REFERENCES capture_understanding(id) ON DELETE SET NULL,
+                FOREIGN KEY(sourceIdentityId) REFERENCES source_identity(id) ON DELETE SET NULL,
+                FOREIGN KEY(resolvedByUnderstandingId) REFERENCES capture_understanding(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_correction_feedback_captureId ON correction_feedback(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_correction_feedback_understandingId ON correction_feedback(understandingId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_correction_feedback_sourceIdentityId ON correction_feedback(sourceIdentityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_correction_feedback_resolvedByUnderstandingId ON correction_feedback(resolvedByUnderstandingId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_correction_feedback_captureId_feedbackKind_createdAt ON correction_feedback(captureId, feedbackKind, createdAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS deletion_invalidation (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                reason TEXT NOT NULL,
+                affectedRecordRefsJson TEXT NOT NULL,
+                downstreamEligibility TEXT NOT NULL,
+                auditTraceId TEXT,
+                createdAt INTEGER NOT NULL,
+                cloudReceiptStatus TEXT,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_deletion_invalidation_captureId ON deletion_invalidation(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_deletion_invalidation_captureId_createdAt ON deletion_invalidation(captureId, createdAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_deletion_invalidation_auditTraceId ON deletion_invalidation(auditTraceId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_deletion_invalidation_cloudReceiptStatus ON deletion_invalidation(cloudReceiptStatus)")
+    }
+}

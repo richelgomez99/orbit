@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.capsule.app.data.ipc.AuditEntryParcel
+import com.capsule.app.data.ipc.CaptureUnderstandingSummaryParcel
 import com.capsule.app.data.ipc.EnvelopeViewParcel
 import com.capsule.app.data.model.Intent
 import com.capsule.app.data.model.toIntentOrAmbiguous
@@ -240,6 +241,7 @@ fun EnvelopeDetailScreen(
                 is EnvelopeDetailUiState.Error -> ErrorBox(s.message)
                 is EnvelopeDetailUiState.Ready -> ReadyContent(
                     envelope = s.envelope,
+                    understanding = s.understanding,
                     latestNote = s.latestNote,
                     intentHistory = s.intentHistory,
                     auditTrail = s.auditTrail,
@@ -428,6 +430,7 @@ private fun QuietEnvelopeDetailScreen(
             is EnvelopeDetailUiState.Error -> QuietErrorBox(state.message)
             is EnvelopeDetailUiState.Ready -> QuietReadyContent(
                 envelope = state.envelope,
+                understanding = state.understanding,
                 intentHistory = state.intentHistory,
                 auditTrail = state.auditTrail,
                 onReassign = onReassign,
@@ -502,6 +505,7 @@ private fun QuietErrorBox(message: String) {
 @Composable
 private fun QuietReadyContent(
     envelope: EnvelopeViewParcel,
+    understanding: CaptureUnderstandingSummaryParcel?,
     intentHistory: List<IntentHistoryRow>,
     auditTrail: List<AuditEntryParcel>,
     onReassign: (Intent) -> Unit,
@@ -514,6 +518,9 @@ private fun QuietReadyContent(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item(key = "source") { QuietSourceHeader(envelope) }
+        if (understanding != null) {
+            item(key = "understanding") { QuietUnderstandingSection(understanding) }
+        }
         item(key = "intent") {
             QuietDetailSection(label = "Intent") {
                 IntentChipPicker(
@@ -681,6 +688,37 @@ private fun QuietDetailSection(
     }
 }
 
+@Composable
+private fun QuietUnderstandingSection(summary: CaptureUnderstandingSummaryParcel) {
+    QuietDetailSection(label = "Understanding") {
+        Text(
+            text = buildSourceLine(summary),
+            color = QuietSettingsColors.Cream,
+            style = TextStyle(
+                fontFamily = CapsuleType.QuietAlmanac.bodySans,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.sp,
+            ),
+        )
+        summary.title?.takeIf { it.isNotBlank() }?.let {
+            Text(text = it, color = QuietSettingsColors.Cream, style = quietBodyStyle())
+        }
+        summary.compactSummary?.takeIf { it.isNotBlank() }?.let {
+            Text(text = it, color = QuietSettingsColors.CreamDim, style = quietBodyStyle())
+        }
+        Text(
+            text = buildEvidenceLine(summary),
+            color = QuietSettingsColors.CreamDim,
+            style = quietBodyStyle(),
+        )
+        summary.limitationSummary?.takeIf { it.isNotBlank() }?.let {
+            Text(text = it, color = QuietSettingsColors.Red, style = quietBodyStyle())
+        }
+    }
+}
+
 private fun EnvelopeViewParcel.toDetailSourceGlyphKind(): SourceGlyphKind =
     SourceIdentityResolver.glyphKind(
         textContent = textContent,
@@ -814,6 +852,7 @@ private fun ErrorBox(message: String) {
 @Composable
 private fun ReadyContent(
     envelope: EnvelopeViewParcel,
+    understanding: CaptureUnderstandingSummaryParcel?,
     latestNote: String?,
     intentHistory: List<IntentHistoryRow>,
     auditTrail: List<AuditEntryParcel>,
@@ -842,6 +881,10 @@ private fun ReadyContent(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+
+        if (understanding != null) {
+            item(key = "understanding") { UnderstandingInsightSection(understanding) }
         }
 
         item(key = "note") {
@@ -991,6 +1034,59 @@ private fun NoteBlock(note: String?, onEdit: () -> Unit) {
 }
 
 @Composable
+private fun UnderstandingInsightSection(summary: CaptureUnderstandingSummaryParcel) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = "Understanding",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = buildSourceLine(summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            summary.title?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            summary.compactSummary?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = buildEvidenceLine(summary),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            summary.limitationSummary?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun DomainChip(domain: String, onTap: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
@@ -1090,6 +1186,21 @@ private fun String.humanize(): String =
     lowercase(Locale.ROOT)
         .replace('_', ' ')
         .replaceFirstChar { it.titlecase(Locale.ROOT) }
+
+private fun buildSourceLine(summary: CaptureUnderstandingSummaryParcel): String = buildString {
+    append(summary.sourceLabel)
+    summary.secondarySourceLabel?.takeIf { it.isNotBlank() }?.let { append(" · ").append(it) }
+    summary.confidenceBand?.takeIf { it.isNotBlank() }?.let { append(" · ").append(it.humanize()) }
+}
+
+private fun buildEvidenceLine(summary: CaptureUnderstandingSummaryParcel): String = buildString {
+    append(summary.status.humanize())
+    append(" · ").append(summary.depthUsed.humanize())
+    append(" · ").append(summary.evidenceSummaryCount).append(" evidence")
+    if (summary.limitationCodes.isNotEmpty()) {
+        append(" · ").append(summary.limitationCodes.take(3).joinToString { it.humanize() })
+    }
+}
 
 private fun buildDetailSubtitle(env: EnvelopeViewParcel): String {
     val app = env.appCategory.let {

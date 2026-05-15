@@ -27,8 +27,9 @@ class ProviderMetadataResolver(
 ) {
 
     fun resolve(url: String): FetchResultParcel? {
-        if (!isYouTubeUrl(url)) return null
-        return resolveYouTube(url)
+        val candidate = url.withDefaultScheme()
+        if (!isYouTubeUrl(candidate)) return null
+        return resolveYouTube(candidate)
     }
 
     private fun resolveYouTube(url: String): FetchResultParcel {
@@ -133,7 +134,7 @@ class ProviderMetadataResolver(
         private val JSON = Json { ignoreUnknownKeys = true }
 
         internal fun isYouTubeUrl(url: String): Boolean {
-            val host = runCatching { URI(url).host?.lowercase()?.trimEnd('.') }.getOrNull()
+            val host = runCatching { URI(url.withDefaultScheme()).host?.lowercase()?.trimEnd('.') }.getOrNull()
                 ?: return false
             return host == "youtu.be" ||
                 host == "youtube.com" ||
@@ -141,5 +142,8 @@ class ProviderMetadataResolver(
                 host == "youtube-nocookie.com" ||
                 host.endsWith(".youtube-nocookie.com")
         }
+
+        private fun String.withDefaultScheme(): String =
+            if (contains("://")) this else "https://$this"
     }
 }

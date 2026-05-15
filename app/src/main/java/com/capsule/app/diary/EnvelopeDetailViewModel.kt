@@ -62,6 +62,7 @@ class EnvelopeDetailViewModel(
             } ?: emptyList()
             _state.value = EnvelopeDetailUiState.Ready(
                 envelope = envelope,
+                understanding = envelope.captureUnderstandingSummary,
                 latestNote = latestNote,
                 intentHistory = parseIntentHistory(envelope.intentHistoryJson),
                 auditTrail = audit

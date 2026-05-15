@@ -1,6 +1,7 @@
 package com.capsule.app.diary
 
 import com.capsule.app.data.ipc.AuditEntryParcel
+import com.capsule.app.data.ipc.CaptureUnderstandingSummaryParcel
 import com.capsule.app.data.ipc.EnvelopeViewParcel
 
 /**
@@ -15,6 +16,7 @@ sealed interface EnvelopeDetailUiState {
     data class Error(val message: String) : EnvelopeDetailUiState
     data class Ready(
         val envelope: EnvelopeViewParcel,
+        val understanding: CaptureUnderstandingSummaryParcel?,
         val latestNote: String?,
         val intentHistory: List<IntentHistoryRow>,
         val auditTrail: List<AuditEntryParcel>
