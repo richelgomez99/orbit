@@ -34,7 +34,7 @@ data).
 ```bash
 ./gradlew :app:installDebug
 adb logcat -c
-adb shell am start -n com.capsule.app/.diary.DiaryActivity
+adb shell am start -n com.orbit.app/.diary.DiaryActivity
 adb logcat | grep -E "AppFunction|Migration"
 ```
 
@@ -42,16 +42,16 @@ Expect:
 
 ```
 Migration: v1 → v2 OK (4 tables created, 1 column added)
-AppFunctionRegistry: registered com.capsule.app.action.calendar_insert v1
-AppFunctionRegistry: registered com.capsule.app.action.todo_add v1
-AppFunctionRegistry: registered com.capsule.app.action.share v1
+AppFunctionRegistry: registered com.orbit.app.action.calendar_insert v1
+AppFunctionRegistry: registered com.orbit.app.action.todo_add v1
+AppFunctionRegistry: registered com.orbit.app.action.share v1
 ```
 
 Verify the new tables exist:
 
 ```bash
-adb shell run-as com.capsule.app sqlite3 \
-  /data/data/com.capsule.app/databases/orbit.db \
+adb shell run-as com.orbit.app sqlite3 \
+  /data/data/com.orbit.app/databases/orbit.db \
   ".tables"
 ```
 
@@ -88,8 +88,8 @@ FR-003-006, FR-003-008.
    appears: **"+ Add to calendar — UA437 May 22 14:15"**.
 6. Verify in audit:
    ```bash
-   adb shell run-as com.capsule.app sqlite3 \
-     /data/data/com.capsule.app/databases/orbit.db \
+   adb shell run-as com.orbit.app sqlite3 \
+     /data/data/com.orbit.app/databases/orbit.db \
      "SELECT action, description FROM audit_log
       WHERE action IN ('ACTION_PROPOSED','CONTINUATION_ENQUEUED')
       ORDER BY createdAt DESC LIMIT 5;"
@@ -105,7 +105,7 @@ FR-003-006, FR-003-008.
 10. Save the event in Calendar.
 11. Audit row check:
     ```bash
-    adb shell run-as com.capsule.app sqlite3 ... \
+    adb shell run-as com.orbit.app sqlite3 ... \
       "SELECT action, description FROM audit_log
        WHERE action LIKE 'ACTION_%'
        ORDER BY createdAt DESC LIMIT 5;"
@@ -114,11 +114,11 @@ FR-003-006, FR-003-008.
     `ACTION_PROPOSED`.
 12. Skill stats:
     ```bash
-    adb shell run-as com.capsule.app sqlite3 ... \
+    adb shell run-as com.orbit.app sqlite3 ... \
       "SELECT skillId, outcome, latencyMs FROM skill_usage
        ORDER BY invokedAt DESC LIMIT 1;"
     ```
-    Expect `com.capsule.app.action.calendar_insert | SUCCESS | <ms>`.
+    Expect `com.orbit.app.action.calendar_insert | SUCCESS | <ms>`.
 
 **Pass criteria**:
 
@@ -189,7 +189,7 @@ After triggering:
    formed); below that: chronological feed.
 4. Audit:
    ```bash
-   adb shell run-as com.capsule.app sqlite3 ... \
+   adb shell run-as com.orbit.app sqlite3 ... \
      "SELECT action, description FROM audit_log
       WHERE action LIKE 'DIGEST_%' ORDER BY createdAt DESC LIMIT 3;"
    ```
@@ -280,11 +280,11 @@ checks below. Each maps to a constitution principle.
 
 | # | Principle | Verification |
 |---|---|---|
-| I | Local-first | `adb shell dumpsys netstats detail \| grep com.capsule.app` after running all golden paths. Expect the `:capture`, `:ml`, `:ui` UIDs to show 0 bytes RX/TX. |
+| I | Local-first | `adb shell dumpsys netstats detail \| grep com.orbit.app` after running all golden paths. Expect the `:capture`, `:ml`, `:ui` UIDs to show 0 bytes RX/TX. |
 | II | Effortless capture | The seal path latency p95 is unchanged from 002 (run `latency-bench` test suite). |
 | III | Intent before artifact | Source envelope's `intent` and `intentHistoryJson` unchanged across all action flows. Verified by `ActionDoesNotMutateEnvelopeTest`. |
 | IV | Continuations | `ActionExtractionWorker` runs only when constraints met (test driver verifies). `WeeklyDigestWorker` same. |
-| V | Under-deliver on noise | Zero notifications from 003 code paths. `adb shell dumpsys notification \| grep capsule` shows only the FGS notification. |
+| V | Under-deliver on noise | Zero notifications from 003 code paths. `adb shell dumpsys notification \| grep orbit` shows only the FGS notification. |
 | VI | Privilege separation | `:capture`'s manifest declares no INTERNET. The lint rule passes. `NoNetworkDuringActionExecutionTest` passes. |
 | VII | Context beyond content | No new signals collected. `state_snapshot` schema unchanged. |
 | VIII | Collect only what you use | Each new column populates a v1.1-visible feature. Verified by reading Settings → Actions and seeing every column rendered. |

@@ -9,20 +9,20 @@
 
 ### Start Service
 
-**Action**: `com.capsule.app.action.START_OVERLAY`
+**Action**: `com.orbit.app.action.START_OVERLAY`
 **Extras**: None
 **Caller**: `MainActivity` (user toggles ON)
 **Preconditions**:
 - `Settings.canDrawOverlays(context)` returns `true`
 - `POST_NOTIFICATIONS` permission granted (API 33+)
 **Postconditions**:
-- Foreground notification posted on channel `capsule_overlay`
+- Foreground notification posted on channel `orbit_overlay`
 - Overlay window added to WindowManager with `TYPE_APPLICATION_OVERLAY`
 - OverlayLifecycleOwner moved to `ON_RESUME`
 
 ### Stop Service
 
-**Action**: `com.capsule.app.action.STOP_OVERLAY`
+**Action**: `com.orbit.app.action.STOP_OVERLAY`
 **Extras**: None
 **Caller**: `MainActivity` (user toggles OFF) or foreground notification action
 **Postconditions**:
@@ -32,7 +32,7 @@
 
 ### Restart from AlarmManager
 
-**Action**: `com.capsule.app.action.RESTART_OVERLAY`
+**Action**: `com.orbit.app.action.RESTART_OVERLAY`
 **Extras**: None
 **Caller**: `RestartReceiver` (BroadcastReceiver triggered by AlarmManager)
 **Preconditions**:
@@ -47,10 +47,10 @@
 
 ## 2. Notification Channel
 
-**Channel ID**: `capsule_overlay`
-**Name**: `Capsule Overlay`
+**Channel ID**: `orbit_overlay`
+**Name**: `Orbit Overlay`
 **Importance**: `NotificationManager.IMPORTANCE_LOW`
-**Description**: `Keeps Capsule's floating overlay running`
+**Description**: `Keeps Orbit's floating overlay running`
 **Sound**: None
 **Vibrate**: None
 **Badge**: Hidden
@@ -58,9 +58,9 @@
 ### Foreground Notification
 
 **ID**: `1` (constant — single notification)
-**Content Title**: `Capsule Active`
+**Content Title**: `Orbit Active`
 **Content Text**: `Tap bubble to capture clipboard`
-**Small Icon**: `R.drawable.ic_capsule_notification` (placeholder in Phase 1)
+**Small Icon**: `R.drawable.ic_orbit_notification` (placeholder in Phase 1)
 **Actions**:
 - `Stop` → sends `STOP_OVERLAY` intent to service
 

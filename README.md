@@ -1,122 +1,209 @@
 # Orbit
 
-**A private, local-first personal agent for Android.**
+**A mobile attention memory system for Android.**
 
-> Think OpenClaw, but on the device that's with you all day — and the OS is the sandbox.
+Your phone is full of things you saved because they mattered for a second: screenshots, copied text, links, receipts, recipes, travel details, group-chat plans, product ideas, articles, places, tasks, and half-formed thoughts.
 
-Orbit catches what you screenshot, copy, and save across every app on your phone, understands it on-device, and helps you act on it — a daily diary of what your attention was actually on, calendar events extracted from flight confirmations, to-dos surfaced from screenshots, and eventually natural-language answers across everything you've ever saved.
+Then they disappear into folders, clipboards, browser tabs, and apps that do not talk to each other.
 
-**Nothing leaves your device unless you opt in.**
+Orbit turns your screenshot graveyard into a quiet list of things that are still worth doing. It captures from anywhere, preserves why each thing mattered, brings it back through a quiet Diary, and helps close loops with user-confirmed actions.
 
----
+It is local-first, not local-only. The encrypted on-device corpus is the source of truth. Orbit stays in Basic local mode until the user asks for more context; Smart and Deep understanding can bring in richer local work, public enrichment, or cloud models, but only behind policy, budget, audit, deletion, and local fallback controls.
 
-## Status
-
-Building in public as 1 of 500 builders in **[Canopy by Founders, Inc.](https://f.inc/canopy)** — a 5-week incubator for "obsessed builders." Demo Day: **May 22, 2026**.
-
-| Milestone | State | Shipped |
-|-----------|-------|---------|
-| **Capture overlay** (the always-on bubble) | ✅ Shipped | Apr 18 |
-| **Daily diary** (v1 target) | 🔨 Building | Target: May 22 |
-| **Orbit Actions** (v1.1) — calendar + to-do extraction | 📋 Spec'd | Post-v1 |
-| **Ask Orbit** (v1.2) — natural-language Q&A | 📋 Spec'd | Post-v1 |
-| **Knowledge graph** (v1.3) | 📋 Spec'd | Post-v1 |
+Repository: `https://github.com/richelgomez99/orbit`
 
 ---
 
-## Why Android, why now
+## The Product
 
-On **April 2, 2026**, Google previewed [**Gemini Nano 4**](https://android-developers.googleblog.com/2026/04/AI-Core-Developer-Preview.html) in the AICore Developer Preview — the next generation of on-device AI for Android.
+Orbit is built around a simple promise:
 
-- **4× faster** than the previous Nano
-- **60% less battery** per inference
-- **Multimodal**: text, image, audio
-- **140+ languages**
-- Two variants: Nano 4 **Fast** (speed) and Nano 4 **Full** (reasoning)
-- Forward-compatible: code written today ships the moment flagship devices get the model later in 2026
+> Save it fast. Orbit helps you finish it later.
 
-Orbit is being built against that preview. This isn't a bet on future AI — it's a bet on AI developers can touch right now, that consumers will have on their phones in months.
+The first version is not a chatbot. It is a closure tool for unfinished saves: the product surface should answer which screenshots and captures still need something from you, which can be marked resolved, and which should simply stay searchable.
 
----
+Orbit should be able to answer questions like:
 
-## The problem
+- What was that restaurant I saved from Instagram last week?
+- Which flight confirmation had the arrival time I need?
+- What have I been collecting about coding agents?
+- Which screenshots look like open loops I still need to handle?
+- What else did I save that relates to this article, person, project, or trip?
 
-Your phone is full of screenshots, copied text, recipes, articles, flight confirmations, voice notes, and group-chat snippets you saved because they mattered in the moment. They go nowhere. Your phone forgets them. You forget you ever cared.
-
-We've normalized building products that turn your attention into someone else's data and then give you nothing back in return. Orbit is the inverse: your attention compounds for *you*, on a device only you have access to, and the agent acts on it on your terms.
+And when something is actionable, Orbit should propose the next step without silently doing it: add this calendar event, draft this reminder, make this grocery list, summarize this research cluster, or turn these notes into follow-up questions.
 
 ---
 
-## The five-week roadmap
+## How Orbit Works
 
-| Version | What ships | Timing |
-|---------|-----------|--------|
-| **v1** | Floating capture bubble · daily diary · on-device intent classification · soft-delete & trash · URL-hash deduplication | **May 22, 2026** (Demo Day) |
-| **v1.1** | Orbit Actions — extract calendar events from confirmations, build to-dos from screenshots | Post-v1 |
-| **v1.2** | Ask Orbit — natural-language Q&A across your saves, with RAG on-device | Post-v1 |
-| **v1.3** | Private knowledge graph — compounds the longer you use it | Post-v1 |
-| **v2.0+** | Cloud, but on infrastructure *you* own — BYO LLM key, BYO Postgres. Local stays the source of truth, always. | Long-term |
+Orbit starts with capture and builds upward.
 
----
+1. **Capture from anywhere**
+   Save screenshots, copied text, URLs, shared content, and manual notes from Android.
 
-## Architecture at a glance
+2. **Preserve context**
+   Each capture carries time, source, intent, foreground context, activity context where available, and user feedback.
 
-**Core principles** (full list in [`.specify/memory/constitution.md`](./.specify/memory/constitution.md)):
+3. **Understand with evidence**
+   Orbit starts with Basic local understanding and records what it actually saw: content hashes, OCR, URL metadata, source identity, skipped work, failures, confidence limits, and the completion key needed to resolve the saved intent. Smart or Deep work only happens when the user escalates.
 
-1. Local-first supremacy — source of truth lives on-device, in SQLCipher
-2. Privilege separation by design — split processes for capture, ML, network, UI
-3. Intent before artifact — every save starts with *why*, not *what*
-4. Under-deliver on noise — Orbit stays quiet by default
-5. User-sovereign cloud escape hatch (LLM) — BYO API key, never Orbit's servers
-6. User-sovereign cloud storage — BYO database, local remains source of truth
-7. …and four more (audit-log transparency, accumulated corpus lock-in, continuations grow captures, cross-app intent graph)
+4. **Return through the Diary and Active Intent**
+   The Diary is the memory surface. Active Intent is the cleanup surface: not a screenshot list, but a focused queue of saves that may still need action.
 
-**Stack:**
+5. **Retrieve with citations**
+   Ask and search should answer from saved captures with links back to the source material and clear language when the evidence is thin.
 
-- **Language:** Kotlin, Jetpack Compose
-- **On-device AI:** Gemini Nano 4 (via AICore, from April preview) · ML Kit for OCR
-- **Storage:** Room + SQLCipher, Android Keystore for key wrapping
-- **Service model:** Foreground service with `specialUse` type for the overlay, WorkManager for retention + hydration workers
-- **IPC:** Four-process split (`:capture`, `:ml`, `:net`, `:ui`) wired via AIDL
+6. **Close loops with approval**
+   Actions and agent behavior are approval-first. Orbit can draft, suggest, and prepare. The user confirms before anything consequential happens.
 
 ---
 
-## Documentation
+## Current Focus
 
-The depth of the work lives here:
+The active foundation is **Capture Understanding**, now focused on **Active Intent cleanup**.
 
-| Doc | What it is |
-|-----|------------|
-| [`.specify/memory/constitution.md`](./.specify/memory/constitution.md) | The ten founding principles — what Orbit will and won't do |
-| [`.specify/memory/PRD.md`](./.specify/memory/PRD.md) | Product requirements: v1 scope + roadmap to v2.0 |
-| [`.specify/memory/design.md`](./.specify/memory/design.md) | Visual architecture: typography, color, motion, every UI surface for v1–v1.3. Includes the "Quiet Almanac" aesthetic and first-class Graphite dark mode. |
-| [`specs/001-core-capture-overlay/`](./specs/001-core-capture-overlay/) | Spec-kit breakdown of the capture overlay (the foundation that shipped) |
-| [`specs/002-intent-envelope-and-diary/`](./specs/002-intent-envelope-and-diary/) | Spec-kit breakdown of v1 (envelope model + daily diary) |
-| [`specs/002-intent-envelope-and-diary/quickstart.md`](./specs/002-intent-envelope-and-diary/quickstart.md) | Step-by-step acceptance walk-through for v1 on a physical device |
-| [`specs/003-orbit-actions/quickstart.md`](./specs/003-orbit-actions/quickstart.md) | **v1.1 Orbit Actions** — calendar / to-do / share AppFunctions + weekly Sunday digest, on-device only |
-| [`specs/004-ask-orbit/`](./specs/004-ask-orbit/) through [`007-knowledge-graph/`](./specs/007-knowledge-graph/) | Post-v1 spec stubs |
+A saved item is only useful if Orbit knows what it can truthfully say about it and what would let the user close the loop. The current work turns raw captures into inspectable, evidence-backed objects with a category, source identity, completion key, and active/resolved state.
 
----
+Basic mode is the default. The phone can capture, hash, OCR, identify local source context, and store evidence without deciding to chase more context on its own. Smart and Deep modes are user-triggered escalations for captures that deserve more work.
 
-## Who I'm looking to talk to
+That means:
 
-- **Android power users** who are tired of their phone being a one-way data pipeline for everyone but them
-- Builders working on **on-device AI**, **mobile-first agents**, or **privacy-respecting consumer products**
-- Anyone who's shipped a **fully privacy-respecting consumer product** (Signal, ProtonMail, Apple Health, Pixel on-device features, Arc) and figured out how to learn from users *without* surveilling them — I want to compare notes on the feedback-loop problem
-- Potential **co-founders** who want to build this with me past Demo Day
+- an Active Intent list for unresolved saved intent, grouped by useful categories like buy later, recipes, receipts, coupons, QR/tickets, places, gifts, read/watch later, chat actions, and maybe old or inactive
+- completion keys for each actionable category: product identity, ingredients, decoded QR payload, order ID, date/time/location, coupon code, canonical URL, place identity, or requested action
+- source identity that prefers provider URL evidence, then foreground app label, then generic category, then unknown
+- content-hash matching for exact or near-identical captures before model interpretation
+- canonical URLs for deduplication, provenance, refresh, retrieval, and deletion
+- evidence bundles for OCR, metadata, public fetches, parser output, model attempts, skipped work, and failures
+- Basic by default, with Smart and Deep escalation only when the user requests more context
+- summaries that expose limitations when content is blocked, private, visual-only, metadata-only, or unavailable
+- correction feedback for wrong source, wrong summary, bad relevance, or too much context
+- deletion and invalidation rules so stale derived understanding cannot outlive the original capture or leak into future answers/actions
+- no auto-delete and no default notification pressure; resolved items hide from Active Intent but remain searchable unless the user explicitly deletes them
 
-Reach out: [LinkedIn](https://www.linkedin.com/in/richelgomez) · or open an Issue on this repo
+This work comes before the larger agent. Orbit should not plan, answer, or act from a memory it cannot explain.
 
 ---
 
-## Built by
+## Product Stance
 
-[**Richel Gomez**](https://www.linkedin.com/in/richelgomez) — Implementation & Solutions Engineer, 1st place NYC AI Agents Hackathon, Overclock Accelerator Cohort 5, Canopy by Founders, Inc. cohort member.
+Orbit is not a local-only proof of concept, and it is not a cloud app pretending to be private.
 
-I had never built an Android app before Wednesday, April 15, 2026. Three days later, the capture overlay was shipped. This is what coding agents enable now — and what five weeks of heads-down focus at Founders, Inc. is about to produce.
+The stance is stricter and more useful:
+
+- **Local-first source of truth**: the phone owns the primary record.
+- **Cloud as capability layer**: remote models and storage are allowed when they are visible, budgeted, auditable, deletable, and reversible.
+- **Evidence before claims**: every summary, answer, relationship, and suggestion should trace back to what Orbit saw.
+- **Humility over hallucination**: sparse captures produce sparse claims. When Orbit is unsure, it should say so or ask.
+- **Quiet by default**: the product should reduce memory burden, not create notification pressure.
+- **User-confirmed action**: proposals can be intelligent; execution needs consent.
+
+---
+
+## What Exists Now
+
+| Area | State |
+|------|-------|
+| Capture overlay | Android foreground overlay, screenshot and clipboard capture foundations |
+| Intent envelope | Local model for why a capture was saved, with diary/audit plumbing |
+| Diary | Primary return surface for saved captures |
+| Actions | Calendar/todo/share-oriented action groundwork and approval boundaries |
+| Duplicate feedback | Already-saved feedback, notes, reclassify, and open-existing flows in progress |
+| Cloud gateway | Provider-routing and edge gateway baseline for controlled LLM use |
+| Capture understanding | Active build: Basic local defaults, Active Intent cleanup, completion keys, content-hash matching, source identity, evidence, canonical URLs, user-triggered escalation, limitations, deletion safety |
+
+---
+
+## Roadmap
+
+| Order | Work | Why it matters |
+|------:|------|----------------|
+| 004 | `004-capture-understanding` | Turn saved screenshots and captures into evidence-backed Active Intent |
+| 005 | `005-retrieval-and-ask-citations` | Answer from the corpus without losing provenance |
+| 006 | `006-approval-action-runtime` | Turn captures into confirmed calendar events, todos, drafts, and follow-ups |
+| 007 | `007-memory-candidates-inspector` | Promote, edit, suppress, export, and delete memories intentionally |
+| 008 | `008-cloud-controls-storage-budgeting` | Make cloud help visible, limited, auditable, and reversible |
+| 009 | `009-kg-backend-poc` | Test graph memory behind adapter boundaries after the memory model exists |
+| 010 | `010-agent-coordinator` | Add a single approval-first coordinator over typed Orbit capabilities |
+| 011 | `011-manual-compose` | Let users intentionally create or edit captures without relying on the overlay |
+| 012 | `012-resolution-semantics` | Represent duplicates, conflicts, stale facts, and merged meanings cleanly |
+
+---
+
+## Architecture
+
+Orbit is an Android-first system with explicit boundaries between capture, storage, model work, network work, and UI.
+
+**Android app**
+
+- Kotlin 2.x
+- Jetpack Compose
+- Room + SQLCipher
+- Android Keystore
+- WorkManager
+- AIDL/Binder process boundaries
+- ML Kit OCR and local model integrations where available
+
+**Cloud and gateway**
+
+- Vercel/Supabase edge gateway for LLM routing
+- Supabase Postgres 15 + pgvector for planned cloud storage and retrieval work
+- provider-agnostic model routing behind app policy
+- content-minimized audit traces for cloud/model attempts
+
+**Boundary rules**
+
+- App package: `com.orbit.app`
+- Network clients live under `com.orbit.app.net.*`
+- Local database: `OrbitDatabase`
+- IPC payloads carry IDs, statuses, labels, summaries, page tokens, and policy decisions
+- IPC payloads do not carry raw HTML, screenshots, full text, embeddings, prompts, model responses, or full evidence bundles
+- Derived understanding invalidates when its capture, content hash, canonical URL, evidence, or user correction changes, so stale summaries cannot feed hallucinated answers, relationships, or actions
+
+---
+
+## Repository Map
+
+| Path | Purpose |
+|------|---------|
+| `app/` | Android application |
+| `build-logic/lint/` | Custom architecture lint checks |
+| `specs/` | Feature specs, plans, tasks, contracts, and research |
+| `docs/` | Product audits, architecture notes, planning docs, and follow-ups |
+| `supabase/` | Migrations, SQL tests, and edge gateway code |
+| `.specify/memory/` | Project constitution and long-lived product context |
+
+---
+
+## Development
+
+Android checks:
+
+```sh
+./gradlew compileDebugKotlin
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+```
+
+Gateway checks:
+
+```sh
+cd supabase/functions/llm_gateway
+npm run typecheck
+npm run test:unit
+```
+
+Some Android flows require a physical device or emulator because Orbit depends on overlay permissions, foreground app context, screenshots, clipboard behavior, and app process boundaries.
+
+---
+
+## Built By
+
+[Richel Gomez](https://www.linkedin.com/in/richelgomez)
+
+Orbit is being built in public through fast product, architecture, and implementation passes. The current work is about trust: making sure every future intelligent feature is grounded in captures the user can inspect, correct, delete, and understand.
 
 ---
 
 ## License
 
-All rights reserved, for now. License decision will be made at/after Demo Day (May 22, 2026) once the v1 scope is shipped and the post-v1 architecture (BYOK LLM, BYOC storage) is stable.
+All rights reserved for now.

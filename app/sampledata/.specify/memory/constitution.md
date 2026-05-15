@@ -20,7 +20,7 @@
   Follow-up TODOs: none
 -->
 
-# Capsule Constitution
+# Orbit Constitution
 
 ## Core Principles
 
@@ -30,7 +30,7 @@ All user data — clipboard captures, text snippets, embeddings, and
 metadata — MUST be stored exclusively on-device by default. No data
 leaves the device unless the user explicitly opts into a cloud-backed
 intelligence tier and provides affirmative consent per session.
-Rationale: Capsule is a Personal Knowledge Management agent. User trust
+Rationale: Orbit is a Personal Knowledge Management agent. User trust
 is the product. Every architectural decision MUST default to the most
 private option and require explicit user action to relax that posture.
 
@@ -55,7 +55,7 @@ optimization guides surfaced to the user, and re-scheduling via
 AlarmManager on task removal. The system MUST NOT assume the OS will
 honor foreground service priority.
 Rationale: Android OEM skins routinely kill foreground services.
-Capsule's core value proposition (persistent overlay) fails entirely if
+Orbit's core value proposition (persistent overlay) fails entirely if
 the service dies silently.
 
 ### IV. Policy as Architecture
@@ -79,7 +79,7 @@ Tier A devices MUST receive full capture and persistence without AI.
 Tier B devices MUST support on-device embeddings and vector search.
 Tier C devices MAY run local SLM inference. No tier may crash or ANR
 due to features designed for a higher tier.
-Rationale: Capsule targets Android 13+ which spans a wide hardware
+Rationale: Orbit targets Android 13+ which spans a wide hardware
 range. A flagship-only app excludes the majority of the addressable
 market.
 
@@ -97,7 +97,7 @@ all silently break, producing non-deterministic overlay behavior.
 
 ### VII. Explicit Capture Only
 
-Capsule MUST NOT read clipboard, scrape browser content, or capture
+Orbit MUST NOT read clipboard, scrape browser content, or capture
 any user data without an explicit user-initiated action (bubble tap,
 share intent, or manual note entry). Background polling, invisible
 overlays, ADB-granted permissions, and passive logging are prohibited.
@@ -143,7 +143,7 @@ Commits follow Conventional Commits: `feat:`, `fix:`, `docs:`,
 ## Governance
 
 This constitution supersedes all other development practices for the
-Capsule project. Amendments require:
+Orbit project. Amendments require:
 
 1. A written proposal documenting the change and its rationale.
 2. Impact analysis against all seven principles.

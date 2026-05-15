@@ -1,5 +1,7 @@
 # Feature Specification: Manual Envelope Composition — "Jot a Note"
 
+**Legacy status (2026-05-13)**: Archived input for the roadmap rebaseline. This draft contains useful product intent, but it is not an active Speckit source until regenerated. During `docs/product-truth-reset`, preserve this file under an archive/legacy path and recreate slot `011` as the refreshed `011-manual-compose` branch.
+
 **Feature Branch**: `011-manual-compose`
 **Created**: 2026-04-21
 **Status**: Draft

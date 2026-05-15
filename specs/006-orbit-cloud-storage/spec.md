@@ -1,5 +1,7 @@
 # Orbit Cloud Storage (v1.1)
 
+**Legacy status (2026-05-13)**: Archived input for the roadmap rebaseline. This is not the active `006` Speckit source anymore. During `docs/product-truth-reset`, preserve this draft under an archive/legacy path and reuse slot `006` for `006-approval-action-runtime`; carry storage, sync, export, deletion, and tenant-isolation ideas forward into `008-cloud-controls-storage-budgeting`.
+
 **Status**: DRAFT — targets v1.1
 **Depends on**: spec 002 complete (EnvelopeStorageBackend abstraction from tasks 002/T025c–T025d)
 **Governing document**: `.specify/memory/constitution.md` — implements Principle X Model A, Principles XI and XII
@@ -420,9 +422,9 @@ Example pattern appendix to be maintained alongside this spec.
 - 005 Orbit-managed LLM proxy (shared `:net` transport and identity)
 - 007 Knowledge Graph (shared schema)
 - 008 Orbit Agent (shared schema; agent state and patterns live here)
-- New: `com.capsule.app.net.cloud.OrbitCloudClient`
-- New: `com.capsule.app.net.cloud.SchemaMigrator` (shared with 009)
-- New: `com.capsule.app.settings.OrbitCloudScreen`
+- New: `com.orbit.app.net.cloud.OrbitCloudClient`
+- New: `com.orbit.app.net.cloud.SchemaMigrator` (shared with 009)
+- New: `com.orbit.app.settings.OrbitCloudScreen`
 - New: Orbit Cloud API contract (see
   `specs/contracts/orbit-cloud-api-contract.md`)
 - New: Envelope content encryption contract (see

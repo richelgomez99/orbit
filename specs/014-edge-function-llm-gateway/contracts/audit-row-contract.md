@@ -37,7 +37,7 @@ VALUES
 | `created_at` | `now()` (table default) | Function does not provide; UTC timestamp from Postgres. |
 | `event_type` | literal `'cloud_llm_call'` | New event type for spec 014. Future specs may add others. |
 | `actor` | literal `'edge_function'` | Distinguishes server-mirrored audits from Android-mirrored ones (future specs). |
-| `subject_id` | `NULL` | Reserved for future use (e.g., capsule-id linkage). |
+| `subject_id` | `NULL` | Reserved for future use (e.g., orbit-id linkage). |
 | `details_json` | per §2 below | Validated against the documented shape. |
 
 ---

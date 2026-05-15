@@ -17,7 +17,7 @@ process can make HTTP calls: this is enforced by
    `plan.md` §2 Technical Context).
 2. Custom Android Lint rule `OrbitNoHttpClientOutsideNet`: any
    reference to `OkHttpClient`, `HttpURLConnection`, `java.net.Socket`
-   or `Ktor` client outside the `com.capsule.app.net.*` packages
+   or `Ktor` client outside the `com.orbit.app.net.*` packages
    fails the build.
 3. Contract: the Gateway exposes **one method only**, `fetchPublicUrl`.
 
@@ -34,7 +34,7 @@ Principle enforced: **VI (Privilege Separation By Design)**.
     android:exported="false" />
 ```
 
-**Action**: `com.capsule.app.action.BIND_NETWORK_GATEWAY`
+**Action**: `com.orbit.app.action.BIND_NETWORK_GATEWAY`
 **Returns**: `INetworkGateway` AIDL binder.
 **Auth**: `exported="false"`. Additionally, the gateway checks
 `Binder.getCallingUid() == android.os.Process.myUid()` and rejects any
@@ -46,9 +46,9 @@ other UID.
 
 ```aidl
 // INetworkGateway.aidl
-package com.capsule.app.net.ipc;
+package com.orbit.app.net.ipc;
 
-import com.capsule.app.net.ipc.FetchResultParcel;
+import com.orbit.app.net.ipc.FetchResultParcel;
 
 interface INetworkGateway {
 
@@ -189,7 +189,7 @@ Failures never throw across the binder. They return `ok=false` with an
 - **Private host**: `https://10.0.0.1` ⇒ `blocked_host`.
 - **UID check**: a second fake app with a different UID attempts to
   bind and is rejected.
-- **Lint rule**: compiling `com.capsule.app.ui` with an `OkHttpClient`
+- **Lint rule**: compiling `com.orbit.app.ui` with an `OkHttpClient`
   import fails.
 
 ---

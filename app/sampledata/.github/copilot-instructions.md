@@ -1,4 +1,4 @@
-# Capsule Development Guidelines
+# Orbit Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-04-15
 

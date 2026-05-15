@@ -1,5 +1,7 @@
 # BYOC Sovereign Storage (v1.3)
 
+**Legacy status (2026-05-13)**: Archived input for the roadmap rebaseline. This is not the active `009` Speckit source anymore. During `docs/product-truth-reset`, preserve this draft under an archive/legacy path and reuse slot `009` for `009-kg-backend-poc`; keep BYOC/sovereign storage as a later power-user extension after Orbit Cloud stabilizes.
+
 **Status**: DRAFT — targets v1.3
 **Depends on**: spec 006 (Orbit Cloud) shipped and schema-stable
 **Governing document**: `.specify/memory/constitution.md` — implements Principle X Model B
@@ -194,9 +196,9 @@ differences are operational:
 - 002 T025c–T025d (EnvelopeStorageBackend abstraction)
 - 002 T025 (NetworkGatewayService in `:net`)
 - 006 shipped with schema stable (BYOC schema mirrors 006)
-- New: `com.capsule.app.net.cloud.ByocPostgresClient` with pgvector support
-- New: `com.capsule.app.settings.ByocStorageScreen`
-- New: Migration tool `com.capsule.app.net.cloud.SchemaMigrator` (shared
+- New: `com.orbit.app.net.cloud.ByocPostgresClient` with pgvector support
+- New: `com.orbit.app.settings.ByocStorageScreen`
+- New: Migration tool `com.orbit.app.net.cloud.SchemaMigrator` (shared
   with 006)
 
 ---

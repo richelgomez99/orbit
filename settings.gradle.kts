@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Capsule"
+rootProject.name = "Orbit"
 include(":app")
 include(":build-logic:lint")

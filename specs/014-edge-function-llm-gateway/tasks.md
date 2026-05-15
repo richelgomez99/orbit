@@ -1,6 +1,6 @@
 # Tasks: 014-edge-function-llm-gateway (Day 2 — Vercel AI Gateway Edge Function)
 
-**Input**: Design documents in `/Users/richelgomez/dev/capsule-app/specs/014-edge-function-llm-gateway/`
+**Input**: Design documents in `/Users/richelgomez/dev/orbit/specs/014-edge-function-llm-gateway/`
 **Prerequisites**: spec.md, plan.md, research.md, data-model.md, quickstart.md, contracts/{gateway-request-response,auth-jwt-contract,audit-row-contract}.md
 **Branch**: `cloud-pivot` (no new feature branch — NFR-014-003).
 **Tests**: Unit-test tasks are included where the spec/plan calls for them (Phases B/C/D/E/F/H). E2E in Phase I.
@@ -359,10 +359,10 @@ Depends on: T014-001 (so `cloud.gateway.url` template exists; document the key i
 ### T014-017 [Phase H] [US-014-001] LlmGatewayClient reads BuildConfig.CLOUD_GATEWAY_URL
 
 Files (modify):
-- `app/src/main/java/com/capsule/app/ai/gateway/LlmGatewayClient.kt` — replace hardcoded `"https://gateway.example.invalid/llm"` with `BuildConfig.CLOUD_GATEWAY_URL`. No other behavior change in this task (auth header + binder land in T014-019).
+- `app/src/main/java/com/orbit/app/ai/gateway/LlmGatewayClient.kt` — replace hardcoded `"https://gateway.example.invalid/llm"` with `BuildConfig.CLOUD_GATEWAY_URL`. No other behavior change in this task (auth header + binder land in T014-019).
 
 Files (create / modify):
-- Adjust `LlmGatewayClient`'s existing unit test (location per Day-1 layout, e.g. `app/src/test/java/com/capsule/app/ai/gateway/LlmGatewayClientTest.kt`) to assert the request URL matches `BuildConfig.CLOUD_GATEWAY_URL` rather than a hardcoded literal.
+- Adjust `LlmGatewayClient`'s existing unit test (location per Day-1 layout, e.g. `app/src/test/java/com/orbit/app/ai/gateway/LlmGatewayClientTest.kt`) to assert the request URL matches `BuildConfig.CLOUD_GATEWAY_URL` rather than a hardcoded literal.
 
 Acceptance:
 - `./gradlew :app:testDebugUnitTest --tests '*LlmGatewayClient*'` is green.
@@ -375,12 +375,12 @@ Depends on: T014-016.
 ### T014-018 [P] [Phase H] [US-014-002] AuthStateBinder interface + SupabaseAuthStateBinder
 
 Files (create):
-- `app/src/main/java/com/capsule/app/auth/AuthStateBinder.kt` — `interface AuthStateBinder { suspend fun currentJwt(): String? }`.
-- `app/src/main/java/com/capsule/app/data/auth/SupabaseAuthStateBinder.kt` — production impl reading the current Supabase Auth session from the existing Supabase Kotlin SDK singleton; returns the access token (`session.accessToken`) if present and non-expired (Supabase SDK handles refresh internally per FR-014-017), else null.
-- `app/src/main/java/com/capsule/app/di/AuthModule.kt` (new file OR additive to existing DI module — pick whichever matches Day-1 layout) — Hilt `@Binds` `AuthStateBinder` to `SupabaseAuthStateBinder` in the appropriate component scope.
+- `app/src/main/java/com/orbit/app/auth/AuthStateBinder.kt` — `interface AuthStateBinder { suspend fun currentJwt(): String? }`.
+- `app/src/main/java/com/orbit/app/data/auth/SupabaseAuthStateBinder.kt` — production impl reading the current Supabase Auth session from the existing Supabase Kotlin SDK singleton; returns the access token (`session.accessToken`) if present and non-expired (Supabase SDK handles refresh internally per FR-014-017), else null.
+- `app/src/main/java/com/orbit/app/di/AuthModule.kt` (new file OR additive to existing DI module — pick whichever matches Day-1 layout) — Hilt `@Binds` `AuthStateBinder` to `SupabaseAuthStateBinder` in the appropriate component scope.
 
 Files (create):
-- `app/src/test/java/com/capsule/app/auth/SupabaseAuthStateBinderTest.kt` — unit test with a fake session source: returns token when session present, null when absent.
+- `app/src/test/java/com/orbit/app/auth/SupabaseAuthStateBinderTest.kt` — unit test with a fake session source: returns token when session present, null when absent.
 
 Acceptance:
 - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest` is green.
@@ -394,13 +394,13 @@ Depends on: T014-001 (independent of T014-016/T014-017 — different file set, c
 ### T014-019 [Phase H] [US-014-002] LlmGatewayClient integrates AuthStateBinder
 
 Files (modify):
-- `app/src/main/java/com/capsule/app/ai/gateway/LlmGatewayClient.kt` — accept `AuthStateBinder` via constructor (Hilt-injected). Before each request, call `authStateBinder.currentJwt()`. If null → return `LlmGatewayResponse.Error(code = "UNAUTHORIZED", message = "no active Supabase session", requestId = req.requestId)` immediately (no OkHttp call). If non-null → set request header `Authorization: Bearer <jwt>`.
+- `app/src/main/java/com/orbit/app/ai/gateway/LlmGatewayClient.kt` — accept `AuthStateBinder` via constructor (Hilt-injected). Before each request, call `authStateBinder.currentJwt()`. If null → return `LlmGatewayResponse.Error(code = "UNAUTHORIZED", message = "no active Supabase session", requestId = req.requestId)` immediately (no OkHttp call). If non-null → set request header `Authorization: Bearer <jwt>`.
 
 Files (modify):
 - DI wiring (the same module touched in T014-018) — provide `AuthStateBinder` to `LlmGatewayClient`.
 
 Files (modify / create):
-- `app/src/test/java/com/capsule/app/ai/gateway/LlmGatewayClientTest.kt` — extend existing tests:
+- `app/src/test/java/com/orbit/app/ai/gateway/LlmGatewayClientTest.kt` — extend existing tests:
   - `null JWT → Error(UNAUTHORIZED) + no network call` (verified by zero MockWebServer requests).
   - `valid JWT → Authorization: Bearer <jwt>` header present on the recorded request (MockWebServer `takeRequest()` assertion).
   - Existing Day-1 retry-once direct-provider fallback unchanged (FR-014-018) — verified by an existing test still passing.
@@ -447,7 +447,7 @@ Depends on: T014-014, T014-015. **Requires explicit user approval before running
 ### T014-021 [Phase I] [US-014-001] [US-014-004] [US-014-005] Android E2E smoke against deployed URL
 
 Files (create):
-- `app/src/androidTest/java/com/capsule/app/ai/gateway/EdgeFunctionEndToEndTest.kt` — instrumented Android test running on a Pixel 9 Pro emulator (or device). Six sequential requests (one per type) against the deployed URL with a real Supabase JWT minted in the test setup. Asserts non-Error responses for each. Records latencies for SC-014-003.
+- `app/src/androidTest/java/com/orbit/app/ai/gateway/EdgeFunctionEndToEndTest.kt` — instrumented Android test running on a Pixel 9 Pro emulator (or device). Six sequential requests (one per type) against the deployed URL with a real Supabase JWT minted in the test setup. Asserts non-Error responses for each. Records latencies for SC-014-003.
 
 Steps (manual, captured in test or runbook):
 1. `./gradlew connectedDebugAndroidTest --tests '*EdgeFunctionEndToEndTest*'` — six requests pass (SC-014-001).
@@ -616,7 +616,7 @@ Local implementation lands all 19 Android-and-server-code tasks. Deployment + li
 
 1. **Resolved by T014-019b: Supabase Kotlin SDK wiring** — `SupabaseAuthStateBinder` now accepts a session-token lambda backed by the `:net` process Supabase client, with `EncryptedSessionManager` tests and pinned Supabase/Ktor versions. The earlier `NoSessionAuthStateBinder` production limitation no longer applies when `supabase.url` and `supabase.publishable.key` are populated.
 2. **No Hilt in repo** — task descriptions mentioning `@Binds` / `AuthModule.kt` were satisfied via the existing manual-DI pattern (constructor-injected defaults).
-3. **`LlmGatewayClient` lives at `com.capsule.app.net.LlmGatewayClient`**, not the `com.capsule.app.ai.gateway.LlmGatewayClient` path quoted in tasks.md. Used the actual location.
+3. **`LlmGatewayClient` lives at `com.orbit.app.net.LlmGatewayClient`**, not the `com.orbit.app.ai.gateway.LlmGatewayClient` path quoted in tasks.md. Used the actual location.
 4. **W1 spec drift fixed** during analyze pass — `requestId` added to `details_json` field listing in spec.md FR-014-013, US-3 Independent Test, and SC-014-005 (audit-row-contract.md and data-model.md were already correct).
 
 ### Historical pre-deploy unblock list for T014-020

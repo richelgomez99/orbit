@@ -29,7 +29,7 @@ exhaustive.
     android:exported="false" />
 ```
 
-**Action**: `com.capsule.app.action.BIND_ENVELOPE_REPOSITORY`
+**Action**: `com.orbit.app.action.BIND_ENVELOPE_REPOSITORY`
 **Returns**: `IEnvelopeRepository` AIDL binder (see §3).
 **Auth**: `android:exported="false"` — only the Orbit app (any of its
 processes) can bind. Orbit does not accept external binders.
@@ -80,13 +80,13 @@ crosses the AIDL surface.
 
 ```aidl
 // IEnvelopeRepository.aidl
-package com.capsule.app.data.ipc;
+package com.orbit.app.data.ipc;
 
-import com.capsule.app.data.ipc.IntentEnvelopeDraftParcel;
-import com.capsule.app.data.ipc.StateSnapshotParcel;
-import com.capsule.app.data.ipc.EnvelopeViewParcel;
-import com.capsule.app.data.ipc.DayPageParcel;
-import com.capsule.app.data.ipc.IEnvelopeObserver;
+import com.orbit.app.data.ipc.IntentEnvelopeDraftParcel;
+import com.orbit.app.data.ipc.StateSnapshotParcel;
+import com.orbit.app.data.ipc.EnvelopeViewParcel;
+import com.orbit.app.data.ipc.DayPageParcel;
+import com.orbit.app.data.ipc.IEnvelopeObserver;
 
 interface IEnvelopeRepository {
 
@@ -218,9 +218,9 @@ window.
 
 ```aidl
 // IEnvelopeObserver.aidl
-package com.capsule.app.data.ipc;
+package com.orbit.app.data.ipc;
 
-import com.capsule.app.data.ipc.DayPageParcel;
+import com.orbit.app.data.ipc.DayPageParcel;
 
 oneway interface IEnvelopeObserver {
     void onDayLoaded(in DayPageParcel page);

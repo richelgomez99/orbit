@@ -16,7 +16,7 @@ the overlay service, UI, and state machines.
 
 ## 1. BubbleState
 
-**Location**: `app/src/main/java/com/capsule/app/overlay/BubbleState.kt`
+**Location**: `app/src/main/java/com/orbit/app/overlay/BubbleState.kt`
 **Scope**: In-memory via StateFlow in OverlayViewModel
 
 ```kotlin
@@ -53,7 +53,7 @@ on drag-end and restored on service restart.
 
 ## 2. CapturedContent
 
-**Location**: `app/src/main/java/com/capsule/app/overlay/BubbleState.kt` (same file, co-located)
+**Location**: `app/src/main/java/com/orbit/app/overlay/BubbleState.kt` (same file, co-located)
 **Scope**: In-memory only — Phase 1 "save" writes to Logcat
 
 ```kotlin
@@ -79,7 +79,7 @@ primary key, and `text` feeds into the ingestion pipeline.
 
 ## 3. ClipboardFocusState
 
-**Location**: `app/src/main/java/com/capsule/app/service/ClipboardFocusStateMachine.kt`
+**Location**: `app/src/main/java/com/orbit/app/service/ClipboardFocusStateMachine.kt`
 **Scope**: In-memory state machine — never persisted
 
 ```kotlin
@@ -114,7 +114,7 @@ in IDLE by deadline, force-transition through RESTORING_FLAGS.
 
 ## 4. ServiceHealth
 
-**Location**: `app/src/main/java/com/capsule/app/service/ServiceHealthMonitor.kt`
+**Location**: `app/src/main/java/com/orbit/app/service/ServiceHealthMonitor.kt`
 **Scope**: Persisted to SharedPreferences, exposed via StateFlow
 
 ```kotlin
@@ -149,7 +149,7 @@ of stable operation.
 
 All Phase 1 persisted state lives in a single SharedPreferences file:
 
-**File Name**: `capsule_overlay_prefs`
+**File Name**: `orbit_overlay_prefs`
 **Mode**: `MODE_PRIVATE`
 
 | Key | Type | Default | Description |

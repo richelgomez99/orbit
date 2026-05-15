@@ -164,7 +164,7 @@ Cancelled continuations record `Continuation.status = CANCELLED` and
 
 - Local-only counters: `continuations_enqueued`, `continuations_succeeded`,
   `continuations_failed`, broken out by type. Readable via
-  `adb shell am broadcast -a com.capsule.app.DEBUG_DUMP` (dev builds
+  `adb shell am broadcast -a com.orbit.app.DEBUG_DUMP` (dev builds
   only).
 - Each continuation writes at most 3 audit entries: `CONTINUATION_ENQUEUED`,
   (`NETWORK_FETCH` during execution), `CONTINUATION_COMPLETED` or

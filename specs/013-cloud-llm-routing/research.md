@@ -36,7 +36,7 @@ This document captures decisions and validated facts for the Day 1 work. Per the
 ### D-006: ClusterDetectionWorker migration scope (Round 2 clarification — Option B, carve-out)
 - **Decision**: `ClusterDetectionWorker` keeps its direct `NanoLlmProvider()` construction with a `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` comment. Migration is owned by the Phase 11 Block 4 spec, not Day 1.
 - **Rationale**: ADR-006 explicitly gates cluster engine cloud migration to a separate spec. Forcing it into Day 1 would couple the Day-1 abstraction work to cluster-engine semantics that have not been re-validated against cloud embeddings.
-- **Verifiable signal**: `grep -n "CLUSTER-LOCAL-PIN" app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt` returns exactly one line on Day 1; zero lines after Phase 11 Block 4 lands.
+- **Verifiable signal**: `grep -n "CLUSTER-LOCAL-PIN" app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt` returns exactly one line on Day 1; zero lines after Phase 11 Block 4 lands.
 
 ### D-007: AIDL parcel wire format
 - **Decision**: Parcels carry the sealed-class instance as **kotlinx.serialization JSON encoded to UTF-8 bytes, written into a String field via `parcel.writeString`** (the JSON itself is the parcel payload).
@@ -61,7 +61,7 @@ This document captures decisions and validated facts for the Day 1 work. Per the
 
 ## Validated facts (recorded, not re-researched)
 
-Source: `~/.gstack/projects/richelgomez99-capsule-app/orbit-tech-stack-research-2026-04-28.md` and `orbit-pivot-plan-2026-04-28.md`, validated 2026-04-28.
+Source: `~/.gstack/projects/richelgomez99-orbit/orbit-tech-stack-research-2026-04-28.md` and `orbit-pivot-plan-2026-04-28.md`, validated 2026-04-28.
 
 - **F-001**: Anthropic Sonnet 4.6, Haiku 4.5, Opus 4.6 are available via Vercel AI Gateway with model strings `anthropic/claude-sonnet-4-6`, `anthropic/claude-haiku-4-5`, `anthropic/claude-opus-4-6`.
 - **F-002**: OpenAI `text-embedding-3-small` is 1536-dimensional at $0.02 per 1M input tokens.
@@ -74,7 +74,7 @@ Source: `~/.gstack/projects/richelgomez99-capsule-app/orbit-tech-stack-research-
 - **F-009**: Existing `:net` process already has OkHttp on the classpath via `gradle/libs.versions.toml`; no new HTTP client is needed.
 - **F-010**: kotlinx.serialization is already on the classpath of the Android module (used elsewhere); no new dependency required.
 - **F-011**: AIDL Binder transaction limit is ~1 MB. A 1536-float embedding payload is ~6 KB binary (~20 KB JSON-encoded as numbers); well within limit. Batch embedding designs in later specs need to be aware.
-- **F-012**: Existing `:capture` ↔ `:net` AIDL surface is bound via `INetworkGateway.aidl` and uses the pattern visible in `app/src/main/java/com/capsule/app/continuation/UrlHydrateWorker.kt`. `CloudLlmProvider` will mirror this pattern.
+- **F-012**: Existing `:capture` ↔ `:net` AIDL surface is bound via `INetworkGateway.aidl` and uses the pattern visible in `app/src/main/java/com/orbit/app/continuation/UrlHydrateWorker.kt`. `CloudLlmProvider` will mirror this pattern.
 
 ## Open items (out of scope — flagged for downstream specs)
 

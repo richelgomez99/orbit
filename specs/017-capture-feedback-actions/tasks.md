@@ -24,7 +24,7 @@ analysis gate after Phase 1 schema details are finalized.
 
 - [x] **T017-010** Update `PostCaptureOverlay.kt` so only visibly full-width chip
   rows use `fillMaxWidth`; compact states use wrapped content bounds.
-- [x] **T017-011** Update `CapsuleOverlayService.kt` so chip rows use
+- [x] **T017-011** Update `OrbitOverlayService.kt` so chip rows use
   `MATCH_PARENT`, compact post-capture states use `WRAP_CONTENT`, and the overlay
   window includes `FLAG_NOT_TOUCH_MODAL` so outside taps pass through.
 - [x] **T017-012** Update bubble drag/dismiss geometry to compute live bounds

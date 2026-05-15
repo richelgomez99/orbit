@@ -1,4 +1,8 @@
+<!-- markdownlint-disable -->
+
 # Feature Specification: Visual Polish Pass — "Quiet Almanac" v1
+
+**Legacy status (2026-05-13)**: Archived input for the roadmap rebaseline. This is not the active `010` Speckit source anymore, and visual polish is superseded by active `015-visual-refit` branch debt. During `docs/product-truth-reset`, preserve this draft under an archive/legacy path and reuse slot `010` for `010-agent-coordinator`.
 
 **Feature Branch**: `010-visual-polish-pass`
 **Created**: 2026-04-21
@@ -66,7 +70,7 @@ As a user navigating between diary → envelope detail → trash → audit log �
 **Why P1**: Internal consistency IS the product. A single Material-default screen breaks the illusion.
 
 **Acceptance**:
-1. Every Compose screen imports from `com.capsule.app.ui.theme.*` (tokens) and `com.capsule.app.ui.primitives.*` (shared components). No screen-local color, typography, or elevation constants.
+1. Every Compose screen imports from `com.orbit.app.ui.theme.*` (tokens) and `com.orbit.app.ui.primitives.*` (shared components). No screen-local color, typography, or elevation constants.
 2. No direct `androidx.compose.material.icons.*` imports outside `/ui/primitives/WaxSeal.kt`, `/ui/primitives/TypoGlyphs.kt`, and the launcher icon resource.
 3. Lint rule `OrbitMaterialIconUsage` fires on any rogue Material-icon import introduced after this pass.
 
@@ -98,20 +102,20 @@ As a user with large system font sizes (130%+) or a color-vision deficiency (pro
 
 ## Functional Requirements
 
-**Design token layer** (in `app/src/main/java/com/capsule/app/ui/theme/`):
+**Design token layer** (in `app/src/main/java/com/orbit/app/ui/theme/`):
 - **FR-010-001**: System MUST centralize color in `OrbitColorTokens.kt` with cream (light) + graphite (dark) palettes per design.md §3. No direct `Color(0xFF...)` outside this file and `Colors.xml` resources.
 - **FR-010-002**: System MUST centralize typography in `OrbitTypography.kt` with a bundled serif (day-header, envelope summary) and a bundled monospace (margins, action labels) per design.md §5. No web-font fetch.
 - **FR-010-003**: System MUST centralize elevation, shape, and spacing in `OrbitShapes.kt` + `OrbitSpacing.kt`. Elevation is near-zero — design.md §6 forbids drop-shadow hierarchy; separation is achieved via ruled dividers and spacing.
 - **FR-010-004**: System MUST provide `OrbitMotion.kt` with two named easings (entrance, settle) and four canonical durations (instant=80 ms, short=160 ms, medium=240 ms, long=360 ms). Reduce-motion system preference substitutes fade-only variants.
 
-**Shared primitive layer** (in `app/src/main/java/com/capsule/app/ui/primitives/`):
+**Shared primitive layer** (in `app/src/main/java/com/orbit/app/ui/primitives/`):
 - **FR-010-005**: System MUST ship a `WaxSeal(intent: Intent, size: Dp)` composable rendering ▲ (WANT_IT) / ◆ (FOR_LATER) / ● (REFERENCE) / ○ (AMBIGUOUS) in the intent's accent ink. No PNG assets — glyphs are drawn as typographic characters with a custom `FontFamily` OR via `Canvas.drawPath`.
 - **FR-010-006**: System MUST ship `OrbitTopAppBar`, `OrbitDivider`, `OrbitCard`, `OrbitPagerButton` primitives that every screen consumes instead of Material 3 defaults.
 - **FR-010-007**: System MUST ship `PaperGrain` modifier that overlays a 4%-opacity bundled PNG (≤16 KB) on any `Surface`. The overlay respects dark/light palette parity.
 - **FR-010-008**: System MUST ship `TimeMargin(time: LocalTime)` composable for the left-margin monospace timestamp. Renders right-aligned in a fixed 56 dp rail per design.md §4.1.
 
 **Screen migrations** (every existing Compose surface):
-- **FR-010-009**: System MUST migrate [DiaryScreen](app/src/main/java/com/capsule/app/diary/ui/DiaryScreen.kt), [EnvelopeDetailScreen](app/src/main/java/com/capsule/app/diary/ui/EnvelopeDetailScreen.kt), [TrashScreen](app/src/main/java/com/capsule/app/settings/TrashScreen.kt), [AuditLogScreen](app/src/main/java/com/capsule/app/audit/AuditLogScreen.kt), [SettingsScreen](app/src/main/java/com/capsule/app/settings/SettingsScreen.kt), and the Overlay capture sheet to consume the token + primitive layer. No Material 3 defaults remain.
+- **FR-010-009**: System MUST migrate [DiaryScreen](app/src/main/java/com/orbit/app/diary/ui/DiaryScreen.kt), [EnvelopeDetailScreen](app/src/main/java/com/orbit/app/diary/ui/EnvelopeDetailScreen.kt), [TrashScreen](app/src/main/java/com/orbit/app/settings/TrashScreen.kt), [AuditLogScreen](app/src/main/java/com/orbit/app/audit/AuditLogScreen.kt), [SettingsScreen](app/src/main/java/com/orbit/app/settings/SettingsScreen.kt), and the Overlay capture sheet to consume the token + primitive layer. No Material 3 defaults remain.
 - **FR-010-010**: System MUST migrate the Diary's day-nav bar (`Older day ‹` / `› Newer day`) to `OrbitPagerButton` with typographic glyphs (`‹`/`›`) instead of `Icons.Filled.ChevronLeft`/`Right`.
 - **FR-010-011**: System MUST migrate intent display on EnvelopeCard, EnvelopeDetail header, and chip row from FilterChip to `WaxSeal`. Chip row becomes a row of four tappable wax seals labeled by typography below.
 
@@ -128,7 +132,7 @@ As a user with large system font sizes (130%+) or a color-vision deficiency (pro
 - **FR-010-017**: System MUST ship Paparazzi (or Roborazzi) golden tests for: DiaryScreen Ready state, DiaryScreen Empty state, **DiaryScreen with cluster-suggestion card visible (research-session)**, EnvelopeDetailScreen Ready, TrashScreen with 3 items, AuditLogScreen with groupings, SettingsScreen. Both palettes × both font scales (100% + 130%). Goldens checked into repo.
 
 **Cluster-suggestion card primitives (added 2026-04-26)**:
-- **FR-010-018**: System MUST ship a `ClusterSuggestionCard(cluster: ClusterRef, actions: List<ClusterAction>)` primitive in `app/src/main/java/com/capsule/app/ui/primitives/`. The card consumes the existing token + primitive layer (FR-010-001 through FR-010-008). No new color tokens.
+- **FR-010-018**: System MUST ship a `ClusterSuggestionCard(cluster: ClusterRef, actions: List<ClusterAction>)` primitive in `app/src/main/java/com/orbit/app/ui/primitives/`. The card consumes the existing token + primitive layer (FR-010-001 through FR-010-008). No new color tokens.
 - **FR-010-019** (revised /autoplan 2026-04-26): System MUST ship an `AgentVoiceMark` glyph **locked to ✦ (six-pointed star)**, distinct from the four envelope-intent wax seals. Rendered via the same `Canvas.drawPath` mechanism as `WaxSeal` (FR-010-005), at 14 sp in `--ink-accent-cluster` (a new accent token). Reserved exclusively for agent-spoken surfaces — no other component may render this glyph in v1. **Lint allow-list**: `build-logic/lint/` MUST gain a `NoAgentVoiceMarkOutsideAgentSurfaces` detector (sibling to `NoHttpClientOutsideNet`) that fails the build if `AgentVoiceMark` is referenced from any file outside the agent-voice surface allow-list (initially: `ClusterSuggestionCard.kt` only).
 - **FR-010-020** (revised /autoplan 2026-04-26): System MUST ship a `ClusterActionRow(actions: List<ClusterAction>)` primitive. Renders 2–3 action labels in **Geist 14 sp regular weight, sentence case** in `--ink` (revised from "monospace caps in `--ink-dim`" — small caps at 12 sp disappears at 4K projection and reads as "publication subtitle" rather than "agent call-to-action"). Action labels separated by **vertical hairline rules `│`** (1 px, `--rule` color, height matches cap-height) — NOT mid-dots. Mid-dot (`·`) is reserved for the metadata separator elsewhere in the product (§4.6 envelope card, §4.7 settings); reusing it in the action row would teach users this row is metadata, not actions. Touch targets ≥48 dp per FR-010-016. No Material button chrome. Example rendering: `Summarize │ Open all │ Save as list`.
 - **FR-010-021** (revised /autoplan 2026-04-26 UC2 Option A): System MUST integrate `ClusterSuggestionCard` into `DiaryScreen` (FR-010-009 migration list) **above the day-header paragraph on cluster days** (revised from "between day-header and thin rule, NOT above"). On cluster days the cluster card is the day's event-hero; the day-header is steady-state. Events outrank steady-state in attention hierarchy. **On non-cluster days, placement is unchanged** — day header runs straight into thin rule; no card means no slot. ONLY rendered on days where a cluster formed overnight. Stacks vertically if multiple clusters formed (max 2 cards per day in v1; further deferred to v1.1).

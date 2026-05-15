@@ -1,4 +1,8 @@
+<!-- markdownlint-disable -->
+
 # Resolution Semantics — "Capture is a Beginning, Not an End"
+
+**Legacy status (2026-05-13)**: Archived input for the roadmap rebaseline. This draft contains useful lifecycle semantics, but it is not an active Speckit source until regenerated. During `docs/product-truth-reset`, preserve this file under an archive/legacy path and recreate slot `012` as the refreshed `012-resolution-semantics` branch after retrieval/actions produce enough real cases.
 
 **Feature Branch**: `012-resolution-semantics`
 **Created**: 2026-04-26 (during /office-hours pivot session)
@@ -333,7 +337,7 @@ The Sunday review is the demo's closer:
 - **OQ-012-005 (re-encounter inference precision)**: FR-012-007 advances state on re-encounter. Risk: "re-encountered" might be a low-signal event (user accidentally taps the wrong envelope). Recommendation: require re-encounter to last >5 seconds in detail view OR be a full URL-hash dedup match (high signal) before advancing state. Tune precision vs. recall during alpha.
 - **OQ-012-006 (visual marker for derived envelopes)**: FR-012-014 says derived envelopes get a margin glyph distinct from wax seals. Specific glyph TBD — proposed `~` or `↻` or a custom mark. Lock during the design.md §4.6 amendment by April 30 to unblock spec 010 FR-010-014.
 - **OQ-012-007 (Sunday review tone)**: FR-012-022 says the digest should feel like a "letter to self." That's a tonal target, not a copy spec. The first version of the Nano-generated weekly summary copy needs human review and tuning. Reserve a polish-pass workstream by May 18.
-- **OQ-012-008 (alpha test design)**: The 5 Canopy alpha users (per the design doc at `~/.gstack/projects/richelgomez99-capsule-app/`) will be the first humans to encounter resolution. The week-by-week prompts already cover capture and diary. Add a new prompt: Week 3 (May 13-19) — *"Did Orbit help you finish anything? Anything you wanted to abandon but didn't know how? Anything that resolved without you marking it done?"* — to surface resolution UX feedback.
+- **OQ-012-008 (alpha test design)**: The 5 Canopy alpha users (per the design doc at `~/.gstack/projects/richelgomez99-orbit/`) will be the first humans to encounter resolution. The week-by-week prompts already cover capture and diary. Add a new prompt: Week 3 (May 13-19) — *"Did Orbit help you finish anything? Anything you wanted to abandon but didn't know how? Anything that resolved without you marking it done?"* — to surface resolution UX feedback.
 
 ---
 
@@ -358,7 +362,7 @@ If/when this spec moves from Draft to active implementation:
 15. **Settings & audit** (FR-012-026, FR-012-027). User controls.
 16. **Privacy lock** (FR-012-023, FR-012-024, FR-012-025). Cross-spec compliance.
 
-Items 1-7 are v1-feasible if the design doc's hour estimate clears (per `~/.gstack/projects/richelgomez99-capsule-app/`). Items 8-16 are v1.1+.
+Items 1-7 are v1-feasible if the design doc's hour estimate clears (per `~/.gstack/projects/richelgomez99-orbit/`). Items 8-16 are v1.1+.
 
 ---
 

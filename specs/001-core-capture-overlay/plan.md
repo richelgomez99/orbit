@@ -66,11 +66,11 @@ app/
 └── src/
     ├── main/
     │   ├── AndroidManifest.xml
-    │   └── java/com/capsule/app/
-    │       ├── CapsuleApplication.kt
+    │   └── java/com/orbit/app/
+    │       ├── OrbitApplication.kt
     │       │
     │       ├── service/
-    │       │   ├── CapsuleOverlayService.kt       # LifecycleService + WindowManager
+    │       │   ├── OrbitOverlayService.kt       # LifecycleService + WindowManager
     │       │   ├── OverlayLifecycleOwner.kt        # Custom lifecycle/VM/savedstate owner
     │       │   ├── ClipboardFocusStateMachine.kt   # 4-state focus hack
     │       │   ├── ForegroundNotificationManager.kt # Notification channel + builder
@@ -89,12 +89,12 @@ app/
     │       └── ui/
     │           ├── MainActivity.kt                 # Toggle switch + service health
     │           └── theme/
-    │               ├── CapsuleTheme.kt
+    │               ├── OrbitTheme.kt
     │               ├── Color.kt
     │               └── Type.kt
     │
     └── test/
-        └── java/com/capsule/app/
+        └── java/com/orbit/app/
             └── service/
                 └── ClipboardFocusStateMachineTest.kt
 

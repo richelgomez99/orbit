@@ -22,7 +22,7 @@ The Edge Function, supabase-kt client, write-through sync, auth flow, and `Clust
 **Primary Dependencies** (Android, all already on the classpath):
 - `okhttp3` (existing in `:net`) — reused for `LlmGatewayClient`; no new HTTP client.
 - `kotlinx.serialization` — `LlmGatewayRequest`/`LlmGatewayResponse` sealed classes serialized to JSON UTF-8 bytes for the parcel wire format and the AI Gateway envelope body.
-- AIDL (`com.capsule.app.net.ipc`) — extends [INetworkGateway.aidl](../../app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl).
+- AIDL (`com.orbit.app.net.ipc`) — extends [INetworkGateway.aidl](../../app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl).
 - `Parcelable` (Android framework) — manual `writeToParcel`/`CREATOR` mirroring `FetchResultParcel`.
 
 **Server-side dependencies** (Supabase project, no Android impact):
@@ -110,9 +110,9 @@ specs/013-cloud-llm-routing/
 
 ```text
 app/src/main/
-├── aidl/com/capsule/app/net/ipc/
+├── aidl/com/orbit/app/net/ipc/
 │   └── INetworkGateway.aidl                         # MODIFIED: add callLlmGateway
-├── java/com/capsule/app/
+├── java/com/orbit/app/
 │   ├── RuntimeFlags.kt                              # MODIFIED: add useLocalAi, clusterEmitEnabled
 │   ├── ai/
 │   │   ├── LlmProvider.kt                           # MODIFIED: doc-comment scope (network ban → local-mode only)
@@ -132,7 +132,7 @@ app/src/main/
 │   └── cluster/
 │       └── ClusterDetectionWorker.kt                # MODIFIED: add CLUSTER-LOCAL-PIN comment only
 
-app/src/test/java/com/capsule/app/
+app/src/test/java/com/orbit/app/
 ├── ai/
 │   ├── LlmProviderRouterTest.kt                     # NEW — covers SC-004 (flag flip)
 │   └── CloudLlmProviderTest.kt                      # NEW — embed-null contract, error mapping
@@ -149,7 +149,7 @@ supabase/                                            # NEW directory (repo root)
     └── multi_user_smoke.sql                         # NEW — ADR-007 isolation proof
 ```
 
-**Structure Decision**: Single Android app module + sibling `supabase/` directory at repo root. No new Gradle modules. No process-model change. The new Kotlin files slot into existing packages (`com.capsule.app.ai`, `com.capsule.app.net`, `com.capsule.app.net.ipc`); a new sub-package `com.capsule.app.ai.gateway` holds the wire-format sealed classes so they can be shared between `:capture` (Cloud provider) and `:net` (NetworkGatewayImpl handler) without circular dependencies.
+**Structure Decision**: Single Android app module + sibling `supabase/` directory at repo root. No new Gradle modules. No process-model change. The new Kotlin files slot into existing packages (`com.orbit.app.ai`, `com.orbit.app.net`, `com.orbit.app.net.ipc`); a new sub-package `com.orbit.app.ai.gateway` holds the wire-format sealed classes so they can be shared between `:capture` (Cloud provider) and `:net` (NetworkGatewayImpl handler) without circular dependencies.
 
 ## Phase 0 — Outline & Research
 

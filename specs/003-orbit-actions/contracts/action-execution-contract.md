@@ -35,7 +35,7 @@ into this service.
     android:exported="false" />
 ```
 
-**Action**: `com.capsule.app.action.BIND_ACTION_EXECUTOR`
+**Action**: `com.orbit.app.action.BIND_ACTION_EXECUTOR`
 **Returns**: `IActionExecutor` AIDL binder.
 
 Only the `:ui` process binds. `android:exported="false"` prevents
@@ -46,7 +46,7 @@ external apps from invoking executions directly.
 ## 3. AIDL surface
 
 ```aidl
-package com.capsule.app.action.ipc;
+package com.orbit.app.action.ipc;
 
 interface IActionExecutor {
     // Synchronously dispatches the registered AppFunction.
@@ -165,7 +165,7 @@ Spec 003 Principle VI gate is enforced by:
 1. **Manifest**: the `action/` package is `android:process=":capture"`,
    and `:capture` does not declare `INTERNET`.
 2. **Lint**: the inherited `NoHttpClientOutsideNet` rule fails the
-   build if any class in `com.capsule.app.action.*` references
+   build if any class in `com.orbit.app.action.*` references
    `okhttp3`, `HttpURLConnection`, or `java.net.Socket`.
 3. **Runtime test**:
    `NoNetworkDuringActionExecutionTest` (instrumented) exercises
