@@ -94,7 +94,7 @@ human-readable in audit dumps and robust to reorderings.
 
 ## 1. IntentEnvelopeEntity
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/IntentEnvelopeEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/IntentEnvelopeEntity.kt`
 **Scope**: Room `@Entity(tableName = "intent_envelope")`, opened only in `:ml`.
 
 ```kotlin
@@ -173,7 +173,7 @@ data class IntentAssignment(
 
 ## 2. StateSnapshot
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/StateSnapshot.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/StateSnapshot.kt`
 **Scope**: `@Embedded` into `IntentEnvelopeEntity`. Does not get its own
 table. Each envelope owns exactly one snapshot.
 
@@ -208,7 +208,7 @@ data class StateSnapshot(
 
 ## 3. ContinuationEntity
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/ContinuationEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/ContinuationEntity.kt`
 **Scope**: Room `@Entity(tableName = "continuation")`
 
 ```kotlin
@@ -289,7 +289,7 @@ PENDING
 
 ## 4. ContinuationResultEntity
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/ContinuationResultEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/ContinuationResultEntity.kt`
 
 Separated from `ContinuationEntity` so an envelope can accumulate multiple
 result records over time (e.g., a URL that gets re-summarized after a
@@ -332,7 +332,7 @@ The Diary joins `intent_envelope` → latest `continuation_result`
 
 ## 5. AuditLogEntryEntity
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/AuditLogEntryEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/AuditLogEntryEntity.kt`
 
 The audit log is user-visible (FR-018) and append-only.
 
@@ -432,7 +432,7 @@ single Diary load — do not use across loads.
 
 ## 8. SharedPreferences (inherited from 001)
 
-**File name**: `capsule_overlay_prefs` (unchanged)
+**File name**: `orbit_overlay_prefs` (unchanged)
 
 | Key | Type | Default | Source | Notes |
 |---|---|---|---|---|

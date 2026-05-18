@@ -2,42 +2,30 @@
 <!--
   T097 (spec/003) debug-only manifest overlay.
 
-  Adds a launcher entry for `DiagnosticsActivity`. This file lives in
-  `app/src/debug/` so it is merged ONLY into debug-build APKs; release
-  builds never see it. See action-execution-contract §6 + quickstart §6 N2.
+    Declares debug-only diagnostics activities without launcher entries. This
+    file lives in `app/src/debug/` so it is merged ONLY into debug-build APKs;
+    release builds never see it. See action-execution-contract §6 + quickstart §6 N2.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
     <application tools:ignore="MissingApplicationIcon">
 
-        <!-- Debug-only diagnostic surface. Launcher category gives easy access
-             from the device launcher; android:exported="true" is required for
-             LAUNCHER but is harmless because the activity is gated to the
-             debug source set. -->
+        <!-- Debug-only diagnostic surface. Kept out of the launcher so a debug
+             install still presents one user-facing Orbit app icon. Operators can
+             open it explicitly with adb when needed. -->
         <activity
-            android:name="com.capsule.app.diagnostics.DiagnosticsActivity"
+            android:name="com.orbit.app.diagnostics.DiagnosticsActivity"
             android:exported="true"
-            android:label="Capsule Diagnostics">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:label="Orbit Diagnostics" />
 
         <!-- T159 (spec/002 Block 10) — debug-only cluster eval harness. Same
              security envelope as DiagnosticsActivity above: lives in :debug,
-             never merged into release. Launcher category lets the operator
-             run the eval from the device launcher on May 4. -->
+             never merged into release. Open explicitly with adb when needed. -->
         <activity
-            android:name="com.capsule.app.cluster.ClusterEvalRunner"
+            android:name="com.orbit.app.cluster.ClusterEvalRunner"
             android:exported="true"
-            android:label="Capsule Cluster Eval">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:label="Orbit Cluster Eval" />
 
     </application>
 </manifest>

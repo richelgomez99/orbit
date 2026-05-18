@@ -60,12 +60,12 @@ Takeaway: only `004` through `012` are mostly spec-only drafts. The real work in
 
 | Worktree | Branch | Dirty state | What it means |
 | --- | --- | ---: | --- |
-| `/Users/richelgomez/dev/capsule-app` | `qa/015-017-stacked` | 14 untracked docs | Current integration/docs workspace. Planning docs are not committed. |
-| `/Users/richelgomez/dev/capsule-app-015-phase1-split` | `015-phase1-cluster-surface` | Clean after `7c5c4fc` | Actual `015` implementation branch landed through PR #21. |
-| `/Users/richelgomez/dev/capsule-app-spec-016` | `016-intent-set-migration` | clean after `9431568` | Actual `016` implementation branch landed through PR #19. |
-| `/Users/richelgomez/dev/capsule-app-spec-017` | `017-capture-feedback-actions` | clean after `d594762` | Actual `017` implementation branch landed through PR #20. |
-| `/Users/richelgomez/dev/capsule-app-visual-refit` | `015-visual-refit` | clean | Old planning branch, not the current implementation split. |
-| `/Users/richelgomez/dev/capsule-app-015-p0c1` | `main` | clean, ahead/behind origin | Do not use as a fresh base until reconciled with `origin/main`. |
+| `/Users/richelgomez/dev/orbit-app` | `qa/015-017-stacked` | 14 untracked docs | Current integration/docs workspace. Planning docs are not committed. |
+| `/Users/richelgomez/dev/orbit-app-015-phase1-split` | `015-phase1-cluster-surface` | Clean after `7c5c4fc` | Actual `015` implementation branch landed through PR #21. |
+| `/Users/richelgomez/dev/orbit-app-spec-016` | `016-intent-set-migration` | clean after `9431568` | Actual `016` implementation branch landed through PR #19. |
+| `/Users/richelgomez/dev/orbit-app-spec-017` | `017-capture-feedback-actions` | clean after `d594762` | Actual `017` implementation branch landed through PR #20. |
+| `/Users/richelgomez/dev/orbit-app-visual-refit` | `015-visual-refit` | clean | Old planning branch, not the current implementation split. |
+| `/Users/richelgomez/dev/orbit-app-015-p0c1` | `main` | clean, ahead/behind origin | Do not use as a fresh base until reconciled with `origin/main`. |
 
 Dirty file dates confirm the staged implementation leftovers are recent:
 
@@ -229,7 +229,7 @@ As an immediate guardrail, the current old `004` through `012` `spec.md` files n
 
 Every new spec must carry the same architectural constraints forward:
 
-- Android network calls go through `com.capsule.app.net.*` and the `:net` gateway path.
+- Android network calls go through `com.orbit.app.net.*` and the `:net` gateway path.
 - Binder payloads carry IDs and compact summaries, not raw HTML, screenshots, embeddings, or full evidence bundles.
 - External writes stay local and user-approved.
 - Cloud traces are no-content by default unless a future explicit policy says otherwise.
@@ -253,7 +253,7 @@ Why first: it is the durable label set used by visual and feedback work.
 
 Pre-work:
 
-- Run standard Android gate in `/Users/richelgomez/dev/capsule-app-spec-016`.
+- Run standard Android gate in `/Users/richelgomez/dev/orbit-app-spec-016`.
 - Run Supabase `llm_gateway` classifier tests if they are available locally.
 - Confirm no ContactRef schema/migration work leaked into this branch.
 - Confirm no stale `REMIND_ME` or `INSPIRATION` behavior remains.
@@ -269,7 +269,7 @@ Why second: behavior and data contracts should land before final visual polish.
 
 Pre-work:
 
-- Run standard Android gate in `/Users/richelgomez/dev/capsule-app-spec-017`.
+- Run standard Android gate in `/Users/richelgomez/dev/orbit-app-spec-017`.
 - Confirm Room schema version and exported schemas match the branch.
 - Confirm duplicate URL and exact-text lookup tests are green.
 - Confirm note persistence is only via `EnvelopeNoteEntity` or the spec-owned table shape.
@@ -285,7 +285,7 @@ Why third: it is mostly presentation and overlay polish, and it can adapt to lan
 
 Pre-work:
 
-- Run standard Android gate in `/Users/richelgomez/dev/capsule-app-015-phase1-split`.
+- Run standard Android gate in `/Users/richelgomez/dev/orbit-app-015-phase1-split`.
 - Decide whether `T015-501` through `T015-506` block PR or become follow-up overlay customization work.
 - Decide whether `T015-901`, `T015-904`, and `T015-905` block PR or become flag-flip follow-ups.
 - Capture manual screenshots or explicitly record that the feature remains flag-gated.
@@ -353,7 +353,7 @@ specs/004-capture-understanding/
 - Stop if it adds KG tables before deletion/invalidation is specified.
 - Stop if it adds generic browser automation.
 - Stop if it passes raw HTML, screenshots, embeddings, or full evidence bundles over Binder.
-- Stop if it adds network clients outside `com.capsule.app.net.*`.
+- Stop if it adds network clients outside `com.orbit.app.net.*`.
 
 ### Speckit execution policy
 

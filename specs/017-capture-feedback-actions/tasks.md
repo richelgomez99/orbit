@@ -24,7 +24,7 @@ analysis gate after Phase 1 schema details are finalized.
 
 - [x] **T017-010** Update `PostCaptureOverlay.kt` so only visibly full-width chip
   rows use `fillMaxWidth`; compact states use wrapped content bounds.
-- [x] **T017-011** Update `CapsuleOverlayService.kt` so chip rows use
+- [x] **T017-011** Update `OrbitOverlayService.kt` so chip rows use
   `MATCH_PARENT`, compact post-capture states use `WRAP_CONTENT`, and the overlay
   window includes `FLAG_NOT_TOUCH_MODAL` so outside taps pass through.
 - [x] **T017-012** Update bubble drag/dismiss geometry to compute live bounds
@@ -125,8 +125,8 @@ analysis gate after Phase 1 schema details are finalized.
 - Reroute check: no staged visual-only `015`, ContactRef `016`, or future `004` through `012` files were found.
 - Android gate passed: `:app:compileDebugKotlin`, `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and `:app:lintDebug` succeeded.
 - Duplicate audit metadata check: duplicate attempts record `existingEnvelopeId` and `matchedBy` in audit `extraJson`; no raw text or full URL is added to that duplicate audit payload.
-- Schema verification result: matching schema/entity/database files are already committed in the `017` branch history. Full `origin/main...HEAD` includes `app/schemas/com.capsule.app.data.OrbitDatabase/6.json`, `app/schemas/com.capsule.app.data.OrbitDatabase/7.json`, `OrbitDatabase.kt`, `IntentEnvelopeEntity.kt`, `EnvelopeNoteEntity.kt`, `EnvelopeNoteDao.kt`, `SealResultParcel`, storage/backend changes, and `OrbitMigrations.kt`. The current staged `OrbitMigrations.kt` edit is a follow-up migration adjustment, not an orphaned schema change.
-- Focused duplicate tests passed: `:app:testDebugUnitTest --tests com.capsule.app.overlay.PostCaptureOverlayBoundsRegressionTest` and connected `:app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.capsule.app.data.UrlHashDedupeContractTest,com.capsule.app.overlay.OverlayDuplicateFeedbackTest,com.capsule.app.data.DuplicateLookupPerformanceContractTest` on SM-X710, 14 connected tests.
+- Schema verification result: matching schema/entity/database files are already committed in the `017` branch history. Full `origin/main...HEAD` includes `app/schemas/com.orbit.app.data.OrbitDatabase/6.json`, `app/schemas/com.orbit.app.data.OrbitDatabase/7.json`, `OrbitDatabase.kt`, `IntentEnvelopeEntity.kt`, `EnvelopeNoteEntity.kt`, `EnvelopeNoteDao.kt`, `SealResultParcel`, storage/backend changes, and `OrbitMigrations.kt`. The current staged `OrbitMigrations.kt` edit is a follow-up migration adjustment, not an orphaned schema change.
+- Focused duplicate tests passed: `:app:testDebugUnitTest --tests com.orbit.app.overlay.PostCaptureOverlayBoundsRegressionTest` and connected `:app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.orbit.app.data.UrlHashDedupeContractTest,com.orbit.app.overlay.OverlayDuplicateFeedbackTest,com.orbit.app.data.DuplicateLookupPerformanceContractTest` on SM-X710, 14 connected tests.
 
 ## PR Review Fixes - 2026-05-13
 
@@ -134,7 +134,7 @@ analysis gate after Phase 1 schema details are finalized.
 - Race regression added: concurrent same-URL seal attempts return one `CREATED` result and the rest `ALREADY_SAVED`, with a single visible envelope and duplicate audit rows for the losing attempts.
 - Exact-text lookup finding resolved: exact-text duplicate checks now query `activeTextContentSha256`, which is covered by a unique Room index in the exported v7 schema.
 - Migration coverage added: `OrbitDatabaseMigrationV5toV7Test` validates v5-to-v7 upgrade behavior, URL hash backfill, text-key de-duplication during migration, unique active-key enforcement, and the `envelope_note` table. `androidTest` assets now include checked-in Room schemas for `MigrationTestHelper`.
-- Updated gates passed with explicit local environment (`JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home`, `ANDROID_HOME=/Users/richelgomez/Library/Android/sdk`): `:app:compileDebugKotlin`, `:app:compileDebugAndroidTestKotlin`, `:app:testDebugUnitTest --tests com.capsule.app.overlay.PostCaptureOverlayBoundsRegressionTest`, focused `:app:connectedDebugAndroidTest` for `UrlHashDedupeContractTest`, `DuplicateLookupPerformanceContractTest`, `OrbitDatabaseMigrationV5toV7Test`, `OverlayDuplicateFeedbackTest` on SM-S928U1 and SM-X710, and `:app:lintDebug`.
+- Updated gates passed with explicit local environment (`JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home`, `ANDROID_HOME=/Users/richelgomez/Library/Android/sdk`): `:app:compileDebugKotlin`, `:app:compileDebugAndroidTestKotlin`, `:app:testDebugUnitTest --tests com.orbit.app.overlay.PostCaptureOverlayBoundsRegressionTest`, focused `:app:connectedDebugAndroidTest` for `UrlHashDedupeContractTest`, `DuplicateLookupPerformanceContractTest`, `OrbitDatabaseMigrationV5toV7Test`, `OverlayDuplicateFeedbackTest` on SM-S928U1 and SM-X710, and `:app:lintDebug`.
 
 ## Landing Map
 

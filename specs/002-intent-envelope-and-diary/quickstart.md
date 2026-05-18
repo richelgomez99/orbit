@@ -38,7 +38,7 @@ This document is both a bring-up guide and a mental model of what
 ```bash
 # From repo root
 ./gradlew :app:installDebug
-adb shell am start -n com.capsule.app/.onboarding.OnboardingActivity
+adb shell am start -n com.orbit.app/.onboarding.OnboardingActivity
 ```
 
 The onboarding flow asks for, in order:
@@ -57,7 +57,7 @@ After onboarding, the capture foreground service is running in the
 `:capture` process and the bubble is visible. Verify:
 
 ```bash
-adb shell ps -A | grep com.capsule.app
+adb shell ps -A | grep com.orbit.app
 # Expect up to 4 processes: :capture, :ml, :net, :ui (spawned lazily)
 ```
 
@@ -202,7 +202,7 @@ Orbit never exposes the DB. For dev builds you can:
 
 ```bash
 # Dump counters via debug broadcast (dev build only)
-adb shell am broadcast -a com.capsule.app.DEBUG_DUMP
+adb shell am broadcast -a com.orbit.app.DEBUG_DUMP
 
 # Pull an export bundle (user-initiated in Settings → Export my data)
 adb pull /sdcard/Download/Orbit-Export-<timestamp>/ ./out/
@@ -213,7 +213,7 @@ To inspect raw Room/SQLCipher (never do this on a release build):
 ```bash
 # Requires the device to have the debug key in keystore, won't work
 # on a production device/build. Rotate if used.
-adb shell "run-as com.capsule.app cat databases/orbit.db" > orbit.db
+adb shell "run-as com.orbit.app cat databases/orbit.db" > orbit.db
 # Then open with the sqlcipher CLI using the wrapped key material
 # obtained via a debug-only activity.
 ```

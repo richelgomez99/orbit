@@ -19,7 +19,7 @@
 > clipboard focus state machine, and bubble drag/edge-snap behavior from 001
 > are KEPT AS-IS as foundational primitives. This PRD REPLACES 001's "Capture
 > Sheet + Save/Discard + Logcat" flow with the Intent Envelope and Diary
-> model. The rename from "Capsule" to "Orbit" is separate work tracked at the
+> model. The rename from "Orbit" to "Orbit" is separate work tracked at the
 > repository root.
 
 ---
@@ -618,7 +618,7 @@ depend on v1 having shipped and stabilized.
 Two lightweight abstractions are introduced in v1 (not as user-visible
 features) so that v1.1+ work is additive rather than a refactor:
 
-- **`LlmProvider` interface** in `com.capsule.app.ai` with
+- **`LlmProvider` interface** in `com.orbit.app.ai` with
   `NanoLlmProvider` as the sole v1 implementation. Every Nano call in
   v1 routes through this interface. v1.1 adds `OrbitManagedLlmProvider`
   (the managed proxy) and `ByokLlmProvider` without touching call

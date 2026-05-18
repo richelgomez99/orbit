@@ -44,7 +44,7 @@ Source: `project/orbit-tokens.jsx`, lines 4–18.
 | `red`          | `#d97a6c` | (no token; status only) | reserved for danger |
 
 **Decision (Phase 0 c1)**: add only `brandAccent`, `brandAccentDim`,
-`brandAccentInk` to `CapsulePalette.Tokens` in commit 1. The `bgPanel`,
+`brandAccentInk` to `OrbitPalette.Tokens` in commit 1. The `bgPanel`,
 `bgPanelHi`, `bgDeep`, `ruleHi`, `creamFaint` are screen-local and can be
 expressed as alpha variants of existing tokens at the call site, OR added
 incrementally per phase. Keep Phase 0 c1 minimal: 3 new tokens.
@@ -59,7 +59,7 @@ then remove in a follow-up.
 
 Source: `project/orbit-tokens.jsx` lines 21–23.
 
-| Stack | JSX | Compose `CapsuleType.*` | Resource |
+| Stack | JSX | Compose `OrbitType.*` | Resource |
 |-------|-----|--------------------------|----------|
 | Display | `"Cormorant Garamond", "EB Garamond", Georgia, serif` | `displaySerif` | `res/font/cormorant_garamond_*.ttf` |
 | Body | `"Inter", system-ui, -apple-system, sans-serif` | `bodySans` | `res/font/inter_regular.ttf` |
@@ -109,7 +109,7 @@ in `brandAccent`. `mono = true` overrides period to `ink` for press use.
 
 ### `MonoLabel`
 
-`Text` with `CapsuleType.captionMonoSmall`, uppercase, default color
+`Text` with `OrbitType.captionMonoSmall`, uppercase, default color
 `inkFaint`. No background.
 
 ### `IntentChip`

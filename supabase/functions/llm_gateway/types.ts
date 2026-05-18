@@ -7,7 +7,7 @@ import type { ErrorCode } from "./lib/errors.js";
 
 // --- Supporting JSON-mirror types (data-model.md §1.2) ---
 
-/** Mirrors com.capsule.app.data.entity.StateSnapshot. */
+/** Mirrors com.orbit.app.data.entity.StateSnapshot. */
 export interface StateSnapshotJson {
   foregroundApp: string | null;
   appCategory: string | null;
@@ -16,14 +16,14 @@ export interface StateSnapshotJson {
   dayOfWeek: string | null;
 }
 
-/** Mirrors com.capsule.app.ai.model.AppFunctionSummary. */
+/** Mirrors com.orbit.app.ai.model.AppFunctionSummary. */
 export interface AppFunctionSummaryJson {
   id: string;
   name: string;
   schema: Record<string, unknown>;
 }
 
-/** Mirrors com.capsule.app.actions.ActionProposal. */
+/** Mirrors com.orbit.app.actions.ActionProposal. */
 export interface ActionProposalJson {
   functionId: string;
   args: Record<string, unknown>;

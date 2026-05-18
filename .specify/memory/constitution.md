@@ -707,7 +707,7 @@ The spirit of local-first is preserved, not removed. Specifically:
   Block 4 (`ClusterDetectionWorker` is carved out of the spec 013
   router migration and pinned to local-mode until that block lands;
   see spec 013 FR-013-028 and the `// CLUSTER-LOCAL-PIN` comment in
-  `app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt`).
+  `app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt`).
 - ADR-007: RLS + multi-user smoke test prerequisite for alpha.
 
 **Downstream artifact review**:

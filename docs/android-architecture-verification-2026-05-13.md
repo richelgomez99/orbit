@@ -105,7 +105,7 @@ Device: `SM-X710` / `gts9wifi`.
 ### Targeted connected Android test attempt
 
 ```bash
-ANDROID_HOME="$HOME/Library/Android/sdk" JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.capsule.app.net.NetworkGatewayContractTest,com.capsule.app.net.UidCheckTest,com.capsule.app.action.NoNetworkDuringActionExecutionTest,com.capsule.app.action.ExecutionIpcContractTest,com.capsule.app.data.OrbitDatabaseTest,com.capsule.app.data.OrbitDatabaseMigrationV1toV2Test,com.capsule.app.data.OrbitDatabaseMigrationV2toV3Test,com.capsule.app.data.OrbitDatabaseMigrationV3toV4Test
+ANDROID_HOME="$HOME/Library/Android/sdk" JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.orbit.app.net.NetworkGatewayContractTest,com.orbit.app.net.UidCheckTest,com.orbit.app.action.NoNetworkDuringActionExecutionTest,com.orbit.app.action.ExecutionIpcContractTest,com.orbit.app.data.OrbitDatabaseTest,com.orbit.app.data.OrbitDatabaseMigrationV1toV2Test,com.orbit.app.data.OrbitDatabaseMigrationV2toV3Test,com.orbit.app.data.OrbitDatabaseMigrationV3toV4Test
 ```
 
 Result: **PARTIAL**.
@@ -113,7 +113,7 @@ Result: **PARTIAL**.
 31 targeted tests started on the Tab S9. 22 passed and 9 failed. The failures are test-harness/config issues rather than evidence that the architecture cannot run on Android:
 
 - `NetworkGatewayContractTest` localhost cases failed because localhost is blocked by gateway URL validation and cleartext localhost is blocked by Android network security policy.
-- Migration tests failed because Room schema JSON files such as `com.capsule.app.data.OrbitDatabase/1.json` and `3.json` were not available in androidTest assets.
+- Migration tests failed because Room schema JSON files such as `com.orbit.app.data.OrbitDatabase/1.json` and `3.json` were not available in androidTest assets.
 
 Implication: future architecture work should fix the connected-test harness before relying on those connected tests as release gates. The compile/unit/lint gate is green.
 
@@ -126,7 +126,7 @@ The current app already has the structural pieces the plan needs.
 [app/src/main/AndroidManifest.xml](../app/src/main/AndroidManifest.xml) declares:
 
 - default process for UI activities;
-- `CapsuleOverlayService` in `:capture`;
+- `OrbitOverlayService` in `:capture`;
 - `EnvelopeRepositoryService` in `:ml`;
 - `NetworkGatewayService` in `:net`;
 - `ActionExecutorService` in `:capture`.
@@ -148,9 +148,9 @@ Required correction: describe `:net` as the only allowed code path for network I
 
 The app already has AIDL surfaces for the planned boundaries:
 
-- [app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl](../app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl): `fetchPublicUrl` and `callLlmGateway`.
-- [app/src/main/aidl/com/capsule/app/data/ipc/IEnvelopeRepository.aidl](../app/src/main/aidl/com/capsule/app/data/ipc/IEnvelopeRepository.aidl): seal/read/mutate/hydration/action/cluster repository surface.
-- [app/src/main/aidl/com/capsule/app/action/ipc/IActionExecutor.aidl](../app/src/main/aidl/com/capsule/app/action/ipc/IActionExecutor.aidl): local action execution.
+- [app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl](../app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl): `fetchPublicUrl` and `callLlmGateway`.
+- [app/src/main/aidl/com/orbit/app/data/ipc/IEnvelopeRepository.aidl](../app/src/main/aidl/com/orbit/app/data/ipc/IEnvelopeRepository.aidl): seal/read/mutate/hydration/action/cluster repository surface.
+- [app/src/main/aidl/com/orbit/app/action/ipc/IActionExecutor.aidl](../app/src/main/aidl/com/orbit/app/action/ipc/IActionExecutor.aidl): local action execution.
 
 Android feasibility: **high**.
 
@@ -158,11 +158,11 @@ Constraint: Binder has practical transaction-size limits. Future `EvidenceBundle
 
 ### Network gateway
 
-[app/src/main/java/com/capsule/app/net/NetworkGatewayService.kt](../app/src/main/java/com/capsule/app/net/NetworkGatewayService.kt) is a bound service in `:net` and exposes `fetchPublicUrl` plus `callLlmGateway`.
+[app/src/main/java/com/orbit/app/net/NetworkGatewayService.kt](../app/src/main/java/com/orbit/app/net/NetworkGatewayService.kt) is a bound service in `:net` and exposes `fetchPublicUrl` plus `callLlmGateway`.
 
-[app/src/main/java/com/capsule/app/ai/CloudLlmProvider.kt](../app/src/main/java/com/capsule/app/ai/CloudLlmProvider.kt) already routes cloud LLM calls through `INetworkGateway` rather than importing HTTP clients.
+[app/src/main/java/com/orbit/app/ai/CloudLlmProvider.kt](../app/src/main/java/com/orbit/app/ai/CloudLlmProvider.kt) already routes cloud LLM calls through `INetworkGateway` rather than importing HTTP clients.
 
-[build-logic/lint/src/main/java/com/capsule/lint/NoHttpClientOutsideNetDetector.kt](../build-logic/lint/src/main/java/com/capsule/lint/NoHttpClientOutsideNetDetector.kt) enforces an error when HTTP clients are instantiated outside `com.capsule.app.net.*`.
+[build-logic/lint/src/main/java/com/orbit/lint/NoHttpClientOutsideNetDetector.kt](../build-logic/lint/src/main/java/com/orbit/lint/NoHttpClientOutsideNetDetector.kt) enforces an error when HTTP clients are instantiated outside `com.orbit.app.net.*`.
 
 Android feasibility: **high**, with an enforcement caveat.
 
@@ -170,7 +170,7 @@ Constraint: Android cannot process-scope `INTERNET`, so the lint rule and code r
 
 ### Local action execution
 
-[app/src/main/java/com/capsule/app/action/ActionExecutorService.kt](../app/src/main/java/com/capsule/app/action/ActionExecutorService.kt) already runs in `:capture`, validates function/schema/args, invokes local handlers, records action/audit rows through `:ml`, and supports an undo window.
+[app/src/main/java/com/orbit/app/action/ActionExecutorService.kt](../app/src/main/java/com/orbit/app/action/ActionExecutorService.kt) already runs in `:capture`, validates function/schema/args, invokes local handlers, records action/audit rows through `:ml`, and supports an undo window.
 
 Android feasibility: **high**.
 
@@ -178,7 +178,7 @@ This is exactly the right Android boundary for Round 4/Round 5 approval-first ex
 
 ### Encrypted Room storage
 
-[app/src/main/java/com/capsule/app/data/OrbitDatabase.kt](../app/src/main/java/com/capsule/app/data/OrbitDatabase.kt) uses Room v7 with SQLCipher and Android Keystore-backed passphrase management. Existing entities already include captures, continuations, continuation results, audit rows, actions, skills, clusters, cluster members, and notes.
+[app/src/main/java/com/orbit/app/data/OrbitDatabase.kt](../app/src/main/java/com/orbit/app/data/OrbitDatabase.kt) uses Room v7 with SQLCipher and Android Keystore-backed passphrase management. Existing entities already include captures, continuations, continuation results, audit rows, actions, skills, clusters, cluster members, and notes.
 
 Android feasibility: **high** for additive sidecar tables.
 
@@ -188,7 +188,7 @@ Constraint: migration tests need androidTest asset packaging fixed before future
 
 ### Cloud/local LLM routing
 
-[app/src/main/java/com/capsule/app/ai/LlmProviderRouter.kt](../app/src/main/java/com/capsule/app/ai/LlmProviderRouter.kt) already centralizes local-vs-cloud provider choice and currently falls through to cloud because hardware detection is a stub.
+[app/src/main/java/com/orbit/app/ai/LlmProviderRouter.kt](../app/src/main/java/com/orbit/app/ai/LlmProviderRouter.kt) already centralizes local-vs-cloud provider choice and currently falls through to cloud because hardware detection is a stub.
 
 Android feasibility: **medium-high**.
 
@@ -201,7 +201,7 @@ The shape is right, but a real local/Nano kill-switch story requires:
 
 ### Source identity and YouTube handling
 
-[app/src/main/java/com/capsule/app/net/ProviderMetadataResolver.kt](../app/src/main/java/com/capsule/app/net/ProviderMetadataResolver.kt) already covers provider metadata and oEmbed handling. The shared `SourceIdentityResolver` shape is tracked in [docs/capture-source-identity-plan.md](capture-source-identity-plan.md) and the `015-phase1-cluster-surface` branch before it becomes mainline source.
+[app/src/main/java/com/orbit/app/net/ProviderMetadataResolver.kt](../app/src/main/java/com/orbit/app/net/ProviderMetadataResolver.kt) already covers provider metadata and oEmbed handling. The shared `SourceIdentityResolver` shape is tracked in [docs/capture-source-identity-plan.md](capture-source-identity-plan.md) and the `015-phase1-cluster-surface` branch before it becomes mainline source.
 
 Android feasibility: **high**.
 
@@ -232,7 +232,7 @@ These should be added to future specs/tasks as hard gates.
 
 Because `INTERNET` is app UID-wide, every future feature must keep:
 
-- no HTTP clients outside `com.capsule.app.net.*`;
+- no HTTP clients outside `com.orbit.app.net.*`;
 - lint gate enabled;
 - no direct provider SDK clients outside `:net` unless explicitly reviewed;
 - workers and providers using `INetworkGateway` for network operations.

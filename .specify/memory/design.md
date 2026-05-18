@@ -972,7 +972,7 @@ turns. The product is quiet; the haptics are quiet.
 > Phase 1 setup tasks (T001–T006) can adopt them when the design work
 > begins.
 
-- Package `com.capsule.app.ui.theme.*` holds `OrbitTheme`,
+- Package `com.orbit.app.ui.theme.*` holds `OrbitTheme`,
   `OrbitColorScheme`, `OrbitTypography`, `OrbitShapes`, `OrbitMotion`.
 - **No Material components.** No `Scaffold`, no `Card`, no
   `OutlinedTextField`. Use `Box`, `Column`, `Row`, `Text`,

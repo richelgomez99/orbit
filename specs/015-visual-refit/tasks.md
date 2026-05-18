@@ -26,22 +26,22 @@ commit 1. (DEP-002 + DEP-003 resolved 2026-04-29; D4 amendment target =
 
 **Files touched**:
 
-- `app/src/main/java/com/capsule/app/ui/tokens/Colors.kt`
-- `app/src/main/java/com/capsule/app/ui/tokens/Type.kt` (new)
-- `app/src/main/java/com/capsule/app/RuntimeFlags.kt`
+- `app/src/main/java/com/orbit/app/ui/tokens/Colors.kt`
+- `app/src/main/java/com/orbit/app/ui/tokens/Type.kt` (new)
+- `app/src/main/java/com/orbit/app/RuntimeFlags.kt`
 - `app/src/main/res/font/cormorant_garamond_regular.ttf` (new)
 - `app/src/main/res/font/cormorant_garamond_italic.ttf` (new)
 - `app/src/main/res/font/inter_regular.ttf` (new)
 - `app/src/main/res/font/jetbrains_mono_regular.ttf` (new)
 - `app/src/main/res/font/font_*.xml` (FontFamily declarations)
 
-- [x] **T015-001** [P0c1] Extend `CapsulePalette.Tokens` (Light + Dark) with
+- [x] **T015-001** [P0c1] Extend `OrbitPalette.Tokens` (Light + Dark) with
   `brandAccent` (`#e8b06a`), `brandAccentDim` (16% alpha amber),
-  `brandAccentInk` (`#1a1206`). Mirror in `CapsulePalette.Light` and
-  `CapsulePalette.Dark`. Update KDoc to reflect that `brandAccent` is the
+  `brandAccentInk` (`#1a1206`). Mirror in `OrbitPalette.Light` and
+  `OrbitPalette.Dark`. Update KDoc to reflect that `brandAccent` is the
   consolidated single brand accent (per LD-001).
-- [x] **T015-002** [P0c1] Create `app/src/main/java/com/capsule/app/ui/tokens/Type.kt`
-  exposing `CapsuleType` object with `displaySerif` (Cormorant Garamond),
+- [x] **T015-002** [P0c1] Create `app/src/main/java/com/orbit/app/ui/tokens/Type.kt`
+  exposing `OrbitType` object with `displaySerif` (Cormorant Garamond),
   `bodySans` (Inter), `captionMono` (JetBrains Mono), and a typography scale
   (`displayLarge`, `displayMedium`, `bodyLarge`, `bodyMedium`,
   `captionMonoSmall`). Match the size/tracking values from
@@ -53,8 +53,9 @@ commit 1. (DEP-002 + DEP-003 resolved 2026-04-29; D4 amendment target =
 - [x] **T015-004** [P0c1] Add Inter Regular + JetBrains Mono Regular under
   `app/src/main/res/font/` with matching `<font-family>` XMLs.
 - [x] **T015-005** [P0c1] Add `RuntimeFlags.useNewVisualLanguage: Boolean`
-  in `RuntimeFlags.kt`, default `false`. Add `@Volatile` per existing
-  convention. KDoc: "spec 015 — gates the Quiet Almanac visual refit."
+  in `RuntimeFlags.kt`, initially default `false` for staged rollout. Add
+  `@Volatile` per existing convention. KDoc: "spec 015 — gates the Quiet
+  Almanac visual refit." T015-904 later flipped the alpha default to `true`.
 - [x] **T015-006** [P0c1] Verify gates: `:app:compileDebugKotlin`,
   `:app:lintDebug` (no new warnings), `:build-logic:lint:test` (8/8 green).
 - [x] **T015-007** [P0c1] **CLAIM REVIEW GATE**: commit, push, request
@@ -65,17 +66,17 @@ commit 1. (DEP-002 + DEP-003 resolved 2026-04-29; D4 amendment target =
 
 **Files touched** (all new):
 
-- `app/src/main/java/com/capsule/app/ui/primitives/OrbitMark.kt`
-- `app/src/main/java/com/capsule/app/ui/primitives/OrbitWordmark.kt`
-- `app/src/main/java/com/capsule/app/ui/primitives/MonoLabel.kt`
-- `app/src/main/java/com/capsule/app/ui/primitives/IntentChip.kt`
-- `app/src/main/java/com/capsule/app/ui/primitives/SourceGlyph.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/OrbitMark.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/OrbitWordmark.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/MonoLabel.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/IntentChip.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/SourceGlyph.kt`
 
 - [x] **T015-008** [P0c2] Create `OrbitMark.kt` — `Canvas` + `Path` with
   tilted ellipse (`-22°`), self-dot (cream), accent-dot (brand amber). No
   font dependency. Mechanism mirrors `AgentVoiceMark`. Default size 40 dp.
 - [x] **T015-009** [P0c2] Create `OrbitWordmark.kt` — composes `OrbitMark` +
-  serif "Orbit." text using `CapsuleType.displaySerif`. Period rendered in
+  serif "Orbit." text using `OrbitType.displaySerif`. Period rendered in
   brand amber unless `mono = true`.
 - [x] **T015-010** [P0c2] Create `MonoLabel.kt` — uppercase tracked mono
   caption per `orbit-tokens.jsx::MonoLabel`. Default 10 sp, letter-spacing
@@ -106,14 +107,14 @@ commit 1. (DEP-002 + DEP-003 resolved 2026-04-29; D4 amendment target =
 
 **Files touched**:
 
-- `app/src/main/java/com/capsule/app/ui/primitives/AgentVoiceMark.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/AgentVoiceMark.kt`
 - `build-logic/lint/src/test/java/.../NoAgentVoiceMarkOutsideAgentSurfacesDetectorTest.kt`
 - `specs/010-visual-polish-pass/spec.md` (D4 amendment line)
 
 - [x] **T015-016** [P0c3] One-line color change in `AgentVoiceMark.kt`:
   swap the rendering color from `tokens.inkAccentCluster` to
   `tokens.brandAccent`. Retire the `inkAccentCluster` field on
-  `CapsulePalette.Tokens` (per the user's 2026-04-29 confirmation —
+  `OrbitPalette.Tokens` (per the user's 2026-04-29 confirmation —
   no deprecation window; `AgentVoiceMark` was the sole consumer).
   Update KDoc to note the consolidation per spec 015 LD-001.
 - [x] **T015-017** [P0c3] Update `NoAgentVoiceMarkOutsideAgentSurfacesDetectorTest`
@@ -168,7 +169,7 @@ scratch on the new tokens. Coordinates with spec 002 Phase 11 Block 8.
   tests (if any) green; manual flag-ON screenshot vs JSX reference recorded
   in PR body.
   - Automated gates run 2026-05-12: `:app:compileDebugKotlin`,
-    `:app:testDebugUnitTest --tests 'com.capsule.app.diary.ui.ClusterSuggestionCardTest'`,
+    `:app:testDebugUnitTest --tests 'com.orbit.app.diary.ui.ClusterSuggestionCardTest'`,
     `:app:compileDebugAndroidTestKotlin`, `:app:lintDebug`. Manual flag-ON
     screenshot remains pending for the PR body.
 - [x] **T015-105** [P1] **REVIEW GATE** per commit landed in Phase 1.
@@ -194,7 +195,7 @@ app-icon dots. Navigation/data contracts unchanged.
 - [x] **T015-203** [P2] Replace existing app-icon dots in diary rows with
   `SourceGlyph` consumption. Preserve content-descriptions and test tags.
 - [x] **T015-204** [P2] Add shared `SourceIdentityResolver` under
-  `app/src/main/java/com/capsule/app/ui/primitives/` and consume it from
+  `app/src/main/java/com/orbit/app/ui/primitives/` and consume it from
   `DiaryScreen` so provider URL identity wins over foreground origin for
   primary glyphs. Cover YouTube host variants: `youtube.com`, subdomains,
   `youtu.be`, and `youtube-nocookie.com`.
@@ -204,7 +205,7 @@ app-icon dots. Navigation/data contracts unchanged.
 - [ ] **T015-206** [P2] Verify existing instrumented diary tests green on
   flag-OFF. Add flag-ON manual screenshot or screenshot test.
   - Automated gates run 2026-05-12: `:app:compileDebugKotlin`,
-    `:app:testDebugUnitTest --tests 'com.capsule.app.ui.primitives.SourceIdentityResolverTest'`,
+    `:app:testDebugUnitTest --tests 'com.orbit.app.ui.primitives.SourceIdentityResolverTest'`,
     `:app:compileDebugAndroidTestKotlin`, `:app:lintDebug`.
   - Added flag-OFF/flag-ON coverage in `DiaryScreenWithClusterTest`, including
     provider-first YouTube glyph rendering from a Brave-copied link. Focused
@@ -255,11 +256,11 @@ danger row with refined wording.
     execution remains pending with the same Compose harness limitation noted
     under T015-206.
 - [x] **T015-306** [P3] Audit nested settings routes and setup/settings
-  surfaces for legacy `Capsule` copy. Replace user-facing product copy with
+  surfaces for legacy `Orbit` copy. Replace user-facing product copy with
   `Orbit`; leave package names, process names, and developer-only identifiers
   unchanged.
 - 2026-05-12 audit replaced user-facing setup, battery guidance, and foreground
-  notification copy with `Orbit`. Remaining `Capsule` hits are debug-only labels,
+  notification copy with `Orbit`. Remaining `Orbit` hits are debug-only labels,
   log tags, theme/package/service identifiers, and token KDoc.
 - [x] **T015-307** [P3] Refit nested settings pages, including capture overlay
   settings, to the same Quiet Almanac section pattern as the top-level settings
@@ -394,7 +395,7 @@ touch bounds.
     and regression coverage. Ran `:app:compileDebugKotlin`,
     `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and
     `:app:lintDebug` successfully after cleanup.
-  - 2026-05-13 closeout validation in `../capsule-app-015-phase1-split`:
+  - 2026-05-13 closeout validation in `../orbit-app-015-phase1-split`:
     staged diff hygiene passed; Android gate passed for
     `:app:compileDebugKotlin`, `:app:testDebugUnitTest`,
     `:app:compileDebugAndroidTestKotlin`, and `:app:lintDebug`; build-logic
@@ -460,8 +461,8 @@ touch bounds.
     launcher/logo resources, BubbleUI refit, Settings permission-row refit,
     internal service-health hardening, and legacy duplicate fallback files.
   - 2026-05-12 branch split complete: 015 visual/setup/logo changes applied to
-    `../capsule-app-015-phase1-split` on `015-phase1-cluster-surface`; 017
-    duplicate fallback changes applied to `../capsule-app-spec-017` on
+    `../orbit-app-015-phase1-split` on `015-phase1-cluster-surface`; 017
+    duplicate fallback changes applied to `../orbit-app-spec-017` on
     `017-capture-feedback-actions`; `qa/015-017-stacked` returned to a clean
     worktree. No 016 files were dirty in this split.
 

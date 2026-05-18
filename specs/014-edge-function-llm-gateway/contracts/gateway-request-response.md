@@ -288,7 +288,7 @@ fires on this `code`; the function does not retry itself.
 Spec 014 does not modify the wire envelope shape from spec 013. Adding a new `requestId` /
 new field to a payload requires:
 
-1. Add it to the Kotlin sealed class in `app/src/main/java/com/capsule/app/ai/gateway/`.
+1. Add it to the Kotlin sealed class in `app/src/main/java/com/orbit/app/ai/gateway/`.
 2. Add it to the TypeScript mirror in this contract + Zod schema.
 3. Add a new request-type variant handler in the function.
 4. **Both** Android and Edge Function deploy together (Day-2 has no version negotiation).

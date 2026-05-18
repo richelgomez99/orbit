@@ -14,7 +14,7 @@ You're picking up the Quiet Almanac visual refit. This is the orientation.
 ## Branch checkout
 
 ```bash
-cd /Users/richelgomez/dev/capsule-app
+cd /Users/richelgomez/dev/orbit-app
 git fetch origin
 git switch 015-visual-refit
 # branch is tracking origin/main; rebase before resuming work
@@ -27,12 +27,12 @@ git pull --rebase
 | --- | --- |
 | Reference design (JSX prototypes) | `design/visual-refit-2026-04-29/project/` |
 | Reference INDEX | `design/visual-refit-2026-04-29/INDEX.md` |
-| Existing primitives (Phase 11 Block 7) | `app/src/main/java/com/capsule/app/ui/primitives/` |
-| Existing tokens | `app/src/main/java/com/capsule/app/ui/tokens/Colors.kt` |
+| Existing primitives (Phase 11 Block 7) | `app/src/main/java/com/orbit/app/ui/primitives/` |
+| Existing tokens | `app/src/main/java/com/orbit/app/ui/tokens/Colors.kt` |
 | Lint detector | `build-logic/lint/src/main/java/.../NoAgentVoiceMarkOutsideAgentSurfacesDetector.kt` |
 | Lint detector test | `build-logic/lint/src/test/java/.../NoAgentVoiceMarkOutsideAgentSurfacesDetectorTest.kt` |
 | Spec 010 (D4 amendment lands here) | `specs/010-visual-polish-pass/spec.md` |
-| Runtime flag surface | `app/src/main/java/com/capsule/app/RuntimeFlags.kt` |
+| Runtime flag surface | `app/src/main/java/com/orbit/app/RuntimeFlags.kt` |
 
 ## Mental model
 
@@ -44,7 +44,7 @@ The schema migration to drop "in orbit" / "archive" intents and add
 "for someone" is a SEPARATE concern (DEP-001). Do not roll it into this
 spec.
 
-The refit BUILDS ON `AgentVoiceMark` / `ClusterActionRow` / `CapsulePalette`
+The refit BUILDS ON `AgentVoiceMark` / `ClusterActionRow` / `OrbitPalette`
 (landed in PR #4 / Phase 11 Block 7). It does not replace them.
 
 ## Execution order
@@ -77,7 +77,7 @@ The refit BUILDS ON `AgentVoiceMark` / `ClusterActionRow` / `CapsulePalette`
 - `:app:lintDebug` no NEW warnings (pre-existing `MissingClass` for
   `ActionsSettingsActivity` is allowed; predates this branch).
 - `:build-logic:lint:test` 8/8 green (after Phase 0 c3, expectations updated).
-- `RuntimeFlags.useNewVisualLanguage` = false in tree at all times.
+- `RuntimeFlags.useNewVisualLanguage` = true for alpha builds after T015-904.
 
 ## Stop conditions (when in doubt, stop and ask)
 
@@ -86,7 +86,7 @@ The refit BUILDS ON `AgentVoiceMark` / `ClusterActionRow` / `CapsulePalette`
 - Spec 016 (`016-intent-set-migration`) not merged when starting Phase 4.
 - PR #3 + PR #4 not yet merged into `main` when starting Phase 0 c1
   (i.e., Block 7 primitives not yet on main).
-- Any change starts touching `app/src/main/java/com/capsule/app/bubble/`
+- Any change starts touching `app/src/main/java/com/orbit/app/bubble/`
   before Demo Day (LD-005).
 
 ## Useful commands

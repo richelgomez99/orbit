@@ -138,7 +138,7 @@ sealed interface ExtractOutcome {
 2. Re-check sensitivity gates from §2 enqueue conditions; if newly
    sensitive → `Skipped("sensitivity_changed")`.
 3. Resolve registered functions filtered by `appPackage =
-   "com.capsule.app"` (v1.1 only) — emit `AppFunctionSummary` list.
+   "com.orbit.app"` (v1.1 only) — emit `AppFunctionSummary` list.
 4. Call `llmProvider.extractActions(...)` with 8s timeout. On any
    exception → `Failed("nano_${exceptionClass}")` and write audit
    row. Returns `NoCandidates` to the worker (work succeeds; we

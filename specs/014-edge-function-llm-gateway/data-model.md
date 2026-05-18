@@ -77,7 +77,7 @@ interface ScanSensitivityRequest {
 ### 1.2 Supporting JSON-mirror types
 
 ```typescript
-// Mirrors com.capsule.app.data.entity.StateSnapshot (Day-1 Kotlin).
+// Mirrors com.orbit.app.data.entity.StateSnapshot (Day-1 Kotlin).
 // Field-for-field copy. Field nullability matches the Kotlin nullable (?).
 interface StateSnapshotJson {
   foregroundApp: string | null;
@@ -88,14 +88,14 @@ interface StateSnapshotJson {
   // ...additional optional fields as Spec 002 evolves; new fields land in this mirror first.
 }
 
-// Mirrors com.capsule.app.ai.model.AppFunctionSummary (Day-1 Kotlin).
+// Mirrors com.orbit.app.ai.model.AppFunctionSummary (Day-1 Kotlin).
 interface AppFunctionSummaryJson {
   id: string;
   name: string;
   schema: Record<string, unknown>;  // arbitrary JSON Schema fragment
 }
 
-// Mirrors com.capsule.app.actions.ActionProposal (Day-1 Kotlin).
+// Mirrors com.orbit.app.actions.ActionProposal (Day-1 Kotlin).
 interface ActionProposalJson {
   functionId: string;
   args: Record<string, unknown>;
