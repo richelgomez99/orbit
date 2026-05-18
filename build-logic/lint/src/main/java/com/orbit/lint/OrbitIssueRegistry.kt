@@ -1,0 +1,19 @@
+package com.orbit.lint
+
+import com.android.tools.lint.client.api.IssueRegistry
+import com.android.tools.lint.client.api.Vendor
+import com.android.tools.lint.detector.api.CURRENT_API
+import com.android.tools.lint.detector.api.Issue
+
+class OrbitIssueRegistry : IssueRegistry() {
+    override val issues: List<Issue> = listOf(
+        NoHttpClientOutsideNetDetector.ISSUE,
+        NoAgentVoiceMarkOutsideAgentSurfacesDetector.ISSUE,
+    )
+    override val api: Int = CURRENT_API
+    override val vendor: Vendor = Vendor(
+        vendorName = "Orbit/Orbit",
+        identifier = "com.orbit.lint",
+        feedbackUrl = "https://github.com/nicholasrichel/Orbit-GitHub/issues"
+    )
+}

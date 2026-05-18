@@ -10,7 +10,7 @@ This document defines every data structure introduced or modified by this spec: 
 
 ### 1.1 `LlmGatewayRequest` (sealed, `@Serializable`)
 
-Package: `com.capsule.app.ai.gateway`
+Package: `com.orbit.app.ai.gateway`
 Wire format: kotlinx.serialization JSON (UTF-8). Discriminator: `"type"`.
 
 | Subtype | `type` value | Fields | Notes |
@@ -28,7 +28,7 @@ Wire format: kotlinx.serialization JSON (UTF-8). Discriminator: `"type"`.
 
 ### 1.2 `LlmGatewayResponse` (sealed, `@Serializable`)
 
-Package: `com.capsule.app.ai.gateway`
+Package: `com.orbit.app.ai.gateway`
 Discriminator: `"type"`. Every response also carries the originating `requestId` for trace correlation.
 
 | Subtype | `type` value | Fields | Notes |
@@ -62,8 +62,8 @@ Discriminator: `"type"`. Every response also carries the originating `requestId`
 
 | Type | Source | Notes |
 |------|--------|-------|
-| `StateSnapshotJson` | mirror of `com.capsule.app.data.entity.StateSnapshot` | New `@Serializable` data class in `com.capsule.app.ai.gateway`. Field-for-field copy. |
-| `AppFunctionSummaryJson` | mirror of `com.capsule.app.ai.model.AppFunctionSummary` | Same approach. |
+| `StateSnapshotJson` | mirror of `com.orbit.app.data.entity.StateSnapshot` | New `@Serializable` data class in `com.orbit.app.ai.gateway`. Field-for-field copy. |
+| `AppFunctionSummaryJson` | mirror of `com.orbit.app.ai.model.AppFunctionSummary` | Same approach. |
 | `ActionProposalJson` | mirror of the existing `ActionProposal` shape | Same approach. |
 
 The mirrors exist (rather than `@Serializable`-annotating the originals) so the AI Gateway wire format is structurally decoupled from internal model evolution. Conversion is mechanical and lives in `CloudLlmProvider` / `NetworkGatewayImpl`.
@@ -74,7 +74,7 @@ The mirrors exist (rather than `@Serializable`-annotating the originals) so the 
 
 ### 2.1 `LlmGatewayRequestParcel`
 
-Package: `com.capsule.app.net.ipc`
+Package: `com.orbit.app.net.ipc`
 Implements `android.os.Parcelable`.
 
 ```kotlin
@@ -89,7 +89,7 @@ data class LlmGatewayRequestParcel(
 
 ### 2.2 `LlmGatewayResponseParcel`
 
-Package: `com.capsule.app.net.ipc`
+Package: `com.orbit.app.net.ipc`
 Implements `android.os.Parcelable`.
 
 ```kotlin
@@ -106,14 +106,14 @@ Same wire shape as the request parcel: a single String field carrying the JSON-e
 
 ## 3. AIDL surface (modified)
 
-File: `app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl`
+File: `app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl`
 
 ```aidl
-package com.capsule.app.net.ipc;
+package com.orbit.app.net.ipc;
 
-import com.capsule.app.net.ipc.FetchResultParcel;
-import com.capsule.app.net.ipc.LlmGatewayRequestParcel;
-import com.capsule.app.net.ipc.LlmGatewayResponseParcel;
+import com.orbit.app.net.ipc.FetchResultParcel;
+import com.orbit.app.net.ipc.LlmGatewayRequestParcel;
+import com.orbit.app.net.ipc.LlmGatewayResponseParcel;
 
 interface INetworkGateway {
     FetchResultParcel fetchPublicUrl(String url, long timeoutMs);   // existing — UNCHANGED
@@ -121,14 +121,14 @@ interface INetworkGateway {
 }
 ```
 
-The two new parcel types each need a sibling AIDL file declaring them as parcelables: `app/src/main/aidl/com/capsule/app/net/ipc/LlmGatewayRequestParcel.aidl` and `LlmGatewayResponseParcel.aidl` containing `parcelable LlmGatewayRequestParcel;` and `parcelable LlmGatewayResponseParcel;` respectively (Android's standard pattern, mirrors how `FetchResultParcel` is declared).
+The two new parcel types each need a sibling AIDL file declaring them as parcelables: `app/src/main/aidl/com/orbit/app/net/ipc/LlmGatewayRequestParcel.aidl` and `LlmGatewayResponseParcel.aidl` containing `parcelable LlmGatewayRequestParcel;` and `parcelable LlmGatewayResponseParcel;` respectively (Android's standard pattern, mirrors how `FetchResultParcel` is declared).
 
 ---
 
 ## 4. `RuntimeFlags` (modified)
 
-File: `app/src/main/java/com/capsule/app/RuntimeFlags.kt`
-Package: `com.capsule.app` (existing — DO NOT introduce a new `runtime/` package).
+File: `app/src/main/java/com/orbit/app/RuntimeFlags.kt`
+Package: `com.orbit.app` (existing — DO NOT introduce a new `runtime/` package).
 
 Added fields (preserve existing `clusterModelLabelLock`):
 
@@ -299,9 +299,9 @@ Implementation: a Postgres trigger on `clusters` (UPDATE of `summary`) that walk
 
 | Concept | File |
 |---------|------|
-| `LlmProvider` interface (modified doc-comment) | [LlmProvider.kt](../../app/src/main/java/com/capsule/app/ai/LlmProvider.kt) |
-| Existing AIDL surface | [INetworkGateway.aidl](../../app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl) |
-| Existing parcel pattern | [FetchResultParcel.kt](../../app/src/main/java/com/capsule/app/net/ipc/FetchResultParcel.kt) |
-| Existing `:net` impl | [NetworkGatewayImpl.kt](../../app/src/main/java/com/capsule/app/net/NetworkGatewayImpl.kt) |
-| Existing `RuntimeFlags` | [RuntimeFlags.kt](../../app/src/main/java/com/capsule/app/RuntimeFlags.kt) |
+| `LlmProvider` interface (modified doc-comment) | [LlmProvider.kt](../../app/src/main/java/com/orbit/app/ai/LlmProvider.kt) |
+| Existing AIDL surface | [INetworkGateway.aidl](../../app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl) |
+| Existing parcel pattern | [FetchResultParcel.kt](../../app/src/main/java/com/orbit/app/net/ipc/FetchResultParcel.kt) |
+| Existing `:net` impl | [NetworkGatewayImpl.kt](../../app/src/main/java/com/orbit/app/net/NetworkGatewayImpl.kt) |
+| Existing `RuntimeFlags` | [RuntimeFlags.kt](../../app/src/main/java/com/orbit/app/RuntimeFlags.kt) |
 | Encryption contract (defines `*_ct` column names) | [envelope-content-encryption-contract.md](../contracts/envelope-content-encryption-contract.md) |

@@ -37,7 +37,7 @@ Android 15 (API 35) that affect this choice.
 | BOOT_COMPLETED | **BLOCKED on Android 15** — cannot launch `dataSync` from BOOT_COMPLETED receiver |
 | onTimeout | Must implement `Service.onTimeout(int, int)` and call `stopSelf()` within seconds, or system throws `RemoteServiceException` |
 
-**Critical issue**: Capsule's overlay service is *always-on* — it's not performing
+**Critical issue**: Orbit's overlay service is *always-on* — it's not performing
 "data sync". The 6-hour timeout means the foreground service will be force-stopped
 if the user doesn't interact with the app in the foreground for 6 hours. This
 is **unacceptable** for a persistent overlay.
@@ -54,7 +54,7 @@ is **unacceptable** for a persistent overlay.
 
 **Manifest declaration**:
 ```xml
-<service android:name=".service.CapsuleOverlayService"
+<service android:name=".service.OrbitOverlayService"
     android:foregroundServiceType="specialUse">
   <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
       android:value="Persistent user-interactive floating overlay for explicit clipboard capture triggered by user tap. Requires continuous foreground presence to render TYPE_APPLICATION_OVERLAY window."/>
@@ -72,7 +72,7 @@ is **unacceptable** for a persistent overlay.
 
 ### **DECISION: Use `specialUse`**
 
-**Rationale**: Capsule's overlay is not data sync — it's a persistent
+**Rationale**: Orbit's overlay is not data sync — it's a persistent
 user-interactive surface. `specialUse` has no timeout, can launch from
 BOOT_COMPLETED, and the justification ("persistent floating overlay for
 user-initiated clipboard capture") is a legitimate use case. Google Play
@@ -97,7 +97,7 @@ across API levels:
 | 33+ (Android 13) | System shows a **visual confirmation UI** (not just a toast) when content is added to clipboard. Apps should avoid duplicate notifications. |
 | 33+ (Android 13) | `POST_NOTIFICATIONS` runtime permission required for foreground service notification channel. |
 
-### Key API Surface for Capsule
+### Key API Surface for Orbit
 
 ```kotlin
 val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
@@ -131,14 +131,14 @@ if the read hangs.
 
 ### Sensitive Content Flag
 
-Android 13 introduced `ClipDescription.EXTRA_IS_SENSITIVE`. Capsule should check
+Android 13 introduced `ClipDescription.EXTRA_IS_SENSITIVE`. Orbit should check
 this flag and indicate when captured content was marked sensitive by the source
 app, but should still allow capture (user explicitly tapped).
 
 ### `getPrimaryClipDescription()` — No Toast
 
 Calling `getPrimaryClipDescription()` (metadata only, no data) does NOT trigger
-the "pasted from clipboard" toast. Capsule should use this to check clipboard
+the "pasted from clipboard" toast. Orbit should use this to check clipboard
 state before committing to a full read.
 
 ---
@@ -161,9 +161,9 @@ service from the background. **Android 15 narrows this exemption**:
 
 **If requirements not met**: System throws `ForegroundServiceStartNotAllowedException`.
 
-### Impact on Capsule Architecture
+### Impact on Orbit Architecture
 
-This **aligns well** with Capsule's design:
+This **aligns well** with Orbit's design:
 
 1. User toggles overlay ON in the Activity (foreground context)
 2. Activity creates the overlay window via WindowManager (visible)
@@ -298,10 +298,10 @@ window has a different visibility lifecycle than the service itself.
 
 **Layer 4: Manufacturer-Specific User Guidance**
 - Detect OEM via `Build.MANUFACTURER`
-- Show targeted instructions (e.g., "Samsung: Settings → Battery → Background usage limits → Add Capsule to Never sleeping apps")
+- Show targeted instructions (e.g., "Samsung: Settings → Battery → Background usage limits → Add Orbit to Never sleeping apps")
 - Link to manufacturer-specific battery settings intents where possible
 
-### Manufacturers Capsule Must Cover (from spec FR-013)
+### Manufacturers Orbit Must Cover (from spec FR-013)
 
 Samsung, Xiaomi, Huawei, OnePlus, Oppo, Vivo, Realme
 
@@ -322,7 +322,7 @@ Apps targeting SDK 35 are **edge-to-edge by default**. Key impacts:
 - Navigation bar (gesture) is transparent by default
 - `layoutInDisplayCutoutMode` must be `LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS`
 
-**Impact on Capsule Phase 1**: Minimal for the overlay itself (overlays don't
+**Impact on Orbit Phase 1**: Minimal for the overlay itself (overlays don't
 have status/nav bars), but the **main Activity** (toggle screen) must handle
 insets properly. Using Material 3 Compose components (which auto-handle insets)
 mitigates this. The bubble positioning calculation must account for display
@@ -351,7 +351,7 @@ correct for a persistent interactive overlay.
 
 ### Decision 3: Service Start Order (Android 15 Safe)
 
-**Status**: CONFIRMED — Capsule's architecture naturally satisfies the new
+**Status**: CONFIRMED — Orbit's architecture naturally satisfies the new
 requirement.
 **Order**: Show overlay window → verify visible → start FGS (or, for service
 restarts via START_STICKY, service creates overlay in `onCreate()` before
@@ -379,7 +379,7 @@ ComposeView tree owners point to OverlayLifecycleOwner, not to the service.
    to foreground every 6 hours to reset timer). This is degraded but functional.
 
 2. **BOOT_COMPLETED restart**: With `specialUse`, the service CAN be started
-   from BOOT_COMPLETED. Should Capsule auto-start on boot? Recommendation:
+   from BOOT_COMPLETED. Should Orbit auto-start on boot? Recommendation:
    Yes, if the user had the service enabled when device was shut down. Persisted
    flag in SharedPreferences controls this.
 

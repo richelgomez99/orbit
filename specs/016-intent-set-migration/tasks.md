@@ -38,7 +38,7 @@
 
 ## Branch Debt Closeout Reconciliation - 2026-05-13
 
-- Clean status: `/Users/richelgomez/dev/capsule-app-spec-016` returned no `git status --short` output before reconciliation checks.
+- Clean status: `/Users/richelgomez/dev/orbit-app-spec-016` returned no `git status --short` output before reconciliation checks.
 - Diff against `origin/main...HEAD`: 22 files changed, 630 insertions, 37 deletions. Scope is spec docs, Android intent/label surfaces, Android parsing test, and Supabase classifier/allowlist/tests.
 - Diff against `origin/016-intent-set-migration...HEAD`: branch is materially diverged from the stale PR branch; PR #8 should be updated or replaced after the gates are reviewed.
 - Android gate passed: `:app:compileDebugKotlin`, `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and `:app:lintDebug` succeeded.

@@ -24,38 +24,38 @@ results as a product signal.
 
 - `design/visual-refit-2026-04-29/**`
 - `specs/015-visual-refit/**`
-- `app/src/main/java/com/capsule/app/CapsuleApplication.kt`
-- `app/src/main/java/com/capsule/app/diary/ui/ClusterSuggestionCard.kt`
-- `app/src/main/java/com/capsule/app/diary/ui/ClusterDetailScreen.kt`
-- `app/src/main/java/com/capsule/app/diary/ui/DiaryScreen.kt` visual refit and `SourceIdentityResolver` consumption
-- `app/src/main/java/com/capsule/app/overlay/CaptureSheetUI.kt` visual refit and `SourceIdentityResolver` consumption
-- `app/src/main/java/com/capsule/app/overlay/BubbleUI.kt`
-- `app/src/main/java/com/capsule/app/settings/SettingsActivity.kt`
-- `app/src/main/java/com/capsule/app/settings/SettingsScreen.kt`
-- `app/src/main/java/com/capsule/app/ui/MainActivity.kt` capture setup visual/product refit
-- `app/src/main/java/com/capsule/app/service/ServiceHealthMonitor.kt` false-active hardening retained as internal diagnostics
-- `app/src/main/java/com/capsule/app/service/CapsuleOverlayService.kt` stop-action preference/status consistency
-- `app/src/androidTest/java/com/capsule/app/service/ServiceHealthMonitorTest.kt`
-- `app/src/main/java/com/capsule/app/ui/primitives/IntentChip.kt`
-- `app/src/main/java/com/capsule/app/ui/primitives/SourceIdentityResolver.kt`
+- `app/src/main/java/com/orbit/app/OrbitApplication.kt`
+- `app/src/main/java/com/orbit/app/diary/ui/ClusterSuggestionCard.kt`
+- `app/src/main/java/com/orbit/app/diary/ui/ClusterDetailScreen.kt`
+- `app/src/main/java/com/orbit/app/diary/ui/DiaryScreen.kt` visual refit and `SourceIdentityResolver` consumption
+- `app/src/main/java/com/orbit/app/overlay/CaptureSheetUI.kt` visual refit and `SourceIdentityResolver` consumption
+- `app/src/main/java/com/orbit/app/overlay/BubbleUI.kt`
+- `app/src/main/java/com/orbit/app/settings/SettingsActivity.kt`
+- `app/src/main/java/com/orbit/app/settings/SettingsScreen.kt`
+- `app/src/main/java/com/orbit/app/ui/MainActivity.kt` capture setup visual/product refit
+- `app/src/main/java/com/orbit/app/service/ServiceHealthMonitor.kt` false-active hardening retained as internal diagnostics
+- `app/src/main/java/com/orbit/app/service/OrbitOverlayService.kt` stop-action preference/status consistency
+- `app/src/androidTest/java/com/orbit/app/service/ServiceHealthMonitorTest.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/IntentChip.kt`
+- `app/src/main/java/com/orbit/app/ui/primitives/SourceIdentityResolver.kt`
 - `app/src/main/res/drawable/ic_orbit_logo_mark.xml`
-- `app/src/main/res/drawable/ic_capsule_notification.xml`
+- `app/src/main/res/drawable/ic_orbit_notification.xml`
 - `app/src/main/res/drawable/ic_launcher_background.xml`
 - `app/src/main/res/drawable/ic_launcher_foreground.xml`
 - deleted stale density launcher WebPs under `app/src/main/res/mipmap-*/`
-- `app/src/test/java/com/capsule/app/ui/primitives/SourceIdentityResolverTest.kt`
-- `app/src/androidTest/java/com/capsule/app/diary/DiaryClusterSuggestionCardTest.kt`
-- `app/src/androidTest/java/com/capsule/app/settings/SettingsScreenTest.kt`
+- `app/src/test/java/com/orbit/app/ui/primitives/SourceIdentityResolverTest.kt`
+- `app/src/androidTest/java/com/orbit/app/diary/DiaryClusterSuggestionCardTest.kt`
+- `app/src/androidTest/java/com/orbit/app/settings/SettingsScreenTest.kt`
 
 ### 016 intent set migration / classifier alignment
 
-- `app/src/main/java/com/capsule/app/data/model/Intent.kt`
-- `app/src/main/java/com/capsule/app/ai/DigestComposer.kt`
-- `app/src/main/java/com/capsule/app/diary/ui/EnvelopeCard.kt`
-- `app/src/main/java/com/capsule/app/diary/ui/EnvelopeDetailScreen.kt`
-- `app/src/main/java/com/capsule/app/overlay/ChipRow.kt` semantic addition of `READ_LATER`
-- `app/src/main/java/com/capsule/app/overlay/SilentWrapPill.kt`
-- `app/src/main/java/com/capsule/app/ui/IntentChipPicker.kt`
+- `app/src/main/java/com/orbit/app/data/model/Intent.kt`
+- `app/src/main/java/com/orbit/app/ai/DigestComposer.kt`
+- `app/src/main/java/com/orbit/app/diary/ui/EnvelopeCard.kt`
+- `app/src/main/java/com/orbit/app/diary/ui/EnvelopeDetailScreen.kt`
+- `app/src/main/java/com/orbit/app/overlay/ChipRow.kt` semantic addition of `READ_LATER`
+- `app/src/main/java/com/orbit/app/overlay/SilentWrapPill.kt`
+- `app/src/main/java/com/orbit/app/ui/IntentChipPicker.kt`
 - `supabase/functions/llm_gateway/handlers/classify_intent.ts`
 - `supabase/functions/llm_gateway/lib/allowlists.ts`
 - `supabase/functions/llm_gateway/test/anthropic_handlers.test.ts`
@@ -67,14 +67,14 @@ amended before implementation to preserve `WANT_IT` / `INTERESTING` and add
 ### 017 capture feedback actions / overlay hardening
 
 - `specs/017-capture-feedback-actions/**`
-- `app/src/androidTest/java/com/capsule/app/data/UrlHashDedupeContractTest.kt`
-- `app/src/main/java/com/capsule/app/data/EnvelopeRepositoryImpl.kt`
-- `app/src/main/java/com/capsule/app/data/EnvelopeStorageBackend.kt`
-- `app/src/main/java/com/capsule/app/data/LocalRoomBackend.kt`
-- `app/src/main/java/com/capsule/app/data/OrbitMigrations.kt`
-- `app/src/main/java/com/capsule/app/data/dao/IntentEnvelopeDao.kt`
-- `app/src/main/java/com/capsule/app/overlay/PostCaptureOverlay.kt`
-- `app/src/main/java/com/capsule/app/service/CapsuleOverlayService.kt` compact post-capture window bounds, live landscape metrics, and stop/remove consistency if not kept with 015 setup QA
+- `app/src/androidTest/java/com/orbit/app/data/UrlHashDedupeContractTest.kt`
+- `app/src/main/java/com/orbit/app/data/EnvelopeRepositoryImpl.kt`
+- `app/src/main/java/com/orbit/app/data/EnvelopeStorageBackend.kt`
+- `app/src/main/java/com/orbit/app/data/LocalRoomBackend.kt`
+- `app/src/main/java/com/orbit/app/data/OrbitMigrations.kt`
+- `app/src/main/java/com/orbit/app/data/dao/IntentEnvelopeDao.kt`
+- `app/src/main/java/com/orbit/app/overlay/PostCaptureOverlay.kt`
+- `app/src/main/java/com/orbit/app/service/OrbitOverlayService.kt` compact post-capture window bounds, live landscape metrics, and stop/remove consistency if not kept with 015 setup QA
 
 The current geometry fix may land before the full duplicate-capture behavior if
 it is treated as capture hardening, but it should not be hidden inside the visual
@@ -153,10 +153,10 @@ for every supported size and transparency value.
 
 ## 6. Settings Copy And Naming Audit
 
-Outstanding issue: nested settings pages still use the old visual treatment and some old `Capsule` naming.
+Outstanding issue: nested settings pages still use the old visual treatment and some old `Orbit` naming.
 
 Plan:
 
-- Audit every settings route and setup screen for `Capsule` copy.
+- Audit every settings route and setup screen for `Orbit` copy.
 - Convert nested pages to the Quiet Almanac settings components.
 - Keep names scoped: app/product is `Orbit`; package/process/internal names can remain technical until a larger rename is scheduled.

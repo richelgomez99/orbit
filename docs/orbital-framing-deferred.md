@@ -169,7 +169,7 @@ If user testing supports a hybrid:
 
 - This document (the brainstorm)
 - Spec 012 (the resolution mechanism — vocabulary-agnostic)
-- Office-hours design doc at `~/.gstack/projects/richelgomez99-capsule-app/richelgomez-spec-002-intent-envelope-and-diary-design-20260425-235407.md`
+- Office-hours design doc at `~/.gstack/projects/richelgomez99-orbit-app/richelgomez-spec-002-intent-envelope-and-diary-design-20260425-235407.md`
 - Alpha user week-3 check-in transcripts (post-May 13)
 - Any unsolicited language patterns observed in alpha-user behavior or feedback
 

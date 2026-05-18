@@ -30,7 +30,7 @@ so v1.1+ cloud sync is a row-level mirror.
 
 ```kotlin
 @AppFunction(
-    id = "com.capsule.app.action.calendar_insert",
+    id = "com.orbit.app.action.calendar_insert",
     schemaVersion = 1,
     sideEffects = SideEffect.EXTERNAL_INTENT,
     reversibility = Reversibility.EXTERNAL_MANAGED,
@@ -79,9 +79,9 @@ proposal's intent.
 
 | `functionId` | Args | sideEffects | reversibility | sensitivityScope |
 |---|---|---|---|---|
-| `com.capsule.app.action.calendar_insert` | `CalendarInsertArgs` | EXTERNAL_INTENT | EXTERNAL_MANAGED | PUBLIC |
-| `com.capsule.app.action.todo_add` | `TodoAddArgs(text, dueEpochMillis?, listId?)` | EXTERNAL_INTENT or LOCAL_DB_WRITE (target=local) | REVERSIBLE_24H (local) / EXTERNAL_MANAGED (share) | PERSONAL |
-| `com.capsule.app.action.share` | `ShareArgs(text, mimeType, subject?)` | EXTERNAL_INTENT | EXTERNAL_MANAGED | SHARE_DELEGATED |
+| `com.orbit.app.action.calendar_insert` | `CalendarInsertArgs` | EXTERNAL_INTENT | EXTERNAL_MANAGED | PUBLIC |
+| `com.orbit.app.action.todo_add` | `TodoAddArgs(text, dueEpochMillis?, listId?)` | EXTERNAL_INTENT or LOCAL_DB_WRITE (target=local) | REVERSIBLE_24H (local) / EXTERNAL_MANAGED (share) | PERSONAL |
+| `com.orbit.app.action.share` | `ShareArgs(text, mimeType, subject?)` | EXTERNAL_INTENT | EXTERNAL_MANAGED | SHARE_DELEGATED |
 
 These are the only schemas registered in v1.1. Spec 008 v1.2 adds
 agent-internal functions (e.g., `summarize_cluster`,

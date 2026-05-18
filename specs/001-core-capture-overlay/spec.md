@@ -4,7 +4,7 @@
 **Created**: 2026-04-15
 **Last Updated**: 2026-04-17 (post-implementation reconciliation)
 **Status**: Implemented (see Clarifications / Implementation Notes below)
-**Input**: Phase 1 of Capsule Phased Spec Kit — "The Catcher's Mitt"
+**Input**: Phase 1 of Orbit Phased Spec Kit — "The Catcher's Mitt"
 
 ## Clarifications
 
@@ -52,7 +52,7 @@ backed by observed device behavior, not by re-planning the feature.
 
 ### User Story 1 - Toggle Overlay Service On/Off (Priority: P1)
 
-As a user, I open the Capsule app and flip a switch to activate the floating
+As a user, I open the Orbit app and flip a switch to activate the floating
 bubble overlay. A persistent notification confirms the service is running. The
 bubble appears over all other apps. Flipping the switch off dismisses the bubble
 and stops the foreground service.
@@ -82,12 +82,12 @@ Chrome and the home screen.
 ### User Story 2 - Capture Clipboard via Bubble Tap (Priority: P1)
 
 As a user, I copy text in any app (browser, messaging, notes). I tap the
-floating Capsule bubble. The bubble briefly steals window focus, reads the
+floating Orbit bubble. The bubble briefly steals window focus, reads the
 clipboard, and displays the captured text in an expanded Capture Sheet card
 overlaying the current app.
 
 **Why this priority**: Clipboard capture is the primary data ingestion path
-for Capsule. Without it the app has no content to manage.
+for Orbit. Without it the app has no content to manage.
 
 **Independent Test**: Copy text in Chrome, tap the bubble, verify the Capture
 Sheet shows the exact copied text and the Android 13+ clipboard access toast
@@ -142,12 +142,12 @@ tap the discard icon to throw it away.
 discard, the sheet has no exit path and the user is stuck.
 
 **Independent Test**: Tap bubble, capture text, tap "Save & Close", check
-`adb logcat -s Capsule` for saved text. Repeat and tap discard — no log entry.
+`adb logcat -s Orbit` for saved text. Repeat and tap discard — no log entry.
 
 **Acceptance Scenarios**:
 
 1. **Given** the Capture Sheet is showing captured text, **When** the user taps
-   "Save & Close", **Then** the text is logged to Logcat with tag "Capsule",
+   "Save & Close", **Then** the text is logged to Logcat with tag "Orbit",
    the sheet collapses with animation, and the bubble returns to its previous
    position.
 2. **Given** the Capture Sheet is showing captured text, **When** the user taps
@@ -158,25 +158,25 @@ discard, the sheet has no exit path and the user is stuck.
 
 ### User Story 5 - Service Survives OEM Kills (Priority: P3)
 
-As a user on a Samsung/Xiaomi/OnePlus device, I clear Capsule from recent apps
-or the system aggressively kills background processes. The Capsule service
+As a user on a Samsung/Xiaomi/OnePlus device, I clear Orbit from recent apps
+or the system aggressively kills background processes. The Orbit service
 restarts automatically within a reasonable timeframe and the bubble reappears.
 
 **Why this priority**: Reliability on real-world devices with aggressive battery
 management. Without this, the overlay disappears unpredictably.
 
-**Independent Test**: On a Samsung Galaxy device, swipe Capsule from recents.
+**Independent Test**: On a Samsung Galaxy device, swipe Orbit from recents.
 Verify the service restarts and the bubble reappears within 10 seconds.
 
 **Acceptance Scenarios**:
 
 1. **Given** the service is running on a Samsung device, **When** the user
-   clears Capsule from recents, **Then** the service restarts within 10
+   clears Orbit from recents, **Then** the service restarts within 10
    seconds and the bubble reappears at its persisted position.
 2. **Given** the device screen has been off for 5 minutes, **When** the user
    turns the screen back on, **Then** the bubble is still visible.
 3. **Given** the service has been killed and restarted, **When** the user
-   opens the Capsule app, **Then** the service health monitor shows the
+   opens the Orbit app, **Then** the service health monitor shows the
    restart count and manufacturer-specific battery optimization guidance.
 
 ---
@@ -197,7 +197,7 @@ settings.
 **Acceptance Scenarios**:
 
 1. **Given** the app is running on a device from a known aggressive OEM,
-   **When** the user opens the Capsule app, **Then** a card is displayed with
+   **When** the user opens the Orbit app, **Then** a card is displayed with
    step-by-step battery optimization instructions specific to that
    manufacturer.
 2. **Given** the device manufacturer is not in the known aggressive list,
@@ -218,7 +218,7 @@ settings.
 - What happens when the user taps the bubble rapidly multiple times? The state
   machine MUST reject taps while not in the `IDLE` state, preventing concurrent
   clipboard reads.
-- What happens when another app's overlay occludes the Capsule bubble? The user
+- What happens when another app's overlay occludes the Orbit bubble? The user
   MUST still be able to drag the bubble to a visible location. No Z-ordering
   guarantees are made.
 - What happens when the device has very limited RAM (4 GB) and system pressure

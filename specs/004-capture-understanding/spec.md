@@ -19,4 +19,4 @@ Define what Orbit can truthfully know about a capture after save: source identit
 - Do not build Ask Orbit here.
 - Do not add KG tables before deletion and invalidation semantics exist.
 - Do not send raw HTML, screenshots, embeddings, or evidence bundles over Binder.
-- Do not add network clients outside `com.capsule.app.net.*`.
+- Do not add network clients outside `com.orbit.app.net.*`.

@@ -122,7 +122,7 @@ Rationale:
 - Belt-and-suspenders enforcement: a custom Android lint rule
   `NoHttpClientOutsideNet` flags any `okhttp3.OkHttpClient`,
   `HttpURLConnection`, or Ktor client reference outside
-  `com.capsule.app.net.*`. Build fails on violation.
+  `com.orbit.app.net.*`. Build fails on violation.
 - The overhead (~30–50 MB total extra RAM across 3 helper processes on
   flagship devices; ~15–20 MB on 4 GB baseline) is acceptable given the
   trust dividend.
@@ -282,7 +282,7 @@ Implementation:
 
 - Register a `ContentObserver` on
   `MediaStore.Images.Media.EXTERNAL_CONTENT_URI` from
-  `CapsuleOverlayService` (kept alive regardless of the app being open).
+  `OrbitOverlayService` (kept alive regardless of the app being open).
 - On each `onChange(uri)`:
   a. Query `MediaStore.Images.Media.RELATIVE_PATH` — check that it
      contains `Screenshots/`. If not, ignore.
@@ -647,7 +647,7 @@ Keep the `EnvelopeRepository` query API shape such that future
    `Configuration` and ensure the `:ml` process's `Application.onCreate`
    initializes WorkManager explicitly to avoid `:ui` wins the race.
 
-5. **Package rename `com.capsule.app` → `com.orbit.app`**: avoided in v1
+5. **Package rename `com.orbit.app` → `com.orbit.app`**: avoided in v1
    to prevent large-diff churn inside this milestone. Tracked at repo
    root as the rename sprint. Play Store uploadKey does not change; only
    the `applicationId` does, which is a separate app listing — this

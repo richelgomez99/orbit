@@ -9,7 +9,7 @@ This is a 5-minute walkthrough. Do steps in order.
 ## 0. Verify branch + Day-1 baseline
 
 ```sh
-cd /Users/richelgomez/dev/capsule-app
+cd /Users/richelgomez/dev/orbit-app
 git rev-parse --abbrev-ref HEAD     # MUST print: cloud-pivot
 git --no-pager log --oneline -5     # SHOULD show the Day-1 alpha-gate commit + spec 013 work
 ```

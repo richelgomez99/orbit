@@ -134,8 +134,8 @@ As a user whose cloud provider is down or whose API key has expired, I want the 
 - 002 T025a–T025e (`LlmProvider`, provenance, audit columns)
 - 002 T025 (`NetworkGatewayService` in `:net`)
 - New: `INetworkGateway.callUserLlm(provider, prompt, capability) → LlmCallResult` binder method
-- New: `com.capsule.app.settings.CloudBoostScreen` Compose UI
-- New: `com.capsule.app.net.UserLlmClient` with per-provider adapters (Gemini, OpenAI, Anthropic, OpenRouter)
+- New: `com.orbit.app.settings.CloudBoostScreen` Compose UI
+- New: `com.orbit.app.net.UserLlmClient` with per-provider adapters (Gemini, OpenAI, Anthropic, OpenRouter)
 
 ---
 

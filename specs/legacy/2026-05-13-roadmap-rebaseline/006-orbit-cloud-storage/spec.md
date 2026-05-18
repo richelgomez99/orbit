@@ -422,9 +422,9 @@ Example pattern appendix to be maintained alongside this spec.
 - 005 Orbit-managed LLM proxy (shared `:net` transport and identity)
 - 007 Knowledge Graph (shared schema)
 - 008 Orbit Agent (shared schema; agent state and patterns live here)
-- New: `com.capsule.app.net.cloud.OrbitCloudClient`
-- New: `com.capsule.app.net.cloud.SchemaMigrator` (shared with 009)
-- New: `com.capsule.app.settings.OrbitCloudScreen`
+- New: `com.orbit.app.net.cloud.OrbitCloudClient`
+- New: `com.orbit.app.net.cloud.SchemaMigrator` (shared with 009)
+- New: `com.orbit.app.settings.OrbitCloudScreen`
 - New: Orbit Cloud API contract (see
   `specs/contracts/orbit-cloud-api-contract.md`)
 - New: Envelope content encryption contract (see
