@@ -829,11 +829,11 @@ Three gate misses from Block 1 / Block 2 closed before Block 3 lands.
 
 ### State machine + retention coupling (US8)
 
-- [ ] T151 [US8] Create `app/src/main/java/com/capsule/app/cluster/ClusterStateMachine.kt` — pure-Kotlin state-transition validator. `nextState(current: ClusterState, trigger: ClusterTrigger): ClusterState?` returns null for invalid transitions (e.g., `DISMISSED → ACTING`). Per spec 012 §Cluster lifecycle state machine.
+- [x] T151 [US8] Create `app/src/main/java/com/capsule/app/cluster/ClusterStateMachine.kt` — pure-Kotlin state-transition validator. `nextState(current: ClusterState, trigger: ClusterTrigger): ClusterState?` returns null for invalid transitions (e.g., `DISMISSED → ACTING`). Per spec 012 §Cluster lifecycle state machine.
 - [ ] T152 [US8] Persist `ACTING` to disk before Nano inference begins so backgrounding the app during ACTING resumes correctly on foreground. `ClusterRepository.transitionToActing(clusterId)` writes state + audit entry; `ClusterSummariser` is invoked AFTER state persists.
 - [ ] T153 [US8] MODIFY `app/src/main/java/com/capsule/app/continuation/SoftDeleteRetentionWorker.kt` (002 T085) — extend retention pass: cascade-delete `ClusterMember` rows when source envelopes hard-delete (CASCADE handles this for FK; still need explicit count check); for any cluster whose surviving members < 3, transition to `DISMISSED` with audit `CLUSTER_ORPHANED reason=members_below_minimum`. Per FR-038.
-- [ ] T154 [P] [US8] Create `app/src/test/java/com/capsule/app/cluster/ClusterStateMachineTest.kt` — every valid transition, every invalid transition rejected, retry counter bounds (max 3 FAILED → ACTING attempts before forced DISMISSED), AGED_OUT after 7d in SURFACED.
-- [ ] T155 [P] [US8] Create `app/src/androidTest/java/com/capsule/app/cluster/ClusterOrphanCleanupTest.kt` (instrumented) — cluster with 4 members, soft-delete 2 → cluster still SURFACED (3 surviving); soft-delete 3rd → cluster auto-DISMISSED with audit `CLUSTER_ORPHANED reason=members_below_minimum`; cascade verified after 30d retention worker run.
+- [x] T154 [P] [US8] Create `app/src/test/java/com/capsule/app/cluster/ClusterStateMachineTest.kt` — every valid transition, every invalid transition rejected, retry counter bounds (max 3 FAILED → ACTING attempts before forced DISMISSED), AGED_OUT after 7d in SURFACED.
+- [x] T155 [P] [US8] Create `app/src/androidTest/java/com/capsule/app/cluster/ClusterOrphanCleanupTest.kt` (instrumented) — cluster with 4 members, soft-delete 2 → cluster still SURFACED (3 surviving); soft-delete 3rd → cluster auto-DISMISSED with audit `CLUSTER_ORPHANED reason=members_below_minimum`; cascade verified after 30d retention worker run.
 
 ### RuntimeFlags + debug seam (US8)
 
