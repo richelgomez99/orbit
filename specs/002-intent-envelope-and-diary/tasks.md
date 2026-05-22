@@ -802,7 +802,7 @@ Three gate misses from Block 1 / Block 2 closed before Block 3 lands.
 - [x] T133 [US8] Create `app/src/main/java/com/capsule/app/data/ClusterRepository.kt` — `Flow<List<ClusterWithMembers>>` exposing `observeSurfacedToday(): Flow<List<ClusterCardModel>>` filtering surviving-members ≥ 3 at query time per FR-037. State transitions go through this surface.
 - [ ] T134 [US8] MODIFY `app/src/main/aidl/com/capsule/app/data/ipc/IEnvelopeRepository.aidl` — extend with cluster-observation method (or add `IClusterRepository.aidl` if cleaner separation is preferred — call here is to follow 002's existing IPC pattern).
 - [ ] T135 [US8] MODIFY `app/src/main/java/com/capsule/app/data/ipc/EnvelopeRepositoryService.kt` — wire cluster observe → AIDL surface; ensure cross-process observation is binder-safe (no Room thread escape).
-- [ ] T136 [P] [US8] Create `app/src/test/java/com/capsule/app/data/ClusterRepositoryTest.kt` (JVM, in-mem Room) — empty-cluster filter (4 members → 2 surviving → cluster filtered out), state filter (DISMISSED/AGED_OUT not visible), modelLabel mismatch → not in result.
+- [x] T136 [P] [US8] Create `app/src/test/java/com/capsule/app/data/ClusterRepositoryTest.kt` (JVM, in-mem Room) — empty-cluster filter (4 members → 2 surviving → cluster filtered out), state filter (DISMISSED/AGED_OUT not visible), modelLabel mismatch → not in result.
 
 ### ClusterSummariser (foreground inference) (US8)
 
