@@ -72,5 +72,9 @@ enum class AuditAction {
     /** Cluster aged out (>7 days SURFACED without action) per FR-039. */
     CLUSTER_AGED_OUT,
     /** Cluster auto-dismissed because surviving member count fell below 3 (FR-038). */
-    CLUSTER_ORPHANED
+    CLUSTER_ORPHANED,
+
+    // Spec 004 — screenshot cleanup + active intent:
+    /** User requested Smart/Deep help for an Active Intent before any dispatch. */
+    ACTIVE_INTENT_ESCALATION_REQUESTED
 }

@@ -102,6 +102,27 @@ class LlmGatewayParcelRoundTripTest {
         LlmGatewayRequest.ScanSensitivity(requestId = "rid-ss", text = "x"),
     )
 
+    @Test fun active_intent_review_request_round_trip() = roundTripRequest(
+        LlmGatewayRequest.ActiveIntentReview(
+            requestId = "rid-air",
+            reviewContext = ActiveIntentReviewContextJson(
+                intentId = "basic:capture-1",
+                captureId = "capture-1",
+                mode = "SMART",
+                intentType = "CHAT_ACTION",
+                status = "ACTIVE",
+                completionKeyStatus = "FOUND",
+                primaryAction = "reply_or_dismiss",
+                evidence = ActiveIntentCompactEvidenceJson(
+                    kind = "CATEGORY",
+                    label = "CHAT_ACTION",
+                    source = "messaging_source",
+                    excerpt = "Chelsea has a scheduled appointment at 2pm",
+                ),
+            ),
+        ),
+    )
+
     // --- Response round-trip per variant ---
 
     private fun roundTripResponse(original: LlmGatewayResponse) {
@@ -130,6 +151,17 @@ class LlmGatewayParcelRoundTripTest {
 
     @Test fun scan_sensitivity_response_round_trip() = roundTripResponse(
         LlmGatewayResponse.ScanSensitivityResponse("rid", listOf("financial"), "model"),
+    )
+
+    @Test fun active_intent_review_response_round_trip() = roundTripResponse(
+        LlmGatewayResponse.ActiveIntentReviewResponse(
+            requestId = "rid",
+            decision = "KEEP_FOLLOWING",
+            confidence = 0.82f,
+            rationale = "This still looks like a message follow-up.",
+            suggestedResolution = null,
+            modelLabel = "model",
+        ),
     )
 
     @Test fun error_response_round_trip() = roundTripResponse(

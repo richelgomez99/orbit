@@ -48,6 +48,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.orbit.app.diary.DiaryActivity
 import com.orbit.app.permission.OverlayPermissionHelper
 import com.orbit.app.permission.UsageAccessHelper
+import com.orbit.app.service.OrbitOverlayService
 import com.orbit.app.ui.theme.OrbitTheme
 import kotlinx.coroutines.delay
 
@@ -55,11 +56,12 @@ import kotlinx.coroutines.delay
  * T096 / T097 / T098 / T099 / T100 / T101 / T102 / T103 / T103a — first-run
  * onboarding host.
  *
- * Four sequential steps:
+ * Five sequential steps:
  *  1. POST_NOTIFICATIONS (runtime)
  *  2. SYSTEM_ALERT_WINDOW (Settings deep-link; result polled on resume)
  *  3. PACKAGE_USAGE_STATS (Settings deep-link; result polled on resume)
  *  4. ACTIVITY_RECOGNITION (runtime)
+ *  5. Start the capture overlay service
  *
  * Each step:
  *  - shows a rationale Compose sheet first (not the system dialog);
@@ -112,7 +114,7 @@ private fun OnboardingFlow(onFinished: () -> Unit) {
     val context = LocalContext.current
     val prefs = remember { OnboardingPreferences(context) }
     var step by remember { mutableIntStateOf(0) }
-    val totalSteps = 4
+    val totalSteps = 5
 
     // T103a — track decline counts for the two structurally required permissions.
     var notificationDeclineCount by remember { mutableIntStateOf(0) }
@@ -203,6 +205,11 @@ private fun OnboardingFlow(onFinished: () -> Unit) {
                         advance()
                     },
                     onSkip = { advance() }
+                )
+
+                4 -> EnableCaptureStep(
+                    onFinished = onFinished,
+                    onSkip = onFinished
                 )
             }
         }
@@ -339,11 +346,46 @@ private fun ActivityRecognitionStep(
         body = "Orbit uses walking/stationary hints to label captures in the " +
             "Diary (\"captured while walking\"). Local only — no location " +
             "is collected.",
-        primaryLabel = if (hasActivityRecognition(context)) "Finish" else "Enable",
+        primaryLabel = if (hasActivityRecognition(context)) "Continue" else "Enable",
         onPrimary = {
             if (hasActivityRecognition(context)) onResult(true)
             else launcher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
         },
+        onSkip = onSkip
+    )
+}
+
+@Composable
+private fun EnableCaptureStep(
+    onFinished: () -> Unit,
+    onSkip: () -> Unit
+) {
+    val context = LocalContext.current
+    var overlayReady by remember { mutableStateOf(OverlayPermissionHelper.canDrawOverlays(context)) }
+    OnResumeCheck(
+        check = { OverlayPermissionHelper.canDrawOverlays(context) },
+        onChanged = { granted -> overlayReady = granted }
+    )
+
+    StepScaffold(
+        title = "Turn on capture",
+        body = if (overlayReady) {
+            "Start Orbit's floating capture bubble now. After this, copying text or taking a screenshot can land directly in your Diary."
+        } else {
+            "Orbit still needs overlay permission before the capture bubble can run. Open settings, allow Orbit, then come back to turn capture on."
+        },
+        primaryLabel = if (overlayReady) "Turn on capture" else "Open overlay settings",
+        onPrimary = {
+            if (OverlayPermissionHelper.canDrawOverlays(context)) {
+                startOrbitCapture(context)
+                onFinished()
+            } else {
+                context.startActivity(OverlayPermissionHelper.buildOverlayPermissionIntent(context))
+            }
+        },
+        secondaryLabel = "Finish without capture",
+        onSecondary = onSkip,
+        skipLabel = null,
         onSkip = onSkip
     )
 }
@@ -356,6 +398,7 @@ private fun StepScaffold(
     onPrimary: () -> Unit,
     secondaryLabel: String? = null,
     onSecondary: () -> Unit = {},
+    skipLabel: String? = "Grant later",
     onSkip: () -> Unit
 ) {
     Column(
@@ -390,9 +433,11 @@ private fun StepScaffold(
                     Text(secondaryLabel)
                 }
             }
-            Spacer(Modifier.height(8.dp))
-            TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth()) {
-                Text("Grant later")
+            if (skipLabel != null) {
+                Spacer(Modifier.height(8.dp))
+                TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth()) {
+                    Text(skipLabel)
+                }
             }
         }
     }
@@ -438,3 +483,17 @@ private fun hasNotificationPermission(context: Context): Boolean =
 private fun hasActivityRecognition(context: Context): Boolean =
     context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) ==
         PackageManager.PERMISSION_GRANTED
+
+private fun startOrbitCapture(context: Context) {
+    context.getSharedPreferences(OVERLAY_PREFS_NAME, Context.MODE_PRIVATE)
+        .edit()
+        .putBoolean(KEY_SERVICE_ENABLED, true)
+        .apply()
+    val intent = Intent(context, OrbitOverlayService::class.java).apply {
+        action = OrbitOverlayService.ACTION_START_OVERLAY
+    }
+    context.startForegroundService(intent)
+}
+
+private const val OVERLAY_PREFS_NAME = "orbit_overlay_prefs"
+private const val KEY_SERVICE_ENABLED = "service_enabled"

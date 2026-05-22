@@ -14,7 +14,6 @@ import com.orbit.app.diary.ui.DiaryScreen
 import com.orbit.app.onboarding.OnboardingActivity
 import com.orbit.app.onboarding.OnboardingPreferences
 import com.orbit.app.onboarding.ReducedModeActivity
-import com.orbit.app.permission.OverlayPermissionHelper
 import com.orbit.app.settings.SettingsActivity
 import com.orbit.app.ui.MainActivity
 import com.orbit.app.ui.theme.OrbitTheme
@@ -101,20 +100,6 @@ class DiaryActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        // First-run convenience: if the overlay permission hasn't been granted
-        // yet, the bubble can't appear, so the empty-state copy ("tap the
-        // bubble") is a dead end. Route the user into the setup flow
-        // (MainActivity) on foreground so they can grant permissions and
-        // start the overlay service. Users who already completed setup skip
-        // this entirely.
-        if (!routedToSetupOnce && !OverlayPermissionHelper.canDrawOverlays(this)) {
-            routedToSetupOnce = true
-            openSetup()
-        }
-    }
-
     private fun openSetup() {
         startActivity(Intent(this, MainActivity::class.java))
     }
@@ -133,6 +118,4 @@ class DiaryActivity : ComponentActivity() {
         }
         super.onDestroy()
     }
-
-    private var routedToSetupOnce = false
 }

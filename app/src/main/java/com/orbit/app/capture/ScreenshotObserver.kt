@@ -6,6 +6,7 @@ import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import com.orbit.app.data.ipc.IEnvelopeRepository
@@ -39,10 +40,13 @@ class ScreenshotObserver private constructor(
     private val contentResolver: ContentResolver,
     private val repositoryProvider: () -> IEnvelopeRepository?,
     private val stateCollector: StateSnapshotCollector,
-    handler: Handler?
+    handler: Handler?,
+    private val repoRetryDelayMillis: Long,
+    private val maxRepoBindRetries: Int
 ) : ContentObserver(handler) {
 
     private val lastSealedMediaIdState = AtomicLong(-1L)
+    private val retryHandler = handler ?: Handler(Looper.getMainLooper())
 
     /**
      * Test seam — when non-null, [onChange] uses this provider instead of
@@ -103,9 +107,17 @@ class ScreenshotObserver private constructor(
         return null
     }
 
-    private fun sealScreenshot(imageUri: Uri) {
+    private fun sealScreenshot(imageUri: Uri, attempt: Int = 0) {
         val repo = repositoryProvider() ?: run {
-            Log.d(TAG, "skip — repo unbound")
+            if (attempt < maxRepoBindRetries) {
+                Log.d(TAG, "repo unbound — retrying screenshot seal attempt=${attempt + 1}")
+                retryHandler.postDelayed(
+                    { sealScreenshot(imageUri, attempt + 1) },
+                    repoRetryDelayMillis
+                )
+            } else {
+                Log.w(TAG, "skip — repo unbound after $maxRepoBindRetries retries")
+            }
             return
         }
         val state = runCatching { stateCollector.snapshot() }.getOrNull()
@@ -134,6 +146,8 @@ class ScreenshotObserver private constructor(
 
     companion object {
         private const val TAG = "ScreenshotObserver"
+        private const val REPO_RETRY_DELAY_MS = 250L
+        private const val MAX_REPO_BIND_RETRIES = 4
 
         /** Production factory — wires a real [StateSnapshotCollector]. */
         fun create(
@@ -144,7 +158,9 @@ class ScreenshotObserver private constructor(
             contentResolver = context.contentResolver,
             repositoryProvider = repositoryProvider,
             stateCollector = StateSnapshotCollector.create(context),
-            handler = handler
+            handler = handler,
+            repoRetryDelayMillis = REPO_RETRY_DELAY_MS,
+            maxRepoBindRetries = MAX_REPO_BIND_RETRIES
         )
 
         /** Test factory — instrumented tests inject fakes. */
@@ -152,12 +168,16 @@ class ScreenshotObserver private constructor(
             contentResolver: ContentResolver,
             repositoryProvider: () -> IEnvelopeRepository?,
             stateCollector: StateSnapshotCollector,
-            handler: Handler? = null
+            handler: Handler? = null,
+            repoRetryDelayMillis: Long = REPO_RETRY_DELAY_MS,
+            maxRepoBindRetries: Int = MAX_REPO_BIND_RETRIES
         ): ScreenshotObserver = ScreenshotObserver(
             contentResolver = contentResolver,
             repositoryProvider = repositoryProvider,
             stateCollector = stateCollector,
-            handler = handler
+            handler = handler,
+            repoRetryDelayMillis = repoRetryDelayMillis,
+            maxRepoBindRetries = maxRepoBindRetries
         )
     }
 }

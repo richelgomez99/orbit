@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ipc.ActionProposalParcel
+import com.orbit.app.understanding.domain.ResolutionReason
+import com.orbit.app.understanding.domain.UnderstandingMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -44,8 +46,25 @@ class DiaryViewModel(
     private val _state = MutableStateFlow<DayUiState>(DayUiState.Loading(isoDate = ""))
     val state: StateFlow<DayUiState> = _state.asStateFlow()
 
+    private val _activeIntentState = MutableStateFlow<ActiveIntentUiState>(ActiveIntentUiState.Loading)
+    val activeIntentState: StateFlow<ActiveIntentUiState> = _activeIntentState.asStateFlow()
+
     private var currentJob: Job? = null
     private var currentIsoDate: String? = null
+
+    init {
+        scope.launch {
+            repository.observeActiveIntents()
+                .catch { e ->
+                    _activeIntentState.value = ActiveIntentUiState.Error(
+                        e.message ?: e::class.java.simpleName
+                    )
+                }
+                .collect { intents ->
+                    _activeIntentState.value = ActiveIntentUiState.from(intents)
+                }
+        }
+    }
 
     /**
      * Subscribe to [isoDate]. Cancels any in-flight subscription and emits
@@ -203,6 +222,31 @@ class DiaryViewModel(
     fun onToggleTodoItem(envelopeId: String, itemIndex: Int, done: Boolean) {
         scope.launch {
             runCatching { repository.setTodoItemDone(envelopeId, itemIndex, done) }
+        }
+    }
+
+    fun onResolveActiveIntent(
+        intentId: String,
+        reason: ResolutionReason,
+        userConfirmed: Boolean = true
+    ) {
+        scope.launch {
+            runCatching {
+                repository.resolveActiveIntent(
+                    intentId = intentId,
+                    resolutionReason = reason.name,
+                    userConfirmed = userConfirmed
+                )
+            }
+        }
+    }
+
+    fun onRequestActiveIntentEscalation(
+        intentId: String,
+        mode: UnderstandingMode = UnderstandingMode.SMART
+    ) {
+        scope.launch {
+            runCatching { repository.requestActiveIntentEscalation(intentId, mode.name) }
         }
     }
 

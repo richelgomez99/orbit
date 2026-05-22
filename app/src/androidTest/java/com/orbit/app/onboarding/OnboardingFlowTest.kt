@@ -56,7 +56,7 @@ class OnboardingFlowTest {
         prefs.reducedMode = false
     }
 
-    /** (a) Fresh launch shows the notification rationale step (step 1 of 4). */
+    /** (a) Fresh launch shows the notification rationale step (step 1 of 5). */
     @Test
     fun freshLaunch_showsNotificationStepFirst() {
         composeRule.onNodeWithText("Enable notifications").assertIsDisplayed()

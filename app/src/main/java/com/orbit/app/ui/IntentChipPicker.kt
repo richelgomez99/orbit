@@ -6,10 +6,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,6 +35,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.orbit.app.data.model.Intent
@@ -46,24 +49,26 @@ import com.orbit.app.data.model.Intent
  * the envelope's *current* intent before reassigning. Pass `null` for the
  * overlay (first-time assignment).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun IntentChipPicker(
     onPick: (Intent) -> Unit,
     modifier: Modifier = Modifier,
     currentIntent: Intent? = null
 ) {
-    Row(
+    FlowRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         IntentChip(
             intent = Intent.WANT_IT,
             label = "Want it",
             icon = Icons.Filled.Favorite,
             selected = currentIntent == Intent.WANT_IT,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(min = 92.dp, max = 128.dp),
             onTap = { onPick(Intent.WANT_IT) }
         )
         IntentChip(
@@ -71,7 +76,7 @@ fun IntentChipPicker(
             label = "Reference",
             icon = Icons.Filled.Bookmark,
             selected = currentIntent == Intent.REFERENCE,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(min = 92.dp, max = 128.dp),
             onTap = { onPick(Intent.REFERENCE) }
         )
         IntentChip(
@@ -79,7 +84,7 @@ fun IntentChipPicker(
             label = "Read later",
             icon = Icons.Filled.Schedule,
             selected = currentIntent == Intent.READ_LATER,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(min = 92.dp, max = 128.dp),
             onTap = { onPick(Intent.READ_LATER) }
         )
         IntentChip(
@@ -87,7 +92,7 @@ fun IntentChipPicker(
             label = "For someone",
             icon = Icons.AutoMirrored.Filled.Send,
             selected = currentIntent == Intent.FOR_SOMEONE,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(min = 92.dp, max = 128.dp),
             onTap = { onPick(Intent.FOR_SOMEONE) }
         )
         IntentChip(
@@ -95,7 +100,7 @@ fun IntentChipPicker(
             label = "Interesting",
             icon = Icons.Filled.AutoAwesome,
             selected = currentIntent == Intent.INTERESTING,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.widthIn(min = 92.dp, max = 128.dp),
             onTap = { onPick(Intent.INTERESTING) }
         )
     }
@@ -164,7 +169,8 @@ private fun IntentChip(
                 style = MaterialTheme.typography.labelSmall,
                 color = contentColor,
                 fontWeight = FontWeight.Medium,
-                maxLines = 1
+                textAlign = TextAlign.Center,
+                maxLines = 2
             )
         }
     }

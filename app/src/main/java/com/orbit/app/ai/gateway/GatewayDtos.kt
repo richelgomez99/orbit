@@ -51,3 +51,32 @@ data class ActionProposalJson(
     val confidence: Float,
     val sensitivityScope: String,
 )
+
+@Serializable
+data class ActiveIntentCompactEvidenceJson(
+    val kind: String? = null,
+    val label: String? = null,
+    val source: String? = null,
+    val confidence: Float? = null,
+    val excerpt: String? = null,
+    val hash: String? = null,
+    val reason: String? = null,
+    val createdAt: Long? = null,
+    val reviewedAt: Long? = null,
+)
+
+@Serializable
+data class ActiveIntentReviewContextJson(
+    val schemaVersion: Int = 1,
+    val intentId: String,
+    val captureId: String,
+    val mode: String,
+    val intentType: String,
+    val status: String,
+    val completionKeyStatus: String,
+    val primaryAction: String? = null,
+    val dueAt: Long? = null,
+    val expiresAt: Long? = null,
+    val evidence: ActiveIntentCompactEvidenceJson,
+    val completionKey: ActiveIntentCompactEvidenceJson? = null,
+)

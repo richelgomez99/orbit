@@ -10,6 +10,7 @@ import com.orbit.app.data.entity.EnvelopeNoteEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.StateSnapshot
 import com.orbit.app.data.ipc.EnvelopeViewParcel
+import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
 import com.orbit.app.data.ipc.IEnvelopeRepository
 import com.orbit.app.data.ipc.IntentEnvelopeDraftParcel
@@ -24,6 +25,8 @@ import com.orbit.app.data.model.ContinuationType
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
 import com.orbit.app.net.CanonicalUrlHasher
+import com.orbit.app.understanding.BasicUnderstandingInput
+import com.orbit.app.understanding.BasicUnderstandingWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -99,7 +102,17 @@ class EnvelopeRepositoryImpl(
      * in `EnvelopeRepositoryService`. When null, [summarizeCluster]
      * returns `"FAILED:summariser_disabled"`.
      */
-    private val clusterSummarizeDelegate: ClusterSummarizeDelegate? = null
+    private val clusterSummarizeDelegate: ClusterSummarizeDelegate? = null,
+    /**
+     * Spec 004 — compact Active Intent cleanup queue. Nullable so older
+     * repository contract tests keep using the smaller constructor surface.
+     */
+    private val activeIntentRepository: ActiveIntentRepository? = null,
+    /**
+     * Spec 004 — local Basic understanding writer. Runs only in :ml after
+     * envelope writes commit so UI/capture processes never touch Room.
+     */
+    private val basicUnderstandingWriter: BasicUnderstandingWriter? = null
 ) : IEnvelopeRepository.Stub() {
 
     /** envelopeId → millis-deadline after which `undo()` returns false. */
@@ -302,6 +315,16 @@ class EnvelopeRepositoryImpl(
             runBlocking { backend.recordDuplicateCaptureAttempt(duplicateAudit) }
             return SealResultParcel.alreadySaved(existing.id, matchedBy)
         }
+
+        persistBasicUnderstanding(
+            captureId = id,
+            textContent = draft.textContent?.takeIf { contentType == ContentType.TEXT },
+            sourceAppLabel = state.sourceAppLabel,
+            appCategory = state.appCategory,
+            canonicalUrl = urls.firstOrNull(),
+            capturedAtMillis = now,
+            nowMillis = now
+        )
 
         // T068 — AFTER the Room txn commits, hand each PENDING row to the
         // engine so WorkManager picks it up. Done outside the txn because
@@ -760,6 +783,18 @@ class EnvelopeRepositoryImpl(
             )
         }
 
+        runBlocking { backend.getEnvelope(envelopeId) }?.let { envelope ->
+            persistBasicUnderstanding(
+                captureId = envelopeId,
+                textContent = ocrText,
+                sourceAppLabel = envelope.state.sourceAppLabel,
+                appCategory = envelope.state.appCategory.name,
+                canonicalUrl = uniqueUrls.firstOrNull(),
+                capturedAtMillis = envelope.createdAt,
+                nowMillis = now
+            )
+        }
+
         // Enqueue the URL_HYDRATE jobs AFTER the Room txn commits — same
         // rule as seal(): WorkManager owns its own durability and
         // enqueueing inside a Room transaction deadlocks its init.
@@ -944,6 +979,47 @@ class EnvelopeRepositoryImpl(
         return runBlocking { delegate.summarizeCluster(clusterId) }
     }
 
+    // ---- Spec 004 — Active Intent cleanup queue ----
+
+    override fun observeActiveIntents(observer: IActiveIntentObserver) {
+        val repo = activeIntentRepository
+        if (repo == null) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    observer.onActiveIntentsChanged(emptyList())
+                } catch (_: android.os.RemoteException) {
+                    // Observer already dead — nothing to clean up.
+                }
+            }
+            return
+        }
+        repo.observeActiveIntents(observer)
+    }
+
+    override fun stopObservingActiveIntents(observer: IActiveIntentObserver) {
+        activeIntentRepository?.stopObservingActiveIntents(observer)
+    }
+
+    override fun resolveActiveIntent(
+        intentId: String,
+        resolutionReason: String,
+        userConfirmed: Boolean
+    ): Boolean {
+        val repo = activeIntentRepository ?: return false
+        return runBlocking {
+            repo.resolveActiveIntent(
+                intentId = intentId,
+                resolutionReason = resolutionReason,
+                userConfirmed = userConfirmed
+            )
+        }
+    }
+
+    override fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean {
+        val repo = activeIntentRepository ?: return false
+        return runBlocking { repo.requestEscalation(intentId = intentId, mode = mode) }
+    }
+
     private fun ClusterCardModel.toParcel(): com.orbit.app.data.ipc.ClusterCardParcel =
         com.orbit.app.data.ipc.ClusterCardParcel(
             clusterId = clusterId,
@@ -955,6 +1031,35 @@ class EnvelopeRepositoryImpl(
             memberIndices = members.map { it.memberIndex }
         )
 
+
+    private fun persistBasicUnderstanding(
+        captureId: String,
+        textContent: String?,
+        sourceAppLabel: String?,
+        appCategory: String?,
+        canonicalUrl: String?,
+        capturedAtMillis: Long,
+        nowMillis: Long
+    ) {
+        val writer = basicUnderstandingWriter ?: return
+        runCatching {
+            runBlocking {
+                writer.persist(
+                    BasicUnderstandingInput(
+                        captureId = captureId,
+                        textContent = textContent,
+                        sourceAppLabel = sourceAppLabel,
+                        appCategory = appCategory,
+                        canonicalUrl = canonicalUrl,
+                        capturedAtMillis = capturedAtMillis,
+                        nowMillis = nowMillis
+                    )
+                )
+            }
+        }.onFailure { error ->
+            android.util.Log.w("EnvelopeRepo", "basic understanding write failed for $captureId", error)
+        }
+    }
     // ---- Helpers ----
 
     private fun computeDayLocal(nowMillis: Long, tzId: String): String {

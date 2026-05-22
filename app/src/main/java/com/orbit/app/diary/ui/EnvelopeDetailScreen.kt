@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,6 +62,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.orbit.app.data.ipc.AuditEntryParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
@@ -148,8 +150,40 @@ fun EnvelopeDetailScreen(
             onDelete = viewModel::onDelete,
             onReassign = { picked -> viewModel.onReassignIntent(picked.name) },
             onRetry = viewModel::onRetryHydration,
+            latestNote = (state as? EnvelopeDetailUiState.Ready)?.latestNote,
+            onEditNote = {
+                noteDraft = (state as? EnvelopeDetailUiState.Ready)?.latestNote.orEmpty()
+                noteDialogOpen = true
+            },
             modifier = modifier,
         )
+        if (noteDialogOpen) {
+            AlertDialog(
+                onDismissRequest = { noteDialogOpen = false },
+                title = { Text("Capture context") },
+                text = {
+                    OutlinedTextField(
+                        value = noteDraft,
+                        onValueChange = { noteDraft = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Why this matters or what to do next") },
+                        minLines = 3
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        enabled = noteDraft.isNotBlank(),
+                        onClick = {
+                            noteDialogOpen = false
+                            viewModel.onSaveNote(noteDraft)
+                        }
+                    ) { Text("Save") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { noteDialogOpen = false }) { Text("Cancel") }
+                }
+            )
+        }
         return
     }
 
@@ -279,13 +313,13 @@ fun EnvelopeDetailScreen(
     if (noteDialogOpen) {
         AlertDialog(
             onDismissRequest = { noteDialogOpen = false },
-            title = { Text("Capture note") },
+            title = { Text("Capture context") },
             text = {
                 OutlinedTextField(
                     value = noteDraft,
                     onValueChange = { noteDraft = it },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Note") },
+                    label = { Text("Why this matters or what to do next") },
                     minLines = 3
                 )
             },
@@ -317,6 +351,8 @@ private fun QuietEnvelopeDetailScreen(
     onDelete: () -> Unit,
     onReassign: (Intent) -> Unit,
     onRetry: () -> Unit,
+    latestNote: String?,
+    onEditNote: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -349,7 +385,7 @@ private fun QuietEnvelopeDetailScreen(
             Column(modifier = Modifier.weight(1f)) {
                 MonoLabel(text = "CAPTURE", color = QuietSettingsColors.CreamDim, size = 9.sp)
                 Text(
-                    text = (state as? EnvelopeDetailUiState.Ready)?.envelope?.title?.takeIf { it.isNotBlank() }
+                    text = (state as? EnvelopeDetailUiState.Ready)?.envelope?.displayTitle()
                         ?: "Saved detail",
                     color = QuietSettingsColors.Cream,
                     maxLines = 1,
@@ -432,6 +468,8 @@ private fun QuietEnvelopeDetailScreen(
                 auditTrail = state.auditTrail,
                 onReassign = onReassign,
                 onRetry = onRetry,
+                latestNote = latestNote,
+                onEditNote = onEditNote,
             )
         }
     }
@@ -506,14 +544,18 @@ private fun QuietReadyContent(
     auditTrail: List<AuditEntryParcel>,
     onReassign: (Intent) -> Unit,
     onRetry: () -> Unit,
+    latestNote: String?,
+    onEditNote: () -> Unit,
 ) {
     val context = LocalContext.current
+    var expandedImageUri by remember { mutableStateOf<String?>(null) }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 18.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item(key = "source") { QuietSourceHeader(envelope) }
+        item(key = "context") { QuietNoteBlock(note = latestNote, onEdit = onEditNote) }
         item(key = "intent") {
             QuietDetailSection(label = "Intent") {
                 IntentChipPicker(
@@ -525,43 +567,52 @@ private fun QuietReadyContent(
 
         if (envelope.contentType == "IMAGE" && !envelope.imageUri.isNullOrBlank()) {
             item(key = "image") {
-                AsyncImage(
-                    model = envelope.imageUri,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MonoLabel(text = "CAPTURED IMAGE", color = QuietSettingsColors.CreamDim, size = 9.sp)
+                    AsyncImage(
+                        model = envelope.imageUri,
+                        contentDescription = "Captured screenshot",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 220.dp, max = 520.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(QuietSettingsColors.Rule)
+                            .clickable { expandedImageUri = envelope.imageUri },
+                        contentScale = ContentScale.Fit,
+                    )
+                    Text(
+                        text = "Tap image to expand",
+                        color = QuietSettingsColors.CreamDim,
+                        style = quietBodyStyle(),
+                    )
+                }
             }
+        }
+
+        item(key = "capture-title") {
+            Text(
+                text = envelope.displayTitle(),
+                color = QuietSettingsColors.Cream,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                    fontSize = 23.sp,
+                    lineHeight = 29.sp,
+                    fontWeight = FontWeight.Normal,
+                    letterSpacing = 0.sp,
+                ),
+            )
         }
 
         val title = envelope.title
         val summary = envelope.summary
-        if (!title.isNullOrBlank() || !summary.isNullOrBlank()) {
+        if (!summary.isNullOrBlank()) {
             item(key = "enrichment") {
-                QuietDetailSection(label = "Enriched") {
-                    title?.takeIf { it.isNotBlank() }?.let {
-                        Text(
-                            text = it,
-                            color = QuietSettingsColors.Cream,
-                            style = TextStyle(
-                                fontFamily = OrbitType.QuietAlmanac.displaySerif,
-                                fontSize = 23.sp,
-                                lineHeight = 29.sp,
-                                fontWeight = FontWeight.Normal,
-                                letterSpacing = 0.sp,
-                            ),
-                        )
-                    }
-                    summary?.takeIf { it.isNotBlank() }?.let {
-                        Text(
-                            text = it,
-                            color = QuietSettingsColors.CreamDim,
-                            style = quietBodyStyle(),
-                        )
-                    }
+                QuietDetailSection(label = "Orbit notes") {
+                    Text(
+                        text = summary,
+                        color = QuietSettingsColors.CreamDim,
+                        style = quietBodyStyle(),
+                    )
                 }
             }
         }
@@ -630,6 +681,47 @@ private fun QuietReadyContent(
         }
 
         item(key = "footer-spacer") { Spacer(Modifier.height(24.dp)) }
+    }
+
+    expandedImageUri?.let { uri ->
+        Dialog(
+            onDismissRequest = { expandedImageUri = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable { expandedImageUri = null },
+                contentAlignment = Alignment.Center,
+            ) {
+                AsyncImage(
+                    model = uri,
+                    contentDescription = "Expanded captured screenshot",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuietNoteBlock(note: String?, onEdit: () -> Unit) {
+    QuietDetailSection(label = "Context") {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(onClick = onEdit),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = if (note.isNullOrBlank()) "Add context" else note,
+                color = if (note.isNullOrBlank()) QuietSettingsColors.Accent else QuietSettingsColors.Cream,
+                style = quietBodyStyle(),
+            )
+        }
     }
 }
 
@@ -822,6 +914,7 @@ private fun ReadyContent(
     onEditNote: () -> Unit
 ) {
     val context = LocalContext.current
+    var expandedImageUri by remember { mutableStateOf<String?>(null) }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
@@ -853,27 +946,27 @@ private fun ReadyContent(
             item(key = "image") {
                 AsyncImage(
                     model = envelope.imageUri,
-                    contentDescription = null,
+                    contentDescription = "Captured screenshot",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
+                        .heightIn(min = 220.dp, max = 520.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { expandedImageUri = envelope.imageUri },
+                    contentScale = ContentScale.Fit
                 )
             }
         }
 
         // 5. Title.
         val title = envelope.title
-        if (!title.isNullOrBlank()) {
-            item(key = "title") {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+        item(key = "title") {
+            Text(
+                text = envelope.displayTitle(),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Medium
+            )
         }
 
         // 6. Summary.
@@ -958,6 +1051,28 @@ private fun ReadyContent(
         }
 
         item(key = "footer-spacer") { Spacer(Modifier.height(24.dp)) }
+    }
+
+    expandedImageUri?.let { uri ->
+        Dialog(
+            onDismissRequest = { expandedImageUri = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable { expandedImageUri = null },
+                contentAlignment = Alignment.Center,
+            ) {
+                AsyncImage(
+                    model = uri,
+                    contentDescription = "Expanded captured screenshot",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+        }
     }
 }
 
@@ -1076,6 +1191,32 @@ private fun AuditRowView(entry: AuditEntryParcel) {
 }
 
 // ---- helpers ----
+
+private fun EnvelopeViewParcel.displayTitle(): String = title
+    ?.trim()
+    ?.takeIf { it.isNotBlank() }
+    ?: domain?.trim()?.takeIf { it.isNotBlank() }
+    ?: textContent.captureTitleFallback()
+    ?: when (contentType.uppercase(Locale.ROOT)) {
+        "IMAGE" -> "Screenshot from ${sourceName()}"
+        else -> "Capture from ${sourceName()}"
+    }
+
+private fun String?.captureTitleFallback(): String? {
+    val cleaned = this
+        ?.lineSequence()
+        ?.map { it.trim() }
+        ?.firstOrNull { it.isNotBlank() }
+        ?.replace(Regex("\\s+"), " ")
+        ?.takeIf { it.isNotBlank() }
+        ?: return null
+    return cleaned.take(96)
+}
+
+private fun EnvelopeViewParcel.sourceName(): String = sourceAppLabel
+    ?.trim()
+    ?.takeIf { it.isNotBlank() }
+    ?: appCategory.humanize()
 
 private fun Intent.displayLabel(): String = when (this) {
     Intent.WANT_IT -> "Want it"

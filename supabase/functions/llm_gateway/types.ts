@@ -31,6 +31,33 @@ export interface ActionProposalJson {
   rationale: string | null;
 }
 
+export interface ActiveIntentCompactEvidenceJson {
+  kind?: string;
+  label?: string;
+  source?: string;
+  confidence?: number;
+  excerpt?: string;
+  hash?: string;
+  reason?: string;
+  createdAt?: number;
+  reviewedAt?: number;
+}
+
+export interface ActiveIntentReviewContextJson {
+  schemaVersion: 1;
+  intentId: string;
+  captureId: string;
+  mode: string;
+  intentType: string;
+  status: string;
+  completionKeyStatus: string;
+  primaryAction?: string;
+  dueAt?: number;
+  expiresAt?: number;
+  evidence: ActiveIntentCompactEvidenceJson;
+  completionKey?: ActiveIntentCompactEvidenceJson;
+}
+
 // --- Request discriminated union (data-model.md §1.1) ---
 
 export interface EmbedRequest {
@@ -75,13 +102,20 @@ export interface ScanSensitivityRequest {
   payload: { text: string };
 }
 
+export interface ActiveIntentReviewRequest {
+  type: "active_intent_review";
+  requestId: string;
+  payload: { reviewContext: ActiveIntentReviewContextJson };
+}
+
 export type LlmGatewayRequest =
   | EmbedRequest
   | SummarizeRequest
   | ExtractActionsRequest
   | ClassifyIntentRequest
   | GenerateDayHeaderRequest
-  | ScanSensitivityRequest;
+  | ScanSensitivityRequest
+  | ActiveIntentReviewRequest;
 
 export type LlmGatewayRequestType = LlmGatewayRequest["type"];
 
@@ -130,6 +164,16 @@ export interface ScanSensitivityResponse {
   modelLabel: string;
 }
 
+export interface ActiveIntentReviewResponse {
+  type: "active_intent_review_response";
+  requestId: string;
+  decision: "KEEP_FOLLOWING" | "MARK_HANDLED" | "NOT_NEEDED" | "ADD_CONTEXT";
+  confidence: number;
+  rationale: string;
+  suggestedResolution: string | null;
+  modelLabel: string;
+}
+
 export interface ErrorResponse {
   type: "error";
   requestId: string;
@@ -143,7 +187,8 @@ export type LlmGatewaySuccessResponse =
   | ExtractActionsResponse
   | ClassifyIntentResponse
   | GenerateDayHeaderResponse
-  | ScanSensitivityResponse;
+  | ScanSensitivityResponse
+  | ActiveIntentReviewResponse;
 
 export type LlmGatewayResponse = LlmGatewaySuccessResponse | ErrorResponse;
 

@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,6 +70,9 @@ import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.model.ClusterState
 import com.orbit.app.data.model.Intent
+import com.orbit.app.diary.ActiveIntentGroup
+import com.orbit.app.diary.ActiveIntentItem
+import com.orbit.app.diary.ActiveIntentUiState
 import com.orbit.app.diary.ActionPreviewSheet
 import com.orbit.app.diary.ActionProposalChipRow
 import com.orbit.app.diary.DayUiState
@@ -81,6 +87,7 @@ import com.orbit.app.ui.primitives.SourceGlyphKind
 import com.orbit.app.ui.primitives.SourceIdentityResolver
 import com.orbit.app.ui.theme.LocalRuntimeFlags
 import com.orbit.app.ui.tokens.OrbitType
+import com.orbit.app.understanding.domain.ResolutionReason
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -363,12 +370,12 @@ private fun QuietDayNavBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         QuietDayNavAction(
-            label = "‹ Older day",
+            label = "‹ Older captures",
             enabled = canGoPrev,
             onClick = onPrev,
         )
         QuietDayNavAction(
-            label = "Newer day ›",
+            label = "Newer captures ›",
             enabled = canGoNext,
             onClick = onNext,
         )
@@ -407,6 +414,7 @@ private fun RenderDayState(
 ) {
     val context = LocalContext.current
     var pendingProposal by remember { mutableStateOf<ActionProposalParcel?>(null) }
+    val activeIntentState by viewModel.activeIntentState.collectAsState()
 
     // T053 — surface the 5 s undo window via a Toast. Compose Snackbar
     // would be a cleaner host but the rest of Diary already uses Toasts
@@ -425,11 +433,40 @@ private fun RenderDayState(
 
     when (val s = state) {
         is DayUiState.Loading -> LoadingView()
-        is DayUiState.Empty -> EmptyDayView(isoDate = s.isoDate, onOpenSetup = onOpenSetup)
+        is DayUiState.Empty -> EmptyDayView(
+            isoDate = s.isoDate,
+            activeIntentState = activeIntentState,
+            onResolveActiveIntent = { item ->
+                viewModel.onResolveActiveIntent(item.intentId, item.defaultResolutionReason)
+            },
+            onArchiveActiveIntent = { item ->
+                viewModel.onResolveActiveIntent(item.intentId, ResolutionReason.USER_ARCHIVED)
+            },
+            onOpenActiveIntentCapture = { item ->
+                context.startActivity(
+                    EnvelopeDetailActivity.newIntent(context, item.captureId, dayLocal = s.isoDate)
+                )
+            },
+            onAddActiveIntentContext = { item ->
+                context.startActivity(
+                    EnvelopeDetailActivity.newIntent(
+                        context,
+                        item.captureId,
+                        dayLocal = s.isoDate,
+                        startNote = true
+                    )
+                )
+            },
+            onEscalateActiveIntent = { item ->
+                viewModel.onRequestActiveIntentEscalation(item.intentId)
+                Toast.makeText(context, "Orbit added a decision brief", Toast.LENGTH_SHORT).show()
+            }
+        )
         is DayUiState.Error -> ErrorView(message = s.message)
         is DayUiState.Ready -> DayContentView(
             state = s,
             viewModel = viewModel,
+            activeIntentState = activeIntentState,
             onReassign = { id, intent ->
                 viewModel.onReassignIntent(id, intent.name, reason = "DIARY_REASSIGN")
             },
@@ -446,7 +483,32 @@ private fun RenderDayState(
                     EnvelopeDetailActivity.newIntent(context, id, dayLocal = s.isoDate)
                 )
             },
-            onProposalTap = { proposal -> pendingProposal = proposal }
+            onProposalTap = { proposal -> pendingProposal = proposal },
+            onResolveActiveIntent = { item ->
+                viewModel.onResolveActiveIntent(item.intentId, item.defaultResolutionReason)
+            },
+            onArchiveActiveIntent = { item ->
+                viewModel.onResolveActiveIntent(item.intentId, ResolutionReason.USER_ARCHIVED)
+            },
+            onOpenActiveIntentCapture = { item ->
+                context.startActivity(
+                    EnvelopeDetailActivity.newIntent(context, item.captureId, dayLocal = s.isoDate)
+                )
+            },
+            onAddActiveIntentContext = { item ->
+                context.startActivity(
+                    EnvelopeDetailActivity.newIntent(
+                        context,
+                        item.captureId,
+                        dayLocal = s.isoDate,
+                        startNote = true
+                    )
+                )
+            },
+            onEscalateActiveIntent = { item ->
+                viewModel.onRequestActiveIntentEscalation(item.intentId)
+                Toast.makeText(context, "Orbit added a decision brief", Toast.LENGTH_SHORT).show()
+            }
         )
     }
 
@@ -473,9 +535,38 @@ private fun LoadingView() {
 }
 
 @Composable
-private fun EmptyDayView(isoDate: String, onOpenSetup: (() -> Unit)? = null) {
+private fun EmptyDayView(
+    isoDate: String,
+    activeIntentState: ActiveIntentUiState = ActiveIntentUiState.Empty,
+    onResolveActiveIntent: (ActiveIntentItem) -> Unit = {},
+    onArchiveActiveIntent: (ActiveIntentItem) -> Unit = {},
+    onOpenActiveIntentCapture: (ActiveIntentItem) -> Unit = {},
+    onAddActiveIntentContext: (ActiveIntentItem) -> Unit = {},
+    onEscalateActiveIntent: (ActiveIntentItem) -> Unit = {}
+) {
     // T054 — empty-day copy. Kept short and un-judgmental per product tone.
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    val hasActiveIntents = activeIntentState is ActiveIntentUiState.Ready
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (LocalRuntimeFlags.current.useNewVisualLanguage) QuietDiaryColors.BgDeep else Color.Transparent),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        if (hasActiveIntents) {
+            ActiveIntentCleanupPanel(
+                state = activeIntentState,
+                onResolve = onResolveActiveIntent,
+                onArchive = onArchiveActiveIntent,
+                onOpenCapture = onOpenActiveIntentCapture,
+                onAddContext = onAddActiveIntentContext,
+                onEscalate = onEscalateActiveIntent,
+                modifier = Modifier.padding(top = 18.dp)
+            )
+        }
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center,
+        ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -490,13 +581,8 @@ private fun EmptyDayView(isoDate: String, onOpenSetup: (() -> Unit)? = null) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (onOpenSetup != null) {
-                Spacer(Modifier.height(16.dp))
-                Button(onClick = onOpenSetup) {
-                    Text("Set up Orbit")
-                }
-            }
         }
+    }
     }
 }
 
@@ -534,11 +620,17 @@ private fun ErrorView(message: String) {
 internal fun DayContentView(
     state: DayUiState.Ready,
     viewModel: DiaryViewModel,
+    activeIntentState: ActiveIntentUiState = ActiveIntentUiState.Empty,
     onReassign: (String, Intent) -> Unit,
     onRetry: (String) -> Unit,
     onDelete: (String) -> Unit,
     onOpenDetail: (String) -> Unit,
-    onProposalTap: (ActionProposalParcel) -> Unit
+    onProposalTap: (ActionProposalParcel) -> Unit,
+    onResolveActiveIntent: (ActiveIntentItem) -> Unit = {},
+    onArchiveActiveIntent: (ActiveIntentItem) -> Unit = {},
+    onOpenActiveIntentCapture: (ActiveIntentItem) -> Unit = {},
+    onAddActiveIntentContext: (ActiveIntentItem) -> Unit = {},
+    onEscalateActiveIntent: (ActiveIntentItem) -> Unit = {}
 ) {
     // Phase 11 Block 9 / T149 — reduce-motion preference. Compose has no
     // first-class API for this; we read `Settings.Global.ANIMATOR_DURATION_SCALE`
@@ -562,6 +654,20 @@ internal fun DayContentView(
             .background(if (useNewVisualLanguage) QuietDiaryColors.BgDeep else Color.Transparent),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
+        if (activeIntentState is ActiveIntentUiState.Ready) {
+            item(key = "active-intent-cleanup") {
+                ActiveIntentCleanupPanel(
+                    state = activeIntentState,
+                    onResolve = onResolveActiveIntent,
+                    onArchive = onArchiveActiveIntent,
+                    onOpenCapture = onOpenActiveIntentCapture,
+                    onAddContext = onAddActiveIntentContext,
+                    onEscalate = onEscalateActiveIntent,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+        }
+
         // T149 — cluster slot renders ABOVE the day-header on cluster days
         // (spec 010 D6 revision: events outrank steady-state). Non-cluster
         // days (clusters.isEmpty()) skip the slot entirely.
@@ -658,6 +764,390 @@ internal fun DayContentView(
                 Spacer(Modifier.height(12.dp))
             }
         }
+    }
+}
+
+@Composable
+internal fun ActiveIntentCleanupPanel(
+    state: ActiveIntentUiState,
+    onResolve: (ActiveIntentItem) -> Unit,
+    onArchive: (ActiveIntentItem) -> Unit,
+    onOpenCapture: (ActiveIntentItem) -> Unit = {},
+    onAddContext: (ActiveIntentItem) -> Unit = {},
+    onEscalate: (ActiveIntentItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val ready = state as? ActiveIntentUiState.Ready ?: return
+    var decisionItem by remember { mutableStateOf<ActiveIntentItem?>(null) }
+    var isExpanded by rememberSaveable { mutableStateOf(true) }
+    var selectedFilterName by rememberSaveable { mutableStateOf(ActiveIntentFilter.All.name) }
+    val selectedFilter = runCatching { ActiveIntentFilter.valueOf(selectedFilterName) }
+        .getOrDefault(ActiveIntentFilter.All)
+    val filteredGroups = ready.filteredGroups(selectedFilter)
+    val useNewVisualLanguage = LocalRuntimeFlags.current.useNewVisualLanguage
+    val horizontalPadding = if (useNewVisualLanguage) 24.dp else 20.dp
+    val ink = if (useNewVisualLanguage) QuietDiaryColors.Cream else MaterialTheme.colorScheme.onBackground
+    val dim = if (useNewVisualLanguage) QuietDiaryColors.CreamDim else MaterialTheme.colorScheme.onSurfaceVariant
+    val rule = if (useNewVisualLanguage) QuietDiaryColors.Rule else MaterialTheme.colorScheme.outlineVariant
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = horizontalPadding)
+            .testTag(DiaryScreenTestTags.ACTIVE_INTENT_PANEL),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Needs follow-up",
+                    color = ink,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = ready.followUpSummary(),
+                    color = dim,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+            TextButton(
+                onClick = { isExpanded = !isExpanded },
+                modifier = Modifier.testTag(DiaryScreenTestTags.ACTIVE_INTENT_TOGGLE),
+            ) {
+                Text(if (isExpanded) "Hide" else "Show")
+            }
+        }
+        AnimatedVisibility(visible = isExpanded) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                ActiveIntentFilterRow(
+                    ready = ready,
+                    selectedFilter = selectedFilter,
+                    dim = dim,
+                    rule = rule,
+                    onSelect = { selectedFilterName = it.name },
+                )
+                if (filteredGroups.isEmpty()) {
+                    Text(
+                        text = "No captures in this view.",
+                        color = dim,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+                filteredGroups.forEach { group ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(DiaryScreenTestTags.activeIntentGroup(group.lifecycleStatus, group.category)),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = group.title,
+                            color = dim,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        group.items.forEach { item ->
+                            ActiveIntentRow(
+                                item = item,
+                                ink = ink,
+                                dim = dim,
+                                rule = rule,
+                                onResolve = onResolve,
+                                onArchive = onArchive,
+                                onOpenCapture = onOpenCapture,
+                                onAddContext = onAddContext,
+                                onEscalate = { decisionItem = it },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    decisionItem?.let { item ->
+        ActiveIntentDecisionDialog(
+            item = item,
+            onDismiss = { decisionItem = null },
+            onReview = {
+                onEscalate(item)
+                decisionItem = null
+            },
+            onOpenCapture = {
+                onOpenCapture(item)
+                decisionItem = null
+            },
+            onAddContext = {
+                onAddContext(item)
+                decisionItem = null
+            },
+            onResolve = {
+                onResolve(item)
+                decisionItem = null
+            },
+            onArchive = {
+                onArchive(item)
+                decisionItem = null
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ActiveIntentFilterRow(
+    ready: ActiveIntentUiState.Ready,
+    selectedFilter: ActiveIntentFilter,
+    dim: Color,
+    rule: Color,
+    onSelect: (ActiveIntentFilter) -> Unit,
+) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        ActiveIntentFilter.entries.forEach { filter ->
+            val selected = filter == selectedFilter
+            Text(
+                text = filter.displayLabel(ready),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(if (selected) QuietDiaryColors.Accent else rule)
+                    .clickable { onSelect(filter) }
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .testTag(DiaryScreenTestTags.activeIntentFilter(filter.name)),
+                color = if (selected) QuietDiaryColors.BgDeep else dim,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+            )
+        }
+    }
+}
+
+private enum class ActiveIntentFilter(private val title: String) {
+    All("All"),
+    NeedsContext("Needs context"),
+    Ready("Ready"),
+    MaybeOld("Maybe old");
+
+    fun matches(item: ActiveIntentItem): Boolean = when (this) {
+        All -> true
+        NeedsContext -> item.lifecycleStatus == "NEEDS_CONTEXT"
+        Ready -> item.lifecycleStatus != "NEEDS_CONTEXT" && item.lifecycleStatus != "MAYBE_OLD"
+        MaybeOld -> item.lifecycleStatus == "MAYBE_OLD"
+    }
+
+    fun displayLabel(ready: ActiveIntentUiState.Ready): String = "$title ${ready.items().count(::matches)}"
+}
+
+private fun ActiveIntentUiState.Ready.items(): List<ActiveIntentItem> = groups.flatMap { it.items }
+
+private fun ActiveIntentUiState.Ready.filteredGroups(filter: ActiveIntentFilter): List<ActiveIntentGroup> =
+    groups.mapNotNull { group ->
+        val items = group.items.filter(filter::matches)
+        if (items.isEmpty()) null else group.copy(items = items)
+    }
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ActiveIntentDecisionDialog(
+    item: ActiveIntentItem,
+    onDismiss: () -> Unit,
+    onReview: () -> Unit,
+    onOpenCapture: () -> Unit,
+    onAddContext: () -> Unit,
+    onResolve: () -> Unit,
+    onArchive: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionDialog(item.intentId)),
+        title = {
+            Text(
+                text = item.evidenceLabel,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = item.sourceLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                item.clueLabel?.let { clue ->
+                    Text(
+                        text = clue,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Text(
+                    text = item.reasonLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    text = "Start with the saved capture if the clue is not enough. ${item.guidanceLabel}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Button(
+                    onClick = onOpenCapture,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionOpenCapture(item.intentId)),
+                    shape = RoundedCornerShape(8.dp),
+                ) { Text(item.openCaptureActionLabel) }
+                TextButton(
+                    onClick = onAddContext,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionAddContext(item.intentId)),
+                ) { Text(item.addContextActionLabel) }
+                TextButton(
+                    onClick = onReview,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionReview(item.intentId)),
+                ) { Text(item.askOrbitActionLabel) }
+                TextButton(
+                    onClick = onResolve,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionResolve(item.intentId)),
+                ) { Text(item.resolveActionLabel) }
+                TextButton(
+                    onClick = onArchive,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionArchive(item.intentId)),
+                ) { Text(item.archiveActionLabel) }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ActiveIntentRow(
+    item: ActiveIntentItem,
+    ink: Color,
+    dim: Color,
+    rule: Color,
+    onResolve: (ActiveIntentItem) -> Unit,
+    onArchive: (ActiveIntentItem) -> Unit,
+    onOpenCapture: (ActiveIntentItem) -> Unit,
+    onAddContext: (ActiveIntentItem) -> Unit,
+    onEscalate: (ActiveIntentItem) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .border(1.dp, rule, RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .testTag(DiaryScreenTestTags.activeIntentItem(item.intentId)),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
+                Text(
+                    text = item.evidenceLabel,
+                    color = ink,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                )
+                Text(
+                    text = item.sourceLabel,
+                    color = dim,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                )
+                item.clueLabel?.let { clue ->
+                    Text(
+                        text = clue,
+                        color = dim,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 2,
+                    )
+                }
+                Text(
+                    text = item.reasonLabel,
+                    color = dim,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 3,
+                )
+                Text(
+                    text = item.guidanceLabel,
+                    color = dim,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 3,
+                )
+            }
+        }
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Button(
+                onClick = { onOpenCapture(item) },
+                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentOpenCapture(item.intentId)),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = QuietDiaryColors.Accent,
+                    contentColor = QuietDiaryColors.BgDeep,
+                ),
+            ) { Text(item.openCaptureActionLabel) }
+            if (item.needsEscalation) {
+                TextButton(
+                    onClick = { onAddContext(item) },
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentAddContext(item.intentId)),
+                ) { Text(item.addContextActionLabel) }
+                TextButton(
+                    onClick = { onEscalate(item) },
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentEscalate(item.intentId)),
+                ) { Text(item.askOrbitActionLabel) }
+            }
+            TextButton(
+                onClick = { onResolve(item) },
+                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentResolve(item.intentId)),
+            ) { Text(item.resolveActionLabel) }
+            TextButton(
+                onClick = { onArchive(item) },
+                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentArchive(item.intentId)),
+            ) { Text(item.archiveActionLabel) }
+            if (!item.needsEscalation) {
+                TextButton(
+                    onClick = { onEscalate(item) },
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentEscalate(item.intentId)),
+                ) { Text(item.askOrbitActionLabel) }
+            }
+        }
+    }
+}
+
+private fun ActiveIntentUiState.Ready.followUpSummary(): String {
+    val noun = if (activeCount == 1) "capture" else "captures"
+    val base = "$activeCount $noun may need a reply, plan, to-do, or clear decision"
+    return if (missingContextCount > 0) {
+        val contextVerb = if (missingContextCount == 1) "needs" else "need"
+        "$base · $missingContextCount $contextVerb context"
+    } else {
+        base
     }
 }
 
@@ -1081,4 +1571,23 @@ private fun formatBucketRange(startMillis: Long, endMillis: Long): String {
 internal object DiaryScreenTestTags {
     const val CLUSTER_SLOT = "diary-cluster-slot"
     const val DAY_HEADER = "diary-day-header"
+    const val ACTIVE_INTENT_PANEL = "diary-active-intent-panel"
+    const val ACTIVE_INTENT_TOGGLE = "diary-active-intent-toggle"
+
+    fun activeIntentGroup(lifecycleStatus: String, category: String): String =
+        "diary-active-intent-group-$lifecycleStatus-$category"
+
+    fun activeIntentItem(intentId: String): String = "diary-active-intent-item-$intentId"
+    fun activeIntentFilter(filterName: String): String = "diary-active-intent-filter-$filterName"
+    fun activeIntentOpenCapture(intentId: String): String = "diary-active-intent-open-capture-$intentId"
+    fun activeIntentAddContext(intentId: String): String = "diary-active-intent-add-context-$intentId"
+    fun activeIntentResolve(intentId: String): String = "diary-active-intent-resolve-$intentId"
+    fun activeIntentArchive(intentId: String): String = "diary-active-intent-archive-$intentId"
+    fun activeIntentEscalate(intentId: String): String = "diary-active-intent-escalate-$intentId"
+    fun activeIntentDecisionDialog(intentId: String): String = "diary-active-intent-decision-dialog-$intentId"
+    fun activeIntentDecisionOpenCapture(intentId: String): String = "diary-active-intent-decision-open-capture-$intentId"
+    fun activeIntentDecisionAddContext(intentId: String): String = "diary-active-intent-decision-add-context-$intentId"
+    fun activeIntentDecisionReview(intentId: String): String = "diary-active-intent-decision-review-$intentId"
+    fun activeIntentDecisionResolve(intentId: String): String = "diary-active-intent-decision-resolve-$intentId"
+    fun activeIntentDecisionArchive(intentId: String): String = "diary-active-intent-decision-archive-$intentId"
 }

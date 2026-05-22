@@ -339,3 +339,89 @@ internal val MIGRATION_6_7: Migration = object : Migration(6, 7) {
         )
     }
 }
+
+/** v8 — spec 004 Screenshot Cleanup + Active Intent sidecars. */
+internal val MIGRATION_7_8: Migration = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS capture_understanding (
+                captureId TEXT NOT NULL PRIMARY KEY,
+                mode TEXT NOT NULL,
+                status TEXT NOT NULL,
+                category TEXT NOT NULL,
+                categoryConfidence REAL NOT NULL,
+                title TEXT,
+                summaryText TEXT,
+                completionKeyJson TEXT,
+                completionKeyStatus TEXT NOT NULL,
+                sourceIdentityJson TEXT,
+                contentHashHex TEXT,
+                canonicalUrl TEXT,
+                groundingConstraintsJson TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_category ON capture_understanding(category)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_completionKeyStatus ON capture_understanding(completionKeyStatus)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_contentHashHex ON capture_understanding(contentHashHex)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_capture_understanding_canonicalUrl ON capture_understanding(canonicalUrl)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS evidence_bundle (
+                id TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                bundleType TEXT NOT NULL,
+                payloadJson TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_evidence_bundle_captureId ON evidence_bundle(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_evidence_bundle_bundleType ON evidence_bundle(bundleType)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS invalidation_record (
+                captureId TEXT NOT NULL PRIMARY KEY,
+                invalidatedAt INTEGER NOT NULL,
+                reason TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS active_intent (
+                intentId TEXT NOT NULL PRIMARY KEY,
+                captureId TEXT NOT NULL,
+                intentType TEXT NOT NULL,
+                status TEXT NOT NULL,
+                completionKeyJson TEXT,
+                completionKeyStatus TEXT NOT NULL,
+                primaryEvidenceJson TEXT NOT NULL,
+                primaryAction TEXT,
+                dueAt INTEGER,
+                expiresAt INTEGER,
+                resolutionReason TEXT,
+                resolvedAt INTEGER,
+                userConfirmed INTEGER NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                FOREIGN KEY(captureId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_active_intent_captureId ON active_intent(captureId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_active_intent_status ON active_intent(status)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_active_intent_intentType ON active_intent(intentType)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_active_intent_dueAt ON active_intent(dueAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_active_intent_expiresAt ON active_intent(expiresAt)")
+    }
+}

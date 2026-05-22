@@ -8,9 +8,11 @@ import com.orbit.app.ai.model.SensitivityResult
 import com.orbit.app.ai.model.SummaryResult
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ClusterMemberRef
+import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.model.ClusterState
+import com.orbit.app.understanding.domain.ResolutionReason
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -57,10 +59,13 @@ class DiaryViewModelTest {
         // T148 follow-up — Block 9 review FU#1: drive the cluster flow
         // from tests so we can verify combine + day-filter behaviour.
         val clusters = MutableSharedFlow<List<ClusterCardModel>>(replay = 1)
+        val activeIntents = MutableSharedFlow<List<ActiveIntentParcel>>(replay = 1)
         var throwOnObserve: Throwable? = null
         var reassignCalls = mutableListOf<Triple<String, String, String?>>()
         var archiveCalls = mutableListOf<String>()
         var deleteCalls = mutableListOf<String>()
+        var resolveActiveIntentCalls = mutableListOf<Triple<String, String, Boolean>>()
+        var escalationCalls = mutableListOf<Pair<String, String>>()
 
         override fun observeDay(isoDate: String): Flow<DayPageParcel> = flow {
             throwOnObserve?.let { throw it }
@@ -107,6 +112,24 @@ class DiaryViewModelTest {
         // T148 follow-up — drives the cluster combine flow.
         override fun observeClusters(): Flow<List<ClusterCardModel>> = flow {
             clusters.collect { emit(it) }
+        }
+
+        override fun observeActiveIntents(): Flow<List<ActiveIntentParcel>> = flow {
+            activeIntents.collect { emit(it) }
+        }
+
+        override suspend fun resolveActiveIntent(
+            intentId: String,
+            resolutionReason: String,
+            userConfirmed: Boolean
+        ): Boolean {
+            resolveActiveIntentCalls += Triple(intentId, resolutionReason, userConfirmed)
+            return true
+        }
+
+        override suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean {
+            escalationCalls += intentId to mode
+            return true
         }
     }
 
@@ -254,6 +277,53 @@ class DiaryViewModelTest {
                 ClusterMemberRef(envelopeId = "$id-m$it", memberIndex = it - 1)
             }
         )
+    }
+
+    private fun activeIntentParcel(
+        id: String = "intent-1",
+        completionKeyStatus: String = "NEEDS_ESCALATION"
+    ) = ActiveIntentParcel(
+        intentId = id,
+        captureId = "capture-$id",
+        intentType = "BUY_LATER_PRODUCT",
+        status = "ACTIVE",
+        completionKeyJson = null,
+        completionKeyStatus = completionKeyStatus,
+        primaryEvidenceJson = """{"label":"Trail shoes","source":"local_regex"}""",
+        primaryAction = "buy_or_skip",
+        dueAtMillis = null,
+        expiresAtMillis = null,
+        resolutionReason = null,
+        resolvedAtMillis = null,
+        userConfirmed = false,
+        createdAtMillis = baseTime,
+        updatedAtMillis = baseTime
+    )
+
+    @Test
+    fun activeIntentState_updatesFromRepositoryQueue() = runTest {
+        val repo = FakeRepo()
+        val vm = TestScopeVm(this, repo)
+
+        repo.activeIntents.emit(listOf(activeIntentParcel()))
+        advanceUntilIdle()
+
+        val ready = vm.activeIntentState.value
+        assertTrue(ready is ActiveIntentUiState.Ready)
+        assertEquals(1, (ready as ActiveIntentUiState.Ready).missingContextCount)
+    }
+
+    @Test
+    fun activeIntentActionsDelegateToRepository() = runTest {
+        val repo = FakeRepo()
+        val vm = TestScopeVm(this, repo)
+
+        vm.onResolveActiveIntent("intent-1", ResolutionReason.USER_ARCHIVED)
+        vm.onRequestActiveIntentEscalation("intent-1")
+        advanceUntilIdle()
+
+        assertEquals(listOf(Triple("intent-1", "USER_ARCHIVED", true)), repo.resolveActiveIntentCalls)
+        assertEquals(listOf("intent-1" to "SMART"), repo.escalationCalls)
     }
 
     @Test

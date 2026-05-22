@@ -88,6 +88,17 @@ sealed class LlmGatewayResponse {
         val modelLabel: String,
     ) : LlmGatewayResponse()
 
+    @Serializable
+    @SerialName("active_intent_review_response")
+    data class ActiveIntentReviewResponse(
+        override val requestId: String,
+        val decision: String,
+        val confidence: Float,
+        val rationale: String,
+        val suggestedResolution: String? = null,
+        val modelLabel: String,
+    ) : LlmGatewayResponse()
+
     /**
      * Day-1 `code` enumeration (open enum at the data-model level):
      * `NETWORK_UNAVAILABLE`, `GATEWAY_5XX`, `PROVIDER_5XX`, `TIMEOUT`,

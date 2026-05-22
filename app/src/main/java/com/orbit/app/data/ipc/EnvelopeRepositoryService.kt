@@ -9,6 +9,7 @@ import com.orbit.app.ai.LlmProviderRouter
 import com.orbit.app.ai.extract.ActionExtractor
 import com.orbit.app.continuation.ContinuationEngine
 import com.orbit.app.data.ActionsRepositoryDelegate
+import com.orbit.app.data.ActiveIntentRepository
 import com.orbit.app.data.AppFunctionRegistry
 import com.orbit.app.data.ClusterRepository
 import com.orbit.app.data.ClusterSummarizeDelegate
@@ -18,9 +19,12 @@ import com.orbit.app.data.OrbitDatabase
 import com.orbit.app.data.WeeklyDigestDelegate
 import com.orbit.app.ai.ClusterSummariser
 import com.orbit.app.ai.DigestComposer
+import com.orbit.app.understanding.BasicUnderstandingWriter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Bound service running in :ml process. Owns the encrypted Room database
@@ -107,6 +111,19 @@ class EnvelopeRepositoryService : Service() {
             ),
             auditWriter = auditWriter
         )
+        val activeIntentRepository = ActiveIntentRepository(
+            activeIntentDao = db.activeIntentDao(),
+            auditLogDao = db.auditLogDao(),
+            scope = serviceScope
+        )
+        val basicUnderstandingWriter = BasicUnderstandingWriter(
+            captureUnderstandingDao = db.captureUnderstandingDao(),
+            evidenceBundleDao = db.evidenceBundleDao(),
+            activeIntentDao = db.activeIntentDao()
+        )
+        serviceScope.launch(Dispatchers.IO) {
+            basicUnderstandingWriter.refreshActiveFromSidecars()
+        }
         repository = EnvelopeRepositoryImpl(
             backend = backend,
             auditWriter = auditWriter,
@@ -119,7 +136,9 @@ class EnvelopeRepositoryService : Service() {
             // Block 10 (T148 review FU#2): repository now owns dismiss
             // writes too, so wire the audit log + clock for CLUSTER_DISMISSED rows.
             clusterRepository = clusterRepo,
-            clusterSummarizeDelegate = clusterSummarizeDelegate
+            clusterSummarizeDelegate = clusterSummarizeDelegate,
+            activeIntentRepository = activeIntentRepository,
+            basicUnderstandingWriter = basicUnderstandingWriter
         )
         // T088 — same service binder pool exposes the audit-log surface on a
         // distinct intent action so the Settings / audit viewer process can

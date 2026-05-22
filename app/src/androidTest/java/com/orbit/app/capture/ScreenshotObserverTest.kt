@@ -2,6 +2,8 @@ package com.orbit.app.capture
 
 import android.content.Context
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.orbit.app.data.ipc.IEnvelopeObserver
@@ -17,9 +19,12 @@ import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * T071 (Phase 6 US4) — ScreenshotObserver contract test.
@@ -107,19 +112,50 @@ class ScreenshotObserverTest {
         assertEquals(2, recorder.seals.size)
     }
 
+    @Test
+    fun onChange_retriesWhenRepositoryBindIsStillSettling() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val recorder = RecordingRepository(expectedSeals = 1)
+        var providerCalls = 0
+        val observer = ScreenshotObserver.createForTest(
+            contentResolver = context.contentResolver,
+            repositoryProvider = {
+                providerCalls += 1
+                if (providerCalls == 1) null else recorder
+            },
+            stateCollector = staticCollector(),
+            handler = Handler(Looper.getMainLooper()),
+            repoRetryDelayMillis = 10L,
+            maxRepoBindRetries = 2
+        )
+        observer.hitSourceOverride = {
+            ScreenshotObserver.Hit(mediaId = 88L, contentUri = Uri.parse("content://media/external/images/media/88"))
+        }
+
+        observer.onChange(false, null)
+
+        assertTrue(recorder.awaitSeals())
+        assertEquals(1, recorder.seals.size)
+        assertEquals(2, providerCalls)
+    }
+
     private fun staticCollector(): StateSnapshotCollector = StateSnapshotCollector(
         packageResolver = { _, _ -> StateSnapshotCollector.ForegroundApp(AppCategory.OTHER) },
         activityStateSource = { ActivityState.STILL }
     )
 
-    private class RecordingRepository : IEnvelopeRepository.Stub() {
+    private class RecordingRepository(expectedSeals: Int = 0) : IEnvelopeRepository.Stub() {
         val seals = CopyOnWriteArrayList<Pair<IntentEnvelopeDraftParcel, StateSnapshotParcel>>()
+        private val latch = CountDownLatch(expectedSeals)
+
+        fun awaitSeals(): Boolean = latch.await(1, TimeUnit.SECONDS)
 
         override fun seal(
             draft: IntentEnvelopeDraftParcel,
             state: StateSnapshotParcel
         ): String {
             seals.add(draft to state)
+            latch.countDown()
             return "test-envelope-${seals.size}"
         }
 
@@ -193,6 +229,14 @@ class ScreenshotObserverTest {
         override fun stopObservingClusters(observer: com.orbit.app.data.ipc.IClusterObserver) = error("unused")
         override fun markClusterDismissed(clusterId: String?): Boolean = error("unused")
         override fun summarizeCluster(clusterId: String?): String = error("unused")
+        override fun observeActiveIntents(observer: com.orbit.app.data.ipc.IActiveIntentObserver) = error("unused")
+        override fun stopObservingActiveIntents(observer: com.orbit.app.data.ipc.IActiveIntentObserver) = error("unused")
+        override fun resolveActiveIntent(
+            intentId: String?,
+            resolutionReason: String?,
+            userConfirmed: Boolean
+        ): Boolean = error("unused")
+        override fun requestActiveIntentEscalation(intentId: String?, mode: String?): Boolean = error("unused")
         override fun extractActionsForEnvelope(envelopeId: String): String = error("unused")
         override fun createDerivedTodoEnvelope(
             parentEnvelopeId: String,

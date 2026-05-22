@@ -12,6 +12,8 @@ import com.orbit.app.data.ipc.AppFunctionSummaryParcel;
 import com.orbit.app.data.ipc.IActionProposalObserver;
 import com.orbit.app.data.ipc.ClusterCardParcel;
 import com.orbit.app.data.ipc.IClusterObserver;
+import com.orbit.app.data.ipc.ActiveIntentParcel;
+import com.orbit.app.data.ipc.IActiveIntentObserver;
 
 interface IEnvelopeRepository {
 
@@ -236,4 +238,20 @@ interface IEnvelopeRepository {
     // "FAILED:<reason>". The caller (ClusterSummarizeActionHandler)
     // re-fetches the envelope by id via getEnvelope when needed.
     String summarizeCluster(String clusterId);
+
+    // ---- Spec 004 — Active Intent cleanup queue ----
+
+    // Live compact Active Intent feed for the cleanup surface. The payload is
+    // intentionally bounded: no raw screenshots, raw HTML, full OCR bodies,
+    // embeddings, prompts, or model responses cross the binder.
+    void observeActiveIntents(IActiveIntentObserver observer);
+    void stopObservingActiveIntents(IActiveIntentObserver observer);
+
+    // User-driven resolution/archive path for the cleanup surface. Returns
+    // true iff a matching row was transitioned.
+    boolean resolveActiveIntent(String intentId, String resolutionReason, boolean userConfirmed);
+
+    // Audit-only escalation affordance. This records the user's request before
+    // any future Smart/Deep queue can dispatch work.
+    boolean requestActiveIntentEscalation(String intentId, String mode);
 }

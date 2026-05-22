@@ -67,5 +67,12 @@ sealed class LlmGatewayRequest {
         override val requestId: String,
         val text: String,
     ) : LlmGatewayRequest()
+
+    @Serializable
+    @SerialName("active_intent_review")
+    data class ActiveIntentReview(
+        override val requestId: String,
+        val reviewContext: ActiveIntentReviewContextJson,
+    ) : LlmGatewayRequest()
 }
 

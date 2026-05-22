@@ -27,6 +27,7 @@ import * as extractActionsHandler from "./handlers/extract_actions.js";
 import * as classifyIntentHandler from "./handlers/classify_intent.js";
 import * as generateDayHeaderHandler from "./handlers/generate_day_header.js";
 import * as scanSensitivityHandler from "./handlers/scan_sensitivity.js";
+import * as activeIntentReviewHandler from "./handlers/active_intent_review.js";
 
 export const config = { runtime: "edge" };
 
@@ -47,6 +48,8 @@ async function dispatch(
       return generateDayHeaderHandler.handle(req, ctx);
     case "scan_sensitivity":
       return scanSensitivityHandler.handle(req, ctx);
+    case "active_intent_review":
+      return activeIntentReviewHandler.handle(req, ctx);
   }
 }
 

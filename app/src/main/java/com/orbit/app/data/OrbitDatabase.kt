@@ -6,23 +6,31 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.orbit.app.data.dao.ActionExecutionDao
 import com.orbit.app.data.dao.ActionProposalDao
+import com.orbit.app.data.dao.ActiveIntentDao
 import com.orbit.app.data.dao.AppFunctionSkillDao
 import com.orbit.app.data.dao.AuditLogDao
+import com.orbit.app.data.dao.CaptureUnderstandingDao
 import com.orbit.app.data.dao.ClusterDao
 import com.orbit.app.data.dao.ContinuationDao
 import com.orbit.app.data.dao.ContinuationResultDao
 import com.orbit.app.data.dao.EnvelopeNoteDao
+import com.orbit.app.data.dao.EvidenceBundleDao
+import com.orbit.app.data.dao.InvalidationRecordDao
 import com.orbit.app.data.dao.IntentEnvelopeDao
 import com.orbit.app.data.dao.SkillUsageDao
 import com.orbit.app.data.entity.ActionExecutionEntity
 import com.orbit.app.data.entity.ActionProposalEntity
+import com.orbit.app.data.entity.ActiveIntentEntity
 import com.orbit.app.data.entity.AppFunctionSkillEntity
 import com.orbit.app.data.entity.AuditLogEntryEntity
+import com.orbit.app.data.entity.CaptureUnderstandingEntity
 import com.orbit.app.data.entity.ClusterEntity
 import com.orbit.app.data.entity.ClusterMemberEntity
 import com.orbit.app.data.entity.ContinuationEntity
 import com.orbit.app.data.entity.ContinuationResultEntity
 import com.orbit.app.data.entity.EnvelopeNoteEntity
+import com.orbit.app.data.entity.EvidenceBundleEntity
+import com.orbit.app.data.entity.InvalidationRecordEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.SkillUsageEntity
 import com.orbit.app.data.security.KeystoreKeyProvider
@@ -42,9 +50,14 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         // 002 amendment Phase 11 — Cluster Engine
         ClusterEntity::class,
         ClusterMemberEntity::class,
-        EnvelopeNoteEntity::class
+        EnvelopeNoteEntity::class,
+        // 004 — Screenshot Cleanup + Active Intent sidecars
+        CaptureUnderstandingEntity::class,
+        EvidenceBundleEntity::class,
+        InvalidationRecordEntity::class,
+        ActiveIntentEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class OrbitDatabase : RoomDatabase() {
@@ -63,6 +76,12 @@ abstract class OrbitDatabase : RoomDatabase() {
 
     // 002 amendment Phase 11
     abstract fun clusterDao(): ClusterDao
+
+    // 004 — Screenshot Cleanup + Active Intent
+    abstract fun captureUnderstandingDao(): CaptureUnderstandingDao
+    abstract fun evidenceBundleDao(): EvidenceBundleDao
+    abstract fun invalidationRecordDao(): InvalidationRecordDao
+    abstract fun activeIntentDao(): ActiveIntentDao
 
     companion object {
         private const val DB_NAME = "orbit.db"
@@ -109,7 +128,8 @@ abstract class OrbitDatabase : RoomDatabase() {
                     MIGRATION_3_4,
                     MIGRATION_4_5,
                     MIGRATION_5_6,
-                    MIGRATION_6_7
+                    MIGRATION_6_7,
+                    MIGRATION_7_8
                 )
                 .build()
         }

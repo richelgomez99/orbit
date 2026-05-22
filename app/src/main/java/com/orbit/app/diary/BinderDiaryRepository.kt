@@ -12,10 +12,12 @@ import com.orbit.app.action.ipc.IActionExecutor
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ClusterMemberRef
 import com.orbit.app.data.ipc.ActionProposalParcel
+import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.ClusterCardParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.ipc.IActionProposalObserver
+import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.ipc.IClusterObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
 import com.orbit.app.data.ipc.IEnvelopeRepository
@@ -279,5 +281,38 @@ class BinderDiaryRepository(
     override suspend fun dismissCluster(clusterId: String): Boolean {
         val repo = connect()
         return withContext(Dispatchers.IO) { repo.markClusterDismissed(clusterId) }
+    }
+
+    // ---- Spec 004 — Active Intent cleanup queue --------------------------
+
+    override fun observeActiveIntents(): Flow<List<ActiveIntentParcel>> = callbackFlow {
+        val repo = connect()
+        val observer = object : IActiveIntentObserver.Stub() {
+            override fun onActiveIntentsChanged(intents: MutableList<ActiveIntentParcel>?) {
+                trySend(intents?.toList() ?: emptyList())
+            }
+        }
+        repo.observeActiveIntents(observer)
+        awaitClose {
+            runCatching { repo.stopObservingActiveIntents(observer) }
+        }
+    }
+
+    override suspend fun resolveActiveIntent(
+        intentId: String,
+        resolutionReason: String,
+        userConfirmed: Boolean
+    ): Boolean {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.resolveActiveIntent(intentId, resolutionReason, userConfirmed)
+        }
+    }
+
+    override suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.requestActiveIntentEscalation(intentId, mode)
+        }
     }
 }

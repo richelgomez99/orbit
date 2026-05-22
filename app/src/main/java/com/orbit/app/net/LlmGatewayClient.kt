@@ -275,7 +275,8 @@ class LlmGatewayClient(
         is LlmGatewayRequest.ExtractActions,
         is LlmGatewayRequest.GenerateDayHeader -> MODEL_SONNET
         is LlmGatewayRequest.ClassifyIntent,
-        is LlmGatewayRequest.ScanSensitivity -> MODEL_HAIKU
+        is LlmGatewayRequest.ScanSensitivity,
+        is LlmGatewayRequest.ActiveIntentReview -> MODEL_HAIKU
     }
 
     companion object {

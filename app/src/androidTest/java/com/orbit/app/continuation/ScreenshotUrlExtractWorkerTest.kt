@@ -211,6 +211,14 @@ class ScreenshotUrlExtractWorkerTest {
         override fun stopObservingClusters(observer: com.orbit.app.data.ipc.IClusterObserver) = error("unused")
         override fun markClusterDismissed(clusterId: String?): Boolean = error("unused")
         override fun summarizeCluster(clusterId: String?): String = error("unused")
+        override fun observeActiveIntents(observer: com.orbit.app.data.ipc.IActiveIntentObserver) = error("unused")
+        override fun stopObservingActiveIntents(observer: com.orbit.app.data.ipc.IActiveIntentObserver) = error("unused")
+        override fun resolveActiveIntent(
+            intentId: String?,
+            resolutionReason: String?,
+            userConfirmed: Boolean
+        ): Boolean = error("unused")
+        override fun requestActiveIntentEscalation(intentId: String?, mode: String?): Boolean = error("unused")
         override fun extractActionsForEnvelope(envelopeId: String): String = error("unused")
         override fun createDerivedTodoEnvelope(
             parentEnvelopeId: String,

@@ -4,6 +4,7 @@ import com.orbit.app.action.ipc.ActionExecuteRequestParcel
 import com.orbit.app.action.ipc.ActionExecuteResultParcel
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ipc.ActionProposalParcel
+import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import kotlinx.coroutines.flow.Flow
@@ -103,4 +104,19 @@ interface DiaryRepository {
      * it; production wiring is in `BinderDiaryRepository`.
      */
     suspend fun dismissCluster(clusterId: String): Boolean = false
+
+    // ---- Spec 004 — Active Intent cleanup queue --------------------------
+
+    /** Live compact queue of captures that still need user action. */
+    fun observeActiveIntents(): Flow<List<ActiveIntentParcel>> = flowOf(emptyList())
+
+    /** Resolve/archive an Active Intent row through the `:ml` boundary. */
+    suspend fun resolveActiveIntent(
+        intentId: String,
+        resolutionReason: String,
+        userConfirmed: Boolean
+    ): Boolean = false
+
+    /** Audit-only Smart/Deep escalation request. Does not dispatch work. */
+    suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean = false
 }
