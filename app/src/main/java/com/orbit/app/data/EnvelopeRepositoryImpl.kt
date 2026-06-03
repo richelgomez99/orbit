@@ -24,6 +24,9 @@ import com.orbit.app.data.model.ContinuationStatus
 import com.orbit.app.data.model.ContinuationType
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
+import com.orbit.app.memory.MemoryIndexSyncScheduler
+import com.orbit.app.memory.MemoryIndexSyncDelegate
+import com.orbit.app.memory.MemoryIndexSyncWorker
 import com.orbit.app.net.CanonicalUrlHasher
 import com.orbit.app.understanding.BasicUnderstandingInput
 import com.orbit.app.understanding.BasicUnderstandingWriter
@@ -112,7 +115,18 @@ class EnvelopeRepositoryImpl(
      * Spec 004 — local Basic understanding writer. Runs only in :ml after
      * envelope writes commit so UI/capture processes never touch Room.
      */
-    private val basicUnderstandingWriter: BasicUnderstandingWriter? = null
+    private val basicUnderstandingWriter: BasicUnderstandingWriter? = null,
+    /**
+     * Spec 005 — optional compact cloud-index scheduler. Enqueues only after
+     * local Room transactions commit; the worker owns the opt-in gate.
+     */
+    private val memoryIndexSyncScheduler: MemoryIndexSyncScheduler? = null,
+    /**
+     * Spec 005 — executes compact memory-index sync inside :ml. WorkManager
+     * calls through the binder so corpus reads never happen in the default UI
+     * process.
+     */
+    private val memoryIndexSyncDelegate: MemoryIndexSyncDelegate? = null
 ) : IEnvelopeRepository.Stub() {
 
     /** envelopeId → millis-deadline after which `undo()` returns false. */
@@ -325,6 +339,7 @@ class EnvelopeRepositoryImpl(
             capturedAtMillis = now,
             nowMillis = now
         )
+        syncMemoryIndexAfterCommit(id, MemoryIndexSyncWorker.MODE_UPSERT, null)
 
         // T068 — AFTER the Room txn commits, hand each PENDING row to the
         // engine so WorkManager picks it up. Done outside the txn because
@@ -379,6 +394,15 @@ class EnvelopeRepositoryImpl(
         // dedupe-shared result if set, otherwise the envelope's own latest.
         val latest = backend.getLatestResultForEnvelope(envelopeId, entity.sharedContinuationResultId)
         entity.toViewParcel(latest)
+    }
+
+    override fun searchLocalEnvelopes(query: String, limit: Int): List<EnvelopeViewParcel> = runBlocking {
+        val trimmed = query.trim()
+        if (trimmed.isBlank()) return@runBlocking emptyList()
+        backend.searchActiveEnvelopes(trimmed, limit.coerceIn(1, 50)).map { entity ->
+            val latest = backend.getLatestResultForEnvelope(entity.id, entity.sharedContinuationResultId)
+            entity.toViewParcel(latest)
+        }
     }
 
     override fun getLatestNote(envelopeId: String): String? = runBlocking {
@@ -473,6 +497,7 @@ class EnvelopeRepositoryImpl(
                 auditEntry = audit
             )
         }
+        syncMemoryIndexAfterCommit(envelopeId, MemoryIndexSyncWorker.MODE_UPSERT, null)
     }
 
     override fun archive(envelopeId: String) {
@@ -517,6 +542,7 @@ class EnvelopeRepositoryImpl(
                 )
             }
         }
+        syncMemoryIndexAfterCommit(envelopeId, MemoryIndexSyncWorker.MODE_TOMBSTONE, "local_deleted")
     }
 
     override fun undo(envelopeId: String): Boolean {
@@ -530,6 +556,39 @@ class EnvelopeRepositoryImpl(
         return true
     }
 
+    override fun syncMemoryIndex(envelopeId: String, mode: String, reason: String?): String {
+        val delegate = memoryIndexSyncDelegate
+            ?: return MemoryIndexSyncDelegate.RESULT_FAILED_PREFIX + "DELEGATE_UNAVAILABLE"
+        val outcome = runBlocking { delegate.sync(envelopeId = envelopeId, mode = mode, reason = reason) }
+        return MemoryIndexSyncDelegate.encodeOutcome(outcome)
+    }
+
+    private fun syncMemoryIndexAfterCommit(envelopeId: String, mode: String, reason: String?) {
+        val delegate = memoryIndexSyncDelegate
+        if (delegate == null) {
+            when (mode) {
+                MemoryIndexSyncWorker.MODE_TOMBSTONE ->
+                    memoryIndexSyncScheduler?.enqueueTombstone(envelopeId, reason ?: "local_deleted")
+                else -> memoryIndexSyncScheduler?.enqueueEnvelope(envelopeId)
+            }
+            return
+        }
+        scope.launch(Dispatchers.IO) {
+            val outcome = runCatching {
+                delegate.sync(envelopeId = envelopeId, mode = mode, reason = reason)
+            }.getOrElse { t ->
+                android.util.Log.w("EnvelopeRepo", "memory index sync crashed envelopeId=$envelopeId mode=$mode", t)
+                return@launch
+            }
+            val encoded = MemoryIndexSyncDelegate.encodeOutcome(outcome)
+            if (encoded.startsWith(MemoryIndexSyncDelegate.RESULT_FAILED_PREFIX)) {
+                android.util.Log.w("EnvelopeRepo", "memory index sync failed envelopeId=$envelopeId mode=$mode outcome=$encoded")
+            } else {
+                android.util.Log.i("EnvelopeRepo", "memory index sync $encoded envelopeId=$envelopeId mode=$mode")
+            }
+        }
+    }
+
     override fun restoreFromTrash(envelopeId: String) {
         runBlocking {
             val audit = auditWriter.build(
@@ -539,6 +598,7 @@ class EnvelopeRepositoryImpl(
             )
             backend.restoreFromTrashTransaction(envelopeId, audit)
         }
+        syncMemoryIndexAfterCommit(envelopeId, MemoryIndexSyncWorker.MODE_UPSERT, null)
     }
 
     override fun listSoftDeletedWithinDays(days: Int): List<EnvelopeViewParcel> = runBlocking {
@@ -559,6 +619,7 @@ class EnvelopeRepositoryImpl(
             )
             backend.hardDeleteTransaction(envelopeId, audit)
         }
+        syncMemoryIndexAfterCommit(envelopeId, MemoryIndexSyncWorker.MODE_TOMBSTONE, "local_hard_deleted")
     }
 
     // ---- Diagnostics ----
@@ -662,6 +723,7 @@ class EnvelopeRepositoryImpl(
                 dedupeExistingResultId = dedupeExisting?.id
             )
         }
+        if (ok) syncMemoryIndexAfterCommit(envelopeId, MemoryIndexSyncWorker.MODE_UPSERT, null)
     }
 
     override fun retryHydration(envelopeId: String) {
@@ -794,6 +856,7 @@ class EnvelopeRepositoryImpl(
                 nowMillis = now
             )
         }
+        syncMemoryIndexAfterCommit(envelopeId, MemoryIndexSyncWorker.MODE_UPSERT, null)
 
         // Enqueue the URL_HYDRATE jobs AFTER the Room txn commits — same
         // rule as seal(): WorkManager owns its own durability and

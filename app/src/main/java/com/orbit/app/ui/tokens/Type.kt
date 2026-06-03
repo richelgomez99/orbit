@@ -42,11 +42,32 @@ data class OrbitType(
             lineHeight = 26.sp,
             letterSpacing = 0.sp,
         ),
+        titleLarge = TextStyle(
+            fontFamily = bodySans,
+            fontWeight = FontWeight.Normal,
+            fontSize = 22.sp,
+            lineHeight = 28.sp,
+            letterSpacing = 0.sp,
+        ),
+        titleMedium = TextStyle(
+            fontFamily = bodySans,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp,
+            lineHeight = 22.sp,
+            letterSpacing = 0.sp,
+        ),
+        titleSmall = TextStyle(
+            fontFamily = bodySans,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.sp,
+        ),
         bodyLarge = TextStyle(
             fontFamily = bodySans,
             fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
             letterSpacing = 0.sp,
         ),
         bodyMedium = TextStyle(
@@ -56,12 +77,33 @@ data class OrbitType(
             lineHeight = 20.sp,
             letterSpacing = 0.sp,
         ),
-        labelSmall = TextStyle(
-            fontFamily = captionMono,
+        bodySmall = TextStyle(
+            fontFamily = bodySans,
             fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.sp,
+        ),
+        labelLarge = TextStyle(
+            fontFamily = bodySans,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.sp,
+        ),
+        labelMedium = TextStyle(
+            fontFamily = bodySans,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 0.sp,
+        ),
+        labelSmall = TextStyle(
+            fontFamily = bodySans,
+            fontWeight = FontWeight.Medium,
             fontSize = 11.sp,
             lineHeight = 14.sp,
-            letterSpacing = 1.6.sp,
+            letterSpacing = 0.sp,
         ),
     )
 

@@ -61,6 +61,30 @@ class AuditLogViewModelTest {
     }
 
     @Test
+    fun `memory audit actions are rendered as ordinary audit entries`() = runTest {
+        val scope = TestScope(UnconfinedTestDispatcher(testScheduler))
+        val today = LocalDate.of(2026, 5, 30)
+        val provider = FakeProvider(
+            mutableMapOf(
+                "2026-05-30" to listOf(
+                    entry("memory-search", "MEMORY_SEARCH_REQUESTED"),
+                    entry("memory-upsert", "MEMORY_INDEX_UPSERTED"),
+                    entry("memory-failed", "MEMORY_GATEWAY_FAILED"),
+                )
+            )
+        )
+
+        val vm = AuditLogViewModel(provider, today = { today }, scopeOverride = scope)
+        scope.advanceUntilIdle()
+
+        val s = vm.state.value as AuditLogUiState.Ready
+        assertEquals(3, s.entries.size)
+        assertEquals(1, s.groupCounts["MEMORY_SEARCH_REQUESTED"])
+        assertEquals(1, s.groupCounts["MEMORY_INDEX_UPSERTED"])
+        assertEquals(1, s.groupCounts["MEMORY_GATEWAY_FAILED"])
+    }
+
+    @Test
     fun `selectDay reloads for requested date`() = runTest {
         val scope = TestScope(UnconfinedTestDispatcher(testScheduler))
         val today = LocalDate.of(2025, 1, 15)

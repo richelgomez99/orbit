@@ -30,8 +30,15 @@ class PrivacyPreferences(context: Context) {
             prefs.edit().putBoolean(KEY_CONTINUATIONS_PAUSED, value).apply()
         }
 
+    var memoryIndexingEnabled: Boolean
+        get() = prefs.getBoolean(KEY_MEMORY_INDEXING_ENABLED, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_MEMORY_INDEXING_ENABLED, value).apply()
+        }
+
     companion object {
         const val PREFS_NAME = "orbit_privacy_prefs"
         const val KEY_CONTINUATIONS_PAUSED = "continuations_paused"
+        const val KEY_MEMORY_INDEXING_ENABLED = "memory_indexing_enabled"
     }
 }

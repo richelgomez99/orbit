@@ -208,6 +208,9 @@ class LocalRoomBackend(
     override suspend fun getEnvelope(id: String): IntentEnvelopeEntity? =
         envelopeDao.getById(id)
 
+    override suspend fun searchActiveEnvelopes(query: String, limit: Int): List<IntentEnvelopeEntity> =
+        envelopeDao.searchActive(query.trim(), limit.coerceIn(1, 50))
+
     override suspend fun getLatestNoteForEnvelope(envelopeId: String): EnvelopeNoteEntity? =
         noteDao.latestForEnvelope(envelopeId)
 

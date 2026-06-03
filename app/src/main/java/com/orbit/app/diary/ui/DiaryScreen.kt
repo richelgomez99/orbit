@@ -79,6 +79,7 @@ import com.orbit.app.diary.DayUiState
 import com.orbit.app.diary.DiaryPagingSource
 import com.orbit.app.diary.DiaryViewModel
 import com.orbit.app.diary.EnvelopeDetailActivity
+import com.orbit.app.memory.MemoryDisplayText
 import com.orbit.app.ui.IntentChipPicker
 import com.orbit.app.ui.primitives.MonoLabel
 import com.orbit.app.ui.primitives.OrbitWordmark
@@ -87,7 +88,6 @@ import com.orbit.app.ui.primitives.SourceGlyphKind
 import com.orbit.app.ui.primitives.SourceIdentityResolver
 import com.orbit.app.ui.theme.LocalRuntimeFlags
 import com.orbit.app.ui.tokens.OrbitType
-import com.orbit.app.understanding.domain.ResolutionReason
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -117,7 +117,8 @@ fun DiaryScreen(
     modifier: Modifier = Modifier,
     onOpenSetup: (() -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null,
-    pagingSource: DiaryPagingSource? = null
+    pagingSource: DiaryPagingSource? = null,
+    bottomBar: @Composable () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -153,6 +154,7 @@ fun DiaryScreen(
                 )
             }
         },
+        bottomBar = bottomBar,
         containerColor = if (useNewVisualLanguage) QuietDiaryColors.BgDeep else MaterialTheme.colorScheme.background
     ) { padding ->
         Surface(
@@ -414,7 +416,6 @@ private fun RenderDayState(
 ) {
     val context = LocalContext.current
     var pendingProposal by remember { mutableStateOf<ActionProposalParcel?>(null) }
-    val activeIntentState by viewModel.activeIntentState.collectAsState()
 
     // T053 — surface the 5 s undo window via a Toast. Compose Snackbar
     // would be a cleaner host but the rest of Diary already uses Toasts
@@ -433,40 +434,11 @@ private fun RenderDayState(
 
     when (val s = state) {
         is DayUiState.Loading -> LoadingView()
-        is DayUiState.Empty -> EmptyDayView(
-            isoDate = s.isoDate,
-            activeIntentState = activeIntentState,
-            onResolveActiveIntent = { item ->
-                viewModel.onResolveActiveIntent(item.intentId, item.defaultResolutionReason)
-            },
-            onArchiveActiveIntent = { item ->
-                viewModel.onResolveActiveIntent(item.intentId, ResolutionReason.USER_ARCHIVED)
-            },
-            onOpenActiveIntentCapture = { item ->
-                context.startActivity(
-                    EnvelopeDetailActivity.newIntent(context, item.captureId, dayLocal = s.isoDate)
-                )
-            },
-            onAddActiveIntentContext = { item ->
-                context.startActivity(
-                    EnvelopeDetailActivity.newIntent(
-                        context,
-                        item.captureId,
-                        dayLocal = s.isoDate,
-                        startNote = true
-                    )
-                )
-            },
-            onEscalateActiveIntent = { item ->
-                viewModel.onRequestActiveIntentEscalation(item.intentId)
-                Toast.makeText(context, "Orbit added a decision brief", Toast.LENGTH_SHORT).show()
-            }
-        )
+        is DayUiState.Empty -> EmptyDayView(isoDate = s.isoDate)
         is DayUiState.Error -> ErrorView(message = s.message)
         is DayUiState.Ready -> DayContentView(
             state = s,
             viewModel = viewModel,
-            activeIntentState = activeIntentState,
             onReassign = { id, intent ->
                 viewModel.onReassignIntent(id, intent.name, reason = "DIARY_REASSIGN")
             },
@@ -484,31 +456,6 @@ private fun RenderDayState(
                 )
             },
             onProposalTap = { proposal -> pendingProposal = proposal },
-            onResolveActiveIntent = { item ->
-                viewModel.onResolveActiveIntent(item.intentId, item.defaultResolutionReason)
-            },
-            onArchiveActiveIntent = { item ->
-                viewModel.onResolveActiveIntent(item.intentId, ResolutionReason.USER_ARCHIVED)
-            },
-            onOpenActiveIntentCapture = { item ->
-                context.startActivity(
-                    EnvelopeDetailActivity.newIntent(context, item.captureId, dayLocal = s.isoDate)
-                )
-            },
-            onAddActiveIntentContext = { item ->
-                context.startActivity(
-                    EnvelopeDetailActivity.newIntent(
-                        context,
-                        item.captureId,
-                        dayLocal = s.isoDate,
-                        startNote = true
-                    )
-                )
-            },
-            onEscalateActiveIntent = { item ->
-                viewModel.onRequestActiveIntentEscalation(item.intentId)
-                Toast.makeText(context, "Orbit added a decision brief", Toast.LENGTH_SHORT).show()
-            }
         )
     }
 
@@ -537,32 +484,14 @@ private fun LoadingView() {
 @Composable
 private fun EmptyDayView(
     isoDate: String,
-    activeIntentState: ActiveIntentUiState = ActiveIntentUiState.Empty,
-    onResolveActiveIntent: (ActiveIntentItem) -> Unit = {},
-    onArchiveActiveIntent: (ActiveIntentItem) -> Unit = {},
-    onOpenActiveIntentCapture: (ActiveIntentItem) -> Unit = {},
-    onAddActiveIntentContext: (ActiveIntentItem) -> Unit = {},
-    onEscalateActiveIntent: (ActiveIntentItem) -> Unit = {}
 ) {
     // T054 — empty-day copy. Kept short and un-judgmental per product tone.
-    val hasActiveIntents = activeIntentState is ActiveIntentUiState.Ready
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(if (LocalRuntimeFlags.current.useNewVisualLanguage) QuietDiaryColors.BgDeep else Color.Transparent),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        if (hasActiveIntents) {
-            ActiveIntentCleanupPanel(
-                state = activeIntentState,
-                onResolve = onResolveActiveIntent,
-                onArchive = onArchiveActiveIntent,
-                onOpenCapture = onOpenActiveIntentCapture,
-                onAddContext = onAddActiveIntentContext,
-                onEscalate = onEscalateActiveIntent,
-                modifier = Modifier.padding(top = 18.dp)
-            )
-        }
         Box(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center,
@@ -620,17 +549,11 @@ private fun ErrorView(message: String) {
 internal fun DayContentView(
     state: DayUiState.Ready,
     viewModel: DiaryViewModel,
-    activeIntentState: ActiveIntentUiState = ActiveIntentUiState.Empty,
     onReassign: (String, Intent) -> Unit,
     onRetry: (String) -> Unit,
     onDelete: (String) -> Unit,
     onOpenDetail: (String) -> Unit,
     onProposalTap: (ActionProposalParcel) -> Unit,
-    onResolveActiveIntent: (ActiveIntentItem) -> Unit = {},
-    onArchiveActiveIntent: (ActiveIntentItem) -> Unit = {},
-    onOpenActiveIntentCapture: (ActiveIntentItem) -> Unit = {},
-    onAddActiveIntentContext: (ActiveIntentItem) -> Unit = {},
-    onEscalateActiveIntent: (ActiveIntentItem) -> Unit = {}
 ) {
     // Phase 11 Block 9 / T149 — reduce-motion preference. Compose has no
     // first-class API for this; we read `Settings.Global.ANIMATOR_DURATION_SCALE`
@@ -654,20 +577,6 @@ internal fun DayContentView(
             .background(if (useNewVisualLanguage) QuietDiaryColors.BgDeep else Color.Transparent),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
-        if (activeIntentState is ActiveIntentUiState.Ready) {
-            item(key = "active-intent-cleanup") {
-                ActiveIntentCleanupPanel(
-                    state = activeIntentState,
-                    onResolve = onResolveActiveIntent,
-                    onArchive = onArchiveActiveIntent,
-                    onOpenCapture = onOpenActiveIntentCapture,
-                    onAddContext = onAddActiveIntentContext,
-                    onEscalate = onEscalateActiveIntent,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-            }
-        }
-
         // T149 — cluster slot renders ABOVE the day-header on cluster days
         // (spec 010 D6 revision: events outrank steady-state). Non-cluster
         // days (clusters.isEmpty()) skip the slot entirely.
@@ -775,15 +684,19 @@ internal fun ActiveIntentCleanupPanel(
     onOpenCapture: (ActiveIntentItem) -> Unit = {},
     onAddContext: (ActiveIntentItem) -> Unit = {},
     onEscalate: (ActiveIntentItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initiallyExpanded: Boolean = false,
 ) {
     val ready = state as? ActiveIntentUiState.Ready ?: return
     var decisionItem by remember { mutableStateOf<ActiveIntentItem?>(null) }
-    var isExpanded by rememberSaveable { mutableStateOf(true) }
+    var isExpanded by rememberSaveable { mutableStateOf(initiallyExpanded) }
     var selectedFilterName by rememberSaveable { mutableStateOf(ActiveIntentFilter.All.name) }
     val selectedFilter = runCatching { ActiveIntentFilter.valueOf(selectedFilterName) }
         .getOrDefault(ActiveIntentFilter.All)
     val filteredGroups = ready.filteredGroups(selectedFilter)
+    val filteredCount = filteredGroups.sumOf { it.items.size }
+    val previewGroups = filteredGroups.preview(maxItems = ACTIVE_INTENT_PREVIEW_LIMIT)
+    val hiddenCount = (filteredCount - ACTIVE_INTENT_PREVIEW_LIMIT).coerceAtLeast(0)
     val useNewVisualLanguage = LocalRuntimeFlags.current.useNewVisualLanguage
     val horizontalPadding = if (useNewVisualLanguage) 24.dp else 20.dp
     val ink = if (useNewVisualLanguage) QuietDiaryColors.Cream else MaterialTheme.colorScheme.onBackground
@@ -798,13 +711,21 @@ internal fun ActiveIntentCleanupPanel(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { isExpanded = !isExpanded }
+                .padding(vertical = 2.dp)
+                .testTag(DiaryScreenTestTags.ACTIVE_INTENT_TOGGLE),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 Text(
-                    text = "Needs follow-up",
+                    text = "Follow-ups",
                     color = ink,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -815,11 +736,22 @@ internal fun ActiveIntentCleanupPanel(
                     style = MaterialTheme.typography.labelSmall,
                 )
             }
-            TextButton(
-                onClick = { isExpanded = !isExpanded },
-                modifier = Modifier.testTag(DiaryScreenTestTags.ACTIVE_INTENT_TOGGLE),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(if (isExpanded) "Hide" else "Show")
+                Text(
+                    text = if (isExpanded) "Collapse" else "Review",
+                    color = dim,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                Icon(
+                    imageVector = if (isExpanded) Icons.Filled.ChevronLeft else Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    tint = dim,
+                    modifier = Modifier.size(18.dp),
+                )
             }
         }
         AnimatedVisibility(visible = isExpanded) {
@@ -837,8 +769,14 @@ internal fun ActiveIntentCleanupPanel(
                         color = dim,
                         style = MaterialTheme.typography.labelSmall,
                     )
+                } else if (hiddenCount > 0) {
+                    Text(
+                        text = "Showing ${previewGroups.sumOf { it.items.size }} of $filteredCount. Use filters or Library search to narrow this down.",
+                        color = dim,
+                        style = MaterialTheme.typography.labelSmall,
+                    )
                 }
-                filteredGroups.forEach { group ->
+                previewGroups.forEach { group ->
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -933,14 +871,12 @@ private fun ActiveIntentFilterRow(
 private enum class ActiveIntentFilter(private val title: String) {
     All("All"),
     NeedsContext("Needs context"),
-    Ready("Ready"),
-    MaybeOld("Maybe old");
+    Ready("Ready");
 
     fun matches(item: ActiveIntentItem): Boolean = when (this) {
         All -> true
         NeedsContext -> item.lifecycleStatus == "NEEDS_CONTEXT"
-        Ready -> item.lifecycleStatus != "NEEDS_CONTEXT" && item.lifecycleStatus != "MAYBE_OLD"
-        MaybeOld -> item.lifecycleStatus == "MAYBE_OLD"
+        Ready -> item.lifecycleStatus != "NEEDS_CONTEXT"
     }
 
     fun displayLabel(ready: ActiveIntentUiState.Ready): String = "$title ${ready.items().count(::matches)}"
@@ -953,6 +889,18 @@ private fun ActiveIntentUiState.Ready.filteredGroups(filter: ActiveIntentFilter)
         val items = group.items.filter(filter::matches)
         if (items.isEmpty()) null else group.copy(items = items)
     }
+
+private fun List<ActiveIntentGroup>.preview(maxItems: Int): List<ActiveIntentGroup> {
+    var remaining = maxItems
+    return mapNotNull { group ->
+        if (remaining <= 0) return@mapNotNull null
+        val previewItems = group.items.take(remaining)
+        remaining -= previewItems.size
+        if (previewItems.isEmpty()) null else group.copy(items = previewItems)
+    }
+}
+
+private const val ACTIVE_INTENT_PREVIEW_LIMIT = 6
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -1141,13 +1089,12 @@ private fun ActiveIntentRow(
 }
 
 private fun ActiveIntentUiState.Ready.followUpSummary(): String {
-    val noun = if (activeCount == 1) "capture" else "captures"
-    val base = "$activeCount $noun may need a reply, plan, to-do, or clear decision"
+    val noun = if (activeCount == 1) "saved moment" else "saved moments"
+    val verb = if (activeCount == 1) "looks" else "look"
     return if (missingContextCount > 0) {
-        val contextVerb = if (missingContextCount == 1) "needs" else "need"
-        "$base · $missingContextCount $contextVerb context"
+        "$activeCount $noun $verb actionable. Some need your context."
     } else {
-        base
+        "$activeCount $noun $verb actionable."
     }
 }
 
@@ -1278,8 +1225,12 @@ private fun QuietDiaryEnvelopeRow(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                val titleOrPreview = envelope.title?.takeIf { it.isNotBlank() }
-                    ?: envelope.textContent?.take(160)?.replace('\n', ' ')
+                val titleOrPreview = MemoryDisplayText.title(
+                    existingTitle = envelope.title,
+                    text = envelope.textContent,
+                    domain = envelope.domain,
+                    maxChars = 160,
+                )
                     ?: buildSubtitle(envelope)
                 Text(
                     text = titleOrPreview,

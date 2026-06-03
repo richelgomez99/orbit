@@ -1,0 +1,685 @@
+00:00 [MUSIC PLAYING]
+00:07 STEVAN SILVA: Hi,
+I'm Stevan Silva.
+00:09 We are thrilled to
+talk to you today
+00:11 about bridging worlds with
+the Android XR SDK across XR
+00:15 devices, including XR
+headsets, wired XR glasses,
+00:19 and AI glasses.
+00:21 Last December, we introduced
+our Developer Preview 3,
+00:24 which brought new APIs for
+building augmented experiences
+00:28 on AI glasses.
+00:29 As shared in
+December, AI glasses
+00:31 are the exciting new form factor
+coming to the Android XR family.
+00:36 AI glasses with and
+without displays
+00:39 connect existing apps and
+users to the world around them
+00:42 with powerful audio and
+conversational experiences.
+00:47 Today, we are excited to
+announce Developer Preview
+00:50 4 with even more updates
+to our developer solutions
+00:53 for XR devices across both
+augmented experiences on eye
+00:57 glasses and immersive
+experiences for XR headsets
+01:00 and wired XR glasses.
+01:02 Also, our core libraries,
+including XR Runtime, Jetpack
+01:07 SceneCore, and ARCore
+for Jetpack XR libraries,
+01:10 are officially
+moving to beta soon.
+01:13 This is yet another milestone
+we have achieved together
+01:15 with your feedback and input.
+01:18 It has been super
+exciting to see
+01:20 the amazing experiences
+you all have
+01:22 been releasing in Galaxy XR.
+01:24 To support this momentum, we've
+introduced new features designed
+01:28 to deepen immersion, making
+headset interactions feel
+01:31 even more natural and
+giving users more ways
+01:34 to watch, create, and explore.
+01:36 An example of these
+capabilities in action
+01:38 is the incredible work
+from Simply Piano XR, which
+01:42 takes the number
+one piano learning
+01:44 app into a whole new
+dimension, letting anyone play
+01:47 the songs they love with guided
+lessons and personal feedback
+01:50 on a real or even virtual piano.
+01:53 Keys light up and finger numbers
+guide every note within a fully
+01:57 3D environment built
+for Android XR.
+02:00 Also, Oh My Galaxy is a
+spatial mixed reality arcade
+02:04 puzzler that transforms your
+room into an interactive galaxy.
+02:07 Designed for a
+broad XR audience,
+02:10 it combines natural
+hand tracking
+02:12 with physics-based
+gameplay to create
+02:14 a playful, immersive
+experience that showcases
+02:16 the power of Android XR.
+02:19 Today, we'll be covering
+our main updates, starting
+02:22 with augmented
+experiences for AI glasses
+02:25 and then immersive experiences
+for wired XR glasses and XR
+02:28 headsets.
+02:30 We would also like to announce
+our Android XR developer
+02:33 catalyst.
+02:34 Program developers can
+apply to get access
+02:37 to pre-release hardware,
+including XREAL's Project
+02:40 Aura and the AI
+glasses developer
+02:42 kit via our open
+application process.
+02:45 But more on that later.
+02:48 Now, let's dive into augmented
+experiences for AI glasses.
+02:52 Since launching
+in December, there
+02:53 are a number of partners
+that are currently
+02:55 exploring XR's capabilities.
+02:58 This includes partners
+across shopping;
+03:00 health and fitness; media like
+Spotify, Melon and 30 Ninjas;
+03:05 education through Pearson;
+and real world exploration
+03:09 and mobility with Uber, Naver
+MAP, Team App, Getyourguide,
+03:13 a Aira We are also working
+across messaging apps
+03:18 such Line and KakaoTalk.
+03:20 To learn more about the
+augmented experiences
+03:22 our partners are building,
+I'll hand it over to Yasmin.
+03:27 YASMINE EVJEN: Thanks, Stevan.
+03:29 Together with XR,
+Line's mission is
+03:31 to bring closing the
+distance into the real world.
+03:33 Hands-free messaging and
+instant photo sharing
+03:36 enable real time communication
+with less friction
+03:38 on your phone.
+03:39 For example, imagine that you
+want to share a special moment
+03:43 with someone that's far away.
+03:44 You'll be able to see
+the same scene as if you
+03:46 were both there together.
+03:48 And with Kakaotalk, where
+users can experience
+03:51 the future of connection
+as Kakaotalk on AI glasses,
+03:54 seamlessly merges your
+digital and physical worlds
+03:57 through intuitive, voice
+activated messaging
+03:59 and hands-free, real
+time notifications.
+04:02 Designed for always on
+professional, the tech savvy
+04:05 shopper, and the
+socialite on the move,
+04:07 these experiences liberate
+you from your mobile screen
+04:10 while keeping you
+deeply anchored
+04:12 in your social circles
+and daily activities.
+04:15 Finally, Naver Maps, Korea's
+leading digital map service,
+04:19 brings hands-free walking
+navigation to Google AI glasses.
+04:23 Powered by precise pedestrian
+data and natural voice guidance,
+04:27 it delivers a safe and reliable
+navigation experience anywhere.
+04:31 Naver is also bringing more
+services to Google AI glasses,
+04:34 including shopping and
+Papago translation.
+04:38 With the latest
+round of updates,
+04:39 we continue to expand
+the capabilities
+04:41 of Jetpack Projected, Jetpack
+Composed Glimmer, and ARCore
+04:45 for Jetpack XR for
+augmented experiences.
+04:48 Jetpack Projected allows
+you to configure and set up
+04:51 your applications
+for AI glasses.
+04:53 First, let's look at
+how you prepare your app
+04:55 to interact with the XR device.
+04:58 The device availability API
+consolidates critical signals,
+05:02 including wear state
+and connectivity,
+05:04 into the standard Android
+lifecycle state values.
+05:08 This API can help you
+manage audio routing,
+05:11 hotword activation,
+and know when
+05:12 to expect user input based on
+when the XR device is available.
+05:17 To simplify your testing of
+the Jetpack projected library,
+05:20 we're introducing the
+projected test rule
+05:22 API, available in the new
+projected testing artifact.
+05:26 This API automates the setup of
+the projected test environment,
+05:30 letting you write clean,
+reliable unit tests
+05:32 without the boilerplate code.
+05:36 And you can now launch
+your projected activity
+05:38 onto AI eyeglasses using voice
+commands with Gemini app.
+05:41 To make this work, you'll
+need to head into your Android
+05:44 manifest file and add the XR
+projected launcher category
+05:47 intent filter.
+05:49 This tells Gemini which
+projected activity
+05:51 to launch from
+their eye glasses.
+05:54 Turning to UI, we continue
+to expand Jetpack Compose
+05:57 Glimmer with visual refinements
+and new interactive components.
+06:01 Out of the box, Glimmer theme
+provides additive safe colors,
+06:04 shapes, depth, and spacing
+primitives for optimized glasses
+06:08 UI.
+06:09 Adjusting optical size can make
+fonts more legible and readable.
+06:13 We are now including Google Sans
+Flex with refined font styling
+06:17 in our Glimmer components to
+improve legibility on optical
+06:20 see through displays.
+06:22 Beyond these basic
+primitives, we're
+06:24 also introducing several
+interactive components.
+06:27 With the voice
+input indicator, you
+06:28 can provide users visual
+feedback when the microphone is
+06:31 active and in use.
+06:33 Stacks that are designed to
+show only one item in a group
+06:36 at a time, hinting at additional
+items above or below that
+06:40 work with the glasses' touchpad.
+06:42 Title chips.
+06:43 This component, when used in
+conjunction with your cards,
+06:46 gives better context
+and categorization
+06:48 to the content display.
+06:50 Button groups allow you to
+provide multiple actions
+06:53 in a minimal footprint.
+06:54 You can provide just icon
+buttons, label buttons,
+06:57 or, if you want to
+get really excited,
+06:59 you can provide
+buttons with both.
+07:01 The button group
+will automatically
+07:02 overflow off screen and
+scroll as you move focus.
+07:06 With these additions, we're
+optimizing input and Jetpack
+07:08 Compose Glimmer
+to work seamlessly
+07:10 with the unidirectional
+touchpad.
+07:13 The emulator update features
+the new AVD creation and pairing
+07:16 wizard, which allows you to
+automatically launch and pair
+07:19 glasses and companion
+phone AVDs in a single flow
+07:23 with the persistent
+Bluetooth paired connection.
+07:26 We are also introducing
+environment customization,
+07:29 where you'll be able
+to add your custom
+07:31 photo to visualize your UI
+in a custom environment.
+07:35 And to help you create
+your augmented experience,
+07:37 we released a new skill to
+build display AI glasses
+07:40 with Jetpack Compose Glimmer.
+07:42 Ask Gemini to build a
+display AI glasses activity
+07:45 to get started within
+Android Studio.
+07:48 As you bring on your
+users to AI eyeglasses,
+07:50 a seamless onboarding
+flow enables
+07:52 users to take full advantage
+of these capabilities.
+07:55 To help you build and design
+your AI glasses experiences,
+07:58 we are updating our
+design guidelines
+08:00 to include onboarding best
+practices and new UX resources
+08:04 to implement in your app.
+08:05 Head on over to
+goo.gle/ai-glasses-design
+08:08 to learn how to design seamless
+experiences between your phone
+08:11 and AI glasses.
+08:13 To learn more about developing
+augmented experiences,
+08:16 tune in to our other I/O
+talk, Extend Your Mobile App
+08:19 for AI Glasses, to get
+into the technical details.
+08:23 Now to share the latest
+in immersive experiences.
+08:26 I'll hand it over to Elijah.
+08:29 ELIJAH TAYLOR: Thanks, Yasmin.
+08:31 We've been hearing from both
+you, our developers, and end
+08:34 users about how excited
+they are for Galaxy XR.
+08:37 We continue to invest in
+immersive experiences.
+08:40 And we have been working
+hard at accelerating
+08:42 the frequency of updates.
+08:44 When it comes to building
+immersive experiences,
+08:46 we know you generally
+take one of two paths.
+08:49 If you feel most comfortable
+with Android Studio and Kotlin,
+08:52 we've made major updates
+to the Jetpack XR SDK.
+08:56 We're also introducing exciting
+changes if you feel most
+08:59 comfortable in real time 3D
+engines that support OpenXR.
+09:02 Today we have major
+updates for both,
+09:05 starting with our developers
+who are leveraging
+09:07 our native Android libraries.
+09:09 For native Android development,
+existing Android libraries
+09:12 are available.
+09:13 And we've also introduced
+powerful native libraries,
+09:16 XR Runtime, Jetpack
+XR SceneCore,
+09:19 ARCore for Jetpack
+XR, and Compose
+09:22 for XR, that allow you to
+create differentiated, immersive
+09:25 experiences.
+09:26 Three of our libraries
+in our Jetpack XR SDK
+09:29 are officially moving to beta
+soon, XR Runtime, SceneCore,
+09:33 and ARCore for Jetpack XR.
+09:36 As part of this
+developer-centric refinement,
+09:38 we've completely
+streamlined the stack,
+09:40 removing legacy
+Guava and RX Java 3
+09:43 packages in favor of a modern,
+performant Kotlin first
+09:46 architecture.
+09:47 Let's talk about SceneCore.
+09:49 You now have more
+granular control
+09:51 over physical-based rendering.
+09:53 You can utilize
+glTF introspection
+09:55 to examine and modify properties
+like pose, PBR-based materials,
+09:59 and textures.
+10:01 You can also inspect
+animation nodes and subnodes
+10:03 and run animations to
+blend digital objects
+10:05 indistinguishably with reality.
+10:08 SceneCore now also
+supports custom meshes,
+10:10 which allows you to use code
+to build shapes on the fly.
+10:14 This makes apps much
+smaller and allows
+10:15 them to create infinite,
+unique environments
+10:18 like a landscape that grows as
+you walk without ever running
+10:20 out of content.
+10:22 In Compose for XR, we've
+expanded our follow modes
+10:25 by adding new
+billboard behaviors
+10:26 for your spatial
+panels or any entity.
+10:29 We are also thrilled to
+introduce native glTF
+10:32 support directly in Compose.
+10:34 This means enhanced
+layout support,
+10:36 such as automatic sizing based
+on your layout constraints.
+10:40 It also provides support for
+more complex glTF interactions.
+10:43 You can now finally control
+animations with pause,
+10:46 seek, and playback
+speed adjustments,
+10:48 and easily place XR content,
+like spatial panels,
+10:51 relative to specific glTF nodes.
+10:54 Under the hood,
+ARCore for Jetpack XR
+10:57 is unlocking massive potential.
+10:59 Features like depth maps,
+eye tracking, hand tracking,
+11:03 hit testing, and local spatial
+anchors are all hitting beta.
+11:07 These features power perception
+capabilities in your application
+11:10 that make users feel more
+connected to their surroundings
+11:13 by having virtual content blend
+with the real world in a more
+11:15 natural way.
+11:17 We are also providing an early
+preview of the Geospatial
+11:20 API for wired XR glasses.
+11:22 The geospatial API will allow
+you to create immersive XR
+11:25 experiences that are tied
+to real world locations,
+11:28 and AR navigation
+experiences that guide users
+11:30 with precise walking directions.
+11:33 The geospatial API works in any
+area covered by Google Street
+11:36 View and visual
+positioning service,
+11:38 which are available
+in over 87 countries.
+11:41 In Android Studio, the
+XR glasses emulator
+11:43 now provides a more
+realistic optical see-through
+11:46 wired XR glasses experience
+thanks to environment dimming,
+11:49 added display transparency, and
+blended background environments.
+11:53 Feel free to check it out.
+11:55 Now let's talk about
+that second path.
+11:57 For those of you whose
+workflow is centered
+11:59 around building with
+real time engines,
+12:02 we are committed to
+making sure Android XR is
+12:04 accessible to the
+popular engines you all
+12:06 love and have requested.
+12:08 Today, we're announcing
+the official launch
+12:11 of our Godot vendor plugin.
+12:13 And alongside it, we're also
+releasing a developer preview
+12:16 of our Unreal vendor plugin.
+12:18 We're incredibly
+excited to see what
+12:20 both of these passionate
+developer communities
+12:22 will create on our platform.
+12:24 We know that the number one pain
+point for engine development
+12:27 is the slow build and
+wait iteration cycle.
+12:30 Our goal is to ensure
+Android XR provides
+12:32 a frictionless path for you
+to bring those experiences
+12:34 to your users.
+12:36 To solve this, today, we are
+introducing the Android XR
+12:39 Engine Hub.
+12:41 This is a unified
+desktop application
+12:43 designed to be your
+central command
+12:44 center for XR development.
+12:46 The hub houses a much requested
+feature called Direct Preview.
+12:50 Direct Preview allows
+you to see changes
+12:52 you make in your engine
+editor live on your headset
+12:54 almost instantly.
+12:56 Because the hub is
+completely engine agnostic,
+12:59 this instant
+iteration cycle works
+13:01 whether you're building in
+Unity, Unreal, or Godot.
+13:04 It enables you to quickly
+iterate and test your ideas.
+13:08 And we want to ensure that,
+regardless of which engine you
+13:10 use, your apps still feel
+like a natural, cohesive part
+13:13 of the Android ecosystem.
+13:15 That's why we're introducing
+the Android XR interaction
+13:17 framework, or AXRIF.
+13:20 It bridges a UX gap
+between engine experiences
+13:23 and the Android system,
+bringing the native Android XR
+13:26 input, gestures,
+and interactions
+13:28 that users expect directly
+into your engine apps
+13:31 with minimal additional work.
+13:34 Starting today, you can
+use our plugin for Unity
+13:37 to seamlessly integrate
+AXRIF with new or existing XR
+13:41 compatible apps.
+13:42 But a truly cohesive
+ecosystem isn't just
+13:45 about how an app behaves.
+13:47 It's also about how it looks.
+13:49 We heard your request for
+bringing our design language
+13:51 into your 3D workflows.
+13:53 The mixed reality
+toolkit for Unity, MRTK3,
+13:57 now supports material
+theming, allowing
+13:59 you to easily skin
+your favorite MRTK3
+14:02 components with the familiar
+material design look and feel.
+14:05 And to ensure your
+worlds sound as immersive
+14:07 as they look, we're releasing
+an updated Android XR Audio
+14:11 SDK for Unity today, with
+support for other engines
+14:14 coming soon.
+14:16 To round out our Unity
+support, today, we
+14:18 are also releasing an
+updated extensions package
+14:20 to further streamline
+your development.
+14:22 Finally, as we build these
+diverse engine experiences,
+14:26 we are looking at
+how they coexist.
+14:28 As a member of Khronos,
+We are collaborating
+14:30 to extend OpenXR to allow
+multitasking, enabling
+14:33 multiple engines to run within
+one single scene simultaneously.
+14:37 This means you can run
+OpenXR and Native Jetpack XR
+14:40 experiences at the same time.
+14:43 Users can interact with your
+native Android application.
+14:46 And this can send
+information to a 3D scene.
+14:49 A developer who's
+leading the way
+14:51 on some of these new
+features is the NBA.
+14:53 As you can see here, they're
+building a live tabletop
+14:56 companion for games streamed on
+NBA League Pass in their Android
+14:59 XR app, allowing them to use
+native Android UI and OpenXR
+15:03 Engine experiences
+all within one scene.
+15:06 Soon, fans will get to
+experience and appreciate
+15:09 NBA action in a whole
+new way on Android XR.
+15:12 And as big fans of
+the NBA ourselves,
+15:14 we couldn't be more excited.
+15:16 I'll now hand it over to
+Stevan to close us out.
+15:21 STEVAN SILVA: Thank
+you, Elijah and Yasmin.
+15:23 And thank you all for your
+incredible input and feedback
+15:26 as we build this
+platform together.
+15:29 Before we wrap up, I want
+to reiterate how thrilled we
+15:32 are to see the amazing
+experiences you are already
+15:35 building and publishing for
+the newly launched Galaxy XR.
+15:39 The device is publicly
+available right now.
+15:42 And the developer
+momentum we are seeing
+15:43 is absolutely incredible.
+15:46 We are deeply committed to
+continuing our investment
+15:48 in XR experiences.
+15:50 With every new device that
+enters the Android XR ecosystem,
+15:53 your opportunities
+to reach new users
+15:55 and build groundbreaking
+apps multiply.
+15:59 And the best part--
+16:00 the efforts you
+put into building
+16:02 for immersive experiences today
+will seamlessly set you up
+16:05 for success on our upcoming form
+factors such as XREAL's Project
+16:10 Aura.
+16:11 To help you get hands on with
+the future of this hardware,
+16:15 we are thrilled to
+open applications
+16:16 for the Android XR Developer
+Catalyst program, which
+16:20 includes Project Aura.
+16:22 Starting today, you can apply to
+get access to an XREAL developer
+16:26 kit or our AI glasses developer
+kit over the coming months.
+16:31 It is an amazing time to
+be an Android developer.
+16:35 With the Jetpack XR SDK
+moving to beta soon,
+16:38 new Jetpack Composed
+Glimmer components,
+16:41 and robust engine support,
+the tools are ready for you.
+16:45 Get inspired by open source
+examples on the Android XR
+16:48 Experiments site.
+16:49 We've updated our Unity showcase
+samples with a variety of new
+16:53 experiences, including
+depth-based scene meshing
+16:56 and building blocks for
+calling Gemini APIs using voice
+16:59 and camera images, as well
+as Jetpack XR SDK experiments
+17:04 showcasing an immersive
+personal museum,
+17:07 a spatial audio sound explorer,
+dynamic 3D models, and more.
+17:12 Head to the Android developer
+site for full documentation.
+17:15 And when you're ready, apply
+for the Android XR developer
+17:18 catalyst program
+to start building.
+17:20 Have a great I/O.
+17:21 [MUSIC PLAYING]

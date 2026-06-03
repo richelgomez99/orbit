@@ -1,0 +1,144 @@
+package com.orbit.app.orbit
+
+import android.content.Context
+import com.orbit.app.library.LocalEnvelopeLookup
+import com.orbit.app.memory.MemoryEvidenceSnippet
+import com.orbit.app.memory.MemorySearchResult
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class AskOrbitRepositoryTest {
+
+    @Test
+    fun demoQuestionsReturnCitedAnswersAndUnsupportedQuestionRefuses() = runTest {
+        val repository = BinderAskOrbitRepository(
+            context = null,
+            localEnvelopeLookup = DemoLocalEnvelopeLookup(),
+        )
+
+        val startup = repository.ask("What startup event did I save?")
+        val flight = repository.ask("Which flight receipt did I save recently?")
+        val recipe = repository.ask("What recipe did I want to try?")
+        val unsupported = repository.ask("What is my passport number?")
+
+        listOf(startup, flight, recipe).forEach { answer ->
+            assertEquals("answered", answer.status)
+            assertTrue("answered Ask result must cite saved memory", answer.citations.isNotEmpty())
+            assertTrue("answered Ask result must expose source envelope", answer.citations.all { it.envelopeId.isNotBlank() })
+        }
+        assertEquals("env-startup", startup.citations.first().envelopeId)
+        assertEquals("env-flight", flight.citations.first().envelopeId)
+        assertTrue(recipe.citations.map { it.envelopeId }.contains("env-recipe"))
+
+        assertEquals("insufficient_evidence", unsupported.status)
+        assertTrue(unsupported.citations.isEmpty())
+    }
+
+    private class DemoLocalEnvelopeLookup : LocalEnvelopeLookup {
+        override suspend fun exists(envelopeId: String): Boolean = true
+
+        override suspend fun search(query: String, limit: Int): List<MemorySearchResult> {
+            val normalized = query.lowercase()
+            val matches = when {
+                normalized.contains("startup event") -> listOf(startupEvent)
+                normalized.contains("flight receipt") -> listOf(flightReceipt)
+                normalized.contains("recipe") -> listOf(recipeShoppingList, recipeClip, recipe)
+                normalized.contains("startup") || normalized.contains("event") -> listOf(ramenNearEvent, raizyEventReply, startupEvent)
+                normalized.contains("flight") || normalized.contains("receipt") -> listOf(momFlightArrival, dentistTravelConflict, flightReceipt)
+                normalized.contains("number") -> listOf(tailoringNumberNoise)
+                else -> emptyList()
+            }
+            return matches.take(limit)
+        }
+    }
+
+    private companion object {
+        val startupEvent = result(
+            envelopeId = "env-startup",
+            title = "Startup event ticket",
+            excerpt = "Startup event ticket for Monday founder office hours.",
+            sourceAppLabel = "Gmail",
+        )
+        val flightReceipt = result(
+            envelopeId = "env-flight",
+            title = "Flight receipt",
+            excerpt = "Flight receipt: NYC to San Francisco, confirmation ORB123.",
+            sourceAppLabel = "Gmail",
+        )
+        val recipe = result(
+            envelopeId = "env-recipe",
+            title = "Recipe to try",
+            excerpt = "Recipe to try: miso salmon with ginger rice.",
+            sourceAppLabel = "Chrome",
+        )
+        val ramenNearEvent = result(
+            envelopeId = "env-ramen",
+            title = "Ramen near startup event",
+            excerpt = "Ramen restaurant near the hotel, open late after startup event.",
+            sourceAppLabel = "Maps",
+        )
+        val raizyEventReply = result(
+            envelopeId = "env-raizy",
+            title = "Reply after startup event",
+            excerpt = "Raizy asked if Monday afternoon works after the startup event.",
+            sourceAppLabel = "Messages",
+        )
+        val momFlightArrival = result(
+            envelopeId = "env-mom-flight",
+            title = "Mom asked for flight arrival time",
+            excerpt = "Mom asked for flight arrival time and hotel address.",
+            sourceAppLabel = "WhatsApp",
+        )
+        val dentistTravelConflict = result(
+            envelopeId = "env-dentist",
+            title = "Dentist appointment travel conflict",
+            excerpt = "Dentist appointment reminder conflicts with Monday travel.",
+            sourceAppLabel = "Calendar",
+        )
+        val recipeShoppingList = result(
+            envelopeId = "env-recipe-shopping",
+            title = "Shopping list for recipe night",
+            excerpt = "Shopping list for recipe night: salmon, miso, ginger, rice.",
+            sourceAppLabel = "Notes",
+        )
+        val recipeClip = result(
+            envelopeId = "env-recipe-clip",
+            title = "Recipe clip",
+            excerpt = "Recipe clip: lemon pasta with parmesan.",
+            sourceAppLabel = "Instagram",
+        )
+        val tailoringNumberNoise = result(
+            envelopeId = "env-number-noise",
+            title = "Tailoring time",
+            excerpt = "Tailoring should take 15 minutes, not two hours.",
+            sourceAppLabel = "Browser",
+        )
+
+        fun result(
+            envelopeId: String,
+            title: String,
+            excerpt: String,
+            sourceAppLabel: String,
+        ) = MemorySearchResult(
+            envelopeId = envelopeId,
+            rank = 1,
+            score = 1.0f,
+            title = title,
+            summary = excerpt,
+            dayLocal = "2026-05-30",
+            createdAtMillis = 1_780_000_000_000L,
+            intent = "REFERENCE",
+            sourceAppLabel = sourceAppLabel,
+            matchedEvidence = listOf(
+                MemoryEvidenceSnippet(
+                    kind = "LOCAL_TEXT",
+                    label = "Local capture",
+                    excerpt = excerpt,
+                    source = "envelope",
+                )
+            ),
+        )
+    }
+}

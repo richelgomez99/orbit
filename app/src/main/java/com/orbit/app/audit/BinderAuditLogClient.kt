@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import com.orbit.app.data.ipc.AuditEntryParcel
+import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.data.ipc.EnvelopeRepositoryService
 import com.orbit.app.data.ipc.IAuditLog
 import kotlinx.coroutines.CompletableDeferred
@@ -58,6 +59,21 @@ class BinderAuditLogClient(
         val log = connect()
         return withContext(Dispatchers.IO) {
             log.entriesForDay(isoDate) ?: emptyList()
+        }
+    }
+
+    suspend fun append(entry: AuditLogEntryEntity) {
+        val log = connect()
+        val parcel = AuditEntryParcel(
+            id = entry.id,
+            atMillis = entry.at,
+            action = entry.action.name,
+            description = entry.description,
+            envelopeId = entry.envelopeId,
+            extraJson = entry.extraJson,
+        )
+        withContext(Dispatchers.IO) {
+            log.appendEntry(parcel)
         }
     }
 }

@@ -64,6 +64,8 @@ import com.orbit.app.ui.tokens.OrbitType
 fun SettingsScreen(
     paused: Boolean,
     onPauseChange: (Boolean) -> Unit,
+    memoryIndexingEnabled: Boolean = false,
+    onMemoryIndexingChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)? = null,
     onOpenCaptureSetup: (() -> Unit)? = null,
@@ -72,9 +74,12 @@ fun SettingsScreen(
     onOpenAuditLog: (() -> Unit)? = null,
     onExportData: (() -> Unit)? = null,
     exportInProgress: Boolean = false,
-    exportStatus: String? = null
+    exportStatus: String? = null,
+    onSeedDemoMemories: (() -> Unit)? = null,
+    demoSeedStatus: String? = null,
 ) {
     var localPaused by remember(paused) { mutableStateOf(paused) }
+    var localMemoryIndexingEnabled by remember(memoryIndexingEnabled) { mutableStateOf(memoryIndexingEnabled) }
     var showExportConfirm by remember { mutableStateOf(false) }
     val useNewVisualLanguage = LocalRuntimeFlags.current.useNewVisualLanguage
 
@@ -84,6 +89,11 @@ fun SettingsScreen(
             onPauseChange = { next ->
                 localPaused = next
                 onPauseChange(next)
+            },
+            memoryIndexingEnabled = localMemoryIndexingEnabled,
+            onMemoryIndexingChange = { next ->
+                localMemoryIndexingEnabled = next
+                onMemoryIndexingChange(next)
             },
             modifier = modifier,
             onNavigateBack = onNavigateBack,
@@ -96,6 +106,8 @@ fun SettingsScreen(
             },
             exportInProgress = exportInProgress,
             exportStatus = exportStatus,
+            onSeedDemoMemories = onSeedDemoMemories,
+            demoSeedStatus = demoSeedStatus,
         )
     } else {
         Column(
@@ -117,6 +129,16 @@ fun SettingsScreen(
                 onCheckedChange = { next ->
                     localPaused = next
                     onPauseChange(next)
+                }
+            )
+            Spacer(Modifier.height(12.dp))
+            SettingsToggleRow(
+                title = "Cloud memory index",
+                description = "Syncs compact memory records for Library search. Raw screenshots and full OCR stay out.",
+                checked = localMemoryIndexingEnabled,
+                onCheckedChange = { next ->
+                    localMemoryIndexingEnabled = next
+                    onMemoryIndexingChange(next)
                 }
             )
 
@@ -168,6 +190,16 @@ fun SettingsScreen(
                     }
                 )
             }
+
+            if (onSeedDemoMemories != null) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(4.dp))
+                SettingsNavRow(
+                    title = "Seed demo memories",
+                    description = demoSeedStatus ?: "Debug build only. Adds 20 local captures and syncs their compact index.",
+                    onClick = onSeedDemoMemories
+                )
+            }
         }
     }
 
@@ -199,6 +231,8 @@ fun SettingsScreen(
 private fun QuietSettingsScreen(
     paused: Boolean,
     onPauseChange: (Boolean) -> Unit,
+    memoryIndexingEnabled: Boolean,
+    onMemoryIndexingChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)?,
     onOpenCaptureSetup: (() -> Unit)?,
@@ -208,6 +242,8 @@ private fun QuietSettingsScreen(
     onExportData: (() -> Unit)?,
     exportInProgress: Boolean,
     exportStatus: String?,
+    onSeedDemoMemories: (() -> Unit)?,
+    demoSeedStatus: String?,
 ) {
     Column(
         modifier = modifier
@@ -232,6 +268,13 @@ private fun QuietSettingsScreen(
                     tag = if (paused) "PAUSED" else "ON",
                     checked = paused,
                     onCheckedChange = onPauseChange,
+                )
+                QuietToggleRow(
+                    title = "Cloud memory index",
+                    description = "Syncs compact memory records for Library search. Raw artifacts stay local.",
+                    tag = if (memoryIndexingEnabled) "ON" else "OFF",
+                    checked = memoryIndexingEnabled,
+                    onCheckedChange = onMemoryIndexingChange,
                 )
             }
 
@@ -275,6 +318,14 @@ private fun QuietSettingsScreen(
                         description = subtitle,
                         value = if (exportInProgress) "WAIT" else "JSON",
                         onClick = onExportData,
+                    )
+                }
+                if (onSeedDemoMemories != null) {
+                    QuietNavRow(
+                        title = "Seed demo memories",
+                        description = demoSeedStatus ?: "Debug build only. Adds 20 local captures and syncs their compact index.",
+                        value = "DEBUG",
+                        onClick = onSeedDemoMemories,
                     )
                 }
             }

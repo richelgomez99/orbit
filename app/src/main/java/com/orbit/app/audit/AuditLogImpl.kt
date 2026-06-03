@@ -4,6 +4,7 @@ import com.orbit.app.data.dao.AuditLogDao
 import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.data.ipc.AuditEntryParcel
 import com.orbit.app.data.ipc.IAuditLog
+import com.orbit.app.data.model.AuditAction
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.ZoneId
@@ -42,6 +43,22 @@ class AuditLogImpl(
     override fun countForDay(isoDate: String, actionName: String): Int {
         val (start, end) = localDayBounds(isoDate) ?: return 0
         return runBlocking { auditLogDao.countForDay(start, end, actionName) }
+    }
+
+    override fun appendEntry(entry: AuditEntryParcel) {
+        val action = runCatching { AuditAction.valueOf(entry.action) }.getOrNull() ?: return
+        runBlocking {
+            auditLogDao.insert(
+                AuditLogEntryEntity(
+                    id = entry.id,
+                    at = entry.atMillis,
+                    action = action,
+                    description = entry.description,
+                    envelopeId = entry.envelopeId,
+                    extraJson = entry.extraJson,
+                )
+            )
+        }
     }
 
     private fun localDayBounds(isoDate: String): Pair<Long, Long>? {

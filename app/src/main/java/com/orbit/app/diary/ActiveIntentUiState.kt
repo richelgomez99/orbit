@@ -21,7 +21,9 @@ sealed interface ActiveIntentUiState {
             val items = parcels
                 .filter { it.status == "ACTIVE" }
                 .map { it.toItem() }
+                .filter { it.shouldSurfaceInFollowUps() }
                 .sortedWith(compareBy<ActiveIntentItem> { it.lifecycleSort }.thenByDescending { it.updatedAtMillis })
+                .distinctBy { it.followUpDedupeKey() }
             if (items.isEmpty()) return Empty
 
             val groups = items
@@ -67,7 +69,10 @@ data class ActiveIntentItem(
     val completionKeyStatus: String,
     val evidenceLabel: String,
     val evidenceSource: String,
+    val evidenceSourceRaw: String,
     val evidenceKind: String,
+    val evidenceKindRaw: String,
+    val evidenceConfidence: Double?,
     val evidenceExcerpt: String?,
     val sourceLabel: String,
     val reasonLabel: String,
@@ -127,7 +132,10 @@ private fun ActiveIntentParcel.toItem(): ActiveIntentItem {
         completionKeyStatus = completion.name,
         evidenceLabel = evidence.displayLabel(categoryEnum),
         evidenceSource = evidence.source,
+        evidenceSourceRaw = evidence.sourceRaw,
         evidenceKind = evidence.kind,
+        evidenceKindRaw = evidence.kindRaw,
+        evidenceConfidence = evidence.confidence,
         evidenceExcerpt = evidence.excerpt,
         sourceLabel = evidence.sourceLabel(createdAtMillis),
         reasonLabel = categoryEnum.reasonLabel(evidence),
@@ -153,11 +161,58 @@ private fun CompletionKeyStatus.requiresMoreContext(category: IntentCategory): B
     category != IntentCategory.MAYBE_OLD_OR_INACTIVE &&
         (this == CompletionKeyStatus.MISSING || this == CompletionKeyStatus.NEEDS_ESCALATION)
 
+private fun ActiveIntentItem.shouldSurfaceInFollowUps(): Boolean {
+    if (evidenceKindRaw == "ORBIT_REVIEW") return true
+    val category = category.toIntentCategoryOrNull() ?: return false
+    val hasCompletionKey = completionKeyStatus == CompletionKeyStatus.FOUND.name
+    return when (category) {
+        IntentCategory.CHAT_ACTION -> hasCompletionKey || evidenceSourceRaw == "chat_action_text"
+        IntentCategory.QR_OR_BARCODE,
+        IntentCategory.RECEIPT_OR_ORDER,
+        IntentCategory.EVENT_TICKET_RESERVATION,
+        IntentCategory.COUPON_OR_PROMO -> hasCompletionKey
+        IntentCategory.BUY_LATER_PRODUCT,
+        IntentCategory.RECIPE,
+        IntentCategory.READ_OR_WATCH_LATER,
+        IntentCategory.PLACE_OR_TRAVEL_IDEA,
+        IntentCategory.GIFT_IDEA,
+        IntentCategory.MAYBE_OLD_OR_INACTIVE,
+        IntentCategory.UNKNOWN -> false
+    }
+}
+
+private fun ActiveIntentItem.followUpDedupeKey(): String {
+    val content = evidenceExcerpt
+        ?.normalizeFollowUpText()
+        ?.takeIf { it.isNotBlank() }
+        ?: evidenceLabel.normalizeFollowUpText()
+    return listOf(
+        lifecycleStatus,
+        category,
+        evidenceKindRaw,
+        evidenceSourceRaw,
+        primaryAction.orEmpty(),
+        content,
+    ).joinToString("|")
+}
+
+private fun String.normalizeFollowUpText(): String =
+    lowercase()
+        .let { TOKEN_REGEX.findAll(it).map { match -> match.value }.toList() }
+        .filterNot { it in FOLLOW_UP_DEDUPE_STOPWORDS }
+        .filter { it.length >= 2 || it.any(Char::isDigit) }
+        .distinct()
+        .sorted()
+        .take(40)
+        .joinToString(" ")
+
 private data class EvidenceDisplay(
     val kindRaw: String,
     val kind: String,
     val label: String,
+    val sourceRaw: String,
     val source: String,
+    val confidence: Double?,
     val excerpt: String?,
     val reason: String?
 )
@@ -196,11 +251,14 @@ private fun String.parseEvidence(): EvidenceDisplay {
     val json = runCatching { JSONObject(this) }.getOrNull()
     val rawKind = json?.optString("kind")?.takeIf { it.isNotBlank() } ?: "LOCAL_CLUE"
     val label = json?.optString("label")?.takeIf { it.isNotBlank() } ?: ""
+    val sourceRaw = json?.optString("source")?.takeIf { it.isNotBlank() } ?: "basic"
     return EvidenceDisplay(
         kindRaw = rawKind,
         kind = rawKind.toEvidenceKindLabel(label),
         label = label,
-        source = json?.optString("source")?.takeIf { it.isNotBlank() }?.toEvidenceSourceLabel() ?: "Local evidence",
+        sourceRaw = sourceRaw,
+        source = sourceRaw.toEvidenceSourceLabel(),
+        confidence = json?.takeIf { it.has("confidence") }?.optDouble("confidence"),
         excerpt = json?.optString("excerpt")?.takeIf { it.isNotBlank() },
         reason = json?.optString("reason")?.takeIf { it.isNotBlank() }
     )
@@ -219,12 +277,19 @@ private fun String.toEvidenceKindLabel(label: String): String = when (trim().upp
     else -> toDisplayLabel()
 }
 
+private val TOKEN_REGEX = Regex("""[a-z0-9]+""")
+private val FOLLOW_UP_DEDUPE_STOPWORDS = setOf(
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "if", "in", "is",
+    "it", "its", "of", "on", "or", "the", "this", "to", "with", "you", "your"
+)
+
 private fun String.toEvidenceSourceLabel(): String = when (this.trim().lowercase()) {
     "local", "basic" -> "Local signals"
     "local_regex" -> "Local text"
     "foreground_app", "source_app_label", "app_context" -> "App context"
     "timestamp" -> "Capture age"
     "messaging_source" -> "Messages"
+    "chat_action_text" -> "Message text"
     "event_ticket_text" -> "Event text"
     "orbit_review" -> "Orbit review"
     "active_intent" -> "Cleanup"
@@ -284,7 +349,7 @@ private fun IntentCategory.defaultActionLabel(): String = when (this) {
 }
 
 private fun IntentCategory.guidanceLabel(completion: CompletionKeyStatus): String {
-    if (completion == CompletionKeyStatus.NEEDS_ESCALATION) {
+    if (completion == CompletionKeyStatus.NEEDS_ESCALATION || completion == CompletionKeyStatus.MISSING) {
         return when (this) {
             IntentCategory.EVENT_TICKET_RESERVATION -> "Open the capture, add the date or venue if it matters, or clear it."
             IntentCategory.CHAT_ACTION -> "Open the capture, add who needs a reply if it matters, or mark it handled."

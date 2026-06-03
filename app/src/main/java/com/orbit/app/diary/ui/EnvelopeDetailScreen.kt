@@ -72,6 +72,7 @@ import com.orbit.app.data.model.toIntentOrAmbiguous
 import com.orbit.app.diary.EnvelopeDetailUiState
 import com.orbit.app.diary.EnvelopeDetailViewModel
 import com.orbit.app.diary.IntentHistoryRow
+import com.orbit.app.memory.MemoryDisplayText
 import com.orbit.app.settings.QuietRule
 import com.orbit.app.settings.QuietSettingsColors
 import com.orbit.app.ui.IntentChipPicker
@@ -1192,26 +1193,15 @@ private fun AuditRowView(entry: AuditEntryParcel) {
 
 // ---- helpers ----
 
-private fun EnvelopeViewParcel.displayTitle(): String = title
-    ?.trim()
-    ?.takeIf { it.isNotBlank() }
-    ?: domain?.trim()?.takeIf { it.isNotBlank() }
-    ?: textContent.captureTitleFallback()
+private fun EnvelopeViewParcel.displayTitle(): String = MemoryDisplayText.title(
+    existingTitle = title,
+    text = textContent,
+    domain = domain,
+)
     ?: when (contentType.uppercase(Locale.ROOT)) {
         "IMAGE" -> "Screenshot from ${sourceName()}"
         else -> "Capture from ${sourceName()}"
     }
-
-private fun String?.captureTitleFallback(): String? {
-    val cleaned = this
-        ?.lineSequence()
-        ?.map { it.trim() }
-        ?.firstOrNull { it.isNotBlank() }
-        ?.replace(Regex("\\s+"), " ")
-        ?.takeIf { it.isNotBlank() }
-        ?: return null
-    return cleaned.take(96)
-}
 
 private fun EnvelopeViewParcel.sourceName(): String = sourceAppLabel
     ?.trim()

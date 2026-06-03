@@ -334,4 +334,8 @@ private object NoopNetworkGateway : INetworkGateway.Stub() {
     override fun callLlmGateway(
         request: com.orbit.app.net.ipc.LlmGatewayRequestParcel?
     ): com.orbit.app.net.ipc.LlmGatewayResponseParcel? = null
+
+    override fun callMemoryGateway(
+        request: com.orbit.app.net.ipc.MemoryGatewayRequestParcel?
+    ): com.orbit.app.net.ipc.MemoryGatewayResponseParcel? = null
 }

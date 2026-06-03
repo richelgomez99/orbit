@@ -21,6 +21,8 @@ build_output.log
 .cursor/logs/
 .cursor/history/
 .kotlin/
+.claude/
+dist/
 
 # Private working notes (never push)
 .specify/memory/linkedin*.md
@@ -29,4 +31,6 @@ build_output.log
 # Edge function deps (spec 014)
 supabase/functions/llm_gateway/node_modules/
 supabase/functions/llm_gateway/.env.local
+supabase/functions/memory_gateway/node_modules/
+supabase/functions/memory_gateway/.env.local
 supabase/.temp/

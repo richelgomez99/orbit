@@ -12,6 +12,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.orbit.app.RuntimeFlags
+import com.orbit.app.ui.tokens.OrbitType
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -46,7 +47,7 @@ fun OrbitTheme(
     CompositionLocalProvider(LocalRuntimeFlags provides runtimeFlags) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography,
+            typography = OrbitType.QuietAlmanac.materialTypography(),
             content = content
         )
     }

@@ -27,5 +27,13 @@
             android:exported="true"
             android:label="Orbit Cluster Eval" />
 
+        <receiver
+            android:name="com.orbit.app.debug.DebugDemoSeedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.orbit.app.debug.SEED_DEMO_MEMORY" />
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>

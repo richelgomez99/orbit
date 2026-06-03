@@ -1,0 +1,722 @@
+00:00 [MUSIC PLAYING]
+00:06 YVONNE ELLEFSON: Hi, everyone.
+00:07 I'm Yvonne Ellefson, and I'm a
+program manager on the Android
+00:11 Accessibility team.
+00:13 Later, you'll get to
+meet my colleague Isaac.
+00:16 We're excited to
+share the latest
+00:18 updates we've built
+in collaboration
+00:20 with the disability community.
+00:22 For some of the features
+we'll talk about,
+00:24 there will be QR
+codes on the screen
+00:26 to jump to that
+feature on your phone
+00:28 or a support article
+about the feature.
+00:31 You can also check the video
+description for specific links.
+00:35 Here's an example
+of a QR code, which
+00:37 takes you to the support article
+on this deep link feature.
+00:40 Whether you're here
+to see new features,
+00:42 or you're a developer looking
+to build better experiences,
+00:45 we have a lot to cover,
+from AI-powered updates
+00:48 to tools and best practices
+to make the most of Android
+00:51 accessibility features.
+00:53 Let's dive in.
+00:55 First, let's take a look at
+TalkBack, our screen reader.
+00:59 Last year, we brought
+Gemini to TalkBack
+01:01 to turn simple descriptions
+into vivid, detailed scene
+01:04 descriptions and
+unlock the ability
+01:07 to ask follow up questions.
+01:09 We also launched
+screen descriptions,
+01:11 providing the spoken
+equivalent of a glance
+01:14 to help you get
+oriented when you
+01:15 enter an unfamiliar new page.
+01:18 This year, we're upgrading
+to Gemini 2.5 Flash Lite,
+01:23 providing even more precise,
+reliable descriptions
+01:26 of images and screens.
+01:27 While this doesn't replace the
+need for high-quality metadata,
+01:31 it provides instant
+context for the millions
+01:33 of unlabeled images across the
+web or images from your friends.
+01:38 We've also expanded
+support to 38 languages,
+01:41 bringing these AI-driven
+tools to users worldwide
+01:44 in their native languages.
+01:46 Whether you're asking for more
+detail about a photo in a group
+01:49 chat or getting a summary
+of a complex web page,
+01:53 the integration is now more
+capable than ever before.
+01:57 We heard your feedback.
+01:59 Speed and quality both matter.
+02:02 To address this, we're
+introducing two distinct voice
+02:05 upgrades.
+02:06 First, a new highly
+efficient TTS voice
+02:09 combined with an innovative
+announcement cache
+02:12 slashes typing latency by
+37%, making every interaction
+02:16 feel instantaneous.
+02:19 TALKBACK VOICE:
+Welcome to TalkBack.
+02:21 YVONNE ELLEFSON: Second, for
+a more immersive experience,
+02:23 we've added a high-quality,
+natural-sounding voice that
+02:26 brings a human touch
+to long-form reading
+02:28 and daily navigation.
+02:30 TALKBACK VOICE:
+Welcome to TalkBack.
+02:32 YVONNE ELLEFSON: This will be
+coming to recent Pixel devices,
+02:35 including the
+Pixel 8, 9, and 10.
+02:38 We're also making
+voice input more
+02:40 intuitive with a new
+dictation gesture.
+02:43 A simple, two-finger double tap
+instantly starts voice typing,
+02:47 and TalkBack automatically
+reads back the transcribed text
+02:50 to ensure better accuracy
+before you hit Send.
+02:54 For keyboard users, we've
+overhauled physical keyboard
+02:57 support.
+02:58 The new enhanced keymap
+introduces over 100 new commands
+03:02 using the Action key as
+a dedicated modifier,
+03:05 making it much easier
+to navigate your device.
+03:08 In addition, Browse mode now
+supports single-key navigation,
+03:12 allowing you to move
+through the web with much
+03:14 greater efficiency.
+03:17 We've also brought customization
+to Braille keyboards
+03:19 and displays, allowing
+you to map gestures
+03:22 and Braille display buttons
+to fit your specific workflow.
+03:27 Now let's take a look at
+some of the system features.
+03:31 First up, expanded dark theme.
+03:33 For user's sensitive to
+light, a bright white screen
+03:36 isn't just a nuisance.
+03:38 It can be a physical barrier
+to using their phone.
+03:41 Expanded dark theme is
+our helpful fallback
+03:43 to automatically
+darken apps that
+03:45 don't have their own
+dark theme, ensuring
+03:47 your screen stays comfortable
+for your eyes when you need it.
+03:51 To enable, visit your
+dark theme settings
+03:54 and choose the expanded option.
+03:57 If you encounter an app that
+doesn't look right with expanded
+03:59 dark theme, you can toggle
+the app's specific setting off
+04:02 to revert back to the
+app's supported theme.
+04:05 We continue to
+encourage developers
+04:07 to ship their own officially
+supported dark theming.
+04:11 For more resources on how
+to develop dark-themed apps,
+04:14 visit developer.android.com.
+04:17 We have some quick updates for
+Android's magnification feature,
+04:20 which allows you to zoom
+into any app on your screen.
+04:24 Magnification can
+now help you Zoom
+04:26 into the on-screen keyboard.
+04:28 We've heard from our users that
+this is super helpful to better
+04:31 see emojis, GIFs, "jiffs," or
+symbols before you send them.
+04:37 Now you can confidently
+choose the perfect emoji
+04:40 when sending a text message.
+04:42 Also, for anyone who
+loves using an Android
+04:44 device for productivity tasks,
+like taking notes in class,
+04:48 you can now use a connected
+keyboard and mouse
+04:51 to control magnification.
+04:53 Keyboard shortcuts offer quick
+access to zooming in and out,
+04:57 and mouse following keeps
+the magnified region
+04:59 focused on your mouse position.
+05:02 Mouse following has
+three modes which
+05:04 offer different benefits for
+orienting yourself or limiting
+05:07 motion sickness.
+05:08 So we recommend you try them out
+and see what works best for you.
+05:12 You can find these new features
+in the Magnification Settings
+05:15 page in your device's
+Settings app,
+05:17 under the Accessibility section.
+05:20 Next, let's talk
+about hand fatigue.
+05:24 As screens get
+bigger, that can also
+05:26 mean the Back button for
+some users gets further away.
+05:29 Android now allows
+you to reorder
+05:31 the three-button navigation
+menu to keep your thumbs happy.
+05:35 When you set up a new
+device using your old one,
+05:38 your button layout comes
+right along with you--
+05:40 no more relearning
+how to navigate.
+05:43 Just a quick reminder that
+we want to hear from you.
+05:47 You may have noticed
+prompts asking
+05:48 for user feedback on
+accessibility system features.
+05:52 If an accessibility
+feature is helping you,
+05:55 or if it needs work, tell us.
+05:57 Your feedback is how we
+make these devices more
+05:60 inclusive for everyone.
+06:02 If you find a tool useful, and
+you want to share with friends,
+06:05 go to g.co/android/a11ydeeplinks
+to find a short way to share.
+06:12 Accessibility deep links
+directly open the right settings
+06:14 so your friends and
+family can quickly
+06:16 find the settings they need
+on their Android devices.
+06:20 More comfort, better
+design, and a system that
+06:23 actually listens to its users--
+that's what we're building.
+06:27 There are a couple of other
+recently released features
+06:30 that we want to highlight,
+in case you've missed them.
+06:33 We've brought Fast Pair to
+select hearing aid partners,
+06:35 allowing users to connect their
+hearing aids quickly and easily.
+06:39 Another helpful feature is
+Guided Frame, a Google Camera
+06:43 accessibility feature
+available on Pixel,
+06:46 which uses AI, audio
+cues, and haptic feedback
+06:49 to help blind or low-vision
+users frame photos and know more
+06:53 about the contents
+of their images.
+06:56 Earlier this year, we brought
+new languages to Guided Frame
+06:59 and now support offline
+scene description.
+07:03 With Guided Frame, you
+can take the perfect photo
+07:05 with confidence, now
+enhanced with Gemini
+07:08 and available in more than 50
+languages, with 20 on-device.
+07:12 This feature provides real time
+descriptive audio and haptic
+07:15 feedback through your
+viewfinder, offering users
+07:18 with blindness or low vision
+a detailed and natural
+07:21 understanding of the scene.
+07:24 Whether you're capturing a
+sunset or a group portrait,
+07:27 your Pixel helps you frame
+every shot independently
+07:30 and effortlessly, even without
+an internet connection.
+07:34 Next, I'll hand
+it over to Isaac,
+07:36 who will talk to you about
+voice access updates,
+07:38 and the latest developer
+and API updates.
+07:43 ISAAC CHAI: Thanks, Yvonne.
+07:44 I'm Isaac Chai, and
+I'm a Software Engineer
+07:47 on Android Accessibility team.
+07:49 Let's jump into more
+updates and features.
+07:52 Voice Access lets you
+control your device
+07:55 with spoken commands.
+07:57 Simplified activation flow--
+07:59 Voice Access has
+introduced a major change
+08:02 to how users turn on
+listening for the feature.
+08:05 Before, users had to find
+and tap a silent notification
+08:09 to enable listening
+mode or manage
+08:11 two separate floating shortcuts
+to activate the overall feature
+08:15 and the listening state.
+08:16 Now, Voice Access offers a
+unified Android accessibility
+08:20 shortcut in Settings that
+controls the listening mode,
+08:23 and the shortcut
+appears automatically.
+08:26 To turn listening on or off,
+simply tap the floating Voice
+08:29 Access shortcut.
+08:31 If you don't like the
+default floating shortcut,
+08:34 you can turn listening on
+or off using the volume
+08:36 keys, accessibility gesture, or
+the navigation bar Accessibility
+08:41 button instead.
+08:42 Gemini app activation--
+based on community feedback,
+08:46 we know that needing
+to physically tap
+08:48 your phone's screen to start
+Voice Access can be challenging.
+08:52 Now, once the feature is
+enabled on your device,
+08:55 you can launch it
+directly with Gemini.
+08:58 Just say, "Hey, Google,
+start Voice Access"
+09:01 and begin controlling your
+phone entirely hands-free.
+09:04 To pause listening, you
+can say, "Stop listening."
+09:07 Text editing improvements--
+you can type, edit, and replace
+09:11 words with Voice Access.
+09:13 We've improved Voice
+Access's ability
+09:15 to recognize punctuation,
+and interact directly.
+09:20 Want to fix something
+you just typed?
+09:21 Use the word "replace" or
+"delete commands"-- for example,
+09:25 "replace apples with kiwis."
+09:28 Next up, improvements
+during phone calls--
+09:31 Voice Access is off by
+default during phone calls
+09:34 due to privacy concerns.
+09:36 You can go to the Settings,
+Accessibility, Voice Access
+09:40 Settings, and turn the feature
+Active During Phone Calls.
+09:45 Also, we have the option
+Activate for Incoming Calls
+09:49 to automatically turn
+listening mode on
+09:51 so you can accept
+a call via voice
+09:54 without having to toggle
+listening on first.
+09:57 Speech improvements and
+language expansion--
+09:60 we have improved
+speech recognition
+10:02 for better understand
+your commands.
+10:05 Additionally, we now
+support Japanese.
+10:07 Large screen-- we have also made
+improvements to voice access
+10:11 on large-screen devices, with
+bigger default size for numbers
+10:15 and labels and larger grid for
+less visually dense experience.
+10:20 We've also made it
+easier to use Voice
+10:22 Access across multiple windows.
+10:25 Now, commands only apply to
+the foreground applications,
+10:29 which prevent accidental
+interactions with hidden content
+10:32 and reduces the amount of
+visual labels on your screen.
+10:37 To switch to a different window,
+use Show Recent Apps command.
+10:41 Now, let's jump into developers'
+updates you've been waiting for.
+10:45 Many of the previously
+discussed features
+10:47 require app developer support
+to maximize their benefits
+10:51 for users.
+10:52 We are going to touch on a few
+of those opportunities related
+10:55 to new platform features.
+10:57 Then we kept some important
+best practices and tools
+11:01 to help apps reach
+their full potential.
+11:04 Dark theming is
+increasingly popular
+11:06 and has become essential for
+modern, high-quality apps.
+11:10 Expanded dark theme as one
+of our newer system features
+11:13 is our safety net, acting
+as a vital fallback
+11:16 to ensure apps stay dark
+when users need them to.
+11:20 Automatic theming
+can be very impactful
+11:23 for those with
+vision impairments
+11:25 and light sensitivity.
+11:27 However, it's not
+perfect and may
+11:30 result in some less
+desirable experiences
+11:33 when the existing heuristics
+do not detect the need for
+11:36 or when resulting color don't
+reflect the developers' intent.
+11:41 We strongly recommend
+that developers implement
+11:44 their own dark theme for
+an optimal experience
+11:47 across the widest range
+of Android devices.
+11:51 For those that don't,
+they should thoroughly
+11:53 test their apps with
+expanded dark theme
+11:55 available on devices
+running Android 16 QPR2
+12:00 API level 36.1 and later.
+12:04 We now offer a common library to
+implement pinch-to-zoom gestures
+12:08 for supporting scalable
+content in your app.
+12:11 This provides a standard,
+platform-consistent method
+12:14 for improving visual
+accessibility by allowing users
+12:18 to intuitively and immediately
+adjust the size of text and UI
+12:22 elements to fit their needs.
+12:25 When pinch-to-zoom was added
+to the Live Transcribe app,
+12:28 over 94% of font-size
+changes were
+12:31 made with the gesture
+instead of app settings.
+12:35 This shows users prefer and
+find intuitive gestures faster
+12:39 than separate menu options.
+12:42 Build this control into
+your Jetpack Compose app
+12:45 by following the tutorial
+links in the notes below.
+12:48 Next up, magnification--
+12:50 Android is adding
+support for users
+12:53 to choose how the OS-level
+display magnification behaves
+12:57 in response to certain
+actions, particularly related
+13:00 to typing and navigating
+with keyboards.
+13:04 In order to support
+magnification working reliably
+13:07 with these
+interactions, developers
+13:09 need to provide some
+additional information
+13:12 when they use the
+requestRectangleOnScreen
+13:15 API, which can be used to
+programmatically move UI
+13:19 into the user's view.
+13:22 We've added a new
+overloaded method
+13:24 for this API, which is available
+starting at API level 36.1.
+13:29 It accepts a new parameter
+that identifies a request
+13:33 source, the reason
+for the request
+13:36 to move content into view.
+13:39 This is because the app
+is requesting or emulating
+13:42 a change in focus position,
+is scrolling or list
+13:46 to move certain
+content on screen,
+13:49 is changing the input cursor
+or character position,
+13:52 such as when the user's type.
+13:54 We've implemented several
+built-in components
+13:56 to handle this correctly without
+requiring additional work.
+14:00 But custom UI implementations
+that directly invoke
+14:04 requestRectangleOnScreen
+may need to provide
+14:07 this information themselves.
+14:09 Moving on to more accessibility
+best practices, as we discussed
+14:14 earlier, there have been several
+key improvements in TalkBack
+14:18 in the last year, one of which
+is that we continue to improve
+14:22 image description features.
+14:24 TalkBack can automatically
+offer detailed information
+14:27 about images and photos.
+14:29 Similar to other
+accessibility features,
+14:31 developers play
+an important role
+14:33 in ensuring this feature
+works well across apps.
+14:37 We continue to
+recommend providing
+14:39 your own descriptive and
+localized accessibility
+14:41 labels throughout your
+UIs, since you know
+14:44 best what your UI is conveying.
+14:47 But in cases where
+that's not possible,
+14:50 such as where images from
+user-generated content
+14:53 are displayed, there's
+another important step
+14:56 in ensuring this image
+description feature works well.
+14:60 Declaring image semantics
+from UI elements that
+15:03 may benefit from
+additional descriptions
+15:05 will cue TalkBack to offer
+or automatically generate
+15:09 image description.
+15:11 When using Compose,
+this is accomplished
+15:13 by using or extending
+on image composable.
+15:17 If you're still using
+Views, be sure to use
+15:20 an Image View, Image Button,
+or one of their subclasses.
+15:25 If you're using a
+custom view, override
+15:28 getAccessibilityClassName, and
+return Android.Widget.ImageView
+15:33 instead.
+15:34 As Android's accessibility
+APIs continue to evolve,
+15:38 we are focusing on providing
+the ability for app developers
+15:42 to convey a richer
+set of UI semantics
+15:44 that are able to
+generalize to a wider
+15:47 range of assistive technologies.
+15:50 We continue to move away
+from APIs and practices that
+15:53 are tied to the behaviors of
+specific accessibility services.
+15:58 Last year, we announced
+the deprecation
+16:01 of accessibility
+announcement APIs in SDK 36.
+16:06 Use of this functionality, often
+over-optimized the experience
+16:10 for users of screen
+readers and can
+16:13 lead to inconsistent
+and sometimes disruptive
+16:16 experiences.
+16:18 We have been increasingly
+encouraging developers
+16:21 to move away from these APIs
+for several consecutive releases
+16:24 and plan to end support for
+them in TalkBack in the future.
+16:29 As that occurs,
+TalkBack will no longer
+16:31 provide feedback for these
+announcements on newer runtime
+16:34 versions.
+16:36 In addition to searching
+your codebase for these APIs,
+16:39 you can test them by enabling
+TalkBack's speech output overlay
+16:43 in TalkBack Developer Settings.
+16:46 The overlay turns red when
+TalkBack produces feedback
+16:49 from announcements, as you
+can see in this example.
+16:53 If your app relies
+on type announcement,
+16:56 accessibility
+events, or use views
+16:58 announced for
+accessibility method,
+17:01 now is the time to migrate
+to more semantic alternative.
+17:05 Here are several
+alternatives you can
+17:07 use in place of announcements.
+17:10 Providing descriptive labels
+that clearly communicates
+17:13 actions associated
+with UI elements
+17:16 so confirmation announcements
+for most user actions
+17:19 are no longer necessary.
+17:22 Using window and pane titles to
+convey a high-level description
+17:27 for activities and
+fragments, which
+17:29 are described by TalkBack
+automatically during transition.
+17:33 Defining live regions
+on UI elements
+17:35 that appear temporarily or
+update their description
+17:39 if users should be made aware
+of related content changes.
+17:42 For more details,
+check out the Announce
+17:45 for Accessibility API
+documentation linked
+17:48 from the description below.
+17:49 We are happy to share
+that we've recently
+17:51 released an updated version
+of Accessibility Scanner
+17:54 for Android, which
+can help catch
+17:57 many common types of
+accessibility issues,
+17:60 including missing accessibility
+labels required for screen
+18:04 readers like TalkBack,
+touch target that
+18:07 are too small to reliably
+support interaction, text
+18:10 and images with
+low color contrast
+18:13 against their backgrounds, and
+various other UI issues that
+18:17 may impact usability
+with Android's
+18:19 assistive technologies.
+18:21 Scanner is a great way to
+run a quick test if you're
+18:24 building a new
+UI, if you briefly
+18:27 want to put your apps through
+its paces and release,
+18:31 or due to accessibility.
+18:35 We also recommend
+testing your app
+18:37 using Android's
+assistive technologies,
+18:39 putting yourself
+in user's shoes.
+18:42 To learn more about how to test
+your app for accessibility,
+18:46 check out the developer's
+guide on developer.android.com.
+18:51 The best apps, the apps that
+reach the largest populations,
+18:55 are those that take into account
+the widest range of users' need.
+18:60 While we covered a lot of
+the platform capabilities
+19:02 in this session, it
+is up to you to meet
+19:05 all the accessibility
+requirements
+19:07 relevant to your product.
+19:09 As developers, you are
+in the driver's seat
+19:12 when it comes to
+designing and building
+19:14 with these users in mind.
+19:16 Thank you for doing your
+part in building an ecosystem
+19:19 of accessible apps.
+19:20 [MUSIC PLAYING]
+19:22 YVONNE ELLEFSON: That's a wrap
+on our updates for this year.
+19:25 We hope these new features
+and tools help you
+19:27 in your daily life and to create
+amazing accessible experiences.
+19:31 Don't forget to check the
+links in the description
+19:34 for the full documentation
+and more details.
+19:37 Thanks for watching,
+and as always,
+19:39 thanks for making the world
+a little more accessible.
+19:42 We'll see you next time.
+19:43 [MUSIC PLAYING]

@@ -76,5 +76,21 @@ enum class AuditAction {
 
     // Spec 004 — screenshot cleanup + active intent:
     /** User requested Smart/Deep help for an Active Intent before any dispatch. */
-    ACTIVE_INTENT_ESCALATION_REQUESTED
+    ACTIVE_INTENT_ESCALATION_REQUESTED,
+    /** Basic understanding found duplicate normalized content and skipped a second Active Intent. */
+    ACTIVE_INTENT_DUPLICATE_SUPPRESSED,
+
+    // Spec 005 — compact cloud memory index:
+    /** Compact memory record was accepted by the backend index. */
+    MEMORY_INDEX_UPSERTED,
+    /** Compact memory record was tombstoned in the backend index. */
+    MEMORY_INDEX_TOMBSTONED,
+    /** User initiated a Library memory search. */
+    MEMORY_SEARCH_REQUESTED,
+    /** User initiated a retrieval-grounded Ask Orbit request. */
+    MEMORY_ASK_REQUESTED,
+    /** Memory gateway call failed or returned an error response. */
+    MEMORY_GATEWAY_FAILED,
+    /** Memory sync was skipped before network dispatch. */
+    MEMORY_SYNC_SKIPPED
 }

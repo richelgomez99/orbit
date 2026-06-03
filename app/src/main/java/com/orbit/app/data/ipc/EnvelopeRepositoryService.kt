@@ -19,6 +19,8 @@ import com.orbit.app.data.OrbitDatabase
 import com.orbit.app.data.WeeklyDigestDelegate
 import com.orbit.app.ai.ClusterSummariser
 import com.orbit.app.ai.DigestComposer
+import com.orbit.app.memory.MemoryIndexSyncScheduler
+import com.orbit.app.memory.MemoryIndexSyncDelegate
 import com.orbit.app.understanding.BasicUnderstandingWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +55,11 @@ class EnvelopeRepositoryService : Service() {
         // construct `EnvelopeRepositoryImpl` directly pass `null` for the
         // engine and stay oblivious to WorkManager.
         val engine = ContinuationEngine.create(applicationContext)
+        val memoryIndexSyncScheduler = MemoryIndexSyncScheduler.create(applicationContext)
+        val memoryIndexSyncDelegate = MemoryIndexSyncDelegate(
+            context = applicationContext,
+            database = db,
+        )
         // T025/T027 — actions registry + delegate live in :ml so binder
         // calls from :ui flow through here. Registry is constructed eagerly
         // but boot-time `registerAll(BUILT_IN)` is owned by Application.
@@ -119,7 +126,9 @@ class EnvelopeRepositoryService : Service() {
         val basicUnderstandingWriter = BasicUnderstandingWriter(
             captureUnderstandingDao = db.captureUnderstandingDao(),
             evidenceBundleDao = db.evidenceBundleDao(),
-            activeIntentDao = db.activeIntentDao()
+            activeIntentDao = db.activeIntentDao(),
+            auditLogDao = db.auditLogDao(),
+            auditWriter = auditWriter
         )
         serviceScope.launch(Dispatchers.IO) {
             basicUnderstandingWriter.refreshActiveFromSidecars()
@@ -138,7 +147,9 @@ class EnvelopeRepositoryService : Service() {
             clusterRepository = clusterRepo,
             clusterSummarizeDelegate = clusterSummarizeDelegate,
             activeIntentRepository = activeIntentRepository,
-            basicUnderstandingWriter = basicUnderstandingWriter
+            basicUnderstandingWriter = basicUnderstandingWriter,
+            memoryIndexSyncScheduler = memoryIndexSyncScheduler,
+            memoryIndexSyncDelegate = memoryIndexSyncDelegate
         )
         // T088 — same service binder pool exposes the audit-log surface on a
         // distinct intent action so the Settings / audit viewer process can
@@ -166,4 +177,3 @@ class EnvelopeRepositoryService : Service() {
         const val ACTION_BIND_AUDIT_LOG = "com.orbit.app.action.BIND_AUDIT_LOG"
     }
 }
-

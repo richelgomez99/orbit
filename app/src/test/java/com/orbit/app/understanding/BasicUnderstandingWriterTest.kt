@@ -1,11 +1,14 @@
 package com.orbit.app.understanding
 
 import com.orbit.app.data.dao.ActiveIntentDao
+import com.orbit.app.data.dao.AuditLogDao
 import com.orbit.app.data.dao.CaptureUnderstandingDao
 import com.orbit.app.data.dao.EvidenceBundleDao
 import com.orbit.app.data.entity.ActiveIntentEntity
+import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.data.entity.CaptureUnderstandingEntity
 import com.orbit.app.data.entity.EvidenceBundleEntity
+import com.orbit.app.data.model.AuditAction
 import com.orbit.app.understanding.domain.ActiveIntentStatus
 import com.orbit.app.understanding.domain.CompletionKeyStatus
 import com.orbit.app.understanding.domain.IntentCategory
@@ -58,6 +61,36 @@ class BasicUnderstandingWriterTest {
         writer.persist(input())
 
         assertNull(activeDao.upserted)
+    }
+
+    @Test
+    fun persistSkipsActiveIntentForDuplicateUnderstandingContent() = runTest {
+        val captureDao = FakeCaptureUnderstandingDao(
+            contentHashMatches = listOf(
+                captureUnderstanding(captureId = "existing-capture")
+            )
+        )
+        val activeDao = FakeActiveIntentDao()
+        val auditDao = FakeAuditLogDao()
+        val writer = BasicUnderstandingWriter(
+            captureUnderstandingDao = captureDao,
+            evidenceBundleDao = FakeEvidenceBundleDao(),
+            activeIntentDao = activeDao,
+            auditLogDao = auditDao
+        )
+
+        val result = writer.persist(input())
+
+        assertNotNull(result.contentHashHex)
+        assertEquals("capture-1", captureDao.upserted?.captureId)
+        assertNull(activeDao.upserted)
+        val audit = auditDao.inserted.single()
+        assertEquals(AuditAction.ACTIVE_INTENT_DUPLICATE_SUPPRESSED, audit.action)
+        assertEquals("capture-1", audit.envelopeId)
+        assertTrue(audit.extraJson?.contains("existing-capture") == true)
+        assertTrue(audit.extraJson?.contains(result.contentHashHex!!) == true)
+        assertTrue(audit.extraJson?.contains("Running shoes") != true)
+        assertTrue(audit.extraJson?.contains("$42.00") != true)
     }
 
     @Test
@@ -168,6 +201,7 @@ class BasicUnderstandingWriterTest {
     )
 
     private fun captureUnderstanding(
+        captureId: String = "capture-1",
         category: IntentCategory = IntentCategory.BUY_LATER_PRODUCT,
         summaryText: String? = "Running shoes price $42.00",
         sourceIdentityJson: String? = SourceIdentity.fromLocalSignals(
@@ -176,7 +210,7 @@ class BasicUnderstandingWriterTest {
             canonicalUrl = "https://example.com/item"
         ).toCompactJson()
     ) = CaptureUnderstandingEntity(
-        captureId = "capture-1",
+        captureId = captureId,
         mode = UnderstandingMode.BASIC,
         status = UnderstandingStatus.READY,
         category = category,
@@ -195,7 +229,8 @@ class BasicUnderstandingWriterTest {
     )
 
     private class FakeCaptureUnderstandingDao(
-        private var existing: CaptureUnderstandingEntity? = null
+        private var existing: CaptureUnderstandingEntity? = null,
+        private val contentHashMatches: List<CaptureUnderstandingEntity> = emptyList()
     ) : CaptureUnderstandingDao {
         var upserted: CaptureUnderstandingEntity? = null
 
@@ -206,7 +241,7 @@ class BasicUnderstandingWriterTest {
 
         override fun observeByCaptureId(captureId: String): Flow<CaptureUnderstandingEntity?> = flowOf(existing)
         override suspend fun getByCaptureId(captureId: String): CaptureUnderstandingEntity? = existing
-        override suspend fun getByContentHash(hex: String): List<CaptureUnderstandingEntity> = emptyList()
+        override suspend fun getByContentHash(hex: String): List<CaptureUnderstandingEntity> = contentHashMatches
         override suspend fun getByCanonicalUrl(canonicalUrl: String): List<CaptureUnderstandingEntity> = emptyList()
         override suspend fun markInvalidated(captureId: String, invalidatedAt: Long): Int = 0
         override suspend fun deleteByCaptureId(captureId: String): Int = 0
@@ -273,6 +308,21 @@ class BasicUnderstandingWriterTest {
         ): Int = 0
 
         override suspend fun deleteByCaptureId(captureId: String): Int = 0
+    }
+
+    private class FakeAuditLogDao : AuditLogDao {
+        val inserted = mutableListOf<AuditLogEntryEntity>()
+
+        override suspend fun insert(entry: AuditLogEntryEntity) {
+            inserted += entry
+        }
+
+        override suspend fun entriesForDay(startMillis: Long, endMillis: Long): List<AuditLogEntryEntity> = emptyList()
+        override suspend fun entriesForEnvelope(envelopeId: String): List<AuditLogEntryEntity> = emptyList()
+        override suspend fun countForDay(startMillis: Long, endMillis: Long, action: String): Int = 0
+        override suspend fun deleteOlderThan(cutoffMillis: Long): Int = 0
+        override suspend fun deleteByEnvelopeId(envelopeId: String) = Unit
+        override suspend fun listAll(): List<AuditLogEntryEntity> = inserted
     }
 
     private companion object {

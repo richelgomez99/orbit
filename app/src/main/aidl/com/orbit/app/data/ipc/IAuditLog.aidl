@@ -7,4 +7,5 @@ interface IAuditLog {
     List<AuditEntryParcel> entriesForDay(String isoDate);
     List<AuditEntryParcel> entriesForEnvelope(String envelopeId);
     int countForDay(String isoDate, String actionName);
+    void appendEntry(in AuditEntryParcel entry);
 }

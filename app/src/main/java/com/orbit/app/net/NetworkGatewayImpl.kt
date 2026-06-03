@@ -7,9 +7,13 @@ import android.util.Log
 import com.orbit.app.BuildConfig
 import com.orbit.app.ai.gateway.LlmGatewayRequest
 import com.orbit.app.ai.gateway.LlmGatewayResponse
+import com.orbit.app.memory.MemoryGatewayRequest
+import com.orbit.app.memory.MemoryGatewayResponse
 import com.orbit.app.net.ipc.FetchResultParcel
 import com.orbit.app.net.ipc.LlmGatewayRequestParcel
 import com.orbit.app.net.ipc.LlmGatewayResponseParcel
+import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import com.orbit.app.net.ipc.MemoryGatewayResponseParcel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
@@ -54,6 +58,7 @@ class NetworkGatewayImpl(
     private val disabled: () -> Boolean = { false },
     private val providerMetadataResolver: ProviderMetadataResolver = ProviderMetadataResolver(client, clock),
     gatewayClient: LlmGatewayClient? = null,
+    memoryGatewayClient: MemoryGatewayClient? = null,
 ) {
 
     /**
@@ -80,6 +85,23 @@ class NetworkGatewayImpl(
             )
         } else {
             LlmGatewayClient(client = client)
+        }
+    }
+
+    private val memoryGatewayClient: MemoryGatewayClient = memoryGatewayClient ?: run {
+        val sb = supabaseClient
+        if (sb != null) {
+            MemoryGatewayClient(
+                client = client,
+                authStateBinder = SupabaseAuthStateBinder {
+                    sb.auth.currentSessionOrNull()?.accessToken
+                },
+            )
+        } else {
+            MemoryGatewayClient(
+                client = client,
+                authStateBinder = DebugSupabasePasswordAuthStateBinder(client),
+            )
         }
     }
 
@@ -344,10 +366,48 @@ class NetworkGatewayImpl(
         return LlmGatewayResponseParcel(encoded)
     }
 
+    fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel {
+        val caller = callerUidProvider()
+        if (caller != myUidProvider()) {
+            return memoryErrorParcel("", "UNAUTHORIZED", "caller uid $caller is not allowed")
+        }
+        val decoded: MemoryGatewayRequest = try {
+            GATEWAY_JSON.decodeFromString(MemoryGatewayRequest.serializer(), request.payloadJson)
+        } catch (t: Throwable) {
+            return memoryErrorParcel("", "MALFORMED_RESPONSE", t.message ?: "request decode failed")
+        }
+        val response: MemoryGatewayResponse = try {
+            runBlocking { memoryGatewayClient.call(decoded) }
+        } catch (t: Throwable) {
+            MemoryGatewayResponse.Error(
+                requestId = decoded.requestId,
+                code = "INTERNAL",
+                message = t.message ?: "memory gateway client threw",
+            )
+        }
+        val encoded = try {
+            GATEWAY_JSON.encodeToString(MemoryGatewayResponse.serializer(), response)
+        } catch (t: Throwable) {
+            return memoryErrorParcel(
+                decoded.requestId,
+                "INTERNAL",
+                "response encode failed: ${t.message}",
+            )
+        }
+        return MemoryGatewayResponseParcel(encoded)
+    }
+
     private fun errorParcel(requestId: String, code: String, message: String): LlmGatewayResponseParcel {
         val err = LlmGatewayResponse.Error(requestId, code, message)
         return LlmGatewayResponseParcel(
             GATEWAY_JSON.encodeToString(LlmGatewayResponse.serializer(), err),
+        )
+    }
+
+    private fun memoryErrorParcel(requestId: String, code: String, message: String): MemoryGatewayResponseParcel {
+        val err = MemoryGatewayResponse.Error(requestId, code, message)
+        return MemoryGatewayResponseParcel(
+            GATEWAY_JSON.encodeToString(MemoryGatewayResponse.serializer(), err),
         )
     }
 

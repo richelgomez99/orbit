@@ -1,0 +1,1618 @@
+00:00 [MUSIC PLAYING]
+00:06 DIANA WONG: Welcome.
+00:07 I'm Diana Wong--
+00:09 [APPLAUSE]
+00:11 --a product manager
+working on developer
+00:13 experiences for adaptive
+apps across form factors.
+00:16 EMILIE ROBERTS: And
+I'm Emilie Roberts.
+00:18 A developer-- oh!
+00:19 Oh, my goodness, you guys!
+00:22 [APPLAUSE]
+00:24 That was a plant.
+00:25 I planted some people for that.
+00:26 DIANA WONG: Yeah.
+00:27 EMILIE ROBERTS: I'm a developer
+relations engineer working
+00:29 on ChromeOS and adaptive apps.
+00:32 And today during
+this talk and at I/O,
+00:34 you're going to hear
+the word adaptive a lot.
+00:37 Adaptive is not about developing
+for a tablet, or a foldable,
+00:42 or any particular
+form factor at all.
+00:44 It's much more than that.
+00:46 It's about thinking
+beyond form factors,
+00:48 and developing for robust,
+reliable app experiences that
+00:53 meet your users' expectations
+on all the screens.
+00:57 If I give my mom a
+tablet, she doesn't
+00:59 want to think about, why does
+this app stretch off the screen,
+01:02 and I can't take
+a photo with it?
+01:03 She just wants to do
+some cool stuff with it.
+01:07 DIANA WONG: The reality
+is that our users are not
+01:09 on a single device.
+01:10 They might start a
+task on a foldable,
+01:13 move to a tablet at their
+desk, and finish on a laptop,
+01:16 expecting that experience
+to flow seamlessly
+01:18 across every surface.
+01:20 Users, like Emilie's mom, don't
+always think about form factors.
+01:24 They think, this app
+works, or this app doesn't.
+01:26 And we've been working
+to improve our frameworks
+01:29 and libraries to help your apps
+run great across the ecosystem.
+01:33 We hope you can adopt this
+adaptive mentality, too.
+01:37 EMILIE ROBERTS: And
+all these form factors
+01:39 bring lots of exciting
+opportunities for you
+01:41 and some new considerations.
+01:43 So today, we're going to talk
+about the Android ecosystem, how
+01:46 it's expanding with
+some exciting new form
+01:49 factors, new APIs, and
+updates to Jetpack Compose.
+01:53 We're going to look at tools,
+including adaptive AI skills.
+01:57 And at the end, we'll look
+at a few UI frameworks
+02:00 that you can use to bring
+your existing app to Android.
+02:04 We're also going to sprinkle
+in a surprisingly large amount
+02:07 of French pastry
+and a rap, maybe.
+02:10 So let's get started.
+02:12 DIANA WONG: It's
+going to be good.
+02:13 Let's start with a brief
+overview of the ecosystem
+02:16 and where it's headed.
+02:18 The Android device universe is
+no longer a phone-only story.
+02:21 Users are buying
+into ecosystems,
+02:23 using multiple Android
+devices, and they
+02:26 expect your app to follow
+them without missing a beat.
+02:29 There are now over 580 million
+large-screen active devices
+02:33 that benefit from
+investments in adaptive apps.
+02:36 And as we expand the services
+that your apps can run on,
+02:39 that number continues to grow.
+02:42 It's not just the number
+of potential users,
+02:45 it's also that we've seen users
+that have multiple devices spend
+02:49 more.
+02:50 Users with a large screen,
+like a tablet or a laptop,
+02:53 and a phone spend nine times
+more than phone-only users.
+02:58 And for those that
+are on foldables,
+02:59 that multiplier jumps to 14x,
+making it one of the highest
+03:04 value user segments on Android.
+03:08 Play is helping to increase
+that opportunity for installs
+03:11 and spend by letting
+users know which
+03:13 apps work best across devices.
+03:15 Apps that are optimized
+for large screens
+03:17 now feature an optimized
+for large screens
+03:19 badge on their details page.
+03:22 And since last year, more apps
+have continued to go adaptive.
+03:26 Here are some great
+examples of apps
+03:28 that deliver premium
+experiences across Android.
+03:31 I'm going to dive into a
+couple, like Notability.
+03:34 Their Android debut
+sets a new standard
+03:36 for premium productivity apps.
+03:39 Built with Jetpack Compose,
+Navigation 3, and Kotlin
+03:42 Multiplatform, it delivers an
+intuitive, adaptive experience
+03:45 across devices.
+03:47 It also features great stylus
+support with the low latency Ink
+03:50 API.
+03:53 Another example is Bandlab, a
+full-featured, collaborative
+03:56 digital audio workstation.
+03:59 Users can create digital music
+and record a live performance
+04:02 in a multitrack environment.
+04:03 And when a device has a
+trackpad and a screen space,
+04:07 users want to be able
+to take advantage of it.
+04:10 Leveraging Compose, Bandlab
+rewrote their portrait social
+04:13 feeds so that now it can
+expand into a masonry-style,
+04:17 multi-column look that makes the
+app feel right on wider screens.
+04:22 The great thing about
+adaptive development
+04:24 is that every optimization
+you make naturally
+04:27 enhances the experience
+across devices.
+04:30 Last year, we introduced
+changes for all apps
+04:33 so they default to
+adaptive behavior,
+04:35 removing letterboxing
+on devices.
+04:38 We provided a developer
+opt-out behind target SDK
+04:41 to give apps time to adjust.
+04:43 And now with Android
+17, the opt-out
+04:46 is being removed when
+apps target SDK 37.
+04:49 On large screen devices
+with the smallest width
+04:52 over 600 DP, like
+tablets, laptops,
+04:55 and the inner screen
+of foldables and XR,
+04:58 Android won't react to
+certain mobile constraints,
+05:01 moving closer to
+responsive UI development.
+05:05 These include
+changes to how apps
+05:07 react to set orientation or
+resizability, and aspect ratio.
+05:13 So note that these
+restrictions are still
+05:15 respected on smaller screens
+like phones and for games,
+05:18 and we're continuing to move.
+05:20 You can prepare by
+having your apps
+05:22 naturally adapt and look
+great in whatever window
+05:25 they're placed in, not
+just a 16 by 9 phone.
+05:28 Things to watch
+for are stretched
+05:30 UIs, squashed or sideways camera
+previews, off-screen controls
+05:34 or animations, and
+your app's state
+05:36 after rotation or a
+folding or a resize event.
+05:40 Be sure to test your apps
+to see how they will show up
+05:43 for your users with
+these changes using
+05:45 a compatible emulator.
+05:46 If you don't have an
+Android 17 device,
+05:49 you can still test on
+an existing older SDK
+05:53 by going to Developer Options
+and selecting App Compatibility
+05:56 options.
+05:57 If you look under
+SDK 36, and you
+05:59 enable the
+UNIVERSAL_RESIZABLE_BY_DEFAULT
+06:02 flag.
+06:04 So these Android changes help
+pave the way for the evolving
+06:07 Android ecosystem.
+06:08 Let's check out what's new
+across our Android form factors.
+06:12 As we announced
+earlier this year,
+06:14 Connected Displays
+is now publicly
+06:16 available with the recent
+Android feature drop.
+06:19 This means any compatible
+Android phone or tablet
+06:22 can instantly be transformed
+into a powerful productivity hub
+06:25 by plugging it into
+an external display.
+06:29 This is already available on
+supported Pixel and Samsung
+06:32 Galaxy phones.
+06:33 And it brings compatible
+phone and tablet users
+06:36 into the desktop world of
+increased engagement time
+06:39 without the need for
+an additional device.
+06:42 Apps that are adaptive and
+handle mouse and keyboard inputs
+06:45 are going to stand out.
+06:47 And that's not all for desktop.
+06:49 If you tuned into the
+Android show last week,
+06:51 you'll know that
+Android will support
+06:53 one of the most popular
+computing form factors, laptops.
+07:00 EMILIE ROBERTS: So Android apps
+have been a first-class citizen
+07:03 on Chromebooks for a decade.
+07:05 And of course, building
+adaptively for Android,
+07:08 meaning awesome large screen
+layouts and top notch input
+07:11 support remains
+the very best way
+07:13 to make sure your app
+looks great on laptops.
+07:16 And on the hardware
+side, you know
+07:17 we've continued to iterate,
+like with the more powerful
+07:21 Chromebook Plus devices.
+07:23 And so you can
+imagine how excited I
+07:25 am to stand here and talk about
+the next iteration of ChromeOS,
+07:29 built on pieces of the Android
+stack, also known as Googlebook!
+07:35 Yay!
+07:36 [APPLAUSE]
+07:40 I know it was already
+announced, but I'm still
+07:42 super excited about it.
+07:44 The new name in the
+incredible lineup
+07:47 of devices we have coming
+from a variety of OEMs
+07:51 represents a shift in computing.
+07:55 The next iteration is going
+to make for powerful laptop
+07:58 experiences, running
+the exact same apps
+08:01 that billions of
+mobile users depend
+08:03 on every day with Android.
+08:06 This is a milestone, and
+we should celebrate it.
+08:09 But I also think it's
+worth mentioning that it's
+08:12 a continuous evolution.
+08:14 We're bringing
+years of innovations
+08:17 and learning from
+ChromeOS to improve
+08:20 the experiences of ChromeOS and
+Android users across the board,
+08:23 not just on laptops.
+08:24 Some of this is already visible
+for phone and tablet users.
+08:29 For example, the Chrome
+browser on tablets
+08:34 has the bookmark
+bar, as shown here.
+08:36 And phones and tablets
+also have pinned tabs
+08:38 and connected display support.
+08:41 And the improvements
+go both ways.
+08:43 The next generation of
+Chromebooks-- or ChromeOS
+08:46 is also getting a boost.
+08:48 Right away, you'll notice
+a performance boost
+08:50 for your Android apps.
+08:52 It also allows us to bring
+you the power of Gemini right
+08:56 into your laptop workflows,
+unlocking whole new desktop user
+08:60 journeys.
+09:01 So I wish I could say a whole
+bunch more about Googlebook
+09:06 and all the awesome
+devices coming and all
+09:08 the juicy technical details,
+but the most important thing
+09:13 is that your apps are ready.
+09:15 And one way to start testing
+for that is with the new desktop
+09:19 emulator that is now available
+in Android Studio Canary,
+09:23 Quail Canary 4, I believe.
+09:26 And you can find it in
+the Virtual Device Manager
+09:29 under Desktop Preview.
+09:31 And just make sure
+it says SDK 37.
+09:33 And you should get that
+resizing experience happening.
+09:37 On the documentation side, to
+help prepare for Googlebooks,
+09:40 we've built out new guidelines
+on developer.android.com
+09:44 and material.io,
+including design kits that
+09:47 cover desktop-focused
+focus principles, new input
+09:50 guidance on things I love, like
+right-clicks and hover states,
+09:54 and more opinionated
+guidance about layouts.
+09:59 One of the documentation
+updates I just want to share
+10:02 is something that
+happens when you
+10:04 have Android apps running
+on these larger screens
+10:07 with pointer input.
+10:09 Sometimes information
+density can make
+10:13 an app feel right on a desktop.
+10:15 So with larger screens
+and a precise pointer,
+10:19 sometimes having
+slightly more dense
+10:20 UI just makes it
+look and feel better.
+10:23 It can be really subtle, like
+the padding and button size,
+10:27 as shown here in this mock.
+10:30 And lastly, as Diana mentioned,
+with all these new Android
+10:34 devices coming, users are more
+likely to have more than one
+10:37 of them.
+10:38 Continue On is the new
+API and the activity class
+10:43 coming in Android
+17, which allows
+10:45 you-- allows users to pick
+up where they left off
+10:49 on a second device
+after they have
+10:51 been working on a first one.
+10:53 So you can see on
+the phone here,
+10:55 Google Docs were way
+down in a Document tab,
+10:59 and were scrolled way down.
+11:01 And so to continue
+editing on a tablet
+11:03 would be a little
+bit frustrating
+11:05 to find that exact place.
+11:07 Continue On allows you
+to pass the data off,
+11:10 and the user can pick off
+right where they left off--
+11:13 come on, GIF-- right
+in the Document tab,
+11:17 and scrolled right
+down into the document.
+11:20 To integrate and make sure your
+app is ready for Android 17,
+11:25 indicate you support Continue
+On by setting HandoffEnabled
+11:28 to true, and then you just
+set up and handle that bundle
+11:34 on the launch intent.
+11:35 And that's basically all
+you need to get integrating.
+11:39 To learn more about Continue On
+and these other desktop updates,
+11:43 check out this recorded
+talk dedicated to that.
+11:47 Of course, designing
+for desktop means
+11:50 your app's going to work
+great across a whole bunch
+11:52 of the Android form factors.
+11:53 So let's talk a bit about those.
+11:57 DIANA WONG: So looking at
+another device class of devices
+11:60 where making your app
+adaptive can help,
+12:02 the in-car app experience
+is a perfect example
+12:05 of how these changes
+apply to car displays.
+12:08 Whether it's catching up on
+content or staying productive,
+12:11 users can enjoy their favorite
+mobile experiences the moment
+12:14 the vehicle is parked.
+12:16 If your app is already
+adaptive, that's great.
+12:18 You're almost there.
+12:19 For Android Auto, meaning
+your mobile device
+12:22 is running the app,
+what the UI projects
+12:24 onto the in-car display, you
+can add an appropriate manifest
+12:28 entry, and check for
+eligibility details
+12:31 in the Android Auto docs.
+12:33 For Automotive OS, which is
+when your app is installed
+12:37 in the car's embedded
+infotainment system,
+12:40 your UI scales up
+easily like a tablet.
+12:43 There are a few
+more things to check
+12:44 to make sure your
+app can be installed
+12:46 in addition to those automotive
+specific manifest flags.
+12:49 So first, check your
+manifest for these features.
+12:52 Of course, your app can still
+take advantage of these features
+12:55 on devices that support them,
+but if your app doesn't need
+12:57 them to run, you can indicate
+that with required=false.
+13:02 Secondly, you check your
+dependencies on Google Services.
+13:05 Many of the Google Play
+libraries you use on mobile
+13:07 are also available
+on cars, but not all.
+13:10 And you can check the docs to
+see if you're inadvertently
+13:13 including a library.
+13:15 Another form factor
+that benefits
+13:17 from adaptive development is TV,
+where Android apps are getting
+13:20 new types of input support.
+13:23 Google TV supports
+pointing input
+13:25 with cursors, trackpad, and
+now pointer remotes for faster
+13:29 navigation.
+13:30 Think of this as a direct
+extension of the work
+13:33 you're already doing to
+support inputs beyond touch,
+13:36 like on Google Books.
+13:38 By implementing hover
+states and focal points
+13:41 today, you aren't just
+optimizing for mouse or laptop,
+13:45 you're making your app
+inherently compatible
+13:47 with the TV interactions
+of tomorrow.
+13:50 Next, Android XR
+continues to heat up
+13:53 with new devices and
+a growing user base.
+13:56 Like other form factors,
+your existing adaptive app
+13:59 will be available on XR.
+14:02 With optimized large screen
+layouts, and excellent keyboard
+14:05 and pointer support,
+your app can
+14:07 provide an immersive experience
+across XR headsets and wired XR
+14:12 glasses.
+14:13 Starting from these
+adaptive best practices,
+14:16 you can also add immersive
+spatial capabilities for XR,
+14:19 as well as creating unique,
+on-the-go augmented experiences
+14:23 for audio and display glasses.
+14:26 This is where the
+Android XR SDK comes in,
+14:29 helping you build these
+differentiated experiences.
+14:32 And you can learn
+more about creating
+14:34 both immersive and augmented
+experiences in the Android XR
+14:37 recorded talk.
+14:39 So that's what's new
+across our devices
+14:41 and the exciting changes we're
+enabling for each of them.
+14:44 But what's the best way to build
+for all of these exciting form
+14:48 factors?
+14:48 It starts with our
+Jetpack and Compose APIs.
+14:53 EMILIE ROBERTS: So
+this year at I/O,
+14:54 we announced we're
+going Compose First.
+14:57 And Compose is the best
+way to build adaptive apps.
+15:02 Let's look at three important
+topics when building adaptively.
+15:06 And we'll start with layouts.
+15:09 Instead of designing apps for
+a specific form factor designed
+15:13 for UI capabilities.
+15:16 That means things like allowing
+your app to dynamically react
+15:21 to if there's pointer or
+keyboard, window size posture
+15:26 changes, like unfolding or
+folding, or detachables,
+15:30 or hardware capabilities,
+like if there's
+15:32 a microphone or a
+camera available.
+15:35 And we know that not every
+developer has the same needs,
+15:38 and so we have options
+for how you approach
+15:40 different pieces of your UI.
+15:43 Sometimes you might want
+this piece of your UI to have
+15:46 an out-of-the-box
+solution that just works.
+15:49 Maybe you want something that
+has a basic implementation,
+15:52 but you want to customize it.
+15:53 And finally, you might want
+to build some components right
+15:56 from scratch for a bespoke look.
+15:59 An example of those
+ready-made APIs
+16:03 is the Compose Material
+3 adaptive library.
+16:07 It has three different
+adaptive layouts, including
+16:10 the NavigationSuiteScaffold.
+16:12 This is an out-of-the-box
+solution to help you handle
+16:15 navigation UI, allowing you
+to have a navigation bar
+16:19 on the bottom on narrow screens,
+and then a nav rail or a nav
+16:22 drawer on a wider one.
+16:25 For multipane layouts,
+you can use Navigation 3
+16:28 with material scenes.
+16:30 If your app follows the
+List/Detail paradigm,
+16:33 there's List/Detail
+scene, which automatically
+16:36 handles multipane arrangements
+based on screen size.
+16:40 There's also
+Supporting Pane scene,
+16:42 which helps show additional
+supporting info that's related
+16:45 to that main content when
+the screen is large enough,
+16:49 like the "up next" shown here.
+16:53 Moving on to
+customizable APIs, which
+16:56 provide a more
+flexible middle ground,
+16:59 you can take these
+existing implementations,
+17:01 and then modify them
+to suit their needs.
+17:03 Let's take a look at an
+example with scene decorators.
+17:08 Scene decorators
+in Navigation 3 1.1
+17:11 allow you to wrap your UI
+content with custom elements.
+17:15 You could use this to
+add aesthetic touches,
+17:18 or you could use
+scene decorators
+17:22 to implement the navigation UI,
+like bottom bars and side rails,
+17:26 but with an
+important distinction
+17:28 with the NavigationSuiteScaffold
+we just talked about.
+17:33 With scene decorators, you can
+allow your content to drive when
+17:37 that decorator should
+be shown or not.
+17:41 This is particularly
+helpful in cases
+17:43 where you might have some app
+flows where you don't want
+17:46 the decorators, so maybe
+a camera preview screen
+17:49 that you want in a
+dialog, or a full screen,
+17:52 and you don't want
+the Nav bars shown.
+17:56 And you can do
+this without having
+17:57 to manage the state
+up and down the stack.
+18:02 For some ready to use but
+customizable implementations
+18:05 for scene decorators, check
+out the Nav 3 recipes page.
+18:08 Now, if you wanted to
+do scene decoration,
+18:11 but get right into the details
+and build from scratch,
+18:14 you can do that, too.
+18:16 Implement a scene decorator
+strategy, override
+18:19 decorate scene, and then you
+can decide based on the content
+18:23 if the scene should be
+decorated, in which case
+18:25 you return that
+decorated scene, or else
+18:28 you return the
+undecorated scene.
+18:31 Let's take one more example
+of this customizable versus
+18:35 build from scratch
+with scene strategies.
+18:38 To let NavDisplay know
+when to show which scene,
+18:41 we introduced scene
+strategies in Nav 3 1.0.
+18:44 And it lets you determine
+when to show each scene based
+18:47 on your own custom criteria.
+18:50 Our Navigation 3
+recipe page, again,
+18:52 has some customizable
+scene strategies for you
+18:54 to use and customize.
+18:57 If you wanted to go farther,
+you have that control, too,
+19:00 and you can really customize
+down to the animation speed
+19:03 and add all that
+into your own scenes.
+19:06 And one update I wanted
+to mention quickly
+19:08 about scene strategies is we
+updated the API to be plural.
+19:12 And it now explicitly
+takes in a list
+19:16 of scene strategies
+in prioritized order,
+19:19 instead of you having to
+use that undocumented, then
+19:24 infix, like in 1.1--
+19:26 1.0.
+19:27 This should hopefully help
+you more easily implement
+19:30 complex scene strategies.
+19:32 So I know I just threw
+out a bunch of APIs
+19:35 and just skimmed
+the surface on them,
+19:37 but to learn more about scene
+strategies, scene decorators,
+19:39 and what else is new
+in Nav 3, check out
+19:42 this dedicated recorded talk.
+19:45 Outside of Nav 3 itself,
+we have some new APIs, too.
+19:49 Gathering conditions to
+determine which of those scene
+19:51 strategies to show
+can be difficult.
+19:55 The experimental
+MediaQuery API for Compose
+19:58 provides a declarative
+way for you
+20:00 to get signals from the
+environment, like window size
+20:03 or pointer precision, and
+make decisions based on that.
+20:07 This API is going to grow,
+and we need your input.
+20:10 So check it out, and let
+us know what you think,
+20:13 and what's missing, and
+what's working well.
+20:16 MediaQuery was
+inspired from CSS.
+20:18 And we have two more
+APIs, experimental APIs,
+20:23 inspired by the web.
+20:24 I know some of you have been
+asking for these for years.
+20:26 So I'm happy to let you know we
+have Grid and Flexbox layouts.
+20:31 Yay!
+20:32 [APPLAUSE]
+20:36 So Grid is for creating
+two-dimensional layouts.
+20:38 Let's dig in a little bit.
+20:39 And I know our talk is
+full of information,
+20:43 and everybody wants to
+talk about pastries.
+20:46 I live in Paris, and I
+love the pastries there.
+20:50 So I'm going to my favorite
+vegan bakery, which,
+20:52 unfortunately, is
+below the office,
+20:54 so I go there quite often.
+20:56 And I want to lay out
+some patisseries in a box.
+20:58 And I'm going to
+bring them to a party.
+21:00 It's a square box.
+21:02 Let's say it has room for four
+pastries in each direction.
+21:05 It's a grid.
+21:06 So set that up.
+21:07 In the config block, I use
+the repeat word to set up
+21:11 four columns and four rows.
+21:14 Are you ready for my
+incredible drawing skills?
+21:16 DIANA WONG: I'm so ready.
+21:17 EMILIE ROBERTS: Let's
+start with the baguette.
+21:19 Yahoo!
+21:21 So you can see that it spans
+four columns in one row.
+21:25 Let's add a few more
+treats into my box.
+21:27 We have an opéra, which is two
+rows, one column, a tarte au
+21:31 citron, which is 2 by 2.
+21:33 And then let's add a few
+more little regular pastries,
+21:36 a chausson aux pommes--
+21:38 that's my favorite.
+21:39 It means apple slipper.
+21:40 So you can imagine a slipper
+stuffed full of warm apple
+21:43 inside--
+21:45 and a chocolatine, also
+officially known as the pain au
+21:48 chocolat.
+21:49 But I'm from Canada, so there
+you have it, chocolatine.
+21:52 Lastly, just to
+finish this off, let's
+21:55 add two giant-sized eclairs
+there that are two columns each.
+22:00 DIANA WONG: OK.
+22:01 This looks really
+good as pastries,
+22:03 but I'm assuming
+you're imagining
+22:04 these are really toolbars
+and buttons in real app life.
+22:07 EMILIE ROBERTS: Yes, of course.
+22:08 Pastries are more fun,
+but maybe that's a title.
+22:10 Maybe it's a button.
+22:11 Yeah, but come on, pastries.
+22:13 You can all build pastry-based
+apps after this talk.
+22:15 No problem.
+22:16 DIANA WONG: I'll
+take the eclairs.
+22:18 Yeah.
+22:21 Oh, go ahead.
+22:21 EMILIE ROBERTS:
+Well, this is good.
+22:23 And it provides this
+amazing resizable UI.
+22:26 And it looks good.
+22:26 I think everyone's going to be
+pretty happy about that, right?
+22:28 DIANA WONG: Yeah, they
+look too good to be true.
+22:31 So are they really
+going to scale?
+22:33 EMILIE ROBERTS: You don't
+believe this is what's happened?
+22:36 There's only one way to settle
+this-- with a live demo.
+22:39 OK, let's go to a live demo
+of Grid and Flexbox here.
+22:45 This is the app.
+22:46 This is the app running
+on my Chromebook,
+22:47 so it's running natively here.
+22:49 And check it out.
+22:50 It resizes.
+22:51 Hold on.
+22:52 Come on, mouse.
+22:53 It resizes, stertch, looks nice.
+22:55 Look, I got a little
+blog here about me
+22:57 in Paris, a Canadian in Paris.
+22:60 Oh!
+23:00 I added this.
+23:02 Here it's just
+showing that density
+23:03 thing I was talking about, but
+leave it on normal density.
+23:06 This is Grid.
+23:06 Great.
+23:07 I would like to talk about the
+second API, which is Flexbox.
+23:11 And let's look in the code.
+23:13 Here's my Grid code.
+23:14 Here's the code we just saw.
+23:15 But let's talk
+about Flex, Flexbox.
+23:18 Flexbox lays things out--
+it should go this way,
+23:20 right-- in a single direction.
+23:22 And it has two modes, one
+that allows for wrapping,
+23:25 and one that doesn't.
+23:26 So let us start with no
+wrapping to start off with.
+23:30 I've got three little things
+here, chocolatine, baguette,
+23:33 and let's run this,
+and hope it works.
+23:35 Of course, it'll work.
+23:36 All right, so here we
+have three elements.
+23:39 They're all a fixed width,
+and they work great.
+23:42 You can click-- oh!
+23:43 I forgot to talk about if
+you click on this-- hold on.
+23:48 DIANA WONG: It's a beautiful
+new Compose FlowerPuff API.
+23:52 EMILIE ROBERTS:
+FlowerPuff 1.0 in Compose.
+23:55 Just kidding.
+23:55 OK, let's get serious.
+23:56 DIANA WONG: Going to stable now.
+23:57 EMILIE ROBERTS:
+Going to stable now.
+23:58 It's available today.
+23:59 That was a joke, right?
+24:02 But this baguette,
+this is the baguette.
+24:04 And look how tiny it is.
+24:05 It's all squashed in the middle.
+24:06 Your UI team is
+going to say, hey,
+24:08 don't you think we should
+fill up that space?
+24:12 Well, this is called Flexbox.
+24:13 So guess what.
+24:14 We're in luck.
+24:15 I am just going to uncomment
+this line, and comment-- oops,
+24:20 I'm getting a
+little nervous here.
+24:21 Comment this line out here.
+24:23 So here, I'm keeping
+the height fixed.
+24:25 And I'm allowing the width
+to flex and grow up to 100%
+24:30 of the leftover space.
+24:32 That's what that float value is.
+24:34 And with any luck--
+24:37 come on, Android Studio.
+24:39 We need you-- it will stretch
+and grow to fill up that space.
+24:46 And let's just double check.
+24:48 There it goes.
+24:48 Look at that-- sourdough
+baguette expanding.
+24:51 So you can, again, imagine
+this is like a button
+24:54 that you don't want to have
+changing size in your UI.
+24:57 But maybe that baguette is
+a title bar or something
+24:59 like that.
+25:00 So this is Flexbox
+in the nowrap mode.
+25:03 And I think it's time to wrap.
+25:07 DIANA WONG: I think in honor of
+wrapping here, just to be clear,
+25:10 Emilie has written a
+wrap rap about Adaptive.
+25:16 I'm really kicking this off?
+25:17 EMILIE ROBERTS: I have.
+25:18 Yeah, maybe I've written a rap.
+25:20 DIANA WONG: Making apps is cool
+25:22 I do it in my sleep
+25:24 I'm so adaptive
+25:25 It's going to make you weep.
+25:27 EMILIE ROBERTS: All
+right, all right,
+25:29 all right, that's pretty good.
+25:30 Not too bad.
+25:31 Not too bad.
+25:32 Not too bad.
+25:34 Pastries in a box
+25:36 While I'm wrapping
+around the clock
+25:37 Flex boxing like my pecs
+25:39 While I'm coding as I type
+25:41 So--
+25:45 DIANA WONG: More?
+25:46 EMILIE ROBERTS: My
+keyboards, they be clacking
+25:48 When my trackpads,
+they be whacking
+25:49 Stylus sync API, like lightning
+25:51 Man, my drawings so
+bad they're frightening
+25:53 I got my data in the Cloud
+25:55 But local storage all in shroud
+25:58 In Aluminum
+25:60 Yo, we be winning 'em
+26:02 Hold on.
+26:03 Hold on.
+26:03 Hold on.
+26:05 No!
+26:07 [CHEERING]
+26:08 Take an oogly, oogly, oogly look
+26:10 At my googly,
+googly, googly book
+26:12 A grid may be square
+26:14 But [FRENCH]
+baguette, ooh, eclair
+26:16 Adaptive is rising
+26:17 My UIs be sizing
+26:19 From Android TV, foldables,
+tablets, laptops, cars, phones
+26:22 Right down to Android wear
+26:25 [CHEERS, APPLAUSE]
+26:31 DIANA WONG: That was great.
+26:32 EMILIE ROBERTS: That was good.
+26:33 It was good.
+26:33 DIANA WONG: Let's
+get back to something
+26:35 serious, like pastries.
+26:36 EMILIE ROBERTS: Pastries,
+let's get back to the pastries.
+26:38 Oh, I blanked on my line.
+26:39 DIANA WONG: All right, so
+we're back in Flexmode,
+26:41 and now wrap is turned on.
+26:42 EMILIE ROBERTS: Oh, here's wrap.
+26:44 We have wrap turned on here.
+26:47 Let's see.
+26:47 Oh, wait.
+26:48 I'm just going to change my view
+model here to make this easier.
+26:56 So we are in-- remember, Flexbox
+lays out in one direction.
+27:01 When we don't have
+any room here--
+27:02 we've added a baguette and a
+little chausson aux pommes--
+27:06 it wraps down to the next line.
+27:08 OK, no problem.
+27:09 So let me uncomment out
+a few more pastries here.
+27:16 And when it runs out of room,
+here we've got this eclair.
+27:23 We've got a tart.
+27:24 And remember that
+chocolatine is one.
+27:27 It falls off the end and
+wraps down to the other side.
+27:29 So that's as we expect.
+27:31 Let me just show you
+one last thing, what
+27:33 happens when we have Flexbox
+wrapping all those lines
+27:38 and it doesn't
+line up perfectly.
+27:41 So here I've got
+this nice eclair,
+27:44 and it fills up three columns.
+27:46 There's no room for here.
+27:47 And that last
+eclair, we don't want
+27:49 to have it all squashed in the
+box with the filling coming out.
+27:52 So we wrap it to the next line.
+27:53 This is just like we want.
+27:55 DIANA WONG: Yeah, I need
+more eclair, though.
+27:57 EMILIE ROBERTS: Yeah,
+more eclair, but you've
+27:58 got a pastry box with empty
+space in it, which is a problem.
+28:02 And your UI team
+might say, I don't
+28:03 know about all this empty
+space we've got going on.
+28:06 So let's look at
+an option we have.
+28:11 And what have I done with that?
+28:13 Let's just assume
+that's going to work.
+28:16 That'll work.
+28:18 Let me fix the height.
+28:22 But let that-- oops, let
+me go back to the code.
+28:24 Let that width flex and
+grow, like we did before,
+28:27 for these two eclairs
+and see what happens.
+28:30 And there you have it.
+28:31 The eclairs stretch out nicely.
+28:34 Flexbox is smart enough to
+know-- look how giant those are.
+28:37 Flexbox is smart enough
+to know how much space,
+28:40 even though we're wrapping,
+is left on that row,
+28:43 and it expands nicely.
+28:45 We're almost done with
+the pastries, I promise,
+28:47 not that that's a good thing.
+28:50 But let's say the
+artist-- that's
+28:53 me-- is not impressed
+with the fact
+28:57 that we've stretched
+out that artwork.
+29:00 Design team is sort of happy,
+but it just doesn't look right.
+29:03 The aspect ratio
+is all squished.
+29:05 Let's see what happens
+if we unbind the height,
+29:12 and let these grow.
+29:14 Look at this giant eclair there.
+29:16 DIANA WONG: Definitely
+more eclair.
+29:17 EMILIE ROBERTS: It's
+definitely more eclair.
+29:19 The artist is happy.
+29:20 The UI team is happy
+if you like pastries.
+29:24 And here I've let both
+the height and width flex
+29:27 and grow up to
+100% of the width.
+29:30 That was a lot of pastries.
+29:31 DIANA WONG: Compose
+is where it's at.
+29:33 EMILIE ROBERTS: And
+those pastries are phat--
+29:36 P-H-A-T, like the '90s.
+29:38 DIANA WONG: That's
+our rap for you guys.
+29:40 EMILIE ROBERTS: That's
+a wrap for that.
+29:42 Thank you.
+29:42 [APPLAUSE]
+29:45 All right, so adaptive
+layouts, even the stretchy ones
+29:49 with pastry, are only
+one piece of the puzzle.
+29:52 Excellent non-touch
+input support is a must.
+29:55 And we've made framework-level
+investments to provide more
+29:57 out-of-the-box experiences.
+29:59 In Compose 1.11, we've
+improved trackpad support
+30:02 to be on par with mouse
+and pointer support,
+30:05 including proper
+hovering and tooltips.
+30:07 We now process trackpad events
+as PointerType.Mouse events,
+30:11 ensuring consistent behavior
+across pointer devices.
+30:15 This enables
+automatic recognition
+30:17 of advanced gestures,
+such as pinch to zoom,
+30:20 and two finger swipes.
+30:22 We've also shipped new
+non-touch based input testing
+30:25 APIs in Compose 1.11, including
+trackpad injection scope
+30:29 and perform trackpad input.
+30:32 This helps you write
+reliable automated tests
+30:34 for non-touch input.
+30:36 Focus states are also
+important to input.
+30:39 And now in alpha, we've
+introduced support
+30:41 for focus rings, designed
+for Material 3 components.
+30:45 Focus rings are critical
+redesign of the focus UI
+30:48 on Android, ensuring that
+interactive elements pop out
+30:52 for users during keyboard
+or D-pad navigation.
+30:56 Visual feedback is great
+for indicating focus,
+30:59 but we can do more like
+visually indicating
+31:02 when an element is pressed or
+has a cursor hovering over it.
+31:06 That's so helpful for
+non-touch interfaces,
+31:09 like Googlebooks and TV.
+31:11 So we now have an
+experimental API that
+31:13 allows for state-based styling.
+31:16 You can update visual
+properties of a component using
+31:18 the component current
+interaction state,
+31:20 like when the component
+is pressed or hovered
+31:23 using the new Styles API.
+31:25 You can dive deeper into
+this and other dynamic ways
+31:28 that Styles and Compose
+can make your app adapt
+31:30 to different device
+characteristics
+31:33 in the live talk about
+the new Style API.
+31:36 Let's also talk
+about stylus support.
+31:39 So last year, we announced
+the Jetpack Ink API.
+31:41 It's designed
+specifically to bring
+31:44 high performance, low latency
+inking to the broader Android
+31:47 ecosystem.
+31:48 Now in stable, the API
+helps you get set up
+31:51 by handling geometry
+calculations,
+31:55 accessing low latency
+hardware compositor pathways,
+31:59 rendering with custom brushes,
+and even serializing your inking
+32:04 paths.
+32:05 We also have an open
+source demo app,
+32:07 which showcases how to make
+the most of the stylus cahier,
+32:11 showing it in action.
+32:13 You can check it out on GitHub.
+32:15 And don't miss the
+dedicated recorded talk
+32:17 to help get fast, beautiful
+stylus support into your app.
+32:21 Finally, we need to talk
+about camera previews.
+32:24 EMILIE ROBERTS: Absolutely.
+32:25 If I'm getting pastries
+and taking photos of them,
+32:28 I need the camera
+preview to be perfect,
+32:30 and get the lighting and
+the angle just right, right?
+32:32 DIANA WONG: So when we look
+at devices beyond phones,
+32:35 camera previews are one of the
+biggest sources of compatibility
+32:38 issues.
+32:39 They often appear stretched,
+cropped, or sideways.
+32:42 And this happens
+when apps assume
+32:44 a fixed portrait-only preview.
+32:46 It simply doesn't hold
+true all the time.
+32:49 The recommended solution
+is Jetpack CameraX.
+32:52 The CameraX viewfinder
+component is
+32:54 built specifically
+for adaptive apps,
+32:57 automatically handling
+the calculations
+32:59 for sensor orientation, device
+rotation, and aspect ratio.
+33:03 This ensures your camera
+preview looks correct.
+33:05 And if you're wondering
+about implementation,
+33:07 just hold that thought.
+33:08 In a few moments,
+we'll show you how
+33:10 we're making it simple
+to migrate to CameraX.
+33:13 You can learn more about
+CameraX and some of the new APIs
+33:16 in this recorded talk.
+33:18 And that was just a bunch of
+exciting new APIs and libraries,
+33:22 all to help you get
+ready for Android 17,
+33:24 with a lot of them giving
+you adaptive behaviors out
+33:27 of the box.
+33:28 Still, we know it's a
+lot to keep track of,
+33:30 which is why we're working on
+tools to make it as seamless as
+33:34 possible for you to integrate.
+33:36 One of the fastest ways
+is to use AI directly
+33:39 inside Android Studio.
+33:41 Iterate quickly
+from within the IDE
+33:43 as the agent helps you
+architect and build your app.
+33:46 One thing that's
+particularly relevant
+33:48 are specific Android
+skills we've been building.
+33:51 And skills are
+modular instructions
+33:53 to help LLMs execute best
+practices and workflows.
+33:57 The examples of adaptive
+focused skills that you can try
+34:00 are of use to Compose
+migration skills.
+34:03 So this is the first
+step to getting
+34:05 your app ready for adaptive.
+34:07 Let Gemini do the heavy lifting.
+34:09 We've talked about the
+benefits of Navigation 3.
+34:12 If you're ready to update,
+we have a Navigation 2
+34:14 to Navigation 3 migration skill.
+34:17 And for those stretched
+and squashed camera preview
+34:20 issues we mentioned,
+CameraX can fix them.
+34:23 And we have a Camera1
+to CameraX skill
+34:26 to have all those state
+changes handled automatically.
+34:30 So let's take a look at
+that skill in action.
+34:32 Camera1 has been deprecated
+for years, but it's still used.
+34:36 Here's what a naive
+implementation looks
+34:38 like on a modern foldable.
+34:40 So you notice it's
+stretched, and how elongated
+34:43 that glass puzzle piece looks.
+34:45 It gets worse as you
+rotate the device.
+34:47 The preview is not rotated,
+and the aspect ratio
+34:52 is still broken.
+34:54 So updating your viewfinder
+to fix this is not trivial.
+34:59 Depending on your
+implementation,
+35:00 you may need to manually
+handle camera lifecycle
+35:03 and juggle device
+configuration changes.
+35:05 It's easy to miss things
+like folds, window resizing,
+35:08 or external monitor events,
+and then accidentally
+35:11 get the geometry and sensor
+orientation calculations wrong.
+35:16 So you can watch
+our skill in action.
+35:19 Here, we ask the agent to
+convert this Camera1 activity
+35:22 to a CameraX using this skill.
+35:25 So the agent locates
+the skill, and it
+35:27 begins analyzing the
+project structure.
+35:32 If you're on Camera1,
+you're likely still using
+35:35 views, and maybe Java.
+35:37 So it'll utilize preview view.
+35:39 If it detects a
+Compose environment,
+35:41 it'll use the
+CameraX viewfinder.
+35:44 And now on to my favorite
+part of this skill,
+35:46 which is what not to do logic,
+shown here under Constraints.
+35:50 We've baked in best practices
+into the skill, like don't
+35:53 manage the lifecycle manually.
+35:55 Don't forget to close
+the image proxy,
+35:57 and don't wrap the preview view
+and Android view unnecessarily.
+36:02 When you look at the diff, it
+replaced the legacy surface view
+36:05 with a modern preview view.
+36:07 It handled the lifecycle.
+36:08 And it also implemented some
+enhancements like tap to focus.
+36:13 So now, let's see what that
+glass puzzle piece looks like.
+36:17 The camera preview is crisp.
+36:18 The aspect ratio is perfect.
+36:19 And most importantly,
+rotation, it just works.
+36:22 So just like that, you can
+modernize your viewfinder
+36:25 in your apps.
+36:26 And I'm realizing this
+could have been an eclair.
+36:28 Yeah.
+36:29 EMILIE ROBERTS: I know.
+36:30 Missed opportunity,
+big missed opportunity.
+36:32 DIANA WONG: These
+building blocks
+36:33 are crucial pieces
+of an adaptive app.
+36:35 And we're continuing
+to add more.
+36:37 In addition to these
+specific migration skills,
+36:39 we have created an
+overall adaptive skill
+36:41 that uses the recommended
+patterns and libraries we've
+36:44 talked about to update your
+existing app across any size
+36:47 screen.
+36:49 Beyond updating
+your existing app,
+36:50 we've also introduced
+the new project agent,
+36:52 starting in Android
+Studio Panda,
+36:54 to help build a
+working app prototype
+36:57 with just a single prompt.
+36:58 Every new project
+created with this agent
+37:02 is now optimized to be adaptive.
+37:05 So that was just
+a quick overview.
+37:06 There's a lot of power
+with these skills.
+37:08 And we have a full
+live talk about ways
+37:10 to use skills and other AI
+tools in Android Studio.
+37:14 So check that out.
+37:15 And following lunch, we
+have a talk specifically
+37:17 about using those AI tools to
+help make your app adaptive.
+37:21 So don't miss that, as there
+will be some great tips, demos,
+37:24 and examples.
+37:27 EMILIE ROBERTS: So
+to close out, we
+37:29 want to talk about
+some other frameworks.
+37:32 If you're building
+a new Android app,
+37:35 or you're updating your
+existing views-based app
+37:38 to be more adaptive,
+Compose, Navigation
+37:42 3, and all the tools
+we talked about today
+37:45 are the obvious choice.
+37:46 However, it's worth mentioning
+some other frameworks
+37:50 that can provide really
+great adaptive experiences.
+37:53 This can be especially
+important for those of you
+37:55 shipping on multiple
+platforms and if you're
+37:57 looking at bringing your
+existing app to Android.
+38:00 I'm just going to touch
+quickly on three of them today.
+38:03 And let's talk about web first.
+38:05 If you have an existing
+web app that already
+38:07 looks great on
+desktop and mobile,
+38:10 it might be worth considering
+leveraging that existing code
+38:14 to get a jump start on Android.
+38:16 And some apps are doing
+this successfully already,
+38:19 like Canva, a top notch
+digital content creation
+38:23 tool that's adaptive.
+38:24 It looks great across platforms.
+38:26 They use their existing desktop
+compatible web UI, and then
+38:33 plug right into the
+Android system APIs
+38:36 when it makes sense to provide
+really seamless user flows.
+38:41 The secret to doing
+this right and to making
+38:43 your cross-platform
+web experiences
+38:46 beautiful app
+experiences on Android
+38:48 is knowing when to plug into
+those Android system APIs
+38:51 and how to make that
+flow super seamless,
+38:54 and when to just let
+things stay purely web.
+38:56 Check out this recorded
+talk all about that.
+39:01 Do you already have a desktop
+or mobile app built on QT
+39:05 and it's not on Android yet?
+39:07 Well, if you're
+thinking about bringing
+39:09 that app to the billions
+of Android users out there,
+39:13 you're in luck, because
+QT can build for Android.
+39:16 A number of successful
+apps built on QT
+39:18 are already providing top
+notch adaptive experiences.
+39:22 Check out Steinberg's Cubasis
+3, a full featured digital audio
+39:26 workstation, or
+Djay, a DJ app that
+39:28 works on device, or with
+foldables, or MIDI controllers,
+39:32 and fill those concert halls
+with your awesome beats,
+39:36 or Krita, a
+community-driven drawing
+39:39 app that's popular with
+manga or comic artists.
+39:42 And for your information,
+the files for this comic,
+39:47 "Pepper&Carrot," with all the
+layers and how the work was made
+39:50 is available on the
+website by the artist.
+39:52 So check that out, if you want.
+39:55 And the third and final
+framework I want to mention
+39:58 is popular with
+cross-platform games, Unity.
+40:01 However, it's also
+used for a number
+40:04 of interactive and
+graphics heavy apps,
+40:08 allowing them to share unified
+codebase across platforms.
+40:12 So if you're using Unity,
+you can build for Android.
+40:15 Just remember,
+mouse and keyboard
+40:17 support, and of
+course, as always,
+40:19 test, especially
+things like folds,
+40:21 and unfolds, and
+rotations, and resizes,
+40:23 and, of course,
+mouse and keyboard.
+40:26 So if you're starting
+out fresh, Android APIs
+40:29 are the best choice.
+40:30 However, if you have an existing
+cross-platform app experience,
+40:34 one of these pathways
+might be a quick way
+40:37 to get started on Android.
+40:40 DIANA WONG: OK, let's recap.
+40:42 The value of investing
+in the Android ecosystem
+40:45 continues to grow.
+40:46 It's everywhere on a
+plethora of screens.
+40:49 And our stats show
+increased engagement time
+40:51 and spend for adaptive apps.
+40:54 When you think Android, it's
+time to think beyond the phone.
+40:57 Connected Displays allow any
+phone to connect to a monitor
+41:01 with a mouse and
+a keyboard input.
+41:03 The next iteration of
+ChromeOS, Googlebooks
+41:05 continues to provide a large
+screen, mouse and keyboard
+41:08 experience that's
+more performant
+41:10 and powerful than ever.
+41:12 XR spaces are even larger,
+and radically rethink
+41:16 app interaction.
+41:17 And now, with the orientation
+and resizability API changes
+41:21 in Android 17,
+it's the right time
+41:23 to make sure your app is there.
+41:26 We've got your back with
+great new Jetpack libraries,
+41:28 updated guidance, new developer
+tools, better testing tools,
+41:32 and emulator.
+41:33 And with awesome skills
+and AI capabilities
+41:37 built into Android Studio,
+optimizing your apps
+41:39 is easier than ever.
+41:42 So with that, the
+both of us would
+41:43 like to thank you for
+being here with us,
+41:45 and being on the forefront
+of Android development.
+41:48 And we hope you learned
+more about making
+41:50 your app adaptive today, or at
+least you're hungry for a pastry
+41:54 now.
+41:55 EMILIE ROBERTS: Hopefully
+both, pastries and adaptive.
+41:57 Yeah.
+41:58 DIANA WONG: Thank you.
+41:58 EMILIE ROBERTS: Thank you.
+41:60 [MUSIC PLAYING]

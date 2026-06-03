@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import com.orbit.app.BuildConfig
 import com.orbit.app.audit.AuditLogActivity
 import com.orbit.app.continuation.ContinuationEngine
 import com.orbit.app.ui.MainActivity
@@ -49,16 +50,23 @@ class SettingsActivity : ComponentActivity() {
             OrbitTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     var paused by remember { mutableStateOf(prefs.continuationsPaused) }
+                    var memoryIndexingEnabled by remember { mutableStateOf(prefs.memoryIndexingEnabled) }
                     val count = remember { mutableIntStateOf(0) }
                     trashCountState = count
                     var exportInProgress by remember { mutableStateOf(false) }
                     var exportStatus by remember { mutableStateOf<String?>(null) }
+                    var demoSeedStatus by remember { mutableStateOf<String?>(null) }
                     SettingsScreen(
                         paused = paused,
                         onPauseChange = { next ->
                             paused = next
                             prefs.continuationsPaused = next
                             if (next) engine.cancelAll("user_paused")
+                        },
+                        memoryIndexingEnabled = memoryIndexingEnabled,
+                        onMemoryIndexingChange = { next ->
+                            memoryIndexingEnabled = next
+                            prefs.memoryIndexingEnabled = next
                         },
                         onNavigateBack = { finish() },
                         onOpenCaptureSetup = {
@@ -88,7 +96,20 @@ class SettingsActivity : ComponentActivity() {
                             }
                         },
                         exportInProgress = exportInProgress,
-                        exportStatus = exportStatus
+                        exportStatus = exportStatus,
+                        onSeedDemoMemories = if (BuildConfig.DEBUG) {
+                            {
+                                memoryIndexingEnabled = true
+                                prefs.memoryIndexingEnabled = true
+                                demoSeedStatus = "Seed requested. Wait 20-30 seconds, then search Library."
+                                sendBroadcast(
+                                    Intent(ACTION_SEED_DEMO_MEMORY).setPackage(packageName)
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                        demoSeedStatus = demoSeedStatus,
                     )
                 }
             }
@@ -114,5 +135,9 @@ class SettingsActivity : ComponentActivity() {
             }.getOrDefault(0)
             trashCountState?.value = n
         }
+    }
+
+    private companion object {
+        const val ACTION_SEED_DEMO_MEMORY = "com.orbit.app.debug.SEED_DEMO_MEMORY"
     }
 }

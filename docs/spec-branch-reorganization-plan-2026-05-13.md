@@ -1,5 +1,7 @@
 # Spec Branch Reorganization Plan - 2026-05-13
 
+> 2026-06-03 supersession note: this document remains useful historical context for why the stale roadmap was rebaselined. For current branch order after the Spec 005 MVP, use `docs/orbit-roadmap-queue-2026-06-02.md`; for future-session workflow, use `docs/orbit-execution-playbook-2026-06-02.md`. The current next branch after Spec 005 closeout is Spec 005A semantic retrieval and grounded Ask, then Spec 006 approval action runtime.
+
 This plan reorganizes the current `specs/` backlog after the local-first/cloud-augmented pivot. It answers four questions:
 
 1. Which existing spec folders are still active?

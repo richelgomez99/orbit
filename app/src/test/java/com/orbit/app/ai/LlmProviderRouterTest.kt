@@ -5,6 +5,8 @@ import com.orbit.app.RuntimeFlags
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.net.ipc.LlmGatewayRequestParcel
 import com.orbit.app.net.ipc.LlmGatewayResponseParcel
+import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import com.orbit.app.net.ipc.MemoryGatewayResponseParcel
 import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -31,6 +33,9 @@ class LlmProviderRouterTest {
             error("not used")
 
         override fun callLlmGateway(request: LlmGatewayRequestParcel): LlmGatewayResponseParcel =
+            error("not used")
+
+        override fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel =
             error("not used")
 
         override fun asBinder(): IBinder = throw UnsupportedOperationException("test fake")

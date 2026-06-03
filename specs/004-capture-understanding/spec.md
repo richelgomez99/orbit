@@ -56,6 +56,7 @@ As a user, I want resolved, archived, expired, deleted, or corrected captures to
 - **FR-004-008**: Any Smart or Deep escalation MUST create an audit event before dispatch and must remain capability-scoped.
 - **FR-004-009**: Spec 004 MUST NOT add new network clients outside `com.orbit.app.net.*`.
 - **FR-004-010**: Spec 004 MUST NOT add new direct database access from `:capture` or `:ui`; new storage writes should be implemented behind the existing `:ml` ownership boundary or explicitly documented as technical debt before coding.
+- **FR-004-011**: The user-facing Orbit Follow-ups surface MUST be narrower than the underlying Active Intent sidecar table. It should surface only concrete next-action signals: explicit reply/action-language chat captures, chat captures with a found completion key, QR/barcode, receipt/order, event/reservation, and coupon/promo captures with a found completion key, plus explicit Orbit review rows. Product pages, recipes, places, gifts, read/watch-later items, unknown captures, and stale captures remain available in Diary/Library/search unless the user explicitly escalates or reviews them.
 
 ## Non-Goals
 

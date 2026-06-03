@@ -41,6 +41,7 @@ import coil.compose.AsyncImage
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.toIntentOrAmbiguous
+import com.orbit.app.memory.MemoryDisplayText
 import com.orbit.app.ui.IntentChipPicker
 import java.time.Instant
 import java.time.ZoneId
@@ -180,9 +181,12 @@ fun EnvelopeCard(
             }
 
             // Row 3: title (US3) or preview (v1). Never render both.
-            val titleOrPreview = envelope.title?.takeIf { it.isNotBlank() }
-                ?: envelope.textContent?.take(200)?.replace('\n', ' ')
-                ?: ""
+            val titleOrPreview = MemoryDisplayText.title(
+                existingTitle = envelope.title,
+                text = envelope.textContent,
+                domain = envelope.domain,
+                maxChars = 200,
+            ).orEmpty()
             if (titleOrPreview.isNotBlank()) {
                 Text(
                     text = titleOrPreview,

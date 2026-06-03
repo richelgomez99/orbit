@@ -1,0 +1,170 @@
+package com.orbit.app.memory
+
+import com.orbit.app.audit.AuditLogWriter
+import com.orbit.app.data.entity.AuditLogEntryEntity
+import com.orbit.app.data.model.AuditAction
+import org.json.JSONObject
+import java.security.MessageDigest
+
+/**
+ * Builds local-only audit rows for Spec 005 memory operations.
+ *
+ * Callers pass raw query/payload material only long enough to compute a
+ * SHA-256 digest; the resulting audit JSON stores counts, outcomes, and
+ * digests, never memory text or raw search questions.
+ */
+class MemoryAudit(
+    private val writer: AuditLogWriter = AuditLogWriter(),
+) {
+    fun upserted(
+        requestId: String,
+        envelopeId: String,
+        payloadForDigest: String,
+        latencyMs: Long,
+        outcome: String = "success",
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_INDEX_UPSERTED,
+        description = "Memory index upserted",
+        envelopeId = envelopeId,
+        extraJson = extras(
+            endpoint = "upsert",
+            requestId = requestId,
+            envelopeId = envelopeId,
+            payloadDigest = sha256(payloadForDigest),
+            latencyMs = latencyMs,
+            outcome = outcome,
+        ),
+    )
+
+    fun tombstoned(
+        requestId: String,
+        envelopeId: String,
+        reason: String,
+        latencyMs: Long,
+        outcome: String = "success",
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_INDEX_TOMBSTONED,
+        description = "Memory index tombstoned",
+        envelopeId = envelopeId,
+        extraJson = extras(
+            endpoint = "tombstone",
+            requestId = requestId,
+            envelopeId = envelopeId,
+            latencyMs = latencyMs,
+            outcome = outcome,
+            errorKind = null,
+            extra = mapOf("reason" to reason),
+        ),
+    )
+
+    fun searchRequested(
+        requestId: String,
+        query: String,
+        resultCount: Int,
+        latencyMs: Long,
+        outcome: String,
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_SEARCH_REQUESTED,
+        description = "Memory search requested",
+        extraJson = extras(
+            endpoint = "search",
+            requestId = requestId,
+            queryDigest = sha256(query),
+            resultCount = resultCount,
+            latencyMs = latencyMs,
+            outcome = outcome,
+        ),
+    )
+
+    fun askRequested(
+        requestId: String,
+        question: String,
+        resultCount: Int,
+        latencyMs: Long,
+        outcome: String,
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_ASK_REQUESTED,
+        description = "Ask Orbit memory request",
+        extraJson = extras(
+            endpoint = "ask",
+            requestId = requestId,
+            queryDigest = sha256(question),
+            resultCount = resultCount,
+            latencyMs = latencyMs,
+            outcome = outcome,
+        ),
+    )
+
+    fun gatewayFailed(
+        requestId: String,
+        endpoint: String,
+        errorKind: String,
+        latencyMs: Long? = null,
+        envelopeId: String? = null,
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_GATEWAY_FAILED,
+        description = "Memory gateway failed",
+        envelopeId = envelopeId,
+        extraJson = extras(
+            endpoint = endpoint,
+            requestId = requestId,
+            envelopeId = envelopeId,
+            latencyMs = latencyMs,
+            outcome = "failed",
+            errorKind = errorKind,
+        ),
+    )
+
+    fun syncSkipped(
+        requestId: String,
+        reason: String,
+        envelopeId: String? = null,
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_SYNC_SKIPPED,
+        description = "Memory sync skipped",
+        envelopeId = envelopeId,
+        extraJson = extras(
+            endpoint = "sync",
+            requestId = requestId,
+            envelopeId = envelopeId,
+            outcome = "skipped",
+            extra = mapOf("reason" to reason),
+        ),
+    )
+
+    private fun extras(
+        endpoint: String,
+        requestId: String,
+        envelopeId: String? = null,
+        payloadDigest: String? = null,
+        queryDigest: String? = null,
+        resultCount: Int? = null,
+        latencyMs: Long? = null,
+        outcome: String,
+        errorKind: String? = null,
+        extra: Map<String, String> = emptyMap(),
+    ): String {
+        val json = JSONObject()
+            .put("provider", PROVIDER)
+            .put("endpoint", endpoint)
+            .put("requestId", requestId)
+            .put("outcome", outcome)
+        envelopeId?.let { json.put("envelopeId", it) }
+        payloadDigest?.let { json.put("payloadDigest", it) }
+        queryDigest?.let { json.put("queryDigest", it) }
+        resultCount?.let { json.put("resultCount", it) }
+        latencyMs?.let { json.put("latencyMs", it) }
+        errorKind?.let { json.put("errorKind", it) }
+        extra.forEach { (key, value) -> json.put(key, value) }
+        return json.toString()
+    }
+
+    companion object {
+        const val PROVIDER: String = "mongodb_atlas"
+
+        fun sha256(value: String): String {
+            val bytes = MessageDigest.getInstance("SHA-256").digest(value.toByteArray(Charsets.UTF_8))
+            return bytes.joinToString(separator = "") { "%02x".format(it) }
+        }
+    }
+}

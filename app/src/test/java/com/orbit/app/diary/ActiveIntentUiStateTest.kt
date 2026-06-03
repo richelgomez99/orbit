@@ -8,20 +8,32 @@ import org.junit.Test
 class ActiveIntentUiStateTest {
 
     @Test
-    fun groupsActiveItemsByLifecycleAndCategory() {
+    fun groupsOnlyActionableActiveItemsByLifecycleAndCategory() {
         val state = ActiveIntentUiState.from(
             listOf(
                 parcel(
                     id = "needs-context",
+                    category = "CHAT_ACTION",
+                    completion = "MISSING",
+                    evidence = """{"kind":"CATEGORY","label":"Reply to Chelsea","source":"chat_action_text","excerpt":"Can you reply to Chelsea?"}"""
+                ),
+                parcel(
+                    id = "buy-later",
                     category = "BUY_LATER_PRODUCT",
-                    completion = "NEEDS_ESCALATION",
-                    evidence = """{"label":"Boots","source":"local_regex"}"""
+                    completion = "FOUND",
+                    evidence = """{"kind":"COMPLETION_KEY","label":"PRICE","source":"local_regex","excerpt":"Trail shoes $129"}"""
                 ),
                 parcel(
                     id = "maybe-old",
                     category = "MAYBE_OLD_OR_INACTIVE",
                     completion = "MISSING",
                     evidence = """{"label":"Old hotel tab","source":"timestamp"}"""
+                ),
+                parcel(
+                    id = "unknown",
+                    category = "UNKNOWN",
+                    completion = "NEEDS_ESCALATION",
+                    evidence = """{"kind":"APP_CONTEXT","label":"source_app_label","source":"local"}"""
                 ),
                 parcel(
                     id = "resolved",
@@ -31,14 +43,13 @@ class ActiveIntentUiStateTest {
             )
         ) as ActiveIntentUiState.Ready
 
-        assertEquals(2, state.activeCount)
+        assertEquals(1, state.activeCount)
         assertEquals(1, state.missingContextCount)
-        assertEquals("Needs your input · Buy later", state.groups[0].title)
-        assertEquals("Maybe old · Maybe old", state.groups[1].title)
-        assertEquals("Boots", state.groups[0].items.single().evidenceLabel)
-        assertEquals("Local text", state.groups[0].items.single().evidenceSource)
+        assertEquals("Needs your input · Message follow-up", state.groups[0].title)
+        assertEquals("Reply to Chelsea", state.groups[0].items.single().evidenceLabel)
+        assertEquals("Message text", state.groups[0].items.single().evidenceSource)
         assertEquals(
-            "Open the capture, add the missing context, or clear it.",
+            "Open the capture, add who needs a reply if it matters, or mark it handled.",
             state.groups[0].items.single().guidanceLabel
         )
     }
@@ -50,22 +61,22 @@ class ActiveIntentUiStateTest {
                 parcel(
                     id = "event",
                     category = "EVENT_TICKET_RESERVATION",
-                    completion = "MISSING",
-                    evidence = """{"label":"EVENT_TICKET_RESERVATION","source":"event_ticket_text"}"""
+                    completion = "FOUND",
+                    evidence = """{"kind":"COMPLETION_KEY","label":"DATE","source":"local_regex","excerpt":"Concert ticket confirmed. May 20, 2026."}"""
                 )
             )
         ) as ActiveIntentUiState.Ready
 
         val item = state.groups.single().items.single()
         assertEquals("Event or reservation", item.evidenceLabel)
-        assertEquals("Event text", item.evidenceSource)
+        assertEquals("Local text", item.evidenceSource)
         assertEquals("Why it appears: this looks like event, ticket, reservation, or booking information.", item.reasonLabel)
         assertEquals("Orbit found event or reservation details in this capture.", item.whyLabel)
         assertEquals("Save the details, attend it, or clear it if you do not need it.", item.guidanceLabel)
         assertEquals("Saved or attended", item.resolveActionLabel)
         assertEquals("Not needed", item.archiveActionLabel)
-        assertEquals(true, item.needsEscalation)
-        assertEquals("NEEDS_CONTEXT", item.lifecycleStatus)
+        assertEquals(false, item.needsEscalation)
+        assertEquals("ACTIVE", item.lifecycleStatus)
     }
 
     @Test
@@ -159,12 +170,61 @@ class ActiveIntentUiStateTest {
         assertTrue(state is ActiveIntentUiState.Empty)
     }
 
+    @Test
+    fun emptyWhenOnlyWeakUnknownRowsRemain() {
+        val state = ActiveIntentUiState.from(
+            listOf(
+                parcel(
+                    id = "unknown",
+                    category = "UNKNOWN",
+                    completion = "NEEDS_ESCALATION",
+                    evidence = """{"kind":"APP_CONTEXT","label":"source_app_label","source":"local"}"""
+                )
+            )
+        )
+
+        assertTrue(state is ActiveIntentUiState.Empty)
+    }
+
+    @Test
+    fun collapsesDuplicateFollowUpsByContentKeepingLatest() {
+        val state = ActiveIntentUiState.from(
+            listOf(
+                parcel(
+                    id = "coupon-old",
+                    category = "COUPON_OR_PROMO",
+                    completion = "FOUND",
+                    evidence = """{"kind":"COMPLETION_KEY","label":"DATE","source":"local_regex","excerpt":"Headphones expires Monday. Print label or drop off before 5pm."}""",
+                    updatedAtMillis = 1_700_000_000_000L
+                ),
+                parcel(
+                    id = "coupon-latest",
+                    category = "COUPON_OR_PROMO",
+                    completion = "FOUND",
+                    evidence = """{"kind":"COMPLETION_KEY","label":"DATE","source":"local_regex","excerpt":"Headphones expires Monday.   Print label or drop off before 5pm."}""",
+                    updatedAtMillis = 1_700_000_060_000L
+                ),
+                parcel(
+                    id = "coupon-truncated",
+                    category = "COUPON_OR_PROMO",
+                    completion = "FOUND",
+                    evidence = """{"kind":"COMPLETION_KEY","label":"DATE","source":"local_regex","excerpt":"r headphones expires Monday. Print label or drop off before 5pm."}""",
+                    updatedAtMillis = 1_700_000_030_000L
+                )
+            )
+        ) as ActiveIntentUiState.Ready
+
+        assertEquals(1, state.activeCount)
+        assertEquals("coupon-latest", state.groups.single().items.single().intentId)
+    }
+
     private fun parcel(
         id: String,
         category: String,
         status: String = "ACTIVE",
         completion: String = "FOUND",
-        evidence: String = """{"label":"Item","source":"foreground_app"}"""
+        evidence: String = """{"label":"Item","source":"foreground_app"}""",
+        updatedAtMillis: Long = 1_700_000_000_000L
     ) = ActiveIntentParcel(
         intentId = id,
         captureId = "capture-$id",
@@ -180,6 +240,6 @@ class ActiveIntentUiStateTest {
         resolvedAtMillis = null,
         userConfirmed = false,
         createdAtMillis = 1_700_000_000_000L,
-        updatedAtMillis = 1_700_000_000_000L
+        updatedAtMillis = updatedAtMillis
     )
 }

@@ -1,5 +1,7 @@
 # Tasks: Branch Debt Closeout Before 004-012 Rebaseline
 
+> 2026-06-03 supersession note: this is historical branch-debt closeout context. For the current post-Spec-005 queue, use `docs/orbit-roadmap-queue-2026-06-02.md` and `docs/orbit-execution-playbook-2026-06-02.md`. The current next branch after Spec 005 closeout is Spec 005A semantic retrieval and grounded Ask, then Spec 006, not a new 004 or 018 branch.
+
 **Input**: [docs/spec-branch-reorganization-plan-2026-05-13.md](spec-branch-reorganization-plan-2026-05-13.md), existing Spec Kit artifacts under `specs/015-visual-refit`, `specs/016-intent-set-migration`, and `specs/017-capture-feedback-actions`
 
 **Repository**: `/Users/richelgomez/dev/orbit-app`

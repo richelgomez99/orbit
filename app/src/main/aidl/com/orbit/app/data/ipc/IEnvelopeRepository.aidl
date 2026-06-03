@@ -32,6 +32,7 @@ interface IEnvelopeRepository {
     void observeDay(String isoDate, IEnvelopeObserver observer);
     void stopObserving(IEnvelopeObserver observer);
     EnvelopeViewParcel getEnvelope(String envelopeId);
+    List<EnvelopeViewParcel> searchLocalEnvelopes(String query, int limit);
 
     // ---- Mutate path (called by :ui) ----
     void reassignIntent(String envelopeId, String newIntentName, String reasonOpt);
@@ -40,6 +41,12 @@ interface IEnvelopeRepository {
     void archive(String envelopeId);
     void delete(String envelopeId);
     boolean undo(String envelopeId);
+
+    // ---- Spec 005 compact memory index sync ----
+    // Called by WorkManager from the default process. The actual corpus read
+    // and compact-payload construction stay inside this :ml repository
+    // service; only the compact request crosses from :ml to :net.
+    String syncMemoryIndex(String envelopeId, String mode, String reason);
 
     // ---- Soft-delete / trash ----
     void restoreFromTrash(String envelopeId);

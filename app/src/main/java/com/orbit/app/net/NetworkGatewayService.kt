@@ -8,6 +8,8 @@ import com.orbit.app.net.ipc.FetchResultParcel
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.net.ipc.LlmGatewayRequestParcel
 import com.orbit.app.net.ipc.LlmGatewayResponseParcel
+import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import com.orbit.app.net.ipc.MemoryGatewayResponseParcel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -42,6 +44,9 @@ class NetworkGatewayService : Service() {
         // re-encodes the typed response (FR-013-011).
         override fun callLlmGateway(request: LlmGatewayRequestParcel): LlmGatewayResponseParcel =
             impl.callLlmGateway(request)
+
+        override fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel =
+            impl.callMemoryGateway(request)
     }
 
     override fun onCreate() {

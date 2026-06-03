@@ -1,0 +1,702 @@
+00:00 [MUSIC PLAYING]
+00:06 ANDRÉ LABONTÉ: Hi.
+00:07 I'm André, and I'm the Product
+Lead for Android Widgets.
+00:10 Today is all about
+reaching your users.
+00:13 We're going to walk you
+through opportunities
+00:15 to deliver your app's
+most critical content
+00:17 and features directly to
+your users' fingertips
+00:20 and effortlessly across all
+of their Android devices.
+00:24 Joining me on stage to dive into
+exactly how we're doing this
+00:27 are two of my
+brilliant colleagues.
+00:29 FRANÇOIS DESCHÊNES:
+Hey, everyone.
+00:30 My name is Frank, and I lead
+our Glanceable Experiences
+00:33 for Wear OS.
+00:34 It's great to be
+here, and I can't
+00:35 wait to show you
+how the wrist is
+00:36 evolving to be a seamless part
+of this new widget ecosystem.
+00:39 JOHN ZOELLER: And I'm John
+from Developer Relations.
+00:42 Later in the session, I'll be
+showing you some code snippets
+00:45 demonstrating how the
+Glance Library makes
+00:48 building widgets simple.
+00:50 ANDRÉ LABONTÉ: Thank
+you, Frank and John.
+00:52 Today, we're here to talk about
+the incredible value widgets
+00:55 bring to the Android ecosystem.
+00:58 A widget is a piece
+of app UI that
+00:60 can be rendered remotely outside
+the main Android application.
+01:04 For users, widgets are
+all about instant access.
+01:07 They want their
+favorite app content
+01:09 and features front and
+center without even
+01:12 having to open an app.
+01:14 For you, the developers,
+this represents
+01:17 a massive opportunity.
+01:19 Widgets are an
+incredibly powerful tool
+01:21 to engage users and bring
+value outside your app.
+01:25 In fact, let me tell you
+about the app Gratitude.
+01:28 Gratitude is a mindfulness
+app that recently launched
+01:31 an updated suite of
+widgets that blend in well
+01:34 with the wallpaper, adapt
+to a variety of sizes,
+01:37 and most importantly, offer
+multiple ways for users
+01:40 to stay on top of their mental
+well-being and personal growth
+01:44 goals.
+01:45 The Gratitude app saw that users
+who add at least one widget have
+01:49 25% higher retention
+compared to those who don't.
+01:53 Have you thought
+about how your app
+01:54 might benefit from widgets as
+part of your retention strategy?
+01:58 To truly capture
+this opportunity,
+01:60 we must first address the
+friction you currently face.
+02:04 Historically, building
+for different devices
+02:06 required entirely different
+libraries and technologies,
+02:10 like using Glance and
+remote views for mobile
+02:12 but having to learn Tiles
+and ProtoLayouts for Wear.
+02:16 Furthermore,
+widgets haven't been
+02:18 available on all Android
+form factors, which limits
+02:21 the impact of your investment.
+02:23 This is why we are working
+towards a unified approach,
+02:26 where app content follows the
+user across Android devices
+02:30 with minimal developer effort.
+02:33 To kick this off, we are proud
+to announce that we are bringing
+02:36 mobile widgets to Android Auto.
+02:39 That's right.
+02:40 The investments you've
+already made in mobile widgets
+02:42 will soon be available to
+your users in their cars.
+02:46 This creates an opportunity
+to unlock new user journeys
+02:49 on the over 250
+million cars that
+02:52 are Android Auto-compatible.
+02:54 Let me show you what this
+looks like in practice.
+02:57 One of the incredible
+things about Android Auto
+02:60 is that your customizations
+travel with you.
+03:03 The moment I flew in for I/O
+and connected to my rental car,
+03:07 my usual setup was
+waiting for me.
+03:09 Just a swipe away is one of my
+favorites, the Contacts widget.
+03:14 As you can see, I have my
+partner pinned to the dashboard,
+03:17 and the UI adapts flawlessly
+to the car's screen.
+03:21 This is especially vital
+today, since his birthday
+03:24 falls on the exact
+same day as this talk.
+03:27 Thanks to that delightful
+on-screen reminder
+03:29 and quick one-tap call
+feature, I can rest
+03:32 assured I won't
+forget to wish him
+03:34 a happy birthday before I start
+my commute to watch the keynote.
+03:38 We're thrilled to unlock these
+new glanceable user journeys
+03:41 on Android Auto later this year
+and for Google built-in vehicles
+03:45 coming soon.
+03:47 Our vision is to make your
+widgets available everywhere
+03:50 your users are.
+03:51 Here to show you how we're
+evolving the experience
+03:53 on watches is Frank.
+03:58 FRANÇOIS DESCHÊNES:
+Thank you, André.
+03:59 The watch truly is the
+ultimate glanceable surface.
+04:02 For years,
+full-screen tiles have
+04:04 been a go to surface on
+Wear OS, providing users
+04:07 with instant glanceable access
+to their essential updates.
+04:10 But as the Android ecosystem
+moves toward a unified vision,
+04:13 we're evolving the way
+we think about the wrist.
+04:15 Today, we are bringing
+the watch closer
+04:17 to the rest of the
+Android family,
+04:19 with the goal of minimizing
+efforts for watch developers.
+04:22 As a first step, we
+are transitioning away
+04:25 from isolated full-screen
+tiles, toward a more unified
+04:27 experience.
+04:29 We're introducing two new
+card layouts, small and large,
+04:32 that perfectly align with
+the 2-by-1 and 2-by-2 formats
+04:35 on mobile, ensuring your designs
+feel cohesive across every
+04:39 device.
+04:40 Because these experiences
+now share the same DNA
+04:43 as the widgets on your
+phone and in your car,
+04:45 it's time for a name
+that reflects that.
+04:47 Today, we are officially
+renaming Tiles to Wear Widgets,
+04:51 with the new Wear Widgets
+API available in alpha
+04:54 as part of Jetpack Glance.
+04:56 These new layouts work great
+across all Wear OS devices.
+04:60 Notably, widgets
+using this API can now
+05:02 populate Samsung
+Galaxy Watch multi-info
+05:04 Tiles, which were
+previously only composed
+05:06 of Samsung's own widgets.
+05:08 But don't worry about
+fragmented development.
+05:11 Our new APIs are
+backward-compatible with devices
+05:13 running Wear 4 and up.
+05:15 On devices that support
+a horizontal carousel,
+05:18 such as the Pixel
+Watch, your large widget
+05:20 will simply display in full
+screen as a traditional Tile.
+05:24 We've been working closely
+with our early access partners
+05:26 to bring this to life.
+05:28 And as you can see,
+these Wear Widgets
+05:30 are still packed with a
+lot of glanceable content.
+05:33 But the shift isn't just
+about the name or the layouts.
+05:36 It's about the engine
+under the hood.
+05:38 For a long time, Tiles were
+powered by ProtoLayout.
+05:41 But developers wanted more
+expression, more motion,
+05:44 and above all, more
+consistency with Compose.
+05:47 The new Glance Wear
+widgets are powered
+05:49 by RemoteCompose, a new
+Android remote UI framework.
+05:53 It's an API perfectly
+aligned with Compose
+05:55 but designed for out-of-app
+experiences such as widgets.
+05:58 We're making this architecture
+shift for a few reasons.
+06:01 First, RemoteCompose unlocks
+a new level of expressiveness,
+06:05 including differentiating
+interactions, premium
+06:07 animations, and shape
+morphing that were previously
+06:10 impossible outside your app.
+06:13 Second, performance--
+RemoteCompose
+06:15 handles this expressiveness
+without triggering any app
+06:18 wakeups, saving
+critical battery life.
+06:21 And third most importantly
+is adaptability
+06:23 across form factors.
+06:25 RemoteCompose was designed
+from the ground up
+06:27 to be adaptive across
+our device ecosystem,
+06:29 including phones and cars.
+06:31 On Wear OS,
+RemoteCompose replaces
+06:33 ProtoLayout as the core
+UI layer for widgets.
+06:37 Here's how it works.
+06:38 You build your UI using
+the RemoteCompose creation
+06:40 libraries.
+06:41 It compiles into a lightweight,
+platform-agnostic binary format,
+06:45 which we call the
+RemoteCompose document.
+06:48 Finally, the system
+RemoteCompose player natively
+06:51 renders it on the device.
+06:53 It can handle interactions
+and rich animations
+06:55 without waking your app,
+delivering incredible battery
+06:58 efficiency and portability
+across devices.
+07:01 This brings us to our vision
+for a unified ecosystem.
+07:04 By aligning our widgets
+layouts with mobile,
+07:06 moving our Wear APIs
+into Jetpack Glance,
+07:08 and adopting RemoteCompose.
+07:10 We are tearing down
+the wall between
+07:12 mobile and wear development.
+07:14 Today, that means
+you get to reuse
+07:16 a lot of what you've learned
+on mobile to build your Wear
+07:18 Widgets.
+07:19 Looking ahead, our
+goal is to make
+07:21 porting a widget from
+the phone to the watch
+07:23 as simple as adjusting
+a few layout parameters.
+07:26 By harmonizing
+these tasks today,
+07:28 we're setting the
+foundation for your app
+07:30 to effortlessly follow
+your users across devices
+07:32 in the future.
+07:34 RemoteCompose is the engine
+making this possible.
+07:36 Let's bring André back out to
+talk about how RemoteCompose
+07:38 will allow you to push
+the boundaries of what
+07:40 you can do with a widget.
+07:42 [MUSIC PLAYING]
+07:44 ANDRÉ LABONTÉ: Thanks, Frank.
+07:46 I love the engine analogy.
+07:47 Widgets aren't new, but with
+RemoteCompose driving them,
+07:51 we can supercharge
+what widgets can do.
+07:54 Today, we're announcing the next
+evolution of our developer API
+07:57 for widgets, Jetpack Glance.
+07:60 This update is all
+about giving you
+08:02 the tools to build premium,
+highly expressive widgets.
+08:06 And thanks to RemoteCompose
+as the underlying technology,
+08:09 we're unlocking incredible
+new capabilities in 2026.
+08:14 We're talking about new
+innovative widget patterns,
+08:17 like Snap Scroll, which
+allows your users to consume
+08:20 multiple bits of your glanceable
+content with a simple swipe,
+08:24 and expressive
+components, so you
+08:26 can bring more of your carefully
+crafted brand expression
+08:29 to your widget.
+08:31 And introducing
+Particle Effects,
+08:33 a new way to delight users when
+a milestone has been reached.
+08:37 Now, I know what you
+might be thinking.
+08:39 New features means maintaining
+extra code for older devices.
+08:44 We built the latest
+version of Jetpack Glance
+08:46 to be backwards-compatible.
+08:48 Glance seamlessly
+provides a fallback
+08:50 to remote views in XML for
+older mobile devices running
+08:54 Android 15 and below,
+all while enabling
+08:56 these new powerful RemoteCompose
+features on Android 16
+09:00 and above.
+09:01 To help you build great
+widgets even faster,
+09:04 lean in to our
+canonical layouts.
+09:06 They take the guesswork out of
+designing high-quality widgets.
+09:10 Take a look at our new
+single-entity layout in 2-by-2
+09:14 and 2-by-1 formats.
+09:16 They're perfect for delivering
+bite-sized key information,
+09:19 like a quick weather update or
+a headline right at a glance.
+09:24 The beauty of these
+streamlined layouts
+09:26 is that they make
+sure your widget looks
+09:27 great across devices.
+09:29 And they truly shine in the
+car, since they naturally
+09:32 minimize cognitive load by
+keeping the UI uncluttered
+09:36 and the touch targets clear.
+09:38 Plus, they use dynamic theming
+to automatically tailor
+09:41 your widget to your
+user's color choices.
+09:44 This means your widget will feel
+right at home on their phone's
+09:47 home screen, adapt flawlessly
+to their car's dashboard,
+09:50 and still give you the
+perfect canvas to show off
+09:53 what makes your app special.
+09:55 We also have the streak layout.
+09:57 This is your go-to format
+for helping users track
+09:60 stats relevant to
+your app's content,
+10:03 like how many
+consecutive days they've
+10:04 hit their exercise goals.
+10:06 It's a highly visual, motivating
+way to help them stay on track.
+10:12 And look at that smooth fade
+when resizing the widget.
+10:15 That's baked directly into
+RemoteCompose by default,
+10:18 creating more polished
+experiences for your users
+10:21 as they personalize their
+device with your widget.
+10:25 To show you exactly
+how easy it is
+10:27 to take advantage of
+these new features
+10:28 and target more form factors,
+let's bring John out.
+10:34 JOHN ZOELLER: Thanks, André.
+10:36 Now that we've learned a
+little more about glance
+10:38 and the underlying
+RemoteCompose engine,
+10:41 let's take a look
+at how they're used
+10:43 to create adaptive
+widgets for your phone.
+10:46 I've been working on a new
+sports schedule and results
+10:49 widget lately in my spare time.
+10:52 This seems like a
+perfect opportunity
+10:54 to demonstrate the intuitive
+new Snap Scroll feature.
+10:58 Snap Scrolling allows developers
+to add snap-to-page behavior
+11:02 to their vertically
+scrolling widgets,
+11:04 providing new ways
+to showcase content
+11:07 in consumable, bite-sized,
+scrollable chunks.
+11:11 And since a scrollable
+widget takes up
+11:13 only a small amount
+of screen real estate,
+11:16 it provides a
+high-value piece of UI
+11:18 that doesn't cover up
+a user's wallpaper.
+11:21 Here's that sports results
+widget I mentioned.
+11:25 It's looking pretty
+basic so far.
+11:27 But if I add Snap
+Scrolling, I'll
+11:29 be able to quickly check all
+my favorite teams schedules
+11:32 and results.
+11:33 And things will start to
+feel a little more polished.
+11:36 Let's dive into the code.
+11:38 Here's how my sports glance
+widget is written today.
+11:42 It's pretty simple.
+11:43 I'm taking advantage of how
+the LazyColumn automatically
+11:46 provides scrolling to my widget.
+11:49 To add Snap Scrolling
+behavior, I'll
+11:51 just need to augment
+my LazyColumn
+11:53 by setting its
+vertical scroll mode
+11:55 parameter with the result of
+a Snap Scroll match height
+11:59 function call,
+furnishing that call
+12:02 with the height of the widget
+container to ensure each row
+12:05 has the same height.
+12:07 And with that
+simple code change,
+12:09 my widget will snap through
+its pages while scrolling.
+12:12 Check it out.
+12:14 Keep in mind that, because I
+wrote this widget with Glance,
+12:17 on Android 15 and lower, it
+will run in compatibility mode,
+12:22 rendering the
+traditional scrolling
+12:23 behavior via remote views.
+12:25 To try out these new
+widget features, check out
+12:29 our developer guidance.
+12:31 Next up, we know the great
+thing about adaptive widgets
+12:34 is that they work
+across form factors.
+12:36 And that includes cars.
+12:39 Be sure to design your widgets
+so that they meet our quality
+12:42 guidelines, which is
+the best way to ensure
+12:45 they will look great across
+various car display sizes.
+12:49 As widgets expand
+to new form factors,
+12:52 there may be minor
+differences in how users
+12:55 interact with your widgets.
+12:57 One example of
+this is scrolling,
+12:59 which isn't supported
+on Android Auto.
+13:01 To account for
+this, the platform
+13:03 will default to the first item
+in your scrollable LazyColumn So
+13:08 make sure to carefully
+choose your first item,
+13:10 as this represents an
+excellent opportunity
+13:13 to show your most valuable,
+dynamic, personalized use cases.
+13:18 To learn more about the
+widgets experience in cars,
+13:21 check out our guidance.
+13:23 Next up, let's learn how to
+adapt an existing Wear OS
+13:27 full-screen tile to a
+card layout widget, which
+13:30 can take advantage of
+the vertical widgets
+13:32 tray on some devices.
+13:34 To accomplish this, we'll port
+the UI from a Wear OS tile
+13:38 to create a new widget with the
+Glance Wear and RemoteCompose
+13:42 Wear libraries.
+13:44 As a baseline,
+here's a Wear OS tile
+13:46 that I've been developing
+lately for my exercise app.
+13:50 If we inspect the code, you can
+see all the familiar elements.
+13:54 I've used some new
+Tiles Library features
+13:57 to implement a
+Material3TileService
+14:00 and the ProtoLayout Material
+3 Library to define the UI.
+14:05 Let's try porting this tile
+to a large-size widget.
+14:09 As you can see, this allows
+me to reuse pretty much
+14:12 the same design as my tile,
+but in a predefined container.
+14:17 To get started, we'll need
+some new dependencies.
+14:20 The structure of these
+is similar to how
+14:22 things are with Tiles.
+14:24 But instead of
+Tiles dependencies,
+14:26 we'll need Glance
+Wear libraries.
+14:29 And instead of
+ProtoLayout dependencies,
+14:31 we'll use RemoteCompose to
+define the UI of a widget.
+14:35 Make sure to use the latest
+versions of these libraries.
+14:39 In the code, let's start
+with the equivalent
+14:41 of the Tile service,
+the Glance Wear Widget
+14:44 Service, which handles
+the incoming bind requests
+14:47 from the system.
+14:49 Here, we will
+instantiate a Glance Wear
+14:52 widget with a simple
+user-defined constructor.
+14:55 Our Glance Wear
+widget's only job
+14:58 is to provide the service with
+the UI definition of the widget.
+15:02 To accomplish this,
+override the provide
+15:05 widget data function so that
+it invokes a composable widget.
+15:09 Since widgets are now
+using card layouts,
+15:12 you'll need to retrofit
+the UI from the main slot
+15:15 of your full-screen tile.
+15:17 Use the provided
+RemoteCompose components
+15:20 as direct replacements
+for your Tiles components.
+15:23 For instance, let's take
+a look at how the new UI
+15:26 code looks next to a chunk of
+my exercise tile from above.
+15:30 The improvement in
+readability is remarkable.
+15:34 You can see that I've used the
+equivalent UI from our tile's
+15:37 main slot to create
+the main buttons
+15:39 of the widget in my remote
+exercise button group
+15:42 composable.
+15:43 And with that, our new
+widget is ready to go.
+15:46 It's important to keep
+in mind compatibility
+15:49 when creating a new widget.
+15:51 Devices supporting a
+horizontal carousel
+15:53 will display your widgets in
+full-screen-compatibility mode.
+15:57 And only some devices on Wear
+OS 7-plus will display widgets
+16:02 in their card format.
+16:04 If you already have a tile,
+we recommend keeping it around
+16:07 so it can leverage all
+the available screen
+16:10 real estate on devices that
+support a horizontal carousel.
+16:14 And there you have it.
+16:15 To try out new
+Wear Widgets today,
+16:17 check out our
+developer resources.
+16:20 Thanks, André.
+16:20 Back to you.
+16:21 [MUSIC PLAYING]
+16:24 ANDRÉ LABONTÉ: Thanks, John.
+16:25 The demo really
+shows how effortless
+16:27 this new architecture is.
+16:29 But the surfaces we
+talked about today--
+16:31 Mobile, Auto, and Wear--
+16:33 are just the beginning.
+16:35 Looking ahead to
+2027 and beyond,
+16:38 our vision is that widgets will
+continue to support the latest
+16:41 form factors.
+16:42 We're actively working on
+bringing widgets to XR,
+16:46 AI glasses, and desktop,
+so glancing at content
+16:49 from your app becomes a
+seamless, ambient part
+16:52 of the day for an Android user.
+16:55 If you haven't watched
+"The Android Show" yet,
+16:57 I encourage you to check it out.
+16:59 You'll see a
+massive announcement
+17:01 as part of Gemini Intelligence
+called Create My Widget.
+17:04 It's just another example of
+how we're investing in widgets
+17:08 and unlocking a new dimension of
+user personalization on Android.
+17:13 Between new ways for
+users to create widgets
+17:15 and the updates
+we discussed today
+17:17 to make building great
+widgets for your app easier,
+17:20 we're excited to bring
+the next generation
+17:22 of glanceable experiences
+to all of Android.
+17:25 FRANÇOIS DESCHÊNES: We cannot
+wait to see the incredible
+17:27 widgets you are going to build
+for the Android ecosystem
+17:30 of devices.
+17:30 Thank you so much
+for joining us today,
+17:32 and enjoy the rest
+of Google I/O.
+17:34 [MUSIC PLAYING]

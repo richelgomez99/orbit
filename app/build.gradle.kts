@@ -29,6 +29,28 @@ val cloudGatewayUrl: String = run {
     }
 }
 
+// Spec 005 — memory gateway URL for compact Atlas index operations.
+// This is not an Atlas connection string; it points at Orbit's server-side
+// gateway. Missing config keeps builds working with a placeholder that fails
+// closed at runtime if invoked.
+val memoryGatewayUrl: String = run {
+    val props = Properties()
+    val propsFile = rootProject.file("local.properties")
+    if (propsFile.exists()) {
+        propsFile.inputStream().use { props.load(it) }
+    }
+    val configured = props.getProperty("memory.gateway.url")?.trim().orEmpty()
+    if (configured.isEmpty()) {
+        logger.warn(
+            "[orbit-app] memory.gateway.url not set in local.properties — " +
+                "falling back to placeholder; Library cloud search will be unavailable.",
+        )
+        "https://gateway.example.invalid/memory"
+    } else {
+        configured
+    }
+}
+
 // Spec 014 T014-019b — Supabase SDK config sourced from local.properties.
 // SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY are NOT secrets (publishable key is
 // the public anon key); when missing we warn-but-emit-empty so :net code can
@@ -90,6 +112,10 @@ android {
         // Spec 014 T014-016 — non-secret cloud config, sourced from
         // local.properties (or Day-1 placeholder fallback above).
         buildConfigField("String", "CLOUD_GATEWAY_URL", "\"$cloudGatewayUrl\"")
+
+        // Spec 005 — non-secret memory gateway config. Atlas credentials live
+        // only in the backend memory_gateway environment, never in Android.
+        buildConfigField("String", "MEMORY_GATEWAY_URL", "\"$memoryGatewayUrl\"")
 
         // Spec 014 T014-019b — Supabase SDK config (publishable key is public,
         // not a secret). Empty values cause :net to skip SDK wiring at runtime.

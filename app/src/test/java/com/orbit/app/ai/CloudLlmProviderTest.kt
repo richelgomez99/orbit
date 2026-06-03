@@ -9,6 +9,8 @@ import com.orbit.app.data.model.AppCategory
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.net.ipc.LlmGatewayRequestParcel
 import com.orbit.app.net.ipc.LlmGatewayResponseParcel
+import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import com.orbit.app.net.ipc.MemoryGatewayResponseParcel
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
@@ -53,6 +55,9 @@ class CloudLlmProviderTest {
 
         override fun callLlmGateway(request: LlmGatewayRequestParcel): LlmGatewayResponseParcel =
             responder(request)
+
+        override fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel =
+            error("callMemoryGateway is not used in CloudLlmProviderTest")
 
         override fun asBinder(): IBinder =
             throw UnsupportedOperationException("test fake — asBinder unused")

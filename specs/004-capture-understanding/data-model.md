@@ -104,6 +104,15 @@ Indexes:
 - `due_at`
 - `expires_at`
 
+Display contract:
+
+- `active_intent` is a derived sidecar/audit substrate, not a direct 1:1 UI queue.
+- The Orbit Follow-ups surface filters these rows to concrete next-action signals only:
+  - `CHAT_ACTION` with explicit reply/action text or a found completion key.
+  - `QR_OR_BARCODE`, `RECEIPT_OR_ORDER`, `EVENT_TICKET_RESERVATION`, and `COUPON_OR_PROMO` with `completion_key_status = FOUND`.
+  - `ORBIT_REVIEW` evidence rows created by an explicit user review/escalation.
+- `BUY_LATER_PRODUCT`, `RECIPE`, `READ_OR_WATCH_LATER`, `PLACE_OR_TRAVEL_IDEA`, `GIFT_IDEA`, `MAYBE_OLD_OR_INACTIVE`, and `UNKNOWN` should remain browsable/searchable memory by default, not pressure-producing follow-up work.
+
 ## Enums
 
 `MAYBE_OLD_OR_INACTIVE` is a category used for grouping and triage. It is not an `ActiveIntentStatus` lifecycle value.

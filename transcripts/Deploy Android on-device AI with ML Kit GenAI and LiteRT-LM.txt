@@ -1,0 +1,645 @@
+00:00 [MUSIC PLAYING]
+00:07 CAREN CHANG: Hi,
+everyone, I'm Caren.
+00:08 And today, I'm joined
+by Erin to talk
+00:10 about the latest developments
+of on-device GenAI and Android.
+00:15 In this talk, we'll
+cover why and how
+00:17 you should consider on-device
+AI use cases for your app;
+00:20 AICore Developer Preview, a
+new way for you to preview
+00:23 the latest on-device models and
+improve your overall development
+00:27 process; ML Kit GenAI APIs
+that help you bring most use
+00:31 cases to production; along with
+new capabilities like speech
+00:35 recognition and
+improvements to prompt API
+00:38 with caching and
+structured output;
+00:41 and LiteRT-LM to help you enable
+even more customized use cases.
+00:47 Let's start by talking about
+why you should consider
+00:49 on-device GenAI in your apps.
+00:52 On-device GenAI
+refers to the ability
+00:54 to process prompts and
+data directly on a device
+00:57 without sending
+data to a server.
+01:00 Since a server is not required,
+this offers a few advantages.
+01:05 Sensitive user data can be
+processed locally on the device.
+01:09 Functionality of
+the model does not
+01:10 depend on internet
+connectivity, meaning
+01:13 the model can output reliable
+results even with spotty
+01:16 or no internet connection.
+01:18 And lastly, there is
+no additional cost
+01:20 for each inference,
+since everything
+01:22 runs on the user's hardware.
+01:25 With these advantages,
+on-device makes
+01:27 a great solution for use cases
+like handling sensitive user
+01:31 data, such as banking
+or medical records;
+01:34 personalization to build
+tailored experiences
+01:36 for your users, such as
+customized summarization of news
+01:39 articles tailored to a
+user's specific interests;
+01:43 and scenarios that require
+a smaller context window
+01:46 and compute power, such as
+translating short sentences
+01:49 or classifying content
+into specific categories.
+01:53 Building these types of
+differentiated use cases
+01:55 elevates the
+experience for users.
+01:57 And Google is committed to
+making this possible for you
+01:59 on Android with access to models
+like Gemma and Gemini Nano.
+02:04 Gemma is a collection of
+state-of-the-art open models
+02:07 built from the same technology
+that powers the Gemini models.
+02:11 On supported Android
+devices, Gemini Nano
+02:13 builds on Gemma's
+architectural foundation
+02:15 and is further optimized for
+maximum battery and performance
+02:19 efficiency.
+02:21 This means that prompts you
+write for Gemma for today will
+02:23 automatically work for the next
+generation of Gemini Nano models
+02:27 when it's shipped
+on flagship devices.
+02:30 To make it easy for
+your apps to utilize
+02:32 the capabilities of these
+powerful on-device models,
+02:35 we provide a complete stack
+of production-ready solutions.
+02:39 First, for the
+majority of use cases,
+02:41 ML Kit GenAI APIs offer the
+most direct path to production.
+02:46 These APIs provide access to
+Gemini Nano with the Android
+02:49 OS automatically
+managing model updates,
+02:51 so apps are always using
+Google's most powerful
+02:54 on-device model.
+02:56 Alternatively, if your app
+targets niche domain areas,
+02:60 LiteRT-LM allows you to manage
+and run small, customized models
+03:03 on users' devices.
+03:05 Let's dive first into ML Kit
+GenAI APIs that allow you
+03:08 direct access to Gemini Nano.
+03:11 On supported
+devices, Gemini Nano
+03:13 is deployed and managed through
+AICore, an Android system
+03:16 service.
+03:18 By using Gemini
+Nano through AICore,
+03:20 apps gain advantages
+such as optimizations
+03:24 based on the device hardware to
+enable lower inference latency
+03:27 and reduce power consumption; no
+extra effort in managing model
+03:31 deployment, including updates
+to the Gemini Nano model;
+03:35 and built in privacy and safety.
+03:37 AICore is designed to isolate
+each inference request.
+03:41 This means that requests
+are handled independently
+03:43 and processed from
+one app at a time
+03:45 to mitigate the risk
+of data being exposed
+03:47 to other apps that use AICore.
+03:49 Input data and the
+resulting outputs
+03:52 are never stored
+anywhere on the device.
+03:54 To give you a more concrete
+idea of the developer journey
+03:57 when integrating
+ML Kit GenAI APIs,
+03:60 let's see what it takes
+to go from prototyping
+04:02 to productionizing use cases.
+04:05 With AICore Developer
+Preview, you
+04:07 can now test both production and
+preview models at Gemini Nano,
+04:11 allowing you access to the
+latest capabilities of Gemini
+04:14 Nano before its
+launch to production.
+04:17 Using the app, you can download
+models, explore new use cases
+04:21 by testing prompts, and have
+control over developer settings
+04:24 such as bypassing quota limits.
+04:27 Preview models are currently
+available for testing
+04:30 on AICore-enabled devices
+from Google and select device
+04:33 manufacturers.
+04:35 To further improve
+the developer journey
+04:37 when prototyping
+with preview models,
+04:38 we've introduced the
+Model Selection API.
+04:42 This API allows apps to
+target preview models
+04:44 for their prompt API
+integration in order
+04:46 to test the full code
+path of a new model.
+04:50 When initiating a model to make
+inferences through prompt API,
+04:53 you can now specify
+the target model.
+04:56 By providing the ability
+to download and prototype
+04:58 with preview models,
+such as Gemini Nano 4,
+05:01 we hope you can get a head start
+on refining prompt accuracy
+05:04 and exploring use cases before
+the model's launch on consumer
+05:08 devices.
+05:09 To get started, check out
+the step-by-step instructions
+05:12 at our official documentation.
+05:15 Next, after prototyping
+and refining prompts,
+05:17 it's time to implement use
+cases directly in your app.
+05:21 ML Kit GenAI APIs makes this
+easy for you by providing
+05:24 out-of-the-box quality through a
+high-level interface for common
+05:28 use cases such as summarization,
+proofreading, rewriting,
+05:32 and image description.
+05:33 Last year, we introduced APIs
+that require no prompts and just
+05:36 a few lines of code.
+05:38 To add on to these
+popular use cases,
+05:40 we recently unlocked
+on-device audio experiences
+05:43 with ML Kit's Speech
+Recognition API.
+05:46 This API transcribes
+audio content,
+05:49 either from the device's
+microphone or an audio file,
+05:52 to text.
+05:53 On supported devices, the API
+will use the on-device Gemini
+05:57 model.
+05:58 And on all other
+devices, developers
+05:60 have the option to use a
+traditional on-device speech
+06:02 recognition model.
+06:04 This means that the API is
+compatible with all devices
+06:07 running Android 31 and above.
+06:09 With the on-device Gemini model,
+ML Kit's Speech Recognition API
+06:13 provides the
+following benefits--
+06:15 higher quality transcriptions
+for languages such as Arabic,
+06:19 Indonesian, Dutch, and more.
+06:22 Less storage required-- the
+traditional, on-device speech
+06:24 recognition model
+requires downloading
+06:26 a single model between
+100 to 200 megabytes
+06:28 for each language the user uses.
+06:30 However, the on-device Gemini
+model only requires one small
+06:34 lower adapter to transcribe
+all supported languages--
+06:37 and a more friendly
+developer API
+06:39 for streaming
+audio capabilities.
+06:42 Start implementing
+Speech Recognition API
+06:44 in your Android apps
+today with guidance
+06:46 from our official documentation.
+06:49 Now, if your app wants
+to implement a user
+06:51 journey beyond the predefined
+use cases just discussed
+06:55 or you want more
+control over the output,
+06:58 we recently
+introduced Prompt API.
+07:01 Prompt API allows you to send
+any natural language requests
+07:04 to Gemini Nano by accepting
+text and images as inputs
+07:08 and emits a text output.
+07:10 The versatility of this API
+has enabled Adobe Photoshop
+07:14 to utilize it in multiple ways
+to improve the user experience
+07:17 from start to finish.
+07:19 From the beginning of
+the creation process,
+07:21 the app is able to
+intelligently rename images
+07:24 during imports and exports.
+07:27 This use case is
+enabled by Prompt API's
+07:29 multimodality support
+with image inputs.
+07:32 While editing
+assets, users often
+07:35 have to manage multiple
+layers in Photoshop.
+07:38 Using Prompt API, the app is
+now able to automatically rename
+07:41 unorganized layers as
+Actions in the Layers panel.
+07:45 And finally, the app generates
+a caption and hashtag
+07:49 for the direct-to-social
+sharing workflow.
+07:52 It's been exciting to see the
+different ways apps have used
+07:54 Prompt API to fully embrace
+on device GenAI for use
+07:57 cases such as translation,
+classification, user content
+08:01 inspiration, and much more.
+08:04 And since Prompt
+APIs initial launch
+08:06 last year, we've made a
+couple of key improvements
+08:08 to help you further
+productionize your use cases.
+08:12 Let's talk about
+the new APIs that
+08:13 make it easy for you to maximize
+performance and quality so you
+08:17 can ship your features to users.
+08:19 The first is Prefix Caching.
+08:22 Prefix Caching
+reduces inference time
+08:25 by storing and reusing
+the intermediate LLM
+08:27 state of processing a shared and
+recurring part of the prompt.
+08:32 For example, if a prompt
+contains a long prefix portion
+08:35 that's the same
+for every request,
+08:37 the Prefix Caching API
+can preprocess this
+08:40 to save overall inference time.
+08:42 To get a better idea of the
+efficiency prefix caching can
+08:45 provide, for most devices,
+inferences were, on average,
+08:48 two times faster for prompts
+with a 1,000 token fixed prefix
+08:52 and a 100 token dynamic suffix
+with prefix caching enabled.
+08:56 And on Pixel 9, it
+was four times faster.
+08:60 There are two ways to
+enable prefix caching,
+09:02 with automatic or
+manual cache management.
+09:05 With automatic cache
+management, the app
+09:07 is only required to define a
+shared portion of a prompt.
+09:11 Whereas, manual cache
+management gives apps
+09:14 more control on cache creation,
+querying, and deletion.
+09:18 For more information on how to
+enable prefix caching, including
+09:22 code samples and
+storage considerations,
+09:24 check out our official
+documentation.
+09:26 Next, to improve the accuracy
+when requesting specific output
+09:30 formats and ease the
+overall developer workflow,
+09:33 we've introduced
+Structured Output API.
+09:36 This API allows apps to
+define object classes
+09:39 to be returned as outputs
+from Prompt API requests.
+09:43 For example, imagine we want
+to implement a use case where
+09:46 we extract information
+from a short email
+09:49 to create a calendar event.
+09:51 Using prompting, we could craft
+a long prompt in plain English
+09:55 with specific
+instructions about details
+09:57 to extract from the email,
+such as the title, date,
+10:00 and location of the event,
+and include an example JSON
+10:03 object we want as the output.
+10:06 However, this approach
+is error prone
+10:08 and can return
+inconsistent results.
+10:11 The output may be an
+incomplete JSON object,
+10:13 or the returned
+JSON object may not
+10:15 have all the fields
+we requested.
+10:19 With structured
+output, we can now
+10:20 define a calendar event
+data object and use
+10:23 generateTypedContent when
+making an inference request.
+10:27 generateTypedContent will
+take a Kotlin data class
+10:30 marked as generable to
+better understand what
+10:32 the expected output should be.
+10:34 Inside the generable,
+you can further
+10:37 define guides to specify how
+each field in the data class
+10:40 should be generated.
+10:42 This approach with
+structured output
+10:44 reliably returns
+consistent results
+10:46 and makes code simpler
+with Kotlin data
+10:48 objects that
+integrate seamlessly
+10:50 into your Android codebase.
+10:53 To get started, visit the
+official documentation
+10:55 for using structured
+output with prompt API.
+10:59 Lastly, to remove the guesswork
+from prompt engineering,
+11:02 we introduced Automated
+Prompt Optimizer, or APO,
+11:06 targeting on-device models.
+11:08 APO is an advanced tool
+for developers seeking
+11:11 to maximize quality by utilizing
+a well-prepared evaluation set.
+11:15 It helps you automatically
+find the optimal
+11:17 prompt by taking
+the guesswork out
+11:19 of manual prompt engineering.
+11:22 Using server-side models,
+such as Gemini Pro and Flash,
+11:26 it proposes improved prompts,
+uses data sets and evaluation
+11:30 metrics you provide to
+measure variations in results,
+11:34 and finds the best prompt
+for your specific use case.
+11:36 To try out an early
+version APO, check out
+11:40 the official documentation
+on Vertex AI.
+11:43 Now that we've seen the ways
+ML Kit GenAI APIs can enable
+11:46 different use cases
+in your Android apps,
+11:49 let's hand it over to Erin.
+11:50 We'll dive into how
+LiteRT-LM can help
+11:52 you unlock even more use cases.
+11:57 ERIN WALSH: Thanks, Caren.
+11:58 ML Kit and AICore are incredible
+for getting AI features running
+12:02 out of the box.
+12:03 But what happens when
+you need a custom
+12:05 solution unique to your needs?
+12:08 What if you need to run a
+highly specialized model
+12:11 or maximize reach on a wide
+variety of Android hardware?
+12:16 Beginning a custom
+solution starts
+12:18 with choosing the best
+model for your use case.
+12:21 You may want to use an
+open-source model such as Gemma
+12:24 or bring your own.
+12:26 For the best
+Android performance,
+12:28 always use the smallest
+possible model that
+12:31 reliably solves your use case.
+12:34 We'll demonstrate fine tuning a
+specific task using Gemma 270M,
+12:39 a highly efficient
+270-million-parameter model.
+12:43 Let's imagine a
+real world scenario.
+12:46 Maybe you're building
+an agritech app
+12:48 for farmers in rural
+Maharashtra, India.
+12:51 Your backend provides
+agricultural insights
+12:54 and weather warnings in English.
+12:56 But you need to translate
+this information into Marathi
+12:59 so your users can
+actually understand it.
+13:02 You need the model to
+capture the actual nuance
+13:05 of the language,
+specifically, the Varhadi
+13:07 dialect, local farming
+colloquialisms,
+13:10 and regional slang.
+13:11 But it needs to run offline
+due to rural farms in regions
+13:14 with no connectivity.
+13:17 Gemma 270M can solve this.
+13:20 But it will perform much
+better if we fine-tune it
+13:22 for this exact dialect.
+13:25 Start by curating
+a specialized data
+13:27 set, or grab a conversational
+English to Marathi data
+13:31 set publicly available
+on Hugging Face
+13:33 that provides the model with
+thousands of paired sentences.
+13:38 You can fine tune directly
+in a Google Colab notebook.
+13:41 Using community tools like the
+Hugging Face TRL library and SFT
+13:45 Trainer, you load
+your regional data
+13:47 set and train the
+model until it reliably
+13:49 generates accurate,
+localized translations.
+13:53 Once your model speaks
+the local dialect,
+13:56 convert and quantize the
+model into a format optimized
+13:59 for the constraints
+of mobile hardware
+14:01 using the LiteRT-LM
+command-line tool.
+14:05 This tool transforms
+your fine-tuned model
+14:07 and converts it directly into
+the LiteRT-LM file format.
+14:11 Check out the LiteRT-LM
+CLI documentation
+14:14 for more information on
+how to convert your model.
+14:17 When you are ready to integrate
+your custom, LiteRT-LM model
+14:20 into your own app, you
+can use the LiteRT-LM API
+14:24 to manage sessions and run
+inference natively in Kotlin.
+14:28 First, you initialize the
+engine with your model path
+14:31 and preferred hardware
+backend like CPU, GPU, or NPU,
+14:36 and load your model
+in the background.
+14:38 From there, you instantiate
+a conversation object
+14:42 which automatically manages
+the context window and chat
+14:45 history for you.
+14:46 Finally, to give your users that
+fast-typing-effect experience,
+14:51 you can use sendMessageAsync.
+14:54 This returns a calling
+flow, allowing you
+14:56 to stream tokens
+directly to your UI
+14:59 as the model generates them.
+15:01 Getting your model up and
+running on your own developer
+15:04 phone is a huge one, but how
+do you guarantee your custom
+15:08 model will run smoothly
+across the ecosystem,
+15:11 even on older devices?
+15:13 The Google AI Edge
+portal automates this
+15:16 by benchmarking
+your LiteRT-LM file
+15:18 across a fleet of over 100
+real, physical Android devices
+15:22 hosted in Google's labs.
+15:24 So then you can see
+how your model performs
+15:26 across all these devices before
+you ever even hit production.
+15:31 Even though we are using Gemma
+270M as an example today,
+15:35 it is important to note that
+this flow with Google AI Edge
+15:37 works for any open model.
+15:41 And to recap, when you need
+a truly custom experience,
+15:44 like an offline translator
+for regional dialects,
+15:47 Google AI Edge and
+LiteRT-LM are your solution.
+15:51 And by packaging your fine-tuned
+models in the LiteRT-LM format,
+15:54 you reach beyond
+the newest devices,
+15:57 scaling to a broader
+and more diverse
+15:58 range of Android devices.
+16:01 If you're ready to get hands-on,
+we have three great resources
+16:05 for you to check out.
+16:06 To learn how to train
+your own custom models,
+16:09 head over to the Gemma Cookbook.
+16:11 When you're ready to drop
+those models into your app,
+16:14 the Google AI Edge
+documentation has
+16:16 everything you need,
+from API references
+16:19 to performance evaluation tools.
+16:21 And if you just want to
+dig straight into the code
+16:24 and test out different
+open-source models today,
+16:27 download the AI Edge gallery
+app on the Play Store
+16:30 or fork it on GitHub.
+16:33 CAREN CHANG: We hope
+this overview gives you
+16:35 more confidence when
+implementing on-device GenAI
+16:38 with ML Kit GenAI APIs for the
+majority of turnkey solutions
+16:42 and LiteRT-LM for more
+customized use cases.
+16:46 We're excited to see
+the different ways
+16:47 you will bring on-device
+GenAI to your Android apps.
+16:50 Check out the resources linked
+in the video description
+16:53 below on everything covered
+in this talk to get started.
+16:55 [MUSIC PLAYING]

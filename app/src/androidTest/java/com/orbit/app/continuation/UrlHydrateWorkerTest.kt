@@ -250,6 +250,10 @@ class UrlHydrateWorkerTest {
         override fun callLlmGateway(
             request: com.orbit.app.net.ipc.LlmGatewayRequestParcel?
         ): com.orbit.app.net.ipc.LlmGatewayResponseParcel? = null
+
+        override fun callMemoryGateway(
+            request: com.orbit.app.net.ipc.MemoryGatewayRequestParcel?
+        ): com.orbit.app.net.ipc.MemoryGatewayResponseParcel? = null
     }
 
     private class FakeLlm(private val text: String) : LlmProvider {

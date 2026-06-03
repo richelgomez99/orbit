@@ -21,6 +21,29 @@ interface IntentEnvelopeDao {
     @Query(
         """
         SELECT * FROM intent_envelope
+        WHERE deletedAt IS NULL
+          AND isDeleted = 0
+          AND isArchived = 0
+          AND (
+            textContent LIKE '%' || :query || '%' COLLATE NOCASE
+            OR intent LIKE '%' || :query || '%' COLLATE NOCASE
+            OR appCategory LIKE '%' || :query || '%' COLLATE NOCASE
+            OR sourceAppLabel LIKE '%' || :query || '%' COLLATE NOCASE
+            OR EXISTS (
+              SELECT 1 FROM envelope_note AS note
+              WHERE note.envelopeId = intent_envelope.id
+                AND note.text LIKE '%' || :query || '%' COLLATE NOCASE
+            )
+          )
+        ORDER BY createdAt DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun searchActive(query: String, limit: Int): List<IntentEnvelopeEntity>
+
+    @Query(
+        """
+        SELECT * FROM intent_envelope
         WHERE activePrimaryCanonicalUrlHash = :hash
           AND deletedAt IS NULL
           AND isDeleted = 0

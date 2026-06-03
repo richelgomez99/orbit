@@ -1,0 +1,479 @@
+00:00 [MUSIC PLAYING]
+00:07 JOSH HALE: Hi.
+00:07 My name is Josh Hale.
+00:09 I'm a Product Manager here
+at Google working on Android.
+00:12 Android is a powerful
+operating system
+00:14 across many types of devices.
+00:16 Android apps can now run on
+a variety of different form
+00:19 factors, from
+foldables and tablets
+00:21 to Chromebooks and
+full desktop setups.
+00:24 This isn't just
+about bigger screens.
+00:26 It's about desktop-class power.
+00:28 By optimizing for
+these form factors,
+00:30 you're not just resizing an app.
+00:32 You're unlocking completely
+new ways for users
+00:35 to create, work, and play.
+00:37 Users on these
+larger screens are
+00:39 looking for apps that
+really take advantage
+00:41 of the extra real estate.
+00:43 They expect more than just
+a stretched-out phone app--
+00:47 apps that feel natural
+with a keyboard and mouse,
+00:50 handle window resizing
+smoothly, and help
+00:53 users be more
+productive or get more
+00:55 immersed in what they're doing.
+00:58 Meeting your users'
+expectations,
+01:00 both in terms of features
+and user experience,
+01:03 is what we mean by
+desktop-class apps.
+01:06 Building these
+kinds of experiences
+01:08 used to need some extra work.
+01:10 So we've been working hard to
+offer more features built-in,
+01:13 giving you the tools
+and guidance you need.
+01:17 Of course, a great desktop-class
+app isn't just about code.
+01:21 It's also about design.
+01:23 So we've also put together
+new design guidelines
+01:25 for the desktop.
+01:27 These guidelines, full of
+practical tips and examples,
+01:30 will help you think through
+how to best use the space,
+01:33 create intuitive navigation,
+and design interactions
+01:37 that feel right with a pointer,
+like hover effects and context
+01:40 menus.
+01:41 Second, we're rolling out our
+new desktop developer guidelines
+01:44 for developers building
+on AOSP technology.
+01:47 Think of these as the playbook
+for building top-tier apps
+01:50 for larger screens.
+01:52 We're talking about best
+practices for things
+01:54 like making sure
+your app is a joy
+01:56 to use with keyboard and mouse,
+supporting drag and drop,
+01:60 handling multiple windows,
+and all those other details
+02:03 that make an app feel
+truly polished at home
+02:05 in a desktop environment.
+02:07 We know testing across all these
+different devices can be tough.
+02:10 That's why we're launching a
+brand new desktop emulator.
+02:13 You can grab it right
+now in Android Studio.
+02:17 This emulator gives you a full
+desktop environment to test in.
+02:20 You can see how your app
+behaves in freeform windows,
+02:23 make sure your keyboard
+and mouse support is solid,
+02:26 and even test with
+connected displays.
+02:28 This should make it so much
+easier to build and iterate
+02:31 on your desktop-class
+apps without needing
+02:33 a physical device
+for every scenario.
+02:35 We genuinely can't wait to see
+the amazing apps you'll build.
+02:38 I will now hand
+this over to Jason
+02:40 to talk more about
+the design guidelines.
+02:42 [MUSIC PLAYING]
+02:45 JASON YAN: Thank you, Josh.
+02:46 In this era of
+Android development,
+02:49 designing for mobile
+and then retrofitting
+02:51 to other form factors is no
+longer the best strategy.
+02:55 Thinking thoroughly about
+desktop environments
+02:57 during your design
+stage will make
+02:60 sure your app is ready
+to deliver a fully
+03:02 desktop-class experience.
+03:04 Keep in mind, user
+experience not only
+03:06 means resizing the
+UI without losing
+03:08 functionality and
+visual integrity,
+03:11 but also how users
+interact with your app
+03:14 through touch,
+mouse, and keyboard.
+03:16 Let's talk about
+some basic tricks
+03:18 to achieve the best desktop
+experiences for your app.
+03:21 First, instead of designing
+for device screens,
+03:24 you should think
+of window sizes.
+03:27 Window is the actual
+screen area that your app
+03:29 will be rendered in.
+03:31 It includes full
+screen and split screen
+03:33 on all devices and
+freeform windows
+03:36 on tablets and
+connected displays.
+03:39 Android provides a set of
+opinionated breakpoints
+03:42 called window size classes.
+03:44 We use these classes throughout
+developer and design guidelines
+03:48 to help you make
+layout adjustments.
+03:51 For more information, visit
+the link on the screen.
+03:54 When window size increases,
+first look for opportunities
+03:58 to ship content segments
+into multiple columns
+04:01 so that users can see more
+content without scrolling.
+04:05 On top of rearranging
+the content,
+04:07 consider the following
+fine adjustments as well.
+04:11 Use graceful,
+progressive disclosure
+04:13 to show more content that
+may be hidden behind clicks
+04:16 in smaller windows.
+04:18 Desktop users expect a denser
+UI that shows more content
+04:22 and tools in a persistent way.
+04:25 Scale up the typography
+to compensate
+04:27 for the longer viewing
+distance of a desktop setup.
+04:31 Android will try to set a
+good default display size,
+04:34 but opinionated
+adjustments can be
+04:36 made in your designs for
+more editorial quality.
+04:39 Setting maximum content width to
+prevent distorting or stretching
+04:43 it across the entire screen.
+04:46 Limit short-form copy
+to around 60 characters,
+04:50 while long-form
+content can run longer.
+04:54 The large screen
+real estate also
+04:56 means that you can flatten your
+app structure using a layout
+04:59 container we call panes.
+05:02 Just like panes of
+glass that make up
+05:04 a window in the
+real world, panes
+05:07 can make up the body region of
+the layout in your app window.
+05:12 Panes can make your app's
+navigation more efficient.
+05:15 You can put things side by side
+to show supporting content that
+05:19 might be overlaid on top of
+the main view or content that
+05:22 requires navigating deeper into
+the app in smaller windows.
+05:27 Speaking of navigation,
+if the bottom navigation
+05:30 bar is in use in small
+windows, update it
+05:33 to a navigation rail to the
+side of the window for increased
+05:36 ergonomics when the window
+size class is medium and above.
+05:41 Consider the expanded
+rail to review labels
+05:44 in extra-large windows.
+05:48 A well-crafted,
+responsive layout
+05:50 ensures your app looks great
+for desktop experiences.
+05:54 But to make sure your
+app feels desktop-class,
+05:57 you need to design for
+desktop input types
+05:59 like mice, trackpads,
+and physical keyboards.
+06:03 This means not only being
+compatible, but also
+06:06 taking full advantage of
+their unique characteristics.
+06:10 For mice and trackpads,
+being compatible
+06:13 means that you can
+click everything
+06:14 that can be tapped on, and
+appropriate hover states
+06:17 are shown to indicate
+the click targets.
+06:21 But there's a lot more can do to
+further polish the experience.
+06:25 Here are a few of them.
+06:28 You can show
+different cursor icons
+06:30 to more clearly indicate the
+functionality of the underlying
+06:33 element, such as an I-beam
+to indicate selectable text.
+06:38 Use secondary click
+pointer devices,
+06:41 right-clicking on a mouse
+or two-finger tapping
+06:43 on a trackpad, to reveal
+contextual options that
+06:47 are usually triggered
+by long-press
+06:49 or swiping gestures
+on a touchscreen.
+06:52 Use the cursor hover events
+to provide convenient access
+06:56 to complementary actions
+without overcrowding the UI.
+07:01 Regarding physical
+keyboard support,
+07:03 full compatibility requires
+that every interactive component
+07:07 within your application is
+accessible via the Tab or arrow
+07:11 keys.
+07:12 Once reached, users must be able
+to trigger these elements using
+07:16 the Enter or Space keys, while a
+clear and distinct focused style
+07:21 provides visual confirmation
+of the current selection.
+07:25 To make the keyboard an even
+bigger productivity booster,
+07:28 support standard
+shortcuts like Control-C
+07:31 and Control-V for copy
+pasting or any custom
+07:34 shortcuts that help get things
+done faster in your app.
+07:37 Follow the link on the screen
+for keyboard documentations.
+07:41 That was a quick walkthrough
+of a design process
+07:44 that incorporates desktop
+experience from the start.
+07:47 I will now hand this
+over to Francesco
+07:49 to talk more about APIs
+and developer tools
+07:52 that can help you
+implement these designs.
+07:55 [MUSIC PLAYING]
+07:57 FRANCESCO ROMANO:
+Thank you, Jason.
+07:59 When users open your app in
+a desktop-like environment,
+08:02 they expect the
+same capabilities
+08:04 they rely on everywhere else.
+08:07 Your app is an entry point to
+creativity and productivity,
+08:12 and users want to
+think about their work,
+08:15 not about the platform
+they're using.
+08:18 Let's see some of the
+modern tools and APIs
+08:21 that Android provides to create
+amazing desktop experiences.
+08:25 Jetpack Compose excels
+at creating adaptive apps
+08:29 because its declarative,
+state-driven architecture
+08:33 dynamically recomposes the UI to
+seamlessly fit any window size.
+08:39 Together with the window size
+classes, and Navigation 3,
+08:43 developers can
+easily build layouts
+08:45 that shine in
+different form factors.
+08:48 Under the hood, the function
+merges different heuristics,
+08:52 such as display size and
+availability of input devices
+08:57 to provide an opinionated
+signal to update the interface.
+09:01 This is important because,
+when we design for the desktop,
+09:04 our apps look
+fundamentally different.
+09:09 A true desktop app assumes an
+expansive canvas from day one.
+09:13 Instead of hiding features
+behind deep navigation stacks,
+09:17 it prioritizes
+high-information density.
+09:21 You embrace persistent toolbars,
+floating palettes, docker
+09:26 panels, and contextual menus.
+09:28 You bring the full,
+uncompromised power
+09:31 of a workstation.
+09:32 However, creating a great
+UI is only the first step.
+09:37 To build a true
+desktop experience,
+09:40 your app must behave like
+a first-class citizen
+09:43 in a desktop ecosystem.
+09:45 This starts with input.
+09:48 Jetpack Compose
+simplifies input support
+09:51 by providing built-in
+declarative modifiers and focus
+09:55 management to handle
+hardware events
+09:58 alongside traditional touch.
+10:01 Compose 1.11 significantly
+improved trackpad support.
+10:06 Trackpad events
+will now generally
+10:09 be considered PointerType.Mouse
+events instead
+10:12 of PointerType.Touch,
+aligning mouse and trackpad
+10:17 behavior to better
+match user expectations.
+10:21 It also added support for more
+complicated trackpad gestures,
+10:25 such as two-finger
+swipes and pinches.
+10:30 Finally, it introduced
+new testing APIs
+10:33 with the
+performTrackpadInput to help
+10:36 you validate the
+behavior of your apps
+10:38 when being used with trackpad.
+10:40 Another important aspect
+is that desktop workflows
+10:43 are inherently interconnected.
+10:46 Users don't work in silos.
+10:49 For example, you
+should implement
+10:51 rich drag-and-drop support
+for text and images
+10:55 so you can break down
+the walls around your app
+10:58 and allow it to participate in
+the broader desktop workflow.
+11:02 Next, consider
+how users operate.
+11:06 On a phone, one task
+at a time is the norm.
+11:09 In a desktop-like
+environment, users
+11:12 may want to open two
+different documents
+11:14 side by side to compare them.
+11:17 If your app only supports
+a single instance,
+11:20 you are bottlenecking
+their productivity.
+11:23 The architectural
+strategy here is
+11:25 to configure your app to
+support multiple instances.
+11:29 Architect your state management
+so two completely separate
+11:33 windows of your app
+can run concurrently,
+11:36 pulling from the
+same data source
+11:38 without overwriting
+each other's state.
+11:42 This shift in mindset completely
+changes your default feature
+11:47 set.
+11:49 Think about an editor app.
+11:52 On a phone, the app is
+typically consumption first.
+11:56 The formatting flows are hidden
+to maximize the limited screen
+11:60 real estate, so you
+can read easily.
+12:04 If you want to edit, you
+have to explicitly tap
+12:07 an Edit button to change modes.
+12:10 But on the desktop, the
+assumption is creation first.
+12:15 The moment you open a document,
+your cursor is already blinking
+12:18 in the editor.
+12:21 The full suite of tools is laid
+out for quick, one-click access.
+12:26 The default state is optimized
+for immediate, friction-free
+12:31 productivity.
+12:32 The beauty of this
+desktop vision
+12:34 is that it integrates seamlessly
+with the Android technology.
+12:39 Even when a user starts a task
+on the Go with their phone,
+12:43 android allows them to bring
+that context into their desktop
+12:47 like environment to finish the
+job with the powerful tools they
+12:51 need.
+12:51 We are entering an era
+where the boundaries
+12:55 between mobile and
+desktop are disappearing.
+12:58 By embracing adaptive panes,
+respecting desktop input
+13:02 paradigms, and supporting
+multi-window functionalities,
+13:06 you are not just
+building an Android app.
+13:09 You are building a productivity
+tool for a variety of devices.
+13:13 Start making
+incredible experiences.
+13:16 Thank you, and enjoy
+the rest of I/O.
+13:18 [MUSIC PLAYING]

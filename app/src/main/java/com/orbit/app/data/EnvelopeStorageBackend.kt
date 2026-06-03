@@ -142,6 +142,8 @@ interface EnvelopeStorageBackend {
 
     suspend fun getEnvelope(id: String): IntentEnvelopeEntity?
 
+    suspend fun searchActiveEnvelopes(query: String, limit: Int): List<IntentEnvelopeEntity> = emptyList()
+
     suspend fun getLatestNoteForEnvelope(envelopeId: String): EnvelopeNoteEntity? = null
 
     suspend fun createOrUpdateLatestNote(note: EnvelopeNoteEntity) {
