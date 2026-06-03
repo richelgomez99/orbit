@@ -3,12 +3,20 @@ import { ErrorCodes, UnauthorizedError, UNAUTHORIZED_MESSAGES } from "./lib/erro
 import { errorResponse, wireResponse } from "./lib/response.js";
 import { MemoryGatewayRequestSchema } from "./lib/schemas.js";
 import {
+  embeddingInputFor,
+  findStaleEmbeddingItems,
+  markMemoryItemEmbedded,
+  markMemoryItemEmbeddingFailed,
   memoryCollection,
   memoryHealthReport,
   searchMemoryItems,
+  semanticSearchMemoryItems,
   tombstoneMemoryItem,
   upsertMemoryItem,
 } from "./lib/atlas.js";
+import { embedText } from "./lib/embeddings.js";
+import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL_LABEL } from "./lib/embeddingPolicy.js";
+import { buildGroundedAskAnswer } from "./lib/groundedAsk.js";
 import type {
   AskOrbitAnswer,
   MemoryGatewayRequest,
@@ -103,6 +111,61 @@ async function dispatch(
         results,
       };
     }
+    case "memory_embed_stale": {
+      const collection = await memoryCollection();
+      const items = await findStaleEmbeddingItems(collection, userId, req.payload.limit ?? 50);
+      let embedded = 0;
+      let skipped = 0;
+      let failed = 0;
+      for (const item of items) {
+        const input = embeddingInputFor(item);
+        if (!input.text.trim() || req.payload.dryRun) {
+          skipped++;
+          continue;
+        }
+        try {
+          const result = await embedText(input.text);
+          await markMemoryItemEmbedded(collection, userId, item, result.vector, input.hash, Date.now());
+          embedded++;
+        } catch {
+          await markMemoryItemEmbeddingFailed(collection, userId, item, "EMBEDDING_PROVIDER_UNAVAILABLE", Date.now());
+          failed++;
+        }
+      }
+      return {
+        type: "memory_embed_stale_response",
+        requestId: req.requestId,
+        embedded,
+        skipped,
+        failed,
+        modelLabel: EMBEDDING_MODEL_LABEL,
+        dimensions: EMBEDDING_DIMENSIONS,
+      };
+    }
+    case "memory_semantic_search": {
+      const collection = await memoryCollection();
+      let queryVector: number[] | null = null;
+      if (req.payload.mode !== "lexical_only") {
+        try {
+          queryVector = (await embedText(req.payload.query)).vector;
+        } catch {
+          queryVector = null;
+        }
+      }
+      const results = await semanticSearchMemoryItems(
+        collection,
+        userId,
+        req.payload.query,
+        queryVector,
+        req.payload.filters,
+        req.payload.limit ?? 10,
+      );
+      return {
+        type: "memory_semantic_search_response",
+        requestId: req.requestId,
+        results,
+      };
+    }
     case "memory_ask": {
       const collection = await memoryCollection();
       const results = await searchMemoryItems(
@@ -116,6 +179,32 @@ async function dispatch(
         type: "memory_ask_response",
         requestId: req.requestId,
         answer: buildExtractiveAnswer(req.payload.question, results),
+      };
+    }
+    case "memory_grounded_ask": {
+      const collection = await memoryCollection();
+      let queryVector: number[] | null = null;
+      try {
+        queryVector = (await embedText(req.payload.question)).vector;
+      } catch {
+        queryVector = null;
+      }
+      const results = await semanticSearchMemoryItems(
+        collection,
+        userId,
+        req.payload.question,
+        queryVector,
+        req.payload.filters,
+        req.payload.limit ?? 5,
+      );
+      return {
+        type: "memory_grounded_ask_response",
+        requestId: req.requestId,
+        answer: await buildGroundedAskAnswer(
+          req.payload.question,
+          results,
+          req.payload.allowSynthesis ?? false,
+        ),
       };
     }
     case "memory_health": {

@@ -76,6 +76,27 @@ class MemoryAudit(
         ),
     )
 
+    fun semanticSearchRequested(
+        requestId: String,
+        query: String,
+        resultCount: Int,
+        latencyMs: Long,
+        outcome: String,
+        retrievalMode: String = "hybrid",
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_SEARCH_REQUESTED,
+        description = "Semantic memory search requested",
+        extraJson = extras(
+            endpoint = "semantic_search",
+            requestId = requestId,
+            queryDigest = sha256(query),
+            resultCount = resultCount,
+            latencyMs = latencyMs,
+            outcome = outcome,
+            extra = mapOf("retrievalMode" to retrievalMode),
+        ),
+    )
+
     fun askRequested(
         requestId: String,
         question: String,
@@ -92,6 +113,76 @@ class MemoryAudit(
             resultCount = resultCount,
             latencyMs = latencyMs,
             outcome = outcome,
+        ),
+    )
+
+    fun groundedAskRequested(
+        requestId: String,
+        question: String,
+        citationCount: Int,
+        candidateCount: Int,
+        latencyMs: Long,
+        outcome: String,
+        answerStatus: String,
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_ASK_REQUESTED,
+        description = "Grounded Ask Orbit memory request",
+        extraJson = extras(
+            endpoint = "grounded_ask",
+            requestId = requestId,
+            queryDigest = sha256(question),
+            resultCount = citationCount,
+            latencyMs = latencyMs,
+            outcome = outcome,
+            extra = mapOf(
+                "answerStatus" to answerStatus,
+                "candidateCount" to candidateCount,
+            ),
+        ),
+    )
+
+    fun embeddingUpdated(
+        requestId: String,
+        envelopeId: String,
+        compactInputForDigest: String,
+        embeddingModel: String,
+        dimensions: Int,
+        latencyMs: Long,
+        outcome: String = "success",
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_INDEX_UPSERTED,
+        description = "Memory embedding updated",
+        envelopeId = envelopeId,
+        extraJson = extras(
+            endpoint = "embed",
+            requestId = requestId,
+            envelopeId = envelopeId,
+            payloadDigest = sha256(compactInputForDigest),
+            latencyMs = latencyMs,
+            outcome = outcome,
+            extra = mapOf(
+                "embeddingModel" to embeddingModel,
+                "dimensions" to dimensions,
+            ),
+        ),
+    )
+
+    fun fallbackUsed(
+        requestId: String,
+        endpoint: String,
+        reason: String,
+        resultCount: Int,
+        latencyMs: Long,
+    ): AuditLogEntryEntity = writer.build(
+        action = AuditAction.MEMORY_SEARCH_REQUESTED,
+        description = "Memory local fallback used",
+        extraJson = extras(
+            endpoint = endpoint,
+            requestId = requestId,
+            resultCount = resultCount,
+            latencyMs = latencyMs,
+            outcome = "local_fallback",
+            extra = mapOf("reason" to reason),
         ),
     )
 
@@ -142,7 +233,7 @@ class MemoryAudit(
         latencyMs: Long? = null,
         outcome: String,
         errorKind: String? = null,
-        extra: Map<String, String> = emptyMap(),
+        extra: Map<String, Any> = emptyMap(),
     ): String {
         val json = JSONObject()
             .put("provider", PROVIDER)

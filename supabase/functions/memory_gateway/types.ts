@@ -3,6 +3,9 @@ export type MemoryRequestType =
   | "memory_tombstone"
   | "memory_search"
   | "memory_ask"
+  | "memory_embed_stale"
+  | "memory_semantic_search"
+  | "memory_grounded_ask"
   | "memory_health";
 
 export interface MemoryEvidenceSnippet {
@@ -39,6 +42,13 @@ export interface MemoryIndexItem extends MemoryIndexItemInput {
   userId: string;
   updatedAtMillis: number;
   tombstonedAt?: number | null;
+  embedding?: number[];
+  embeddingModel?: string;
+  embeddingDimensions?: number;
+  embeddingInputHash?: string;
+  embeddedAtMillis?: number;
+  embeddingStatus?: "none" | "ready" | "failed" | "stale" | "disabled";
+  embeddingErrorCode?: string;
 }
 
 export interface MemoryUpsertRequest {
@@ -74,6 +84,29 @@ export interface MemorySearchRequest {
   };
 }
 
+export type SemanticSearchMode = "hybrid" | "vector_only" | "lexical_only";
+export type RetrievalMode = SemanticSearchMode | "local_fallback";
+
+export interface MemoryEmbedStaleRequest {
+  type: "memory_embed_stale";
+  requestId: string;
+  payload: {
+    limit?: number;
+    dryRun?: boolean;
+  };
+}
+
+export interface MemorySemanticSearchRequest {
+  type: "memory_semantic_search";
+  requestId: string;
+  payload: {
+    query: string;
+    filters?: MemorySearchFilters;
+    limit?: number;
+    mode?: SemanticSearchMode;
+  };
+}
+
 export interface MemoryAskRequest {
   type: "memory_ask";
   requestId: string;
@@ -81,6 +114,17 @@ export interface MemoryAskRequest {
     question: string;
     filters?: MemorySearchFilters;
     limit?: number;
+  };
+}
+
+export interface MemoryGroundedAskRequest {
+  type: "memory_grounded_ask";
+  requestId: string;
+  payload: {
+    question: string;
+    filters?: MemorySearchFilters;
+    limit?: number;
+    allowSynthesis?: boolean;
   };
 }
 
@@ -95,12 +139,21 @@ export type MemoryGatewayRequest =
   | MemoryTombstoneRequest
   | MemorySearchRequest
   | MemoryAskRequest
+  | MemoryEmbedStaleRequest
+  | MemorySemanticSearchRequest
+  | MemoryGroundedAskRequest
   | MemoryHealthRequest;
 
 export interface MemorySearchResult {
   envelopeId: string;
   rank: number;
   score: number;
+  semanticScore?: number;
+  lexicalScore?: number;
+  contextScore?: number;
+  recencyScore?: number;
+  retrievalMode?: RetrievalMode;
+  embeddingModel?: string;
   title?: string;
   summary?: string;
   dayLocal: string;
@@ -121,11 +174,18 @@ export interface Citation {
 }
 
 export interface AskOrbitAnswer {
-  status: "answered" | "insufficient_evidence";
+  status:
+    | "answered"
+    | "insufficient_evidence"
+    | "sensitive_refusal"
+    | "provider_unavailable";
   answer: string;
   citations: Citation[];
   candidates: MemorySearchResult[];
-  modelLabel: "deterministic/extractive";
+  modelLabel: string;
+  retrievalMode?: RetrievalMode;
+  confidence?: number;
+  limitations?: string[];
 }
 
 export interface MemoryHealthReport {
@@ -161,7 +221,26 @@ export type MemoryGatewaySuccessResponse =
       results: MemorySearchResult[];
     }
   | {
+      type: "memory_embed_stale_response";
+      requestId: string;
+      embedded: number;
+      skipped: number;
+      failed: number;
+      modelLabel: string;
+      dimensions: number;
+    }
+  | {
+      type: "memory_semantic_search_response";
+      requestId: string;
+      results: MemorySearchResult[];
+    }
+  | {
       type: "memory_ask_response";
+      requestId: string;
+      answer: AskOrbitAnswer;
+    }
+  | {
+      type: "memory_grounded_ask_response";
       requestId: string;
       answer: AskOrbitAnswer;
     }
@@ -178,6 +257,11 @@ export interface MemoryGatewayErrorResponse {
     | "UNAUTHORIZED"
     | "VALIDATION_FAILED"
     | "ATLAS_UNAVAILABLE"
+    | "EMBEDDING_PROVIDER_UNAVAILABLE"
+    | "VECTOR_INDEX_UNAVAILABLE"
+    | "VECTOR_DIMENSION_MISMATCH"
+    | "SEMANTIC_SEARCH_UNAVAILABLE"
+    | "GROUNDED_ASK_UNAVAILABLE"
     | "NOT_FOUND"
     | "INSUFFICIENT_EVIDENCE"
     | "INTERNAL";

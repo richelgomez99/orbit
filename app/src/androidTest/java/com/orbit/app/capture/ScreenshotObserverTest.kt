@@ -185,6 +185,7 @@ class ScreenshotObserverTest {
         override fun countArchived(): Int = error("unused")
         override fun countDeleted(): Int = error("unused")
         override fun existsPriorIntent(appCategory: String, intent: String): Boolean = error("unused")
+        override fun getUrlHydrationContext(envelopeId: String): String? = error("unused")
         override fun completeUrlHydration(
             continuationId: String,
             envelopeId: String,

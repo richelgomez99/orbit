@@ -20,6 +20,13 @@ class EnvelopeCardSubtitleTest {
         assertTrue(subtitle.startsWith("from Video"))
     }
 
+    @Test
+    fun buildSubtitle_fallsBackToCategoryWhenSourceAppLabelIsIntentResolver() {
+        val subtitle = buildSubtitle(envelope(appCategory = "UNKNOWN_SOURCE", sourceAppLabel = "IntentResolver"))
+
+        assertTrue(subtitle.startsWith("from an app"))
+    }
+
     private fun envelope(
         appCategory: String,
         sourceAppLabel: String?

@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.orbit.app.data.ipc.EnvelopeViewParcel
+import com.orbit.app.memory.SourceAppLabelDisplay
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.toIntentOrAmbiguous
 import com.orbit.app.memory.MemoryDisplayText
@@ -365,7 +366,7 @@ internal fun buildSubtitle(env: EnvelopeViewParcel): String {
     }
 }
 
-private fun String?.displayAppOrNull(): String? = this?.trim()?.takeIf { it.isNotBlank() }
+private fun String?.displayAppOrNull(): String? = SourceAppLabelDisplay.userFacingOrNull(this)
 
 private fun String?.orElse(fallback: String): String = this ?: fallback
 

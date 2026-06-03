@@ -8,7 +8,11 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test:watch": "vitest",
-    "demo:seed": "node scripts/seed-demo.mjs"
+    "demo:seed": "node scripts/seed-demo.mjs",
+    "vector:index": "node scripts/create-vector-index.mjs",
+    "memory:embed-stale": "node scripts/embed-stale.mjs",
+    "eval:retrieval": "node scripts/eval-retrieval.mjs",
+    "semantic:smoke": "node scripts/smoke-semantic.mjs"
   },
   "dependencies": {
     "jose": "^5.9.6",

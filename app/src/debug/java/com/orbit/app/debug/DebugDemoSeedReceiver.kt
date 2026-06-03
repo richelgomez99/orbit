@@ -29,13 +29,12 @@ class DebugDemoSeedReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 PrivacyPreferences(context.applicationContext).memoryIndexingEnabled = true
-                val seedRunLabel = "debug-seed-${System.currentTimeMillis()}"
                 val seeded = withRepository(context.applicationContext) { repo ->
                     DEMO_ITEMS.map { item ->
-                        repo.sealWithResult(item.toDraft(seedRunLabel), item.toState()).envelopeId
+                        repo.sealWithResult(item.toDraft(), item.toState()).envelopeId
                     }
                 }
-                Log.i(TAG, "seeded demo envelopes count=${seeded.size}")
+                Log.i(TAG, "seeded demo envelopes count=${seeded.distinct().size}")
             } catch (t: Throwable) {
                 Log.w(TAG, "demo seed failed", t)
             } finally {
@@ -86,9 +85,9 @@ class DebugDemoSeedReceiver : BroadcastReceiver() {
         val appCategory: String,
         val sourceAppLabel: String,
     ) {
-        fun toDraft(seedRunLabel: String) = IntentEnvelopeDraftParcel(
+        fun toDraft() = IntentEnvelopeDraftParcel(
             contentType = "TEXT",
-            textContent = "$text\n\nSeed batch: $seedRunLabel.",
+            textContent = text,
             imageUri = null,
             intent = intent,
             intentConfidence = 0.96f,

@@ -124,6 +124,28 @@ class NanoSummariserTest {
     }
 
     @Test
+    fun `happy-path prompt carries compact url source and user context hints`() = runTest {
+        var capturedPrompt = ""
+        val provider = FakeProvider { p ->
+            capturedPrompt = p
+            SummaryResult("ok result here.", "en", LlmProvenance.LocalNano)
+        }
+
+        NanoSummariser(provider).summarise(
+            title = "Event page",
+            readableSlug = "Article body.",
+            finalUrl = "https://example.com/events/orbit",
+            sourceAppLabel = "Chrome",
+            userNote = "I saved this to decide whether to attend.",
+        )
+
+        assertTrue(capturedPrompt.contains("URL: https://example.com/events/orbit"))
+        assertTrue(capturedPrompt.contains("SOURCE APP: Chrome"))
+        assertTrue(capturedPrompt.contains("USER CONTEXT: I saved this to decide whether to attend."))
+        assertTrue(capturedPrompt.contains("CONTENT:"))
+    }
+
+    @Test
     fun `custom model label is stamped onto successful results`() = runTest {
         val provider = FakeProvider {
             SummaryResult("sentence one. sentence two.", "en", LlmProvenance.LocalNano)

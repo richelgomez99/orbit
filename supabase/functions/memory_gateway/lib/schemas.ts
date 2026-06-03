@@ -16,6 +16,7 @@ const COMPACT_TEXT_MAX = 1600;
 const QUERY_MAX = 500;
 const QUESTION_MAX = 1000;
 const LIMIT_MAX = 20;
+const EMBED_BATCH_LIMIT_MAX = 100;
 
 const BANNED_KEYS = new Set([
   "rawScreenshot",
@@ -29,7 +30,11 @@ const BANNED_KEYS = new Set([
   "auditLog",
   "accessToken",
   "refreshToken",
+  "apiKey",
+  "openaiApiKey",
+  "openai_api_key",
   "mongodbUri",
+  "embeddingProviderSecret",
 ]);
 
 function containsBannedKey(value: unknown): string | null {
@@ -118,6 +123,28 @@ const SearchRequestSchema = z.object({
   }).strict(),
 }).strict();
 
+const SemanticSearchModeSchema = z.enum(["hybrid", "vector_only", "lexical_only"]);
+
+const EmbedStaleRequestSchema = z.object({
+  type: z.literal("memory_embed_stale"),
+  requestId: RequestId,
+  payload: z.object({
+    limit: z.number().int().min(1).max(EMBED_BATCH_LIMIT_MAX).optional(),
+    dryRun: z.boolean().optional(),
+  }).strict(),
+}).strict();
+
+const SemanticSearchRequestSchema = z.object({
+  type: z.literal("memory_semantic_search"),
+  requestId: RequestId,
+  payload: z.object({
+    query: z.string().min(1).max(QUERY_MAX),
+    filters: FiltersSchema,
+    limit: z.number().int().min(1).max(LIMIT_MAX).optional(),
+    mode: SemanticSearchModeSchema.optional(),
+  }).strict(),
+}).strict();
+
 const AskRequestSchema = z.object({
   type: z.literal("memory_ask"),
   requestId: RequestId,
@@ -125,6 +152,17 @@ const AskRequestSchema = z.object({
     question: z.string().min(1).max(QUESTION_MAX),
     filters: FiltersSchema,
     limit: z.number().int().min(1).max(10).optional(),
+  }).strict(),
+}).strict();
+
+const GroundedAskRequestSchema = z.object({
+  type: z.literal("memory_grounded_ask"),
+  requestId: RequestId,
+  payload: z.object({
+    question: z.string().min(1).max(QUESTION_MAX),
+    filters: FiltersSchema,
+    limit: z.number().int().min(1).max(10).optional(),
+    allowSynthesis: z.boolean().optional(),
   }).strict(),
 }).strict();
 
@@ -139,6 +177,9 @@ export const MemoryGatewayRequestSchema = z.discriminatedUnion("type", [
   TombstoneRequestSchema,
   SearchRequestSchema,
   AskRequestSchema,
+  EmbedStaleRequestSchema,
+  SemanticSearchRequestSchema,
+  GroundedAskRequestSchema,
   HealthRequestSchema,
 ]).superRefine((value, ctx) => {
   const bannedKey = containsBannedKey(value);

@@ -17,6 +17,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.json.JSONObject
 import java.net.URI
 
 /**
@@ -63,7 +64,7 @@ class UrlHydrateWorker(
         val url = inputData.getString(ContinuationEngine.KEY_URL)
             ?: return Result.failure()
 
-        val outcome = runHydration(applicationContext, url)
+        val outcome = runHydration(applicationContext, url, envelopeId)
 
         // T066 completion — write-back through the :ml repository binder.
         // NETWORK_FETCH is emitted upstream by NetworkGatewayImpl (T063);
@@ -130,6 +131,13 @@ class UrlHydrateWorker(
         val failureReason: String?
     )
 
+    internal data class HydrationPromptContext(
+        val envelopeId: String,
+        val sourceAppLabel: String?,
+        val latestNote: String?,
+        val contentType: String?
+    )
+
     companion object {
         /**
          * Test seam — swap to a fake [INetworkGateway] factory in
@@ -156,6 +164,11 @@ class UrlHydrateWorker(
         internal var repositoryBinder: suspend (Context) -> IEnvelopeRepository? =
             ::bindRepositoryDefault
 
+        /** Test seam for compact :ml context used as URL-summary prompt hints. */
+        @Volatile
+        internal var hydrationContextProvider: suspend (Context, String) -> HydrationPromptContext? =
+            ::loadHydrationContextDefault
+
         /**
          * `errorKind` values from contracts/network-gateway-contract.md §4
          * that must NOT be retried — the URL is fundamentally unfetchable
@@ -176,7 +189,8 @@ class UrlHydrateWorker(
          */
         internal suspend fun runHydration(
             context: Context,
-            url: String
+            url: String,
+            envelopeId: String? = null
         ): HydrateOutcome {
             android.util.Log.i("UrlHydrate", "runHydration start url=$url")
             val gateway = gatewayBinder(context)
@@ -225,9 +239,17 @@ class UrlHydrateWorker(
                 "UrlHydrate",
                 "fetch ok title=${fetch.title?.take(60)} host=${fetch.canonicalHost} htmlLen=${fetch.readableHtml?.length}"
             )
+            val promptContext = envelopeId
+                ?.let { id -> runCatching { hydrationContextProvider(context, id) }.getOrNull() }
             val summariser = summariserFactory(context, gateway)
             val slug = fetch.readableHtml.orEmpty()
-            val summary = summariser.summarise(fetch.title, slug)
+            val summary = summariser.summarise(
+                title = fetch.title,
+                readableSlug = slug,
+                finalUrl = fetch.finalUrl,
+                sourceAppLabel = promptContext?.sourceAppLabel,
+                userNote = promptContext?.latestNote,
+            )
             android.util.Log.i(
                 "UrlHydrate",
                 "summary model=${summary?.model} text.len=${summary?.text?.length}"
@@ -244,6 +266,27 @@ class UrlHydrateWorker(
 
         const val FETCH_TIMEOUT_MS: Long = 10_000L
         private const val BIND_TIMEOUT_MS: Long = 5_000L
+
+        private suspend fun loadHydrationContextDefault(
+            context: Context,
+            envelopeId: String
+        ): HydrationPromptContext? {
+            val repo = repositoryBinder(context) ?: return null
+            val json = repo.getUrlHydrationContext(envelopeId) ?: return null
+            return parseHydrationContextJson(json)
+        }
+
+        private fun parseHydrationContextJson(json: String): HydrationPromptContext? {
+            val obj = runCatching { JSONObject(json) }.getOrNull() ?: return null
+            val envelopeId = obj.optString("envelopeId").trim().takeIf { it.isNotBlank() }
+                ?: return null
+            return HydrationPromptContext(
+                envelopeId = envelopeId,
+                sourceAppLabel = obj.optString("sourceAppLabel").trim().takeIf { it.isNotBlank() },
+                latestNote = obj.optString("latestNote").trim().takeIf { it.isNotBlank() },
+                contentType = obj.optString("contentType").trim().takeIf { it.isNotBlank() }
+            )
+        }
 
         /**
          * Default production binder. Same `ServiceConnection` pattern

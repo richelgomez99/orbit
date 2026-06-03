@@ -409,6 +409,33 @@ class EnvelopeRepositoryImpl(
         backend.getLatestNoteForEnvelope(envelopeId)?.text
     }
 
+    override fun getUrlHydrationContext(envelopeId: String): String? = runBlocking {
+        val envelope = backend.getEnvelope(envelopeId) ?: return@runBlocking null
+        val source = envelope.state.sourceAppLabel
+            ?.trim()
+            ?.take(MAX_HYDRATION_SOURCE_CHARS)
+            ?.takeIf { it.isNotBlank() }
+        val latestNote = backend.getLatestNoteForEnvelope(envelopeId)
+            ?.text
+            ?.trim()
+            ?.take(MAX_HYDRATION_NOTE_CHARS)
+            ?.takeIf { it.isNotBlank() }
+
+        JSONObject().apply {
+            put("envelopeId", envelope.id)
+            put("contentType", envelope.contentType.name)
+            put(
+                "caps",
+                JSONObject().apply {
+                    put("sourceAppLabel", MAX_HYDRATION_SOURCE_CHARS)
+                    put("latestNote", MAX_HYDRATION_NOTE_CHARS)
+                }
+            )
+            if (source != null) put("sourceAppLabel", source)
+            if (latestNote != null) put("latestNote", latestNote)
+        }.toString()
+    }
+
     override fun createOrUpdateLatestNote(envelopeId: String, text: String): Boolean {
         val clean = text.trim()
         if (clean.isBlank()) return false
@@ -1208,5 +1235,7 @@ class EnvelopeRepositoryImpl(
 
     companion object {
         const val UNDO_WINDOW_MS: Long = 10_000L
+        private const val MAX_HYDRATION_SOURCE_CHARS = 80
+        private const val MAX_HYDRATION_NOTE_CHARS = 300
     }
 }

@@ -13,7 +13,11 @@ import com.orbit.app.library.LibraryViewModel
 import com.orbit.app.memory.MemoryEvidenceSnippet
 import com.orbit.app.memory.MemorySearchFilters
 import com.orbit.app.memory.MemorySearchResult
-import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -22,6 +26,13 @@ class LibraryScreenTest {
 
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    private val scopes = mutableListOf<CoroutineScope>()
+
+    @After
+    fun tearDown() {
+        scopes.forEach { it.cancel() }
+    }
 
     @Test
     fun searchResultOpensLocalCapture() {
@@ -50,7 +61,7 @@ class LibraryScreenTest {
             )
         )
         val opened = mutableListOf<String>()
-        val viewModel = LibraryViewModel(repo, scopeOverride = TestScope())
+        val viewModel = LibraryViewModel(repo, scopeOverride = uiScope())
 
         composeRule.setContent {
             MaterialTheme {
@@ -78,6 +89,9 @@ class LibraryScreenTest {
         assertEquals(listOf("startup"), repo.queries)
         assertEquals(listOf("env-startup"), opened)
     }
+
+    private fun uiScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).also { scopes += it }
 
     private class FakeLibraryRepository(
         private val results: List<MemorySearchResult>,

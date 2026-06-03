@@ -13,7 +13,11 @@ import com.orbit.app.memory.AskOrbitCitation
 import com.orbit.app.memory.MemorySearchFilters
 import com.orbit.app.orbit.AskOrbitRepository
 import com.orbit.app.orbit.AskOrbitViewModel
-import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -23,10 +27,17 @@ class AskOrbitPanelTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
+    private val scopes = mutableListOf<CoroutineScope>()
+
+    @After
+    fun tearDown() {
+        scopes.forEach { it.cancel() }
+    }
+
     @Test
     fun citedAnswerOpensCapture() {
         val repo = FakeRepository(answer = answered())
-        val viewModel = AskOrbitViewModel(repo, scopeOverride = TestScope())
+        val viewModel = AskOrbitViewModel(repo, scopeOverride = uiScope())
         val opened = mutableListOf<String>()
 
         composeRule.setContent {
@@ -50,6 +61,35 @@ class AskOrbitPanelTest {
 
         assertEquals(listOf("env-1"), opened)
     }
+
+    @Test
+    fun sensitiveRefusalRendersAsGroundedRefusal() {
+        val repo = FakeRepository(answer = sensitiveRefusal())
+        val viewModel = AskOrbitViewModel(repo, scopeOverride = uiScope())
+
+        composeRule.setContent {
+            MaterialTheme {
+                AskOrbitPanel(
+                    viewModel = viewModel,
+                    onOpenCapture = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag(AskOrbitPanelTestTags.QUESTION).performTextInput("What is my passport number?")
+        composeRule.onNodeWithTag(AskOrbitPanelTestTags.SUBMIT).performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) { repo.questions.isNotEmpty() }
+
+        composeRule.onNodeWithTag(AskOrbitPanelTestTags.REFUSAL).assertIsDisplayed()
+        composeRule.onNodeWithText("Not enough saved evidence").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "I do not have a saved capture that explicitly contains that, so I will not guess.",
+            substring = true,
+        ).assertIsDisplayed()
+    }
+
+    private fun uiScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).also { scopes += it }
 
     private class FakeRepository(
         private val answer: AskOrbitAnswer,
@@ -81,5 +121,14 @@ class AskOrbitPanelTest {
         ),
         candidates = emptyList(),
         modelLabel = "test",
+    )
+
+    private fun sensitiveRefusal() = AskOrbitAnswer(
+        status = "sensitive_refusal",
+        answer = "I do not have a saved capture that explicitly contains that, so I will not guess. For sensitive details, Orbit only answers when the exact value is present in saved evidence.",
+        citations = emptyList(),
+        candidates = emptyList(),
+        modelLabel = "hybrid/sensitive-policy",
+        limitations = listOf("Capture or add the document first if you want Orbit to recall that detail later."),
     )
 }

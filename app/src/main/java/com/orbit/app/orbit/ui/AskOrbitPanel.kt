@@ -154,11 +154,7 @@ private fun AskAnswerView(
                 CitationRow(citation = citation, onOpenCapture = onOpenCapture)
             }
         } else {
-            Text(
-                text = answer.answer,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            RefusalBlock(answer)
             if (answer.candidates.isNotEmpty()) {
                 Text(
                     text = "Closest saved matches",
@@ -168,6 +164,44 @@ private fun AskAnswerView(
                 answer.candidates.take(3).forEach { candidate ->
                     CandidateRow(candidate = candidate, onOpenCapture = onOpenCapture)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RefusalBlock(answer: AskOrbitAnswer) {
+    val title = when (answer.status) {
+        "sensitive_refusal" -> "Not enough saved evidence"
+        "provider_unavailable" -> "Could not check the memory index"
+        else -> "No grounded answer yet"
+    }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = answer.answer,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            answer.limitations.firstOrNull()?.takeIf { it.isNotBlank() }?.let { limitation ->
+                Text(
+                    text = limitation,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

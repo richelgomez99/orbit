@@ -1,14 +1,28 @@
 package com.orbit.app.orbit
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
 import com.orbit.app.library.BinderLocalEnvelopeLookup
 import com.orbit.app.library.LocalEnvelopeLookup
 import com.orbit.app.memory.AskOrbitAnswer
 import com.orbit.app.memory.AskOrbitCitation
+import com.orbit.app.memory.MemoryGatewayRequest
+import com.orbit.app.memory.MemoryGatewayResponse
 import com.orbit.app.memory.MemorySearchFilters
 import com.orbit.app.memory.MemorySearchResult
+import com.orbit.app.net.NetworkGatewayService
+import com.orbit.app.net.ipc.INetworkGateway
+import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.IOException
+import java.util.UUID
 
 interface AskOrbitRepository {
     suspend fun ask(
@@ -19,9 +33,18 @@ interface AskOrbitRepository {
 }
 
 class BinderAskOrbitRepository(
-    context: Context?,
+    private val context: Context?,
     private val localEnvelopeLookup: LocalEnvelopeLookup = BinderLocalEnvelopeLookup(requireNotNull(context)),
+    private val requestIdFactory: () -> String = { UUID.randomUUID().toString() },
+    private val jsonCodec: Json = Json {
+        classDiscriminator = "type"
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    },
+    private val memoryGatewayCaller: (suspend (MemoryGatewayRequest) -> MemoryGatewayResponse)? = null,
 ) : AskOrbitRepository {
+    private var binder: INetworkGateway? = null
+    private var connection: ServiceConnection? = null
 
     override suspend fun ask(
         question: String,
@@ -31,6 +54,7 @@ class BinderAskOrbitRepository(
         val trimmed = question.trim()
         if (trimmed.isBlank()) return@withContext insufficientEvidence(emptyList())
         val cappedLimit = limit.coerceIn(1, 5)
+        requestGroundedAsk(trimmed, filters, cappedLimit)?.let { return@withContext it }
         val localResults = AskOrbitQueryText.queryVariants(trimmed)
             .flatMap { query -> localEnvelopeLookup.search(query, cappedLimit) }
             .distinctBy { it.envelopeId }
@@ -44,7 +68,72 @@ class BinderAskOrbitRepository(
     }
 
     fun disconnect() {
+        val conn = connection
+        val appContext = context
+        if (conn != null && appContext != null) {
+            runCatching { appContext.unbindService(conn) }
+            connection = null
+            binder = null
+        }
         (localEnvelopeLookup as? BinderLocalEnvelopeLookup)?.disconnect()
+    }
+
+    private suspend fun requestGroundedAsk(
+        question: String,
+        filters: MemorySearchFilters?,
+        limit: Int,
+    ): AskOrbitAnswer? {
+        return runCatching {
+            val request = MemoryGatewayRequest.GroundedAsk(
+                requestId = requestIdFactory(),
+                question = question,
+                filters = filters,
+                limit = limit,
+                allowSynthesis = true,
+            )
+            val decoded = memoryGatewayCaller?.invoke(request)
+                ?: run {
+                    if (context == null) return null
+                    val response = connect().callMemoryGateway(
+                        MemoryGatewayRequestParcel(
+                            jsonCodec.encodeToString(MemoryGatewayRequest.serializer(), request)
+                        )
+                    )
+                    jsonCodec.decodeFromString(MemoryGatewayResponse.serializer(), response.payloadJson)
+                }
+            when (decoded) {
+                is MemoryGatewayResponse.GroundedAskResponse -> decoded.answer.localBackedOrNull()
+                is MemoryGatewayResponse.Error -> null
+                else -> null
+            }
+        }.getOrNull()
+    }
+
+    private suspend fun AskOrbitAnswer.localBackedOrNull(): AskOrbitAnswer? =
+        AskOrbitGrounding.localBackedOrNull(this, localEnvelopeLookup)
+
+    private suspend fun connect(): INetworkGateway = withContext(Dispatchers.Main) {
+        binder?.let { return@withContext it }
+        val appContext = context ?: throw IOException("context unavailable")
+        val deferred = CompletableDeferred<INetworkGateway>()
+        val conn = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                val stub = INetworkGateway.Stub.asInterface(service)
+                binder = stub
+                deferred.complete(stub)
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                binder = null
+            }
+        }
+        connection = conn
+        val bound = appContext.bindService(Intent(appContext, NetworkGatewayService::class.java), conn, Context.BIND_AUTO_CREATE)
+        if (!bound) {
+            connection = null
+            throw IOException("bindService(NetworkGatewayService) failed")
+        }
+        deferred.await()
     }
 
     private fun buildLocalAnswer(results: List<MemorySearchResult>): AskOrbitAnswer {
@@ -83,6 +172,25 @@ class BinderAskOrbitRepository(
         modelLabel = "local/deterministic",
     )
 
+}
+
+internal object AskOrbitGrounding {
+    suspend fun localBackedOrNull(
+        answer: AskOrbitAnswer,
+        localEnvelopeLookup: LocalEnvelopeLookup,
+    ): AskOrbitAnswer? {
+        if (answer.status == "sensitive_refusal" || answer.status == "insufficient_evidence") return answer
+        val localCitations = answer.citations.filter { localEnvelopeLookup.exists(it.envelopeId) }
+        if (answer.status == "answered" && localCitations.isEmpty()) return null
+        val localCandidateIds = answer.candidates
+            .filter { localEnvelopeLookup.exists(it.envelopeId) }
+            .map { it.envelopeId }
+            .toSet()
+        return answer.copy(
+            citations = localCitations,
+            candidates = answer.candidates.filter { it.envelopeId in localCandidateIds },
+        )
+    }
 }
 
 internal object AskOrbitQueryText {

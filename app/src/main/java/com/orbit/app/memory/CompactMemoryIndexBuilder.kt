@@ -49,9 +49,13 @@ class CompactMemoryIndexBuilder {
             evidenceBundles = evidenceBundles
         )
 
+        val sourceAppLabel = SourceAppLabelDisplay.userFacingOrNull(envelope.state.sourceAppLabel)
+
         val compactText = listOfNotNull(
             title,
             summary,
+            MemoryPayloadCaps.cap(sourceAppLabel, MemoryPayloadCaps.TAG_MAX),
+            envelope.state.appCategory.name,
             latestResult?.domain,
             latestResult?.canonicalUrl,
             evidence.joinToString(" ") { it.excerpt.orEmpty() }
@@ -77,7 +81,7 @@ class CompactMemoryIndexBuilder {
             contentType = envelope.contentType.name.lowercase(),
             title = title,
             summary = summary,
-            sourceAppLabel = MemoryPayloadCaps.cap(envelope.state.sourceAppLabel, 128),
+            sourceAppLabel = MemoryPayloadCaps.cap(sourceAppLabel, 128),
             appCategory = envelope.state.appCategory.name,
             canonicalUrl = latestResult?.canonicalUrl ?: understanding?.canonicalUrl,
             domain = latestResult?.domain,

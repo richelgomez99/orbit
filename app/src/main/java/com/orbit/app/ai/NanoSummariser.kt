@@ -29,13 +29,25 @@ class NanoSummariser(
     data class Summary(val text: String, val model: String)
 
     /**
-     * Summarise [readableSlug] (optionally hinted by page [title]).
+     * Summarise [readableSlug], optionally hinted by URL/source/user context.
      * Returns `null` when the model declined, failed, or is unavailable.
      */
-    suspend fun summarise(title: String?, readableSlug: String): Summary? {
+    suspend fun summarise(
+        title: String?,
+        readableSlug: String,
+        finalUrl: String? = null,
+        sourceAppLabel: String? = null,
+        userNote: String? = null,
+    ): Summary? {
         if (readableSlug.isBlank()) return null
 
-        val prompt = UrlSummaryPrompt.build(title, readableSlug)
+        val prompt = UrlSummaryPrompt.build(
+            title = title,
+            readableSlug = readableSlug,
+            finalUrl = finalUrl,
+            sourceAppLabel = sourceAppLabel,
+            userNote = userNote,
+        )
 
         val raw = try {
             llmProvider.summarize(prompt, UrlSummaryPrompt.MAX_SUMMARY_TOKENS)

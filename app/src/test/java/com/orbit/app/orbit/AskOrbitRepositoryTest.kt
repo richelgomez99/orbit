@@ -2,7 +2,11 @@ package com.orbit.app.orbit
 
 import android.content.Context
 import com.orbit.app.library.LocalEnvelopeLookup
+import com.orbit.app.memory.AskOrbitAnswer
+import com.orbit.app.memory.AskOrbitCitation
 import com.orbit.app.memory.MemoryEvidenceSnippet
+import com.orbit.app.memory.MemoryGatewayRequest
+import com.orbit.app.memory.MemoryGatewayResponse
 import com.orbit.app.memory.MemorySearchResult
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -36,6 +40,103 @@ class AskOrbitRepositoryTest {
         assertTrue(unsupported.citations.isEmpty())
     }
 
+    @Test
+    fun groundedGatewayAnswerFiltersToLocalBackedCitationsAndCandidates() = runTest {
+        val lookup = RecordingLocalEnvelopeLookup(existingIds = setOf("env-local"))
+        val repository = BinderAskOrbitRepository(
+            context = null,
+            localEnvelopeLookup = lookup,
+            requestIdFactory = { "req-grounded" },
+            memoryGatewayCaller = { request ->
+                assertTrue(request is MemoryGatewayRequest.GroundedAsk)
+                MemoryGatewayResponse.GroundedAskResponse(
+                    requestId = request.requestId,
+                    answer = AskOrbitAnswer(
+                        status = "answered",
+                        answer = "You saved the flight receipt.",
+                        citations = listOf(
+                            citation("env-local", "Flight receipt"),
+                            citation("env-cloud-only", "Deleted cloud result")
+                        ),
+                        candidates = listOf(
+                            result("env-local", "Flight receipt", "Flight receipt: NYC to San Francisco.", "Gmail"),
+                            result("env-cloud-only", "Deleted cloud result", "Stale cloud-only result.", "Gmail")
+                        ),
+                        modelLabel = "openai:gpt-4.1-mini",
+                        retrievalMode = "hybrid",
+                        confidence = 0.9f
+                    )
+                )
+            }
+        )
+
+        val answer = repository.ask("Which flight receipt did I save recently?")
+
+        assertEquals("answered", answer.status)
+        assertEquals(listOf("env-local"), answer.citations.map { it.envelopeId })
+        assertEquals(listOf("env-local"), answer.candidates.map { it.envelopeId })
+        assertEquals(listOf("env-local", "env-cloud-only", "env-local", "env-cloud-only"), lookup.existsCalls)
+    }
+
+    @Test
+    fun groundedGatewayAnswerWithNoLocalCitationFallsBackToLocalSearch() = runTest {
+        val localFallback = result("env-local-fallback", "Recipe to try", "Recipe to try: miso salmon.", "Chrome")
+        val lookup = RecordingLocalEnvelopeLookup(
+            existingIds = emptySet(),
+            searchResults = listOf(localFallback)
+        )
+        val repository = BinderAskOrbitRepository(
+            context = null,
+            localEnvelopeLookup = lookup,
+            memoryGatewayCaller = { request ->
+                MemoryGatewayResponse.GroundedAskResponse(
+                    requestId = request.requestId,
+                    answer = AskOrbitAnswer(
+                        status = "answered",
+                        answer = "Cloud says stale recipe.",
+                        citations = listOf(citation("env-stale", "Stale recipe")),
+                        candidates = emptyList(),
+                        modelLabel = "openai:gpt-4.1-mini"
+                    )
+                )
+            }
+        )
+
+        val answer = repository.ask("What recipe did I want to try?")
+
+        assertEquals("answered", answer.status)
+        assertEquals(listOf("env-local-fallback"), answer.citations.map { it.envelopeId })
+        assertTrue(answer.answer.contains("miso salmon"))
+    }
+
+    @Test
+    fun groundedSensitiveRefusalIsPreservedWithoutLocalEvidenceLookup() = runTest {
+        val lookup = RecordingLocalEnvelopeLookup(existingIds = emptySet())
+        val repository = BinderAskOrbitRepository(
+            context = null,
+            localEnvelopeLookup = lookup,
+            memoryGatewayCaller = { request ->
+                MemoryGatewayResponse.GroundedAskResponse(
+                    requestId = request.requestId,
+                    answer = AskOrbitAnswer(
+                        status = "sensitive_refusal",
+                        answer = "I do not have a saved capture that explicitly contains that, so I will not guess.",
+                        citations = emptyList(),
+                        candidates = emptyList(),
+                        modelLabel = "policy",
+                        limitations = listOf("Capture or add the document first if you want Orbit to recall that detail later.")
+                    )
+                )
+            }
+        )
+
+        val answer = repository.ask("What is my passport number?")
+
+        assertEquals("sensitive_refusal", answer.status)
+        assertTrue(answer.citations.isEmpty())
+        assertTrue(lookup.existsCalls.isEmpty())
+    }
+
     private class DemoLocalEnvelopeLookup : LocalEnvelopeLookup {
         override suspend fun exists(envelopeId: String): Boolean = true
 
@@ -54,7 +155,34 @@ class AskOrbitRepositoryTest {
         }
     }
 
+    private class RecordingLocalEnvelopeLookup(
+        private val existingIds: Set<String>,
+        private val searchResults: List<MemorySearchResult> = emptyList()
+    ) : LocalEnvelopeLookup {
+        val existsCalls = mutableListOf<String>()
+
+        override suspend fun exists(envelopeId: String): Boolean {
+            existsCalls += envelopeId
+            return envelopeId in existingIds
+        }
+
+        override suspend fun search(query: String, limit: Int): List<MemorySearchResult> =
+            searchResults.take(limit)
+    }
+
     private companion object {
+        fun citation(
+            envelopeId: String,
+            title: String,
+        ) = AskOrbitCitation(
+            citationId = "c-$envelopeId",
+            envelopeId = envelopeId,
+            title = title,
+            excerpt = title,
+            dayLocal = "2026-05-30",
+            sourceAppLabel = "Gmail",
+        )
+
         val startupEvent = result(
             envelopeId = "env-startup",
             title = "Startup event ticket",

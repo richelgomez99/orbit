@@ -37,7 +37,7 @@ class SensitivityScrubberTest {
 
     @Test
     fun openAiKey_isRedacted() {
-        val input = "OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz0123"
+        val input = "provider key sk-abcdefghijklmnopqrstuvwxyz0123"
         val result = SensitivityScrubber.scrub(input)
         assertTrue(result.scrubbedText.contains("[REDACTED_OPENAI_KEY]"))
     }

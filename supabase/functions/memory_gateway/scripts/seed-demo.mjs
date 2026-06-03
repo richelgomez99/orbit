@@ -158,6 +158,19 @@ function demoItems() {
   const day = "2026-05-30";
   return [
     item({
+      id: "demo-qr-customers-01",
+      day,
+      intent: "REFERENCE",
+      title: "How to get first 1000 customers QR code",
+      summary: "QR code saved with context for first 1000 customers.",
+      source: "Chrome",
+      category: "image",
+      tags: ["qr", "qr-code", "customers", "startup"],
+      text: "Context note says this is the QR code for first 1000 customers. Use it to open the customer acquisition guide.",
+      domain: "startup.example",
+      contentType: "image_summary",
+    }),
+    item({
       id: "demo-startup-event-01",
       day,
       intent: "REFERENCE",

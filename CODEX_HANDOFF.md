@@ -2,6 +2,77 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
+## Current Status - 2026-06-03 Late Session
+
+Authoritative current branch:
+
+- `feature/005a-semantic-retrieval-grounded-ask-20260603`
+
+Spec status:
+
+- `specs/005A-semantic-retrieval-grounded-ask/` is implemented through all locally verifiable tasks.
+- `specs/005B-ai-assisted-link-rehydration/` exists as the follow-up slice for AI-assisted URL summary context and screenshot source wording.
+- Remaining non-deferred 005A/005B work is complete:
+  - `dist/orbit-mvp-debug-20260603-005b.apk` is installed/launched/seeded on the S24.
+  - User reported Library semantic search/actions worked for the tested demo flows.
+  - Uploaded S24 screenshots show Orbit grounded Ask answers with cited saved captures for recipe/startup-event queries.
+  - One screenshot showed `from IntentResolver`; the fixed build filters that non-user-facing source label from Diary cards/details and compact memory context, and the user confirmed no more `from IntentResolver` after reinstall.
+
+Current APK:
+
+```text
+path=dist/orbit-mvp-debug-20260603-005b.apk
+sha256=7a80f2dc94b00766177eec6f80393bf4289c39c8252cd6f3a44d925c1369c885
+install_status=installed/launched/seeded on Pixel_10_Pro Android 17 emulator and S24 SM-S928U1
+```
+
+Latest local verification:
+
+```text
+memory_gateway_typecheck=pass
+memory_gateway_unit_tests=pass (39 tests)
+retrieval_eval=pass (6/6)
+latest_backend_gate=pass 2026-06-03 (`npm run typecheck && npm run test:unit && npm run eval:retrieval`)
+non_s24_closeout_script=pass 2026-06-03 (`specs/005A-semantic-retrieval-grounded-ask/scripts/verify-non-s24-closeout.sh`)
+memory_gateway_deploy=pass (production alias https://orbit-memory-gateway.vercel.app)
+memory_gateway_deployment=https://orbit-memory-gateway-f7nk21ubl-richels-projects-834ef114.vercel.app
+memory_gateway_deployment_id=dpl_6inFrjavbbapv6HF8Kg3o6VKKehX
+live_semantic_smoke=pass (qr code -> demo-qr-customers-01; reschedule -> demo-calendar-01; flight receipt -> demo-flight-receipt-01; passport -> sensitive_refusal)
+android_secret_scan=pass (no OPENAI_API_KEY/MONGODB_ATLAS_URI/mongodb+srv/MongoClient hits under app/src)
+android_network_boundary_scan=pass (no OkHttpClient/HttpURLConnection/Socket/HttpClient constructors outside approved net path scan)
+android_focused_tests=pass (Library, Orbit Ask, memory, scrubber, 005B prompt/source coverage)
+android_compile=pass (:app:compileDebugKotlin, :app:compileDebugAndroidTestKotlin)
+android_lint=pass (:app:lintDebug)
+android_assemble=pass (:app:assembleDebug)
+latest_full_local_android_ci=pass 2026-06-03 (`./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:compileDebugAndroidTestKotlin :app:assembleDebug`)
+android_connected_smoke=pass on Pixel_10_Pro Android 17 emulator (OrbitHomeNavigationTest, LibraryScreenTest, AskOrbitPanelTest)
+rebuilt_apk_emulator_install_seed=pass; install-and-seed-device.sh --reset-data installed sha256 7a80f2dc94b00766177eec6f80393bf4289c39c8252cd6f3a44d925c1369c885 and seeded 20 demo envelopes
+rebuilt_apk_repeat_seed=pass; second seed broadcast on same emulator data logged seeded demo envelopes count=20 with no DebugDemoSeedReceiver failure
+rebuilt_apk_connected_smoke=pass; same 4 targeted connected tests passed after rebuilt APK install/seed
+androidx_test_stack=upgraded to test core 1.7.0, espresso-core 3.7.0, ext-junit 1.3.0 to support Android 17 instrumentation
+manual_s24_helper=pass; run specs/005A-semantic-retrieval-grounded-ask/scripts/install-and-seed-device.sh when the S24 is attached; `--reset-data` is available only for clean demo devices/emulators because it deletes local Orbit data
+manual_s24_install_seed=pass; helper installed/launched/seeded APK sha256 7a80f2dc94b00766177eec6f80393bf4289c39c8252cd6f3a44d925c1369c885 on S24 SM-S928U1
+manual_s24_semantic_demo=pass by user report and uploaded screenshots; Library/Orbit actions worked, and grounded Ask recipe/startup-event screenshots show cited captures
+intentresolver_source_label_fix=pass in code/tests/install/S24 recheck; `SourceAppLabelDisplay` filters `IntentResolver` from Diary card/detail copy and compact memory context
+debug_demo_seed_idempotency=pass; DebugDemoSeedReceiver uses stable text so repeat helper runs should hit duplicate suppression instead of creating timestamped duplicate captures
+pre_s24_gstack_review=pass; review found and fixed timestamped debug seed text before rebuilding the APK
+gstack_gbrain_probe=gbrain CLI missing from this shell PATH; gstack brain sync mode is off, so no GBrain sync was performed in this session
+```
+
+Important implementation notes:
+
+- Android still never connects directly to Atlas and contains no Atlas/OpenAI secrets.
+- Room/SQLCipher remains source of truth; Atlas is a compact cloud memory index.
+- Library semantic results are filtered to local-backed envelopes before display/open.
+- Grounded Ask returns cloud answers only when citations are local-backed; sensitive refusals are preserved even without local citations.
+- Compact embedding input now includes capped source context and latest note evidence, while tests prove raw OCR/full screenshot/prompt/model response fields stay out.
+- URL hydration summaries now receive compact `sourceAppLabel` and latest note via `IEnvelopeRepository.getUrlHydrationContext`; raw capture bodies do not cross that Binder path.
+
+Next branch after manual validation:
+
+- Proceed to `006-approval-action-runtime`.
+- Before starting work, read `specs/005A-semantic-retrieval-grounded-ask/mvp-closeout-audit.md`; it captures the validated MVP baseline.
+
 ## Current Continuity Protocol - 2026-06-02
 
 Before coding after a restart or context compaction, read:

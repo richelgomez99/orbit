@@ -39,6 +39,12 @@ data class MemorySearchResult(
     val envelopeId: String,
     val rank: Int,
     val score: Float,
+    val semanticScore: Float? = null,
+    val lexicalScore: Float? = null,
+    val contextScore: Float? = null,
+    val recencyScore: Float? = null,
+    val retrievalMode: String? = null,
+    val embeddingModel: String? = null,
     val title: String? = null,
     val summary: String? = null,
     val dayLocal: String,
@@ -65,5 +71,8 @@ data class AskOrbitAnswer(
     val answer: String,
     val citations: List<AskOrbitCitation>,
     val candidates: List<MemorySearchResult>,
-    val modelLabel: String
+    val modelLabel: String,
+    val retrievalMode: String? = null,
+    val confidence: Float? = null,
+    val limitations: List<String> = emptyList()
 )

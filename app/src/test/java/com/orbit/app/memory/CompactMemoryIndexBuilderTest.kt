@@ -36,6 +36,7 @@ class CompactMemoryIndexBuilderTest {
             envelope = envelope(text = "Long saved body about demo day and startup event"),
             latestResult = result(),
             understanding = understanding(),
+            note = note("Need to decide whether to attend after the pitch meeting."),
             evidenceBundles = listOf(
                 evidence("""{"kind":"OCR_HINT","label":"Clue","source":"understanding","excerpt":"Demo day June 4","confidence":0.8}""")
             )
@@ -49,6 +50,8 @@ class CompactMemoryIndexBuilderTest {
         assertEquals("example.com", item.domain)
         assertTrue(item.tags.contains("read_or_watch_later"))
         assertTrue(item.compactText.contains("Demo day"))
+        assertTrue(item.compactText.contains("Chrome"))
+        assertTrue(item.compactText.contains("Need to decide whether to attend"))
     }
 
     @Test
@@ -88,13 +91,44 @@ class CompactMemoryIndexBuilderTest {
     }
 
     @Test
+    fun compactEmbeddingInputIncludesCappedNoteButExcludesRawPromptAndModelResponseFields() {
+        val longNote = "context ".repeat(80) + "private tail that should be capped"
+        val item = builder.build(
+            envelope = envelope(text = "saved body about a QR code"),
+            note = note(longNote),
+            evidenceBundles = listOf(
+                evidence("""{"kind":"MODEL","label":"Bad","source":"understanding","excerpt":"unsafe","prompt":"system prompt","modelResponse":"answer"}"""),
+                evidence("""{"kind":"SAFE_HINT","label":"Safe","source":"understanding","excerpt":"QR code for customer check-in"}""")
+            )
+        )!!
+
+        assertTrue(item.compactText.contains("context"))
+        assertTrue(item.evidence.any { it.kind == "NOTE" && (it.excerpt?.length ?: 0) <= MemoryPayloadCaps.EVIDENCE_EXCERPT_MAX })
+        assertTrue(item.evidence.any { it.kind == "SAFE_HINT" })
+        assertTrue(item.evidence.none { it.kind == "MODEL" })
+        val encoded = json.encodeToString(item)
+        assertFalse(encoded.contains("system prompt"))
+        assertFalse(encoded.contains("modelResponse"))
+        assertFalse(encoded.contains("private tail that should be capped"))
+    }
+
+    @Test
     fun deletedEnvelopeDoesNotBuildCloudIndexItem() {
         assertNull(builder.build(envelope(text = "deleted", isDeleted = true)))
     }
 
+    @Test
+    fun systemResolverSourceLabelIsNotCopiedToCompactIndex() {
+        val item = builder.build(envelope(text = "screenshot body", sourceAppLabel = "IntentResolver"))!!
+
+        assertNull(item.sourceAppLabel)
+        assertFalse(item.compactText.contains("IntentResolver"))
+    }
+
     private fun envelope(
         text: String?,
-        isDeleted: Boolean = false
+        isDeleted: Boolean = false,
+        sourceAppLabel: String? = "Chrome",
     ) = IntentEnvelopeEntity(
         id = "env-1",
         contentType = ContentType.TEXT,
@@ -111,7 +145,7 @@ class CompactMemoryIndexBuilderTest {
             tzId = "America/New_York",
             hourLocal = 10,
             dayOfWeekLocal = 6,
-            sourceAppLabel = "Chrome"
+            sourceAppLabel = sourceAppLabel
         ),
         createdAt = NOW,
         dayLocal = "2026-05-30",
@@ -161,6 +195,14 @@ class CompactMemoryIndexBuilderTest {
         bundleType = "OCR_HINT",
         payloadJson = payload,
         createdAt = NOW
+    )
+
+    private fun note(text: String) = EnvelopeNoteEntity(
+        id = "note-1",
+        envelopeId = "env-1",
+        text = text,
+        createdAt = NOW,
+        updatedAt = NOW
     )
 
     private companion object {

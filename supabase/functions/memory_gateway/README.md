@@ -19,6 +19,10 @@ Set these in Production, Preview, and Development:
 | `MONGODB_MEMORY_COLLECTION` | Operator config | Atlas collection, e.g. `memory_items`. |
 | `SUPABASE_URL` | Supabase dashboard | JWT issuer verification. |
 | `SUPABASE_JWT_SECRET` | Supabase dashboard | HS256 verification for inbound Supabase access tokens. |
+| `OPENAI_API_KEY` | OpenAI dashboard | Backend-only embeddings and optional grounded Ask synthesis. Never put this in Android. |
+| `MEMORY_EMBEDDING_MODEL` | Operator config | Optional. Defaults to `text-embedding-3-small`. |
+| `MEMORY_EMBEDDING_DIMENSIONS` | Operator config | Optional. Defaults to `1536`. Must match Atlas vector index dimensions. |
+| `MEMORY_ASK_MODEL` | Operator config | Optional. Defaults to `gpt-4.1-mini`. |
 
 Local development uses `.env.local`, which is gitignored.
 
@@ -38,6 +42,10 @@ vercel env add MONGODB_DB production
 vercel env add MONGODB_MEMORY_COLLECTION production
 vercel env add SUPABASE_URL production
 vercel env add SUPABASE_JWT_SECRET production
+vercel env add OPENAI_API_KEY production
+vercel env add MEMORY_EMBEDDING_MODEL production
+vercel env add MEMORY_EMBEDDING_DIMENSIONS production
+vercel env add MEMORY_ASK_MODEL production
 ```
 
 Repeat for `preview` and `development`.
@@ -108,10 +116,37 @@ when `.env.local` contains `MONGODB_ATLAS_URI`.
 Do not use service-role credentials for `supabase.debug.password`. It must be
 the password for a normal Supabase Auth test user.
 
+## Semantic Retrieval Setup
+
+Spec 005A adds semantic Library search and grounded Ask. The operational order is:
+
+```bash
+cd supabase/functions/memory_gateway
+npm run vector:index
+npm run memory:embed-stale -- --user-id <supabase-user-id>
+npm run eval:retrieval
+```
+
+Use `--all-users` instead of `--user-id` only for development/backfill jobs where
+that is intentional:
+
+```bash
+npm run memory:embed-stale -- --all-users --limit 100
+```
+
+The embedding job only reads compact Atlas records and writes vector metadata
+back to the same compact index. It does not read raw screenshots, full OCR,
+prompts, model responses, or Android's encrypted Room database.
+
+Live semantic search requires the Atlas Search index named
+`memory_embedding_v1`. The script creates it with `1536` dimensions by default,
+matching `text-embedding-3-small`.
+
 ## Safety Invariants
 
 - Atlas credentials stay server-side.
 - Every request is scoped by authenticated Supabase `sub`.
 - Documents are compact memory index records, not raw captures.
+- OpenAI credentials stay server-side.
 - Banned fields such as raw screenshots, full OCR, raw HTML, prompts, and
   model responses are rejected before Atlas writes.

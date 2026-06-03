@@ -74,6 +74,7 @@ class UrlHydrateWorkerTest {
         // Restore production defaults so other instrumented suites are unaffected.
         UrlHydrateWorker.gatewayBinder = DefaultBinderHolder.ORIGINAL_BINDER
         UrlHydrateWorker.summariserFactory = DefaultBinderHolder.ORIGINAL_FACTORY
+        UrlHydrateWorker.hydrationContextProvider = DefaultBinderHolder.ORIGINAL_CONTEXT_PROVIDER
     }
 
     // ---------------- ContinuationEngine enqueue surface ----------------
@@ -155,6 +156,7 @@ class UrlHydrateWorkerTest {
         UrlHydrateWorker.summariserFactory = { _, _ ->
             NanoSummariser(FakeLlm(text = "One sentence. Two sentences."))
         }
+        UrlHydrateWorker.hydrationContextProvider = { _, _ -> null }
 
         val worker = buildWorker(attempts = 0)
         val result = worker.doWork()
@@ -223,6 +225,51 @@ class UrlHydrateWorkerTest {
         assertNotNull(outcome.fetch)
     }
 
+    @Test
+    fun worker_runHydration_passesCompactEnvelopeContextIntoSummaryPrompt() = runTest {
+        var capturedPrompt: String? = null
+        UrlHydrateWorker.gatewayBinder = fakeBinder(
+            FakeGateway { _, _ ->
+                FetchResultParcel(
+                    ok = true,
+                    finalUrl = "https://example.com/recipe",
+                    title = "Dinner Recipe",
+                    canonicalHost = "example.com",
+                    readableHtml = "Recipe with ingredients and steps.",
+                    errorKind = null,
+                    errorMessage = null,
+                    fetchedAtMillis = 0L
+                )
+            }
+        )
+        UrlHydrateWorker.hydrationContextProvider = { _, envelopeId ->
+            UrlHydrateWorker.HydrationPromptContext(
+                envelopeId = envelopeId,
+                sourceAppLabel = "Chrome",
+                latestNote = "Saved for grocery list",
+                contentType = "TEXT"
+            )
+        }
+        UrlHydrateWorker.summariserFactory = { _, _ ->
+            NanoSummariser(FakeLlm(text = "Summary.", onSummarize = { capturedPrompt = it }))
+        }
+
+        val outcome = UrlHydrateWorker.runHydration(
+            context = context,
+            url = "https://example.com/recipe",
+            envelopeId = "env-test"
+        )
+
+        assertEquals(UrlHydrateWorker.Classification.SUCCESS, outcome.classification)
+        val prompt = requireNotNull(capturedPrompt)
+        assertTrue(prompt.contains("URL: https://example.com/recipe"))
+        assertTrue(prompt.contains("SOURCE APP: Chrome"))
+        assertTrue(prompt.contains("USER CONTEXT: Saved for grocery list"))
+        assertTrue(!prompt.contains("rawOcr"))
+        assertTrue(!prompt.contains("textContent"))
+        assertTrue(!prompt.contains("imageUri"))
+    }
+
     // ---------------- helpers ----------------
 
     private fun buildWorker(attempts: Int): UrlHydrateWorker {
@@ -256,12 +303,17 @@ class UrlHydrateWorkerTest {
         ): com.orbit.app.net.ipc.MemoryGatewayResponseParcel? = null
     }
 
-    private class FakeLlm(private val text: String) : LlmProvider {
+    private class FakeLlm(
+        private val text: String,
+        private val onSummarize: (String) -> Unit = {}
+    ) : LlmProvider {
         override suspend fun classifyIntent(text: String, appCategory: String): IntentClassification =
             error("unused")
 
-        override suspend fun summarize(text: String, maxTokens: Int): SummaryResult =
-            SummaryResult(text = this.text, generationLocale = "en", provenance = LlmProvenance.LocalNano)
+        override suspend fun summarize(text: String, maxTokens: Int): SummaryResult {
+            onSummarize(text)
+            return SummaryResult(text = this.text, generationLocale = "en", provenance = LlmProvenance.LocalNano)
+        }
 
         override suspend fun scanSensitivity(text: String): SensitivityResult = error("unused")
         override suspend fun generateDayHeader(
@@ -286,5 +338,7 @@ class UrlHydrateWorkerTest {
             UrlHydrateWorker.gatewayBinder
         val ORIGINAL_FACTORY: (Context, INetworkGateway) -> NanoSummariser =
             UrlHydrateWorker.summariserFactory
+        val ORIGINAL_CONTEXT_PROVIDER: suspend (Context, String) -> UrlHydrateWorker.HydrationPromptContext? =
+            UrlHydrateWorker.hydrationContextProvider
     }
 }

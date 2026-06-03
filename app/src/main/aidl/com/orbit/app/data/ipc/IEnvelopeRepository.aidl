@@ -74,6 +74,11 @@ interface IEnvelopeRepository {
     boolean existsPriorIntent(String appCategory, String intent);
 
     // ---- URL hydration write-back (T066 merge-zone completion) ----
+    // Called by UrlHydrateWorker before summarization to fetch only compact
+    // prompt hints from :ml. The returned JSON is capped and must not contain
+    // raw screenshot data, raw OCR, full HTML, or full envelope text.
+    String getUrlHydrationContext(String envelopeId);
+
     // Called by UrlHydrateWorker from the default WorkManager process once
     // the network fetch + Readability + Nano summariser pass is done.
     // Writes ContinuationResultEntity (on success), updates

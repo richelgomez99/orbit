@@ -62,11 +62,12 @@ class BinderLibraryRepository(
     ): List<MemorySearchResult> = withContext(Dispatchers.IO) {
         val trimmed = query.trim()
         if (trimmed.isBlank()) return@withContext emptyList()
-        val request = MemoryGatewayRequest.Search(
+        val request = MemoryGatewayRequest.SemanticSearch(
             requestId = requestIdFactory(),
             query = trimmed,
             filters = filters,
             limit = maxOf(limit, REMOTE_LIMIT_FOR_LOCAL_FILTERING).coerceIn(1, REMOTE_LIMIT_FOR_LOCAL_FILTERING),
+            mode = "hybrid",
         )
         val startedAt = clock()
         val localLimit = limit.coerceIn(1, REMOTE_LIMIT_FOR_LOCAL_FILTERING)
@@ -79,14 +80,27 @@ class BinderLibraryRepository(
             )
             when (val decoded = jsonCodec.decodeFromString(MemoryGatewayResponse.serializer(), response.payloadJson)) {
                 is MemoryGatewayResponse.SearchResponse -> {
-                    val localCloudResults = decoded.results
+                    val localResults = decoded.results
                         .filter { localEnvelopeLookup.exists(it.envelopeId) }
                         .filter { LibrarySearchText.resultMatchesQuery(it, trimmed) }
-                        .take(localLimit)
-                    val localFallbackResults = localEnvelopeLookup
-                        .search(trimmed, localLimit)
-                    val localResults = (localCloudResults + localFallbackResults).dedupeForDisplay()
-                        .take(localLimit)
+                        .take(localLimit) + localEnvelopeLookup.search(trimmed, localLimit)
+                    val displayResults = localResults.dedupeForDisplay().take(localLimit)
+                    auditSearch(
+                        requestId = request.requestId,
+                        query = trimmed,
+                        resultCount = displayResults.size,
+                        latencyMs = clock() - startedAt,
+                        outcome = "success",
+                    )
+                    displayResults
+                }
+                is MemoryGatewayResponse.SemanticSearchResponse -> {
+                    val localResults = LibrarySemanticResults.localBackedResults(
+                        remoteResults = decoded.results,
+                        localEnvelopeLookup = localEnvelopeLookup,
+                        query = trimmed,
+                        limit = localLimit,
+                    )
                     auditSearch(
                         requestId = request.requestId,
                         query = trimmed,
@@ -274,6 +288,24 @@ internal object LibrarySearchText {
         "was",
         "with",
     )
+}
+
+internal object LibrarySemanticResults {
+    suspend fun localBackedResults(
+        remoteResults: List<MemorySearchResult>,
+        localEnvelopeLookup: LocalEnvelopeLookup,
+        query: String,
+        limit: Int,
+    ): List<MemorySearchResult> {
+        val boundedLimit = limit.coerceIn(1, 50)
+        val localCloudResults = remoteResults
+            .filter { localEnvelopeLookup.exists(it.envelopeId) }
+            .take(boundedLimit)
+        val localFallbackResults = localEnvelopeLookup.search(query, boundedLimit)
+        return (localCloudResults + localFallbackResults)
+            .dedupeForDisplay()
+            .take(boundedLimit)
+    }
 }
 
 class BinderLocalEnvelopeLookup(

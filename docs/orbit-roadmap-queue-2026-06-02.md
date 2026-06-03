@@ -33,6 +33,15 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 | 12 | `021-generative-ui-runtime` / `feature/021-generative-ui-runtime-...` | Render agent outputs as safe native Orbit UI. | Structured UI needs trustworthy agent outputs first. | Action cards, pickers, lists, and memory views render natively and degrade safely to text. |
 | 13 | `022-local-model-manager` / `feature/022-local-model-manager-...` | Add BYOM/local model manager as the strategic local AI path. | Hardware-adaptive local-first AI comes after feature scope and memory pressure are understood. | Speed/intelligence/cloud tiers are explicit; local mode supports core capabilities; memory pressure is profiled. |
 
+## Current Status Update - 2026-06-03
+
+- Queue row 1 (`005A-semantic-retrieval-grounded-ask`) is implemented and locally validated on branch `feature/005a-semantic-retrieval-grounded-ask-20260603`.
+- Verified gates: backend typecheck, backend unit tests (39), retrieval eval (6/6), production memory-gateway deploy, live semantic smoke, Android focused tests, compile, lint, assemble, Android secret scan, and Pixel 10 Pro Android 17 emulator connected smoke.
+- Production memory gateway alias: `https://orbit-memory-gateway.vercel.app`; latest deployment `https://orbit-memory-gateway-f7nk21ubl-richels-projects-834ef114.vercel.app`.
+- Current APK for phone validation: `dist/orbit-mvp-debug-20260603-005b.apk` (`7a80f2dc94b00766177eec6f80393bf4289c39c8252cd6f3a44d925c1369c885`).
+- S24 validation confirms the row 1 Library/Orbit actions by user report and uploaded grounded-Ask screenshots. The post-fix S24 source-label recheck also passed: no more `from IntentResolver`.
+- Row 2 (`006-approval-action-runtime`) is now the next branch.
+
 ## Deferred Until Approval Or Explicit Re-Scope
 
 - Platform-agent interop through AppFunctions/Spark/Gemini system agents.

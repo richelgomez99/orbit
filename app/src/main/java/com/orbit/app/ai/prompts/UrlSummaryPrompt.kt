@@ -38,14 +38,32 @@ object UrlSummaryPrompt {
      * text extracted by Readability; it will be truncated to
      * [MAX_CONTENT_CHARS] here so callers don't have to.
      */
-    fun build(title: String?, readableSlug: String): String {
+    fun build(
+        title: String?,
+        readableSlug: String,
+        finalUrl: String? = null,
+        sourceAppLabel: String? = null,
+        userNote: String? = null,
+    ): String {
         val trimmedTitle = title?.take(200)?.trim()?.ifBlank { null }
+        val trimmedUrl = finalUrl?.take(240)?.trim()?.ifBlank { null }
+        val trimmedSource = sourceAppLabel?.take(80)?.trim()?.ifBlank { null }
+        val trimmedNote = userNote?.take(300)?.trim()?.ifBlank { null }
         val content = readableSlug.take(MAX_CONTENT_CHARS)
         return buildString {
             append(SYSTEM)
             append("\n\n")
+            if (trimmedUrl != null) {
+                append("URL: ").append(trimmedUrl).append('\n')
+            }
             if (trimmedTitle != null) {
                 append("TITLE: ").append(trimmedTitle).append('\n')
+            }
+            if (trimmedSource != null) {
+                append("SOURCE APP: ").append(trimmedSource).append('\n')
+            }
+            if (trimmedNote != null) {
+                append("USER CONTEXT: ").append(trimmedNote).append('\n')
             }
             append("CONTENT:\n")
             append(content)

@@ -41,12 +41,32 @@ sealed class MemoryGatewayRequest {
     ) : MemoryGatewayRequest()
 
     @Serializable
+    @SerialName("memory_semantic_search")
+    data class SemanticSearch(
+        override val requestId: String,
+        val query: String,
+        val filters: MemorySearchFilters? = null,
+        val limit: Int = 10,
+        val mode: String = "hybrid"
+    ) : MemoryGatewayRequest()
+
+    @Serializable
     @SerialName("memory_ask")
     data class Ask(
         override val requestId: String,
         val question: String,
         val filters: MemorySearchFilters? = null,
         val limit: Int = 5
+    ) : MemoryGatewayRequest()
+
+    @Serializable
+    @SerialName("memory_grounded_ask")
+    data class GroundedAsk(
+        override val requestId: String,
+        val question: String,
+        val filters: MemorySearchFilters? = null,
+        val limit: Int = 5,
+        val allowSynthesis: Boolean = true
     ) : MemoryGatewayRequest()
 }
 
@@ -80,8 +100,22 @@ sealed class MemoryGatewayResponse {
     ) : MemoryGatewayResponse()
 
     @Serializable
+    @SerialName("memory_semantic_search_response")
+    data class SemanticSearchResponse(
+        override val requestId: String,
+        val results: List<MemorySearchResult>
+    ) : MemoryGatewayResponse()
+
+    @Serializable
     @SerialName("memory_ask_response")
     data class AskResponse(
+        override val requestId: String,
+        val answer: AskOrbitAnswer
+    ) : MemoryGatewayResponse()
+
+    @Serializable
+    @SerialName("memory_grounded_ask_response")
+    data class GroundedAskResponse(
         override val requestId: String,
         val answer: AskOrbitAnswer
     ) : MemoryGatewayResponse()

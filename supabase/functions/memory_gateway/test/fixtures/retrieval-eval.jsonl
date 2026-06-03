@@ -1,0 +1,6 @@
+{"query":"qr code","expectedTop":"eval-qr-customers","lexical":["eval-qr-customers"],"vector":[]}
+{"query":"reschedule dentist","expectedTop":"eval-dentist-update","lexical":["eval-package-pickup"],"vector":[{"id":"eval-dentist-update","score":0.91}]}
+{"query":"rescheduling","expectedTop":"eval-dentist-update","lexical":[],"vector":[{"id":"eval-dentist-update","score":0.88}]}
+{"query":"startup event","expectedTop":"eval-startup-event","lexical":["eval-startup-event"],"vector":[]}
+{"query":"flight receipt","expectedTop":"eval-flight-receipt","lexical":["eval-flight-receipt"],"vector":[]}
+{"query":"recipe","expectedTop":"eval-recipe","lexical":["eval-recipe"],"vector":[]}

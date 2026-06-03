@@ -72,7 +72,6 @@ import com.orbit.app.data.model.toIntentOrAmbiguous
 import com.orbit.app.diary.EnvelopeDetailUiState
 import com.orbit.app.diary.EnvelopeDetailViewModel
 import com.orbit.app.diary.IntentHistoryRow
-import com.orbit.app.memory.MemoryDisplayText
 import com.orbit.app.settings.QuietRule
 import com.orbit.app.settings.QuietSettingsColors
 import com.orbit.app.ui.IntentChipPicker
@@ -1193,29 +1192,9 @@ private fun AuditRowView(entry: AuditEntryParcel) {
 
 // ---- helpers ----
 
-private fun EnvelopeViewParcel.displayTitle(): String = MemoryDisplayText.title(
-    existingTitle = title,
-    text = textContent,
-    domain = domain,
-)
-    ?: when (contentType.uppercase(Locale.ROOT)) {
-        "IMAGE" -> "Screenshot from ${sourceName()}"
-        else -> "Capture from ${sourceName()}"
-    }
+private fun EnvelopeViewParcel.displayTitle(): String = EnvelopeDetailDisplayText.title(this)
 
-private fun EnvelopeViewParcel.sourceName(): String = sourceAppLabel
-    ?.trim()
-    ?.takeIf { it.isNotBlank() }
-    ?: appCategory.humanize()
-
-private fun Intent.displayLabel(): String = when (this) {
-    Intent.WANT_IT -> "Want it"
-    Intent.REFERENCE -> "Reference"
-    Intent.READ_LATER -> "Read later"
-    Intent.FOR_SOMEONE -> "For someone"
-    Intent.INTERESTING -> "Interesting"
-    Intent.AMBIGUOUS -> "Unassigned"
-}
+private fun Intent.displayLabel(): String = with(EnvelopeDetailDisplayText) { displayLabel() }
 
 private fun String.humanize(): String =
     lowercase(Locale.ROOT)
@@ -1223,8 +1202,8 @@ private fun String.humanize(): String =
         .replaceFirstChar { it.titlecase(Locale.ROOT) }
 
 private fun buildDetailSubtitle(env: EnvelopeViewParcel): String {
-    val app = env.appCategory.let {
-        if (it == "UNKNOWN_SOURCE") "an app"
+    val app = env.sourceAppLabel?.trim()?.takeIf { it.isNotBlank() } ?: env.appCategory.let {
+        if (it == "UNKNOWN_SOURCE") "phone capture"
         else it.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { c -> c.titlecase(Locale.ROOT) }
     }
     val activity = env.activityState
