@@ -23,7 +23,12 @@ import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.ipc.IClusterObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
 import com.orbit.app.data.ipc.IEnvelopeRepository
+import com.orbit.app.data.ipc.IMemoryCandidateObserver
+import com.orbit.app.data.ipc.IPromotedMemoryObserver
 import com.orbit.app.data.model.ClusterState
+import com.orbit.app.data.ipc.MemoryCandidateParcel
+import com.orbit.app.data.ipc.MemoryDecisionResultParcel
+import com.orbit.app.data.ipc.PromotedMemoryParcel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -330,6 +335,55 @@ class BinderDiaryRepository(
         repo.observePendingActionDrafts(limit, observer)
         awaitClose {
             runCatching { repo.stopObservingActionDrafts(observer) }
+        }
+    }
+
+    // ---- Spec 007 — Orbit memory review --------------------------------
+
+    override fun observeMemoryCandidates(limit: Int): Flow<List<MemoryCandidateParcel>> = callbackFlow {
+        val repo = connect()
+        val observer = object : IMemoryCandidateObserver.Stub() {
+            override fun onMemoryCandidatesChanged(candidates: MutableList<MemoryCandidateParcel>?) {
+                trySend(candidates?.toList() ?: emptyList())
+            }
+        }
+        repo.observePendingMemoryCandidates(limit, observer)
+        awaitClose {
+            runCatching { repo.stopObservingMemoryCandidates(observer) }
+        }
+    }
+
+    override fun observePromotedMemories(limit: Int): Flow<List<PromotedMemoryParcel>> = callbackFlow {
+        val repo = connect()
+        val observer = object : IPromotedMemoryObserver.Stub() {
+            override fun onPromotedMemoriesChanged(memories: MutableList<PromotedMemoryParcel>?) {
+                trySend(memories?.toList() ?: emptyList())
+            }
+        }
+        repo.observePromotedMemories(limit, observer)
+        awaitClose {
+            runCatching { repo.stopObservingPromotedMemories(observer) }
+        }
+    }
+
+    override suspend fun acceptMemoryCandidate(
+        candidateId: String,
+        editedLabel: String?,
+        editedFactText: String?
+    ): MemoryDecisionResultParcel {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.acceptMemoryCandidate(candidateId, editedLabel, editedFactText)
+        }
+    }
+
+    override suspend fun rejectMemoryCandidate(
+        candidateId: String,
+        reason: String?
+    ): MemoryDecisionResultParcel {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.rejectMemoryCandidate(candidateId, reason)
         }
     }
 }

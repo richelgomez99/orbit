@@ -2,6 +2,70 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
+## Current Status - 2026-06-05 Spec 007 Active
+
+Authoritative current branch:
+
+- `feature/007-memory-candidates-inspector-20260605`
+
+Base checkpoint:
+
+- Spec 006 was committed as `ba2dcf7` (`feat(spec-006): add approval action runtime`) on `feature/006-approval-action-runtime-20260603`.
+- Spec 006 still has phone-only final demo work open, but its implementation/local gates are preserved in git. User confirmed the grouped shopping-list fix on S24: one envelope with multiple checklist items.
+
+Spec 007 implemented so far:
+
+- Fresh Spec Kit artifacts under `specs/007-memory-candidates-inspector/`.
+- GStack-style engineering review pivot: add support/provenance junction tables now; do not rely only on JSON support arrays.
+- Room v9 schema:
+  - `memory_candidate`
+  - `memory_candidate_support`
+  - `promoted_memory`
+  - `promoted_memory_support`
+- New enums in `MemoryModels.kt`.
+- New DAOs and exported schema `app/schemas/com.orbit.app.data.OrbitDatabase/9.json`.
+- `MIGRATION_8_9` plus `OrbitDatabaseMigrationV8toV9Test` source.
+- Compact Binder parcels/observers:
+  - `MemoryCandidateParcel`
+  - `PromotedMemoryParcel`
+  - `MemoryDecisionResultParcel`
+  - `IMemoryCandidateObserver`
+  - `IPromotedMemoryObserver`
+- `MemoryRepositoryDelegate` in `:ml` for pending/promoted projections, accept/reject decisions, compact audit rows, and debug seeding.
+- `IEnvelopeRepository` extended with memory candidate observation and decision methods.
+- `EnvelopeRepositoryService` wires the memory delegate in production.
+- `DiaryRepository`, `BinderDiaryRepository`, and `DiaryViewModel` expose memory candidate/promoted flows and accept/reject commands.
+- `OrbitCleanupScreen` has a Memory Review section after Action Drafts, with Open, Reject, Edit, and Accept.
+- `DebugDemoSeedReceiver` now seeds deterministic memory candidates after demo captures/action proposals.
+
+Latest Spec 007 validation:
+
+```text
+focused_memory_parcel_test=PASS 2026-06-05 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.data.ipc.MemoryParcelTest" :app:compileDebugAndroidTestKotlin`
+full_non_phone_gate=PASS 2026-06-05 `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+diff_whitespace=PASS 2026-06-05 `git diff --check`
+android_secret_scan=PASS 2026-06-05 no OPENAI_API_KEY/MONGODB_ATLAS_URI/mongodb+srv/MongoClient/ANTHROPIC_API_KEY/ZEROENTROPY hits under app/src
+android_network_boundary_scan=PASS 2026-06-05 no OkHttpClient/HttpURLConnection/Socket/HttpClient constructors in scanned app source
+apk_path=app/build/outputs/apk/debug/app-debug.apk
+apk_sha256=bb7ce6477f37d0ac3ff1d2e3d49292e365838e76120a004b41e91c0e937c3ea3
+```
+
+Remaining Spec 007 work:
+
+- Add explicit UI/Compose tests for Memory Review cards, no-empty-state noise, accept/reject callbacks, and edit validation.
+- Add explicit tests proving pending/rejected candidates are not used as facts by Ask/action answer code.
+- Add explicit compact memory/Atlas payload exclusion tests for sensitive/local-only candidates.
+- Execute `OrbitDatabaseMigrationV8toV9Test` and `MemoryRepositoryDelegateTest` on a connected device/emulator when available.
+- Build/copy final APK to `dist/` only when ready for phone validation; do not commit generated APK artifacts.
+- Update tasks/quickstart/roadmap/handoff again after connected/manual validation.
+
+Important constraints:
+
+- Spec 007 is not the KG backend. Do not add graph nodes/edges/entity resolution here.
+- Pending/rejected candidates are not facts.
+- Candidate/promoted memory text must not enter Atlas/cloud payloads until Spec 008 cloud controls and Spec 009 KG/backend policy exist.
+- Diary remains pure memory; Memory Review belongs in Orbit.
+
 ## Current Status - 2026-06-04 Spec 006 Closeout
 
 Authoritative current branch:

@@ -425,3 +425,116 @@ internal val MIGRATION_7_8: Migration = object : Migration(7, 8) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_active_intent_expiresAt ON active_intent(expiresAt)")
     }
 }
+
+/** v9 — spec 007 Memory Candidates Inspector sidecars. */
+internal val MIGRATION_8_9: Migration = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS memory_candidate (
+                id TEXT NOT NULL PRIMARY KEY,
+                candidateKind TEXT NOT NULL,
+                state TEXT NOT NULL,
+                displayLabel TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                predicate TEXT NOT NULL,
+                objectValue TEXT NOT NULL,
+                confidence REAL NOT NULL,
+                sensitivity TEXT NOT NULL,
+                supportingEnvelopeIdsJson TEXT NOT NULL,
+                supportingEvidenceIdsJson TEXT,
+                supportingFeedbackIdsJson TEXT,
+                askUserCopy TEXT,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                expiresAt INTEGER,
+                decidedAt INTEGER,
+                decisionReason TEXT,
+                modelLabel TEXT,
+                promptVersion TEXT,
+                source TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_state ON memory_candidate(state)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_candidateKind ON memory_candidate(candidateKind)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_sensitivity ON memory_candidate(sensitivity)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_createdAt ON memory_candidate(createdAt)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_expiresAt ON memory_candidate(expiresAt)")
+        db.execSQL(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS index_memory_candidate_active_fact_key
+            ON memory_candidate(candidateKind, subject, predicate, objectValue)
+            WHERE state IN ('PENDING', 'ASKED')
+            """.trimIndent()
+        )
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS memory_candidate_support (
+                candidateId TEXT NOT NULL,
+                envelopeId TEXT NOT NULL,
+                supportType TEXT NOT NULL,
+                evidenceId TEXT,
+                createdAt INTEGER NOT NULL,
+                PRIMARY KEY(candidateId, envelopeId, supportType),
+                FOREIGN KEY(candidateId) REFERENCES memory_candidate(id) ON DELETE CASCADE,
+                FOREIGN KEY(envelopeId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_support_candidateId ON memory_candidate_support(candidateId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_support_envelopeId ON memory_candidate_support(envelopeId)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS promoted_memory (
+                id TEXT NOT NULL PRIMARY KEY,
+                candidateId TEXT,
+                memoryKind TEXT NOT NULL,
+                state TEXT NOT NULL,
+                displayLabel TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                predicate TEXT NOT NULL,
+                objectValue TEXT NOT NULL,
+                confidenceLabel TEXT NOT NULL,
+                sensitivity TEXT NOT NULL,
+                source TEXT NOT NULL,
+                supportingEnvelopeIdsJson TEXT NOT NULL,
+                supportingEvidenceIdsJson TEXT,
+                supportingFeedbackIdsJson TEXT,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                validFrom INTEGER NOT NULL,
+                validTo INTEGER,
+                invalidatedAt INTEGER,
+                lastUsedAt INTEGER,
+                useCount INTEGER NOT NULL,
+                FOREIGN KEY(candidateId) REFERENCES memory_candidate(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_state ON promoted_memory(state)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_memoryKind ON promoted_memory(memoryKind)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_sensitivity ON promoted_memory(sensitivity)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_candidateId ON promoted_memory(candidateId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_updatedAt ON promoted_memory(updatedAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS promoted_memory_support (
+                memoryId TEXT NOT NULL,
+                envelopeId TEXT NOT NULL,
+                supportType TEXT NOT NULL,
+                evidenceId TEXT,
+                createdAt INTEGER NOT NULL,
+                PRIMARY KEY(memoryId, envelopeId, supportType),
+                FOREIGN KEY(memoryId) REFERENCES promoted_memory(id) ON DELETE CASCADE,
+                FOREIGN KEY(envelopeId) REFERENCES intent_envelope(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_support_memoryId ON promoted_memory_support(memoryId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_support_envelopeId ON promoted_memory_support(envelopeId)")
+    }
+}

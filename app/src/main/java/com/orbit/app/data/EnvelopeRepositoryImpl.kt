@@ -15,7 +15,10 @@ import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.ipc.IActionDraftObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
 import com.orbit.app.data.ipc.IEnvelopeRepository
+import com.orbit.app.data.ipc.IMemoryCandidateObserver
+import com.orbit.app.data.ipc.IPromotedMemoryObserver
 import com.orbit.app.data.ipc.IntentEnvelopeDraftParcel
+import com.orbit.app.data.ipc.MemoryDecisionResultParcel
 import com.orbit.app.data.ipc.SealResultParcel
 import com.orbit.app.data.ipc.StateSnapshotParcel
 import com.orbit.app.data.model.ActivityState
@@ -128,7 +131,12 @@ class EnvelopeRepositoryImpl(
      * calls through the binder so corpus reads never happen in the default UI
      * process.
      */
-    private val memoryIndexSyncDelegate: MemoryIndexSyncDelegate? = null
+    private val memoryIndexSyncDelegate: MemoryIndexSyncDelegate? = null,
+    /**
+     * Spec 007 — candidate/promoted memory inspector. Nullable for older
+     * repository tests; production wires it in EnvelopeRepositoryService.
+     */
+    private val memoryRepositoryDelegate: MemoryRepositoryDelegate? = null
 ) : IEnvelopeRepository.Stub() {
 
     /** envelopeId → millis-deadline after which `undo()` returns false. */
@@ -1115,6 +1123,73 @@ class EnvelopeRepositoryImpl(
 
     override fun stopObservingActiveIntents(observer: IActiveIntentObserver) {
         activeIntentRepository?.stopObservingActiveIntents(observer)
+    }
+
+    override fun observePendingMemoryCandidates(limit: Int, observer: IMemoryCandidateObserver) {
+        val repo = memoryRepositoryDelegate
+        if (repo == null) {
+            try {
+                observer.onMemoryCandidatesChanged(emptyList())
+            } catch (_: android.os.RemoteException) {
+            }
+            return
+        }
+        repo.observePendingCandidates(limit, observer)
+    }
+
+    override fun stopObservingMemoryCandidates(observer: IMemoryCandidateObserver) {
+        memoryRepositoryDelegate?.stopObservingCandidates(observer)
+    }
+
+    override fun observePromotedMemories(limit: Int, observer: IPromotedMemoryObserver) {
+        val repo = memoryRepositoryDelegate
+        if (repo == null) {
+            try {
+                observer.onPromotedMemoriesChanged(emptyList())
+            } catch (_: android.os.RemoteException) {
+            }
+            return
+        }
+        repo.observePromotedMemories(limit, observer)
+    }
+
+    override fun stopObservingPromotedMemories(observer: IPromotedMemoryObserver) {
+        memoryRepositoryDelegate?.stopObservingPromotedMemories(observer)
+    }
+
+    override fun acceptMemoryCandidate(
+        candidateId: String,
+        editedLabel: String?,
+        editedFactText: String?
+    ): MemoryDecisionResultParcel {
+        val repo = memoryRepositoryDelegate ?: return MemoryDecisionResultParcel(
+            ok = false,
+            candidateId = candidateId,
+            memoryId = null,
+            status = "unavailable",
+            message = "Orbit memory review is not available yet."
+        )
+        return runBlocking { repo.acceptCandidate(candidateId, editedLabel, editedFactText) }
+    }
+
+    override fun rejectMemoryCandidate(candidateId: String, reason: String?): MemoryDecisionResultParcel {
+        val repo = memoryRepositoryDelegate ?: return MemoryDecisionResultParcel(
+            ok = false,
+            candidateId = candidateId,
+            memoryId = null,
+            status = "unavailable",
+            message = "Orbit memory review is not available yet."
+        )
+        return runBlocking { repo.rejectCandidate(candidateId, reason) }
+    }
+
+    override fun debugSeedDemoMemoryCandidates(): String {
+        val repo = memoryRepositoryDelegate ?: return "UNAVAILABLE"
+        return if (BuildConfig.DEBUG) {
+            runBlocking { "SEEDED:${repo.debugSeedDemoMemoryCandidates()}" }
+        } else {
+            "UNAVAILABLE"
+        }
     }
 
     override fun resolveActiveIntent(

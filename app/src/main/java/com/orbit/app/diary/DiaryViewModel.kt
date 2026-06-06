@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ipc.ActionProposalParcel
+import com.orbit.app.data.ipc.MemoryDecisionResultParcel
 import com.orbit.app.understanding.domain.ResolutionReason
 import com.orbit.app.understanding.domain.UnderstandingMode
 import kotlinx.coroutines.CoroutineScope
@@ -140,6 +141,10 @@ class DiaryViewModel(
 
     fun observeActionDrafts(limit: Int = 20) = repository.observeActionDrafts(limit)
 
+    fun observeMemoryCandidates(limit: Int = 20) = repository.observeMemoryCandidates(limit)
+
+    fun observePromotedMemories(limit: Int = 20) = repository.observePromotedMemories(limit)
+
     private val _undoState = MutableStateFlow<UndoToastState?>(null)
     /**
      * Active 5s undo toast, or `null` when the window has expired or the
@@ -265,6 +270,54 @@ class DiaryViewModel(
 
     fun onActionNoticeDismissed() {
         _actionNotice.value = null
+    }
+
+    fun onAcceptMemoryCandidate(
+        candidateId: String,
+        editedLabel: String? = null,
+        editedFactText: String? = null
+    ) {
+        scope.launch {
+            val result = runCatching {
+                repository.acceptMemoryCandidate(candidateId, editedLabel, editedFactText)
+            }.getOrElse {
+                MemoryDecisionResultParcel(
+                    ok = false,
+                    candidateId = candidateId,
+                    memoryId = null,
+                    status = "error",
+                    message = "Orbit could not save that memory. Try again."
+                )
+            }
+            openActionNotice(
+                ActionNoticeState(
+                    id = "memory-$candidateId-${System.currentTimeMillis()}",
+                    message = result.message
+                )
+            )
+        }
+    }
+
+    fun onRejectMemoryCandidate(candidateId: String, reason: String? = null) {
+        scope.launch {
+            val result = runCatching {
+                repository.rejectMemoryCandidate(candidateId, reason)
+            }.getOrElse {
+                MemoryDecisionResultParcel(
+                    ok = false,
+                    candidateId = candidateId,
+                    memoryId = null,
+                    status = "error",
+                    message = "Orbit could not dismiss that memory. Try again."
+                )
+            }
+            openActionNotice(
+                ActionNoticeState(
+                    id = "memory-$candidateId-${System.currentTimeMillis()}",
+                    message = result.message
+                )
+            )
+        }
     }
 
     /**

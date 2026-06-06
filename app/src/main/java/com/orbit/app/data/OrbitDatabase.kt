@@ -17,6 +17,10 @@ import com.orbit.app.data.dao.EnvelopeNoteDao
 import com.orbit.app.data.dao.EvidenceBundleDao
 import com.orbit.app.data.dao.InvalidationRecordDao
 import com.orbit.app.data.dao.IntentEnvelopeDao
+import com.orbit.app.data.dao.MemoryCandidateDao
+import com.orbit.app.data.dao.MemoryCandidateSupportDao
+import com.orbit.app.data.dao.PromotedMemoryDao
+import com.orbit.app.data.dao.PromotedMemorySupportDao
 import com.orbit.app.data.dao.SkillUsageDao
 import com.orbit.app.data.entity.ActionExecutionEntity
 import com.orbit.app.data.entity.ActionProposalEntity
@@ -32,6 +36,10 @@ import com.orbit.app.data.entity.EnvelopeNoteEntity
 import com.orbit.app.data.entity.EvidenceBundleEntity
 import com.orbit.app.data.entity.InvalidationRecordEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
+import com.orbit.app.data.entity.MemoryCandidateEntity
+import com.orbit.app.data.entity.MemoryCandidateSupportEntity
+import com.orbit.app.data.entity.PromotedMemoryEntity
+import com.orbit.app.data.entity.PromotedMemorySupportEntity
 import com.orbit.app.data.entity.SkillUsageEntity
 import com.orbit.app.data.security.KeystoreKeyProvider
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
@@ -55,9 +63,14 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         CaptureUnderstandingEntity::class,
         EvidenceBundleEntity::class,
         InvalidationRecordEntity::class,
-        ActiveIntentEntity::class
+        ActiveIntentEntity::class,
+        // 007 — Memory candidates inspector
+        MemoryCandidateEntity::class,
+        MemoryCandidateSupportEntity::class,
+        PromotedMemoryEntity::class,
+        PromotedMemorySupportEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class OrbitDatabase : RoomDatabase() {
@@ -82,6 +95,12 @@ abstract class OrbitDatabase : RoomDatabase() {
     abstract fun evidenceBundleDao(): EvidenceBundleDao
     abstract fun invalidationRecordDao(): InvalidationRecordDao
     abstract fun activeIntentDao(): ActiveIntentDao
+
+    // 007 — Memory candidates inspector
+    abstract fun memoryCandidateDao(): MemoryCandidateDao
+    abstract fun memoryCandidateSupportDao(): MemoryCandidateSupportDao
+    abstract fun promotedMemoryDao(): PromotedMemoryDao
+    abstract fun promotedMemorySupportDao(): PromotedMemorySupportDao
 
     companion object {
         private const val DB_NAME = "orbit.db"
@@ -129,7 +148,8 @@ abstract class OrbitDatabase : RoomDatabase() {
                     MIGRATION_4_5,
                     MIGRATION_5_6,
                     MIGRATION_6_7,
-                    MIGRATION_7_8
+                    MIGRATION_7_8,
+                    MIGRATION_8_9
                 )
                 .build()
         }

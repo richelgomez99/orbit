@@ -92,5 +92,15 @@ enum class AuditAction {
     /** Memory gateway call failed or returned an error response. */
     MEMORY_GATEWAY_FAILED,
     /** Memory sync was skipped before network dispatch. */
-    MEMORY_SYNC_SKIPPED
+    MEMORY_SYNC_SKIPPED,
+
+    // Spec 007 — memory candidates inspector:
+    /** Orbit proposed a candidate memory for user review. */
+    MEMORY_CANDIDATE_PROPOSED,
+    /** User accepted/promoted a candidate memory. */
+    MEMORY_CANDIDATE_ACCEPTED,
+    /** User rejected a candidate memory. */
+    MEMORY_CANDIDATE_REJECTED,
+    /** Candidate/promoted memory was invalidated because provenance disappeared or became stale. */
+    MEMORY_INVALIDATED
 }

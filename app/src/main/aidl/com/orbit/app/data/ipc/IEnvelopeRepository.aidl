@@ -12,6 +12,9 @@ import com.orbit.app.data.ipc.ActionDraftParcel;
 import com.orbit.app.data.ipc.AppFunctionSummaryParcel;
 import com.orbit.app.data.ipc.IActionProposalObserver;
 import com.orbit.app.data.ipc.IActionDraftObserver;
+import com.orbit.app.data.ipc.MemoryDecisionResultParcel;
+import com.orbit.app.data.ipc.IMemoryCandidateObserver;
+import com.orbit.app.data.ipc.IPromotedMemoryObserver;
 import com.orbit.app.data.ipc.ClusterCardParcel;
 import com.orbit.app.data.ipc.IClusterObserver;
 import com.orbit.app.data.ipc.ActiveIntentParcel;
@@ -194,6 +197,32 @@ interface IEnvelopeRepository {
     // Debug-build demo helper. Seeds deterministic proposal rows for known
     // debug demo captures. Release implementation returns "UNAVAILABLE".
     String debugSeedDemoActionProposals();
+
+    // ---- Spec 007 — Memory candidates inspector ----
+
+    // Compact pending memory suggestions for the Orbit tab. Payloads carry
+    // only ids and display summaries; no raw screenshots/OCR/prompts/model
+    // responses cross Binder.
+    void observePendingMemoryCandidates(int limit, IMemoryCandidateObserver observer);
+    void stopObservingMemoryCandidates(IMemoryCandidateObserver observer);
+
+    // Compact accepted memory projection for the Orbit tab and later
+    // Settings memory surface.
+    void observePromotedMemories(int limit, IPromotedMemoryObserver observer);
+    void stopObservingPromotedMemories(IPromotedMemoryObserver observer);
+
+    // User decisions on candidate memory. Edited strings are optional and
+    // validated in :ml before any promoted memory row is written.
+    MemoryDecisionResultParcel acceptMemoryCandidate(
+        String candidateId,
+        String editedLabel,
+        String editedFactText
+    );
+    MemoryDecisionResultParcel rejectMemoryCandidate(String candidateId, String reason);
+
+    // Debug-build demo helper. Seeds deterministic memory candidates for
+    // known debug captures. Release implementation returns "UNAVAILABLE".
+    String debugSeedDemoMemoryCandidates();
 
     // T061 — TodoActionHandler local-target dispatch entry point.
     //

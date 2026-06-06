@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.orbit.app.data.ipc.ActionDraftParcel
+import com.orbit.app.data.ipc.MemoryCandidateParcel
 import com.orbit.app.diary.ActionPreviewSheet
 import com.orbit.app.diary.ActiveIntentUiState
 import com.orbit.app.diary.DiaryViewModel
@@ -45,10 +48,12 @@ fun OrbitCleanupScreen(
 ) {
     val state by viewModel.activeIntentState.collectAsState()
     val actionDrafts by viewModel.observeActionDrafts().collectAsState(initial = emptyList())
+    val memoryCandidates by viewModel.observeMemoryCandidates().collectAsState(initial = emptyList())
     val actionNotice by viewModel.actionNotice.collectAsState()
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     var pendingActionDraft by remember { mutableStateOf<ActionDraftParcel?>(null) }
+    var editingMemoryCandidate by remember { mutableStateOf<MemoryCandidateParcel?>(null) }
     LaunchedEffect(actionNotice?.id) {
         val notice = actionNotice ?: return@LaunchedEffect
         Toast.makeText(context, notice.message, Toast.LENGTH_LONG).show()
@@ -85,6 +90,24 @@ fun OrbitCleanupScreen(
                             dayLocal = null,
                         )
                     )
+            },
+        )
+        MemoryReviewPanel(
+            candidates = memoryCandidates,
+            onAccept = { viewModel.onAcceptMemoryCandidate(it.candidateId) },
+            onReject = { viewModel.onRejectMemoryCandidate(it.candidateId, "user_rejected") },
+            onEdit = { editingMemoryCandidate = it },
+            onOpenCapture = { candidate ->
+                candidate.primarySourceEnvelopeId?.let { sourceId ->
+                    onOpenCapture?.invoke(sourceId)
+                        ?: context.startActivity(
+                            EnvelopeDetailActivity.newIntent(
+                                context,
+                                sourceId,
+                                dayLocal = null,
+                            )
+                        )
+                }
             },
         )
         if (state is ActiveIntentUiState.Ready) {
@@ -141,6 +164,17 @@ fun OrbitCleanupScreen(
             onDismiss = {
                 viewModel.onDismissProposal(draft.proposalId)
                 pendingActionDraft = null
+            },
+        )
+    }
+
+    editingMemoryCandidate?.let { candidate ->
+        MemoryCandidateEditDialog(
+            candidate = candidate,
+            onDismiss = { editingMemoryCandidate = null },
+            onAccept = { label, fact ->
+                viewModel.onAcceptMemoryCandidate(candidate.candidateId, label, fact)
+                editingMemoryCandidate = null
             },
         )
     }
@@ -264,4 +298,160 @@ private fun ActionDraftCard(
             }
         }
     }
+}
+
+@Composable
+private fun MemoryReviewPanel(
+    candidates: List<MemoryCandidateParcel>,
+    onAccept: (MemoryCandidateParcel) -> Unit,
+    onReject: (MemoryCandidateParcel) -> Unit,
+    onEdit: (MemoryCandidateParcel) -> Unit,
+    onOpenCapture: (MemoryCandidateParcel) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (candidates.isEmpty()) return
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = "Memory review",
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        candidates.forEach { candidate ->
+            MemoryCandidateCard(
+                candidate = candidate,
+                onAccept = { onAccept(candidate) },
+                onReject = { onReject(candidate) },
+                onEdit = { onEdit(candidate) },
+                onOpenCapture = { onOpenCapture(candidate) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun MemoryCandidateCard(
+    candidate: MemoryCandidateParcel,
+    onAccept: () -> Unit,
+    onReject: () -> Unit,
+    onEdit: () -> Unit,
+    onOpenCapture: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val sensitivityCopy = when (candidate.sensitivity) {
+        "LOCAL_ONLY" -> "Local only"
+        "SENSITIVE" -> "Sensitive"
+        else -> candidate.confidenceLabel.replaceFirstChar { it.uppercaseChar() }
+    }
+    val sourceLine = buildString {
+        append("${candidate.sourceCount.coerceAtLeast(0)} source")
+        if (candidate.sourceCount != 1) append("s")
+        candidate.primarySourceDayLocal?.let { append(" • ").append(it) }
+    }
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = candidate.displayLabel,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = candidate.factText,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            candidate.askUserCopy?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                text = "${candidate.candidateKind.lowercase().replace('_', ' ')} - $sensitivityCopy - $sourceLine",
+                style = MaterialTheme.typography.labelSmall,
+            )
+            candidate.primarySourceTitle?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(
+                    onClick = onOpenCapture,
+                    enabled = candidate.primarySourceEnvelopeId != null,
+                ) { Text("Open") }
+                TextButton(onClick = onReject) { Text("Reject") }
+                TextButton(onClick = onEdit) { Text("Edit") }
+                Button(onClick = onAccept) { Text("Accept") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MemoryCandidateEditDialog(
+    candidate: MemoryCandidateParcel,
+    onDismiss: () -> Unit,
+    onAccept: (String, String) -> Unit,
+) {
+    var label by remember(candidate.candidateId) { mutableStateOf(candidate.displayLabel) }
+    var fact by remember(candidate.candidateId) { mutableStateOf(candidate.factText) }
+    val labelValid = label.trim().isNotEmpty() && label.length <= 200
+    val factValid = fact.trim().isNotEmpty() && fact.length <= 300
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit memory") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    label = { Text("Label") },
+                    singleLine = false,
+                    isError = !labelValid,
+                )
+                OutlinedTextField(
+                    value = fact,
+                    onValueChange = { fact = it },
+                    label = { Text("Memory") },
+                    singleLine = false,
+                    isError = !factValid,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onAccept(label.trim(), fact.trim()) },
+                enabled = labelValid && factValid,
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+    )
 }

@@ -214,6 +214,26 @@ class ScreenshotUrlExtractWorkerTest {
         ) = error("unused")
         override fun stopObservingActionDrafts(observer: com.orbit.app.data.ipc.IActionDraftObserver) = error("unused")
         override fun debugSeedDemoActionProposals(): String = error("unused")
+        override fun observePendingMemoryCandidates(
+            limit: Int,
+            observer: com.orbit.app.data.ipc.IMemoryCandidateObserver
+        ) = error("unused")
+        override fun stopObservingMemoryCandidates(observer: com.orbit.app.data.ipc.IMemoryCandidateObserver) = error("unused")
+        override fun observePromotedMemories(
+            limit: Int,
+            observer: com.orbit.app.data.ipc.IPromotedMemoryObserver
+        ) = error("unused")
+        override fun stopObservingPromotedMemories(observer: com.orbit.app.data.ipc.IPromotedMemoryObserver) = error("unused")
+        override fun acceptMemoryCandidate(
+            candidateId: String?,
+            editedLabel: String?,
+            editedFactText: String?
+        ): com.orbit.app.data.ipc.MemoryDecisionResultParcel = error("unused")
+        override fun rejectMemoryCandidate(
+            candidateId: String?,
+            reason: String?
+        ): com.orbit.app.data.ipc.MemoryDecisionResultParcel = error("unused")
+        override fun debugSeedDemoMemoryCandidates(): String = error("unused")
 
         override fun observeClusters(observer: com.orbit.app.data.ipc.IClusterObserver) = error("unused")
 

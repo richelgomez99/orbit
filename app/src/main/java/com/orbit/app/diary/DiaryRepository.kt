@@ -8,6 +8,9 @@ import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
+import com.orbit.app.data.ipc.MemoryCandidateParcel
+import com.orbit.app.data.ipc.MemoryDecisionResultParcel
+import com.orbit.app.data.ipc.PromotedMemoryParcel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -125,4 +128,35 @@ interface DiaryRepository {
 
     /** Compact pending action drafts for the Orbit tab. */
     fun observeActionDrafts(limit: Int = 20): Flow<List<ActionDraftParcel>> = flowOf(emptyList())
+
+    // ---- Spec 007 — Orbit memory review --------------------------------
+
+    /** Compact pending memory candidates for the Orbit tab. */
+    fun observeMemoryCandidates(limit: Int = 20): Flow<List<MemoryCandidateParcel>> = flowOf(emptyList())
+
+    /** Compact accepted memories for the Orbit tab and future Settings memory surface. */
+    fun observePromotedMemories(limit: Int = 20): Flow<List<PromotedMemoryParcel>> = flowOf(emptyList())
+
+    suspend fun acceptMemoryCandidate(
+        candidateId: String,
+        editedLabel: String? = null,
+        editedFactText: String? = null
+    ): MemoryDecisionResultParcel = MemoryDecisionResultParcel(
+        ok = false,
+        candidateId = candidateId,
+        memoryId = null,
+        status = "unavailable",
+        message = "Orbit memory review is not available yet."
+    )
+
+    suspend fun rejectMemoryCandidate(
+        candidateId: String,
+        reason: String? = null
+    ): MemoryDecisionResultParcel = MemoryDecisionResultParcel(
+        ok = false,
+        candidateId = candidateId,
+        memoryId = null,
+        status = "unavailable",
+        message = "Orbit memory review is not available yet."
+    )
 }

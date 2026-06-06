@@ -37,8 +37,12 @@ class DebugDemoSeedReceiver : BroadcastReceiver() {
                 val actionSeed = withRepository(context.applicationContext) { repo ->
                     repo.debugSeedDemoActionProposals()
                 }
+                val memorySeed = withRepository(context.applicationContext) { repo ->
+                    repo.debugSeedDemoMemoryCandidates()
+                }
                 Log.i(TAG, "seeded demo envelopes count=${seeded.distinct().size}")
                 Log.i(TAG, "seeded demo action proposals result=$actionSeed")
+                Log.i(TAG, "seeded demo memory candidates result=$memorySeed")
             } catch (t: Throwable) {
                 Log.w(TAG, "demo seed failed", t)
             } finally {

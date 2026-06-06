@@ -15,6 +15,7 @@ import com.orbit.app.data.ClusterRepository
 import com.orbit.app.data.ClusterSummarizeDelegate
 import com.orbit.app.data.EnvelopeRepositoryImpl
 import com.orbit.app.data.LocalRoomBackend
+import com.orbit.app.data.MemoryRepositoryDelegate
 import com.orbit.app.data.OrbitDatabase
 import com.orbit.app.data.WeeklyDigestDelegate
 import com.orbit.app.ai.ClusterSummariser
@@ -73,6 +74,11 @@ class EnvelopeRepositoryService : Service() {
         val actionsDelegate = ActionsRepositoryDelegate(
             database = db,
             registry = registry,
+            auditWriter = auditWriter,
+            scope = serviceScope
+        )
+        val memoryRepositoryDelegate = MemoryRepositoryDelegate(
+            database = db,
             auditWriter = auditWriter,
             scope = serviceScope
         )
@@ -149,7 +155,8 @@ class EnvelopeRepositoryService : Service() {
             activeIntentRepository = activeIntentRepository,
             basicUnderstandingWriter = basicUnderstandingWriter,
             memoryIndexSyncScheduler = memoryIndexSyncScheduler,
-            memoryIndexSyncDelegate = memoryIndexSyncDelegate
+            memoryIndexSyncDelegate = memoryIndexSyncDelegate,
+            memoryRepositoryDelegate = memoryRepositoryDelegate
         )
         // T088 — same service binder pool exposes the audit-log surface on a
         // distinct intent action so the Settings / audit viewer process can
