@@ -108,15 +108,21 @@ class SchemaValidationTest {
     }
 
     @Test
-    fun todoSchema_titleRequired_dueOptional() {
+    fun todoSchema_itemsRequired_parentAndTargetOptional() {
         val obj = JSONObject(BuiltInAppFunctionSchemas.TASKS_CREATE_TODO.argsSchemaJson)
         val required = obj.getJSONArray("required")
         val requiredNames = (0 until required.length()).map { required.getString(it) }.toSet()
-        assertEquals("tasks.createTodo only requires title in v1.1", setOf("title"), requiredNames)
+        assertEquals("tasks.createTodo model-facing schema requires only items", setOf("items"), requiredNames)
 
         val properties = obj.getJSONObject("properties")
-        // dueEpochMillis is declared but not required → optional.
-        assertTrue("dueEpochMillis must be declared as optional", properties.has("dueEpochMillis"))
+        assertTrue("items must be declared", properties.has("items"))
+        assertTrue("parentEnvelopeId must be optional for model-facing extraction", properties.has("parentEnvelopeId"))
+        assertTrue("target must be optional", properties.has("target"))
+        assertTrue("proposalId must be runtime-injected, not model-generated", !properties.has("proposalId"))
+
+        val items = properties.getJSONObject("items")
+        assertEquals("array", items.getString("type"))
+        assertEquals(1, items.getInt("minItems"))
     }
 
     @Test

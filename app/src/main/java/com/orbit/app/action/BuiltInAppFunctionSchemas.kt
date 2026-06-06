@@ -73,11 +73,30 @@ object BuiltInAppFunctionSchemas {
             {
               "${"$"}schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
-              "required": ["title"],
+              "required": ["items"],
               "properties": {
-                "title":          { "type": "string", "minLength": 1, "maxLength": 200 },
-                "dueEpochMillis": { "type": "integer", "minimum": 0 },
-                "notes":          { "type": "string", "maxLength": 4000 }
+                "parentEnvelopeId": { "type": "string", "minLength": 1, "maxLength": 64 },
+                "target":           { "type": "string", "enum": ["local", "external"] },
+                "items": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 20,
+                  "items": {
+                    "oneOf": [
+                      { "type": "string", "minLength": 1, "maxLength": 240 },
+                      {
+                        "type": "object",
+                        "required": ["text"],
+                        "properties": {
+                          "text":           { "type": "string", "minLength": 1, "maxLength": 240 },
+                          "dueEpochMillis": { "type": "integer", "minimum": 0 }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "mimeType": { "type": "string", "maxLength": 80 }
               },
               "additionalProperties": false
             }

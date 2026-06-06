@@ -2,6 +2,82 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
+## Current Status - 2026-06-04 Spec 006 Closeout
+
+Authoritative current branch:
+
+- `feature/006-approval-action-runtime-20260603`
+
+Active goal status:
+
+- The high-level Orbit MVP goal was previously marked `blocked` only because phone access was unavailable. The user resumed work, and repo-side progress is unblocked.
+- Do not mark the goal complete yet. Spec 006 still needs final S24 manual confirmation and branch commit, and the broader MVP path continues into the next specs.
+
+Spec status:
+
+- `specs/005A-semantic-retrieval-grounded-ask/` and the 005B link/source-label follow-up are implemented and validated enough to serve as the retrieval/Ask MVP baseline.
+- `specs/006-approval-action-runtime/` is the active branch and is implementation-complete locally.
+- Remaining Spec 006 tasks:
+  - `T006-039`: final S24 manual demo confirmation.
+  - `T006-040`: closeout docs. This handoff, `quickstart.md`, and `docs/orbit-roadmap-queue-2026-06-02.md` have been updated with current evidence; update again after the user confirms the final S24 pass.
+  - `T006-041`: commit the branch without generated APK artifacts.
+
+Current APK:
+
+```text
+path=dist/orbit-mvp-debug-20260603-006.apk
+sha256=05cb7026b5738b7c55f3cba7a0d168a4dabcb182270b2f18ad05863d7fad71c5
+install_status=installed/launched/seeded on S24 SM-S928U1 / adb R5CWC2KX4GK on 2026-06-04
+dist_git_status=ignored/untracked; do not commit APK artifacts
+```
+
+Latest Spec 006 verification:
+
+```text
+focused_local_gate=PASS 2026-06-04 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.ui.EnvelopeCardTodoParseTest" --tests "com.orbit.app.diary.DiaryViewModelTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+targeted_s24_instrumented_repo_test=PASS 2026-06-04 `./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.orbit.app.data.ActionsRepositoryDelegateTest` (7 tests passed; non-fatal appops warning only)
+full_local_android_gate=PASS 2026-06-04 `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+diff_whitespace=PASS 2026-06-04 `git diff --check`
+android_secret_scan=PASS 2026-06-04 no OPENAI_API_KEY/MONGODB_ATLAS_URI/mongodb+srv/MongoClient/ANTHROPIC_API_KEY/ZEROENTROPY hits under app/src
+android_network_boundary_scan=PASS 2026-06-04 no OkHttpClient/HttpURLConnection/Socket/HttpClient constructors in scanned app source
+s24_install_seed=PASS 2026-06-04 installed APK, launched `com.orbit.app/.diary.DiaryActivity`, broadcast debug seed
+s24_local_todo_grouped_list=PASS 2026-06-05 user confirmed S24 now shows one envelope with multiple checklist items
+```
+
+Important Spec 006 implementation notes:
+
+- Orbit tab now has an Action Drafts workspace backed by a local `ActionDraftParcel` projection over existing Room action proposal/source rows. No new durable action-draft table was added.
+- Calendar approvals use typed fields and `Intent.ACTION_INSERT`. Orbit does not promise undo for Calendar because it cannot reverse an external Calendar insert.
+- Local shopping-list approvals now create one derived list envelope with all checklist items stored in `todoMetaJson.items[]`. This intentionally corrects older Spec 003-era behavior that could explode a shopping list into one envelope per ingredient.
+- Library/local search includes `todoMetaJson`, so a grouped list envelope can be found by an item such as `ginger`.
+- Derived list cards render multiple checklist rows and allow item toggles by index.
+- Proposal lifecycle audit and `skill_usage` updates cover success, failure, cancel, dismiss, duplicate confirm, and schema mismatch paths.
+- Debug demo proposal seeding is debug-only; release returns unavailable and no production arbitrary proposal insert API was added.
+- Android still never stores Atlas/OpenAI secrets and does not construct direct network clients outside the approved `:net` boundary.
+
+Final S24 manual validation needed:
+
+1. Ask the user to open Orbit manually if ADB screenshots show Android recents instead of the app.
+2. In Orbit, confirm Action Drafts are visible.
+3. Approve the seeded Calendar draft and verify Android Calendar insert opens with expected fields.
+4. Return to Orbit and verify no misleading Orbit undo appears for Calendar.
+5. Approve the newly seeded shopping-list/list draft.
+6. Go to Diary and verify it appears as one grouped list envelope with multiple checklist items, not separate `salmon`/`miso`/`ginger` rows.
+7. Toggle one checklist item.
+8. Search Library for `ginger`; expect the single grouped list result from the new approval.
+9. Dismiss one remaining draft and confirm it disappears.
+
+Manual validation caveat:
+
+- The S24 local database may still contain individual ingredient rows created by older APKs before the grouped-list fix. Those old rows are historical local data. The user confirmed on 2026-06-05 that the current build now creates one envelope with multiple checklist items for the newly approved list draft.
+- Do not reset app data without explicit user approval, because it deletes local Orbit data. If the user wants a clean demo, use the Spec 006 install script with its reset mode only after confirming the destructive reset.
+
+Next branch after Spec 006 closes:
+
+- `007-memory-candidates-inspector` unless the user explicitly changes the roadmap.
+- Keep AppFunctions/Spark/platform-agent interop deferred until approval/access exists.
+- Keep BYOM/local model manager for Spec 022. Do not treat the existing AICore/Gemini Nano path as the final local AI architecture.
+
 ## Current Status - 2026-06-03 Late Session
 
 Authoritative current branch:

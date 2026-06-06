@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
 import com.orbit.app.action.ipc.ActionExecuteResultParcel
 import com.orbit.app.ai.EmbeddingResult
@@ -42,6 +43,8 @@ import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * T150-revisit (Block 11) — instrumented placement contract for the
@@ -181,6 +184,45 @@ class DiaryScreenWithClusterTest {
         composeRule.onNodeWithText("▶").assertIsDisplayed()
     }
 
+    @Test
+    fun groupedTodoEnvelope_rendersMultipleChecklistItemsAndTogglesByIndex() {
+        val toggles = mutableListOf<Triple<String, Int, Boolean>>()
+        val todoMeta = JSONObject().apply {
+            put("derivedFromProposalId", "p-list")
+            put(
+                "items",
+                JSONArray()
+                    .put(JSONObject().put("text", "salmon").put("done", false))
+                    .put(JSONObject().put("text", "miso").put("done", true))
+                    .put(JSONObject().put("text", "ginger").put("done", false))
+            )
+        }.toString()
+
+        composeRule.setContent {
+            MaterialTheme {
+                EnvelopeCard(
+                    envelope = envelope(
+                        sourceAppLabel = "Notes",
+                        textContent = "Create recipe shopping list",
+                        todoMetaJson = todoMeta,
+                    ),
+                    onReassign = { _, _ -> },
+                    onToggleTodoItem = { envelopeId, index, done ->
+                        toggles += Triple(envelopeId, index, done)
+                    },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("salmon").assertIsDisplayed()
+        composeRule.onNodeWithText("miso").assertIsDisplayed()
+        composeRule.onNodeWithText("ginger").assertIsDisplayed()
+
+        composeRule.onNodeWithTag(EnvelopeCardTestTags.todoItem(1)).performClick()
+
+        assertTrue(toggles.contains(Triple("env-1", 1, false)))
+    }
+
     // ------------------------------------------------------------------
 
     private fun renderDayContent(
@@ -236,6 +278,7 @@ class DiaryScreenWithClusterTest {
     private fun envelope(
         sourceAppLabel: String?,
         textContent: String = "https://example.com/article",
+        todoMetaJson: String? = null,
     ): EnvelopeViewParcel = EnvelopeViewParcel(
         id = "env-1",
         contentType = "TEXT",
@@ -255,6 +298,7 @@ class DiaryScreenWithClusterTest {
         hourLocal = 12,
         dayOfWeekLocal = 4,
         sourceAppLabel = sourceAppLabel,
+        todoMetaJson = todoMetaJson,
     )
 
     /**

@@ -11,12 +11,14 @@ import com.orbit.app.action.ipc.ActionExecuteResultParcel
 import com.orbit.app.action.ipc.IActionExecutor
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ClusterMemberRef
+import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.ClusterCardParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.ipc.IActionProposalObserver
+import com.orbit.app.data.ipc.IActionDraftObserver
 import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.ipc.IClusterObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
@@ -313,6 +315,21 @@ class BinderDiaryRepository(
         val repo = connect()
         return withContext(Dispatchers.IO) {
             repo.requestActiveIntentEscalation(intentId, mode)
+        }
+    }
+
+    // ---- Spec 006 — Orbit action draft workspace -------------------------
+
+    override fun observeActionDrafts(limit: Int): Flow<List<ActionDraftParcel>> = callbackFlow {
+        val repo = connect()
+        val observer = object : IActionDraftObserver.Stub() {
+            override fun onActionDraftsChanged(drafts: MutableList<ActionDraftParcel>?) {
+                trySend(drafts?.toList() ?: emptyList())
+            }
+        }
+        repo.observePendingActionDrafts(limit, observer)
+        awaitClose {
+            runCatching { repo.stopObservingActionDrafts(observer) }
         }
     }
 }

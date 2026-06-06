@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -220,12 +221,13 @@ fun EnvelopeCard(
                     Spacer(Modifier.height(8.dp))
                     Column {
                         items.forEachIndexed { index, item ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onToggleTodoItem(envelope.id, index, !item.done)
-                                    },
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .testTag(EnvelopeCardTestTags.todoItem(index))
+                                        .clickable {
+                                            onToggleTodoItem(envelope.id, index, !item.done)
+                                        },
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                             ) {
                                 Checkbox(
@@ -442,4 +444,8 @@ internal fun parseTodoItems(json: String): List<TodoItem> {
         out.add(TodoItem(text = text, done = done, dueEpochMillis = due))
     }
     return out
+}
+
+object EnvelopeCardTestTags {
+    fun todoItem(index: Int) = "EnvelopeCard.todoItem.$index"
 }

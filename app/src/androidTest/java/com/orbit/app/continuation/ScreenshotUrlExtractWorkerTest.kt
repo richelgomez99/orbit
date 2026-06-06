@@ -208,6 +208,12 @@ class ScreenshotUrlExtractWorkerTest {
             observer: com.orbit.app.data.ipc.IActionProposalObserver
         ) = error("unused")
         override fun stopObservingProposals(observer: com.orbit.app.data.ipc.IActionProposalObserver) = error("unused")
+        override fun observePendingActionDrafts(
+            limit: Int,
+            observer: com.orbit.app.data.ipc.IActionDraftObserver
+        ) = error("unused")
+        override fun stopObservingActionDrafts(observer: com.orbit.app.data.ipc.IActionDraftObserver) = error("unused")
+        override fun debugSeedDemoActionProposals(): String = error("unused")
 
         override fun observeClusters(observer: com.orbit.app.data.ipc.IClusterObserver) = error("unused")
 

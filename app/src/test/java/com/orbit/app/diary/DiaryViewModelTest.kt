@@ -18,11 +18,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -147,6 +149,8 @@ class DiaryViewModelTest {
                 dispatchedAtMillis = 0L,
                 latencyMs = 5L
             )
+        var confirmResult: Boolean = true
+        var confirmDelayMs: Long = 0L
 
         override fun observeDay(isoDate: String) =
             kotlinx.coroutines.flow.flowOf(DayPageParcel(isoDate, emptyList()))
@@ -159,7 +163,9 @@ class DiaryViewModelTest {
         override fun observeProposals(envelopeId: String) =
             kotlinx.coroutines.flow.flowOf(emptyList<com.orbit.app.data.ipc.ActionProposalParcel>())
         override suspend fun markProposalConfirmed(proposalId: String): Boolean {
-            confirmCalls += proposalId; return true
+            if (confirmDelayMs > 0) delay(confirmDelayMs)
+            confirmCalls += proposalId
+            return confirmResult
         }
         override suspend fun markProposalDismissed(proposalId: String): Boolean {
             dismissCalls += proposalId; return true
@@ -193,6 +199,11 @@ class DiaryViewModelTest {
         sensitivityScope = "PUBLIC",
         createdAtMillis = 0L,
         stateChangedAtMillis = 0L
+    )
+
+    private fun todoProposal(id: String = "p1") = proposal(id).copy(
+        functionId = "tasks.createTodo",
+        argsJson = """{"items":["buy salmon"]}"""
     )
 
     private class StubNano(private val response: String = "Nano output") : LlmProvider {
@@ -432,7 +443,7 @@ class DiaryViewModelTest {
     // ---- Spec 003 v1.1 Orbit Actions hops (T053) -------------------------
 
     @Test
-    fun onConfirmProposal_marksConfirmed_thenExecutes_thenOpensUndoToast() = runTest {
+    fun onConfirmProposal_calendarMarksConfirmed_thenExecutes_withoutUndoToast() = runTest {
         val repo = ActionRecordingRepo()
         val vm = TestScopeVm(this, repo)
         vm.onConfirmProposal(proposal("p1"))
@@ -445,10 +456,94 @@ class DiaryViewModelTest {
             """{"title":"Coffee","startEpochMillis":1745164800000}""",
             repo.executeCalls.single().argsJson
         )
-        // Per request contract: withUndo defaults to true so the executor
-        // opens its 5 s window.
+        assertFalse(repo.executeCalls.single().withUndo)
+        assertEquals(null, vm.undoState.value)
+    }
+
+    @Test
+    fun onConfirmProposal_localTodoMarksConfirmed_thenExecutes_thenOpensUndoToast() = runTest {
+        val repo = ActionRecordingRepo()
+        val vm = TestScopeVm(this, repo)
+        val todo = proposal("p1").copy(
+            functionId = "tasks.createTodo",
+            argsJson = """{"items":["buy salmon"]}"""
+        )
+
+        vm.onConfirmProposal(todo)
+        advanceUntilIdle()
+
+        assertEquals(listOf("p1"), repo.confirmCalls)
         assertTrue(repo.executeCalls.single().withUndo)
         assertEquals("exec-1", vm.undoState.value?.executionId)
+    }
+
+    @Test
+    fun onConfirmProposal_doesNotExecuteWhenProposalWasAlreadyTerminal() = runTest {
+        val repo = ActionRecordingRepo().apply { confirmResult = false }
+        val vm = TestScopeVm(this, repo)
+
+        vm.onConfirmProposal(proposal("p1"))
+        advanceUntilIdle()
+
+        assertEquals(listOf("p1"), repo.confirmCalls)
+        assertTrue(repo.executeCalls.isEmpty())
+        assertEquals(null, vm.undoState.value)
+    }
+
+    @Test
+    fun onConfirmProposal_failedExecutionSurfacesFriendlyNotice_notUndoToast() = runTest {
+        val repo = ActionRecordingRepo().apply {
+            executeResult = com.orbit.app.action.ipc.ActionExecuteResultParcel(
+                executionId = "exec-failed",
+                outcome = "FAILED",
+                outcomeReason = "schema_mismatch",
+                dispatchedAtMillis = 0L,
+                latencyMs = 0L
+            )
+        }
+        val vm = TestScopeVm(this, repo)
+
+        vm.onConfirmProposal(todoProposal("p1"))
+        advanceUntilIdle()
+
+        assertEquals(null, vm.undoState.value)
+        assertEquals(
+            "This draft is out of date. Capture it again or wait for Orbit to extract a fresh draft.",
+            vm.actionNotice.value?.message
+        )
+
+        vm.onActionNoticeDismissed()
+        assertEquals(null, vm.actionNotice.value)
+    }
+
+    @Test
+    fun onConfirmProposal_ignoresRapidSecondTapWhileConfirming() = runTest {
+        val repo = ActionRecordingRepo().apply { confirmDelayMs = 1_000L }
+        val vm = TestScopeVm(this, repo)
+
+        vm.onConfirmProposal(proposal("p1"))
+        vm.onConfirmProposal(proposal("p1"))
+        advanceTimeBy(1_001L)
+        advanceUntilIdle()
+
+        assertEquals(listOf("p1"), repo.confirmCalls)
+        assertEquals(1, repo.executeCalls.size)
+    }
+
+    @Test
+    fun actionFailureMessage_mapsKnownReasonsToUserFacingCopy() {
+        assertEquals(
+            "Orbit does not know how to run this action yet.",
+            actionFailureMessage("unknown_skill")
+        )
+        assertEquals(
+            "No app on this phone can open that action.",
+            actionFailureMessage("intent_resolve_failed")
+        )
+        assertEquals(
+            "Orbit could not complete that action. Try again.",
+            actionFailureMessage("unexpected_internal_code")
+        )
     }
 
     @Test
@@ -459,6 +554,23 @@ class DiaryViewModelTest {
         vm.onConfirmProposal(proposal("p1"), editedArgsJson = edited)
         advanceUntilIdle()
         assertEquals(edited, repo.executeCalls.single().argsJson)
+    }
+
+    @Test
+    fun onConfirmProposal_injectsTodoRuntimeIdsBeforeExecute() = runTest {
+        val repo = ActionRecordingRepo()
+        val vm = TestScopeVm(this, repo)
+        val todo = proposal("p1").copy(
+            functionId = "tasks.createTodo",
+            argsJson = """{"items":["buy salmon"]}"""
+        )
+        vm.onConfirmProposal(todo)
+        advanceUntilIdle()
+
+        val args = org.json.JSONObject(repo.executeCalls.single().argsJson)
+        assertEquals("p1", args.getString("proposalId"))
+        assertEquals("env-1", args.getString("parentEnvelopeId"))
+        assertEquals("local", args.getString("target"))
     }
 
     @Test
@@ -477,7 +589,7 @@ class DiaryViewModelTest {
     fun onUndoExecution_cancelsAndClearsToast() = runTest {
         val repo = ActionRecordingRepo()
         val vm = TestScopeVm(this, repo)
-        vm.onConfirmProposal(proposal("p1"))
+        vm.onConfirmProposal(todoProposal("p1"))
         advanceUntilIdle()
         assertEquals("exec-1", vm.undoState.value?.executionId)
 
@@ -491,7 +603,7 @@ class DiaryViewModelTest {
     fun undoToast_autoClearsAfterFiveSeconds() = runTest {
         val repo = ActionRecordingRepo()
         val vm = TestScopeVm(this, repo)
-        vm.onConfirmProposal(proposal("p1"))
+        vm.onConfirmProposal(todoProposal("p1"))
         advanceUntilIdle()
         assertEquals("exec-1", vm.undoState.value?.executionId)
         // Drain the 5 s delay using the virtual scheduler.

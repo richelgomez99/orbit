@@ -29,6 +29,7 @@ interface IntentEnvelopeDao {
             OR intent LIKE '%' || :query || '%' COLLATE NOCASE
             OR appCategory LIKE '%' || :query || '%' COLLATE NOCASE
             OR sourceAppLabel LIKE '%' || :query || '%' COLLATE NOCASE
+            OR todoMetaJson LIKE '%' || :query || '%' COLLATE NOCASE
             OR EXISTS (
               SELECT 1 FROM envelope_note AS note
               WHERE note.envelopeId = intent_envelope.id

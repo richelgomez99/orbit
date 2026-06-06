@@ -200,7 +200,7 @@ abstract class LlmProviderExtractActionsContractTest {
                 schemaVersion = 1,
                 displayName = "Add to-do",
                 description = "Add a to-do",
-                argsSchemaJson = """{"type":"object","required":["title"],"properties":{"title":{"type":"string"}},"additionalProperties":false}""",
+                argsSchemaJson = """{"type":"object","required":["items"],"properties":{"parentEnvelopeId":{"type":"string"},"target":{"type":"string","enum":["local","external"]},"items":{"type":"array","minItems":1,"items":{"oneOf":[{"type":"string"},{"type":"object","required":["text"],"properties":{"text":{"type":"string"},"dueEpochMillis":{"type":"integer"}},"additionalProperties":false}]}}},"additionalProperties":false}""",
                 sensitivityScope = SensitivityScope.PERSONAL
             )
         )

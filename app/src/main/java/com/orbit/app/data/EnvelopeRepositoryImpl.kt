@@ -1,5 +1,6 @@
 package com.orbit.app.data
 
+import com.orbit.app.BuildConfig
 import com.orbit.app.ai.extract.ActionExtractionPrefilter
 import com.orbit.app.ai.extract.ActionExtractor
 import com.orbit.app.ai.extract.ExtractOutcome
@@ -11,6 +12,7 @@ import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.StateSnapshot
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.ipc.IActiveIntentObserver
+import com.orbit.app.data.ipc.IActionDraftObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
 import com.orbit.app.data.ipc.IEnvelopeRepository
 import com.orbit.app.data.ipc.IntentEnvelopeDraftParcel
@@ -962,6 +964,25 @@ class EnvelopeRepositoryImpl(
         actionsDelegate?.stopObservingProposals(observer)
     }
 
+    override fun observePendingActionDrafts(limit: Int, observer: IActionDraftObserver) {
+        val delegate = actionsDelegate
+        if (delegate == null) {
+            scope.launch(Dispatchers.IO) {
+                try {
+                    observer.onActionDraftsChanged(emptyList())
+                } catch (_: android.os.RemoteException) {
+                    // Observer already dead.
+                }
+            }
+            return
+        }
+        delegate.observePendingActionDrafts(limit, observer)
+    }
+
+    override fun stopObservingActionDrafts(observer: IActionDraftObserver) {
+        actionsDelegate?.stopObservingActionDrafts(observer)
+    }
+
     /**
      * T044 — entry point for [com.orbit.app.ai.extract.ActionExtractionWorker].
      * The worker runs in the default WorkManager process; binding to :ml's
@@ -987,6 +1008,12 @@ class EnvelopeRepositoryImpl(
                 is ExtractOutcome.Failed       -> "FAILED:${outcome.reason}"
             }
         }
+    }
+
+    override fun debugSeedDemoActionProposals(): String {
+        if (!BuildConfig.DEBUG) return "UNAVAILABLE"
+        val delegate = actionsDelegate ?: return "UNAVAILABLE"
+        return runBlocking { "SEEDED:${delegate.debugSeedDemoActionProposals()}" }
     }
 
     // T061 — local-target dispatch for `tasks.createTodo`. Returns the

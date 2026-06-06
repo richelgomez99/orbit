@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.json.JSONObject
 import java.time.ZoneId
 
 /**
@@ -101,5 +102,56 @@ class ActionPreviewCardArgsTest {
         assertEquals("2026-04-20T09:00", ny.startIso)
         assertEquals("2026-04-20T22:00", tokyo.startIso)
         assertTrue(ny.startIso != tokyo.startIso)
+    }
+
+    @Test
+    fun parseTodoArgs_stringAndObjectItems_renderEditableLines() {
+        val parsed = parseTodoArgs(
+            """
+            {
+              "target": "local",
+              "items": [
+                "buy salmon",
+                {"text":"buy miso","dueEpochMillis":1780527600000}
+              ]
+            }
+            """.trimIndent()
+        )
+
+        assertEquals("buy salmon\nbuy miso", parsed.itemsText)
+        assertEquals("local", parsed.target)
+    }
+
+    @Test
+    fun parseTodoArgs_malformedJson_returnsBlankLocalForm() {
+        val parsed = parseTodoArgs("not json")
+
+        assertEquals("", parsed.itemsText)
+        assertEquals("local", parsed.target)
+    }
+
+    @Test
+    fun buildTodoArgsJson_dropsBlankAndBulletPrefixes() {
+        val rebuilt = buildTodoArgsJson(
+            """
+            - buy salmon
+
+            * buy miso
+            ginger
+            """.trimIndent()
+        )!!
+        val obj = JSONObject(rebuilt)
+        val items = obj.getJSONArray("items")
+
+        assertEquals("local", obj.getString("target"))
+        assertEquals(3, items.length())
+        assertEquals("buy salmon", items.getString(0))
+        assertEquals("buy miso", items.getString(1))
+        assertEquals("ginger", items.getString(2))
+    }
+
+    @Test
+    fun buildTodoArgsJson_blank_returnsNull() {
+        assertNull(buildTodoArgsJson("  \n -   \n * "))
     }
 }

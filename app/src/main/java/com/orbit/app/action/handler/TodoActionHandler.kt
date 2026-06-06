@@ -89,7 +89,8 @@ class TodoActionHandler : ActionHandler {
 
         return try {
             val newIds = repo.createDerivedTodoEnvelope(parentId, items.toString(), proposalId)
-            HandlerResult.Success(elapsedMs(started), "local:${newIds.size}")
+            val createdCount = if (newIds.isEmpty()) 0 else items.length()
+            HandlerResult.Success(elapsedMs(started), "local:$createdCount")
         } catch (e: android.os.RemoteException) {
             HandlerResult.Failed(elapsedMs(started), "binder_remote_exception", e)
         } catch (t: Throwable) {

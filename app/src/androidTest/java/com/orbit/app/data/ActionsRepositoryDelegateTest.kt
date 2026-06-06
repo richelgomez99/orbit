@@ -9,11 +9,15 @@ import com.orbit.app.data.entity.ActionProposalEntity
 import com.orbit.app.data.model.ActionExecutionOutcome
 import com.orbit.app.data.model.ActionProposalState
 import com.orbit.app.data.model.AuditAction
+import com.orbit.app.data.model.EnvelopeKind
+import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.LlmProvenance
 import com.orbit.app.data.model.SensitivityScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -91,12 +95,10 @@ class ActionsRepositoryDelegateTest {
         assertNotNull(db.actionProposalDao().getById("p1"))
         assertEquals(before + 1, countAudit(AuditAction.ACTION_PROPOSED))
 
-        // Re-running with the same proposalId is a DAO IGNORE no-op, but
-        // the current contract DOES write an audit row per attempt
-        // (because writeProposals doesn't check insert return). This test
-        // pins that behaviour so a future change is intentional.
+        // Re-running with the same proposalId is a DAO IGNORE no-op and
+        // must not write a phantom audit row.
         delegate.writeProposals("env-1", listOf(makeProposal("p1", "calendar.createEvent")))
-        assertEquals(before + 2, countAudit(AuditAction.ACTION_PROPOSED))
+        assertEquals(before + 1, countAudit(AuditAction.ACTION_PROPOSED))
     }
 
     @Test
@@ -193,6 +195,124 @@ class ActionsRepositoryDelegateTest {
         assertEquals(0, db.auditLogDao().listAll().count { it.action == AuditAction.ACTION_EXECUTED })
     }
 
+    @Test
+    fun createDerivedTodoEnvelope_writesOneDerivedListEnvelopeAndAuditProvenance() = runTest {
+        delegate.writeProposals("env-1", listOf(makeProposal("p-todo", "tasks.createTodo")))
+        val itemsJson = JSONArray()
+            .put("Buy salmon")
+            .put(
+                JSONObject()
+                    .put("text", "Buy ginger")
+                    .put("dueEpochMillis", 1_745_164_800_000L)
+            )
+            .toString()
+
+        val ids = delegate.createDerivedTodoEnvelope(
+            parentEnvelopeId = "env-1",
+            itemsJson = itemsJson,
+            proposalId = "p-todo"
+        )
+
+        assertEquals(1, ids.size)
+        val row = db.intentEnvelopeDao().getById(ids.single())!!
+        assertEquals("Lunch", row.textContent)
+        assertEquals(EnvelopeKind.DERIVED, row.kind)
+        assertEquals(Intent.WANT_IT, row.intent)
+        assertTrue(row.derivedFromEnvelopeIdsJson!!.contains("\"env-1\""))
+        val meta = JSONObject(row.todoMetaJson!!)
+        assertEquals("p-todo", meta.getString("derivedFromProposalId"))
+        val todoItems = meta.getJSONArray("items")
+        assertEquals(2, todoItems.length())
+        assertEquals("Buy salmon", todoItems.getJSONObject(0).getString("text"))
+        assertFalse(todoItems.getJSONObject(0).getBoolean("done"))
+        assertEquals("Buy ginger", todoItems.getJSONObject(1).getString("text"))
+        assertEquals(
+            1_745_164_800_000L,
+            todoItems.getJSONObject(1).getLong("dueEpochMillis")
+        )
+
+        val created = db.auditLogDao().listAll()
+            .filter { it.action == AuditAction.ENVELOPE_CREATED }
+        assertEquals(1, created.size)
+        val extra = JSONObject(created.single().extraJson!!)
+        assertEquals("p-todo", extra.getString("derived_from_proposal_id"))
+        assertEquals("env-1", extra.getString("parent_envelope_id"))
+        assertEquals("todo_add", extra.getString("source"))
+        assertEquals(2, extra.getInt("item_count"))
+
+        val ingredientMatches = db.intentEnvelopeDao().searchActive("ginger", limit = 10)
+        assertEquals(
+            "ingredient search should surface the grouped list envelope, not require one envelope per item",
+            listOf(row.id),
+            ingredientMatches.map { it.id }
+        )
+    }
+
+    @Test
+    fun recordActionInvocation_writesSkillUsageForSuccessFailureAndCancel() = runTest {
+        delegate.writeProposals(
+            "env-1",
+            listOf(
+                makeProposal("p-todo", "tasks.createTodo"),
+                makeProposal("p-share", "share.delegate"),
+                makeProposal("p-calendar", "calendar.createEvent")
+            )
+        )
+
+        delegate.recordActionInvocation(
+            executionId = "exec-todo",
+            proposalId = "p-todo",
+            functionId = "tasks.createTodo",
+            outcome = ActionExecutionOutcome.SUCCESS,
+            outcomeReason = null,
+            dispatchedAtMillis = clock,
+            completedAtMillis = clock,
+            latencyMs = 10L,
+            episodeId = null
+        )
+        delegate.recordActionInvocation(
+            executionId = "exec-share",
+            proposalId = "p-share",
+            functionId = "share.delegate",
+            outcome = ActionExecutionOutcome.FAILED,
+            outcomeReason = "unknown_skill",
+            dispatchedAtMillis = clock,
+            completedAtMillis = clock,
+            latencyMs = 0L,
+            episodeId = null
+        )
+        delegate.recordActionInvocation(
+            executionId = "exec-calendar",
+            proposalId = "p-calendar",
+            functionId = "calendar.createEvent",
+            outcome = ActionExecutionOutcome.DISPATCHED,
+            outcomeReason = null,
+            dispatchedAtMillis = clock,
+            completedAtMillis = clock,
+            latencyMs = 20L,
+            episodeId = null
+        )
+        delegate.recordActionInvocation(
+            executionId = "exec-calendar",
+            proposalId = "p-calendar",
+            functionId = "calendar.createEvent",
+            outcome = ActionExecutionOutcome.USER_CANCELLED,
+            outcomeReason = "user_cancelled",
+            dispatchedAtMillis = clock,
+            completedAtMillis = clock + 1_000L,
+            latencyMs = 1_000L,
+            episodeId = null
+        )
+
+        assertEquals(1, db.skillUsageDao().countForSkill("tasks.createTodo"))
+        assertEquals(1, db.skillUsageDao().countForSkill("share.delegate"))
+        assertEquals(
+            "calendar dispatch and user-cancel are both auditable usage outcomes",
+            2,
+            db.skillUsageDao().countForSkill("calendar.createEvent")
+        )
+    }
+
     // ---- Helpers ----
 
     private fun makeProposal(id: String, functionId: String) = ActionProposalEntity(
@@ -225,9 +345,9 @@ class ActionsRepositoryDelegateTest {
                 tzId, hourLocal, dayOfWeekLocal,
                 kind, derivedFromEnvelopeIdsJson, todoMetaJson
             ) VALUES('$id', 'TEXT', 't', NULL, NULL,
-                'ARCHIVE', NULL, 'USER', '[]',
+                'WANT_IT', NULL, 'USER_CHIP', '[]',
                 $clock, '2026-04-26', 0, 0, NULL, NULL,
-                'OTHER', 'FOCUSED', 'UTC', 12, 5,
+                'OTHER', 'STILL', 'UTC', 12, 5,
                 'REGULAR', NULL, NULL)
             """.trimIndent()
         )

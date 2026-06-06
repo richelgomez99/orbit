@@ -34,7 +34,11 @@ class DebugDemoSeedReceiver : BroadcastReceiver() {
                         repo.sealWithResult(item.toDraft(), item.toState()).envelopeId
                     }
                 }
+                val actionSeed = withRepository(context.applicationContext) { repo ->
+                    repo.debugSeedDemoActionProposals()
+                }
                 Log.i(TAG, "seeded demo envelopes count=${seeded.distinct().size}")
+                Log.i(TAG, "seeded demo action proposals result=$actionSeed")
             } catch (t: Throwable) {
                 Log.w(TAG, "demo seed failed", t)
             } finally {

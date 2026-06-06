@@ -425,11 +425,15 @@ private fun RenderDayState(
         val s = undoState ?: return@LaunchedEffect
         val msg = when (s.outcome) {
             "DISPATCHED", "SUCCESS" -> "Added · tap notification to undo"
-            "FAILED" -> "Couldn't add: ${s.outcomeReason ?: "unknown"}"
             "USER_CANCELLED" -> "Cancelled"
             else -> s.outcome
         }
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    }
+    val actionNotice by viewModel.actionNotice.collectAsState()
+    LaunchedEffect(actionNotice?.id) {
+        val notice = actionNotice ?: return@LaunchedEffect
+        Toast.makeText(context, notice.message, Toast.LENGTH_LONG).show()
     }
 
     when (val s = state) {

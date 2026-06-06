@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.orbit.app.data.ipc.ActionProposalParcel
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.time.Instant
@@ -82,6 +83,11 @@ fun ActionPreviewSheet(
 
             when (proposal.functionId) {
                 "calendar.createEvent" -> CalendarFields(
+                    proposal = proposal,
+                    onConfirm = onConfirm,
+                    onDismiss = onDismiss
+                )
+                "tasks.createTodo" -> TodoFields(
                     proposal = proposal,
                     onConfirm = onConfirm,
                     onDismiss = onDismiss
@@ -205,6 +211,55 @@ private fun CalendarFields(
     }
 }
 
+@Composable
+private fun TodoFields(
+    proposal: ActionProposalParcel,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val parsed = remember(proposal.id) { parseTodoArgs(proposal.argsJson) }
+    var itemsText by rememberSaveable(proposal.id) { mutableStateOf(parsed.itemsText) }
+    var error by remember(proposal.id) { mutableStateOf<String?>(null) }
+
+    OutlinedTextField(
+        value = itemsText,
+        onValueChange = { itemsText = it },
+        label = { Text("Items") },
+        modifier = Modifier.fillMaxWidth(),
+        minLines = 3
+    )
+    Text(
+        text = "Orbit will create local follow-up items.",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
+    error?.let {
+        Text(
+            text = it,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error
+        )
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        TextButton(onClick = onDismiss) { Text("Cancel") }
+        Button(
+            onClick = {
+                val rebuilt = buildTodoArgsJson(itemsText, parsed.target)
+                if (rebuilt == null) {
+                    error = "Add at least one item"
+                    return@Button
+                }
+                onConfirm(rebuilt)
+            }
+        ) { Text("Create Items") }
+    }
+}
+
 /**
  * Read-only fallback for non-calendar function ids — confirm passes the
  * original argsJson untouched. US2 (todo) and US2b (share) will replace
@@ -241,6 +296,11 @@ internal data class CalendarFormState(
     val tzId: String
 )
 
+internal data class TodoFormState(
+    val itemsText: String,
+    val target: String
+)
+
 /**
  * Parses [argsJson] into the [CalendarFormState] backing the editable
  * fields. Tolerant of missing keys — every field falls back to a sensible
@@ -269,6 +329,40 @@ internal fun parseCalendarArgs(argsJson: String): CalendarFormState {
         notes = obj.optString("notes"),
         tzId = zone.id
     )
+}
+
+internal fun parseTodoArgs(argsJson: String): TodoFormState {
+    val obj = try { JSONObject(argsJson) } catch (_: JSONException) { JSONObject() }
+    val lines = mutableListOf<String>()
+    obj.optJSONArray("items")?.let { items ->
+        for (i in 0 until items.length()) {
+            val text = when (val raw = items.opt(i)) {
+                is String -> raw
+                is JSONObject -> raw.optString("text")
+                else -> ""
+            }.trim()
+            if (text.isNotBlank()) lines += text
+        }
+    }
+    return TodoFormState(
+        itemsText = lines.joinToString("\n"),
+        target = obj.optString("target").ifBlank { "local" }
+    )
+}
+
+internal fun buildTodoArgsJson(itemsText: String, target: String = "local"): String? {
+    val lines = itemsText
+        .lineSequence()
+        .map { it.trim().removePrefix("-").removePrefix("*").trim() }
+        .filter { it.isNotBlank() }
+        .toList()
+    if (lines.isEmpty()) return null
+    return JSONObject().apply {
+        put("target", target.ifBlank { "local" })
+        put("items", JSONArray().apply {
+            lines.forEach { put(it) }
+        })
+    }.toString()
 }
 
 /** Returns null when blank or unparseable. */

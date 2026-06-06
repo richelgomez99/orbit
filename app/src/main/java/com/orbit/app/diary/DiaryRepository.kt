@@ -5,6 +5,7 @@ import com.orbit.app.action.ipc.ActionExecuteResultParcel
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.ActiveIntentParcel
+import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import kotlinx.coroutines.flow.Flow
@@ -119,4 +120,9 @@ interface DiaryRepository {
 
     /** Audit-only Smart/Deep escalation request. Does not dispatch work. */
     suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean = false
+
+    // ---- Spec 006 — Orbit action draft workspace -------------------------
+
+    /** Compact pending action drafts for the Orbit tab. */
+    fun observeActionDrafts(limit: Int = 20): Flow<List<ActionDraftParcel>> = flowOf(emptyList())
 }

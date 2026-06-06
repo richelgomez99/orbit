@@ -138,6 +138,8 @@ class DiaryViewModel(
     fun observeProposals(envelopeId: String): Flow<List<ActionProposalParcel>> =
         repository.observeProposals(envelopeId)
 
+    fun observeActionDrafts(limit: Int = 20) = repository.observeActionDrafts(limit)
+
     private val _undoState = MutableStateFlow<UndoToastState?>(null)
     /**
      * Active 5s undo toast, or `null` when the window has expired or the
@@ -147,6 +149,10 @@ class DiaryViewModel(
     val undoState: StateFlow<UndoToastState?> = _undoState.asStateFlow()
 
     private var undoExpiryJob: Job? = null
+    private val confirmingProposalIds = mutableSetOf<String>()
+
+    private val _actionNotice = MutableStateFlow<ActionNoticeState?>(null)
+    val actionNotice: StateFlow<ActionNoticeState?> = _actionNotice.asStateFlow()
 
     /**
      * Confirm a proposal — flips state to CONFIRMED, dispatches the side
@@ -162,28 +168,72 @@ class DiaryViewModel(
         proposal: ActionProposalParcel,
         editedArgsJson: String? = null
     ) {
+        if (!confirmingProposalIds.add(proposal.id)) return
         scope.launch {
-            runCatching {
-                repository.markProposalConfirmed(proposal.id)
-                val request = ActionExecuteRequestParcel(
-                    proposalId = proposal.id,
-                    envelopeId = proposal.envelopeId,
-                    functionId = proposal.functionId,
-                    schemaVersion = proposal.schemaVersion,
-                    argsJson = editedArgsJson ?: proposal.argsJson,
-                    sensitivityScope = proposal.sensitivityScope,
-                    confirmedAtMillis = System.currentTimeMillis(),
-                    withUndo = true
-                )
-                val result = repository.executeAction(request)
-                openUndoToast(
-                    UndoToastState(
-                        executionId = result.executionId,
-                        previewTitle = proposal.previewTitle,
-                        outcome = result.outcome,
-                        outcomeReason = result.outcomeReason
+            try {
+                runCatching {
+                    val changed = repository.markProposalConfirmed(proposal.id)
+                    if (!changed) return@runCatching
+                    val undoEligible = proposal.functionId != "calendar.createEvent"
+                    val request = ActionExecuteRequestParcel(
+                        proposalId = proposal.id,
+                        envelopeId = proposal.envelopeId,
+                        functionId = proposal.functionId,
+                        schemaVersion = proposal.schemaVersion,
+                        argsJson = ActionApprovalArgs.forExecution(proposal, editedArgsJson),
+                        sensitivityScope = proposal.sensitivityScope,
+                        confirmedAtMillis = System.currentTimeMillis(),
+                        withUndo = undoEligible
                     )
-                )
+                    val result = repository.executeAction(request)
+                    when (result.outcome) {
+                        "DISPATCHED", "SUCCESS" -> {
+                            if (undoEligible) {
+                                openUndoToast(
+                                    UndoToastState(
+                                        executionId = result.executionId,
+                                        previewTitle = proposal.previewTitle,
+                                        outcome = result.outcome,
+                                        outcomeReason = result.outcomeReason
+                                    )
+                                )
+                            } else {
+                                openActionNotice(
+                                    ActionNoticeState(
+                                        id = result.executionId,
+                                        message = "Opening ${proposal.previewTitle}"
+                                    )
+                                )
+                            }
+                        }
+                        "FAILED" -> {
+                            openActionNotice(
+                                ActionNoticeState(
+                                    id = result.executionId,
+                                    message = actionFailureMessage(result.outcomeReason)
+                                )
+                            )
+                        }
+                        "USER_CANCELLED" -> {
+                            openActionNotice(
+                                ActionNoticeState(
+                                    id = result.executionId,
+                                    message = "Action cancelled."
+                                )
+                            )
+                        }
+                        else -> {
+                            openActionNotice(
+                                ActionNoticeState(
+                                    id = result.executionId,
+                                    message = "Action finished with status ${result.outcome.lowercase()}."
+                                )
+                            )
+                        }
+                    }
+                }
+            } finally {
+                confirmingProposalIds.remove(proposal.id)
             }
         }
     }
@@ -211,6 +261,10 @@ class DiaryViewModel(
     fun onUndoToastDismissed() {
         undoExpiryJob?.cancel()
         _undoState.value = null
+    }
+
+    fun onActionNoticeDismissed() {
+        _actionNotice.value = null
     }
 
     /**
@@ -263,12 +317,21 @@ class DiaryViewModel(
         }
     }
 
+    private fun openActionNotice(state: ActionNoticeState) {
+        _actionNotice.value = state
+    }
+
     /** UI-facing snapshot of the active undo window. */
     data class UndoToastState(
         val executionId: String,
         val previewTitle: String,
         val outcome: String,
         val outcomeReason: String?
+    )
+
+    data class ActionNoticeState(
+        val id: String,
+        val message: String
     )
 
     private companion object {
@@ -329,4 +392,18 @@ class DiaryViewModel(
         undoExpiryJob?.cancel()
         super.onCleared()
     }
+}
+
+internal fun actionFailureMessage(reason: String?): String = when (reason) {
+    "ml_binder_unavailable" -> "Orbit could not reach local storage. Try again in a moment."
+    "unknown_skill",
+    "skill_not_registered" -> "Orbit does not know how to run this action yet."
+    "schema_invalidated",
+    "schema_mismatch" -> "This draft is out of date. Capture it again or wait for Orbit to extract a fresh draft."
+    "intent_resolve_failed",
+    "no_handler" -> "No app on this phone can open that action."
+    "security_exception" -> "Android blocked this action for safety."
+    null,
+    "" -> "Orbit could not complete that action. Try again."
+    else -> "Orbit could not complete that action. Try again."
 }

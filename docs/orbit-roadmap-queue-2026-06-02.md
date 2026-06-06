@@ -33,14 +33,17 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 | 12 | `021-generative-ui-runtime` / `feature/021-generative-ui-runtime-...` | Render agent outputs as safe native Orbit UI. | Structured UI needs trustworthy agent outputs first. | Action cards, pickers, lists, and memory views render natively and degrade safely to text. |
 | 13 | `022-local-model-manager` / `feature/022-local-model-manager-...` | Add BYOM/local model manager as the strategic local AI path. | Hardware-adaptive local-first AI comes after feature scope and memory pressure are understood. | Speed/intelligence/cloud tiers are explicit; local mode supports core capabilities; memory pressure is profiled. |
 
-## Current Status Update - 2026-06-03
+## Current Status Update - 2026-06-04
 
-- Queue row 1 (`005A-semantic-retrieval-grounded-ask`) is implemented and locally validated on branch `feature/005a-semantic-retrieval-grounded-ask-20260603`.
-- Verified gates: backend typecheck, backend unit tests (39), retrieval eval (6/6), production memory-gateway deploy, live semantic smoke, Android focused tests, compile, lint, assemble, Android secret scan, and Pixel 10 Pro Android 17 emulator connected smoke.
-- Production memory gateway alias: `https://orbit-memory-gateway.vercel.app`; latest deployment `https://orbit-memory-gateway-f7nk21ubl-richels-projects-834ef114.vercel.app`.
-- Current APK for phone validation: `dist/orbit-mvp-debug-20260603-005b.apk` (`7a80f2dc94b00766177eec6f80393bf4289c39c8252cd6f3a44d925c1369c885`).
-- S24 validation confirms the row 1 Library/Orbit actions by user report and uploaded grounded-Ask screenshots. The post-fix S24 source-label recheck also passed: no more `from IntentResolver`.
-- Row 2 (`006-approval-action-runtime`) is now the next branch.
+- Queue row 1 (`005A-semantic-retrieval-grounded-ask`) is implemented and locally/S24 validated on branch `feature/005a-semantic-retrieval-grounded-ask-20260603`.
+- Verified row 1 gates: backend typecheck, backend unit tests, retrieval eval, production memory-gateway deploy, live semantic smoke, Android focused tests, compile, lint, assemble, Android secret scan, and connected-device smoke.
+- Production memory gateway alias: `https://orbit-memory-gateway.vercel.app`; latest known deployment `https://orbit-memory-gateway-f7nk21ubl-richels-projects-834ef114.vercel.app`.
+- Queue row 2 (`006-approval-action-runtime`) is active on branch `feature/006-approval-action-runtime-20260603`.
+- Spec 006 implementation is locally complete: Orbit Action Drafts, typed Calendar approval, typed local list approval, grouped list envelope projection, visible outcome/failure state, audit/skill usage paths, no Calendar undo promise, permission regression, debug seeding, APK build, and Android local gates have passed.
+- Current Spec 006 APK for final phone validation: `dist/orbit-mvp-debug-20260603-006.apk` (`05cb7026b5738b7c55f3cba7a0d168a4dabcb182270b2f18ad05863d7fad71c5`).
+- Final S24 manual closeout still needs one concise demo pass on the latest APK: Action Drafts visible, Calendar approval opens Calendar insert, local shopping list approval creates one grouped checklist envelope, dismiss works, failure copy is user-friendly, and no misleading Calendar undo appears.
+- Older phone data may still contain pre-fix individual ingredient rows from earlier APKs; that is historical local data, not the current list approval behavior.
+- After Spec 006 manual closeout and commit, row 3 (`007-memory-candidates-inspector`) is the next branch unless the user explicitly changes the queue.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

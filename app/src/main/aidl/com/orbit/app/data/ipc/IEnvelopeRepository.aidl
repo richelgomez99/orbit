@@ -8,8 +8,10 @@ import com.orbit.app.data.ipc.EnvelopeViewParcel;
 import com.orbit.app.data.ipc.DayPageParcel;
 import com.orbit.app.data.ipc.IEnvelopeObserver;
 import com.orbit.app.data.ipc.ActionProposalParcel;
+import com.orbit.app.data.ipc.ActionDraftParcel;
 import com.orbit.app.data.ipc.AppFunctionSummaryParcel;
 import com.orbit.app.data.ipc.IActionProposalObserver;
+import com.orbit.app.data.ipc.IActionDraftObserver;
 import com.orbit.app.data.ipc.ClusterCardParcel;
 import com.orbit.app.data.ipc.IClusterObserver;
 import com.orbit.app.data.ipc.ActiveIntentParcel;
@@ -170,6 +172,11 @@ interface IEnvelopeRepository {
     void observeProposalsForEnvelope(String envelopeId, IActionProposalObserver observer);
     void stopObservingProposals(IActionProposalObserver observer);
 
+    // Spec 006 — Orbit action workspace. Compact feed of pending action
+    // drafts joined with source envelope and AppFunction display metadata.
+    void observePendingActionDrafts(int limit, IActionDraftObserver observer);
+    void stopObservingActionDrafts(IActionDraftObserver observer);
+
     // T044 — ACTION_EXTRACT continuation entry point. Called by
     // [com.orbit.app.ai.extract.ActionExtractionWorker] from the default
     // WorkManager process; the worker binds to :ml's EnvelopeRepositoryService
@@ -183,6 +190,10 @@ interface IEnvelopeRepository {
     //   "SKIPPED:<reason>"     — kind/sensitivity gate skipped
     //   "FAILED:<reason>"      — Nano timeout / exception → caller retries
     String extractActionsForEnvelope(String envelopeId);
+
+    // Debug-build demo helper. Seeds deterministic proposal rows for known
+    // debug demo captures. Release implementation returns "UNAVAILABLE".
+    String debugSeedDemoActionProposals();
 
     // T061 — TodoActionHandler local-target dispatch entry point.
     //

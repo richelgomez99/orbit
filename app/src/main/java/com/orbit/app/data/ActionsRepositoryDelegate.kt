@@ -6,15 +6,20 @@ import com.orbit.app.data.entity.ActionExecutionEntity
 import com.orbit.app.data.entity.ActionProposalEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.StateSnapshot
+import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.AppFunctionSummaryParcel
+import com.orbit.app.data.ipc.IActionDraftObserver
 import com.orbit.app.data.ipc.IActionProposalObserver
 import com.orbit.app.data.model.ActionExecutionOutcome
+import com.orbit.app.data.model.ActionProposalState
 import com.orbit.app.data.model.AuditAction
 import com.orbit.app.data.model.ContentType
 import com.orbit.app.data.model.EnvelopeKind
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
+import com.orbit.app.data.model.LlmProvenance
+import com.orbit.app.data.model.SensitivityScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -71,7 +76,8 @@ class ActionsRepositoryDelegate(
         if (proposals.isEmpty()) return
         database.withTransaction {
             for (p in proposals) {
-                proposalDao.insert(p)
+                val inserted = proposalDao.insert(p)
+                if (inserted == -1L) continue
                 auditDao.insert(
                     auditWriter.build(
                         action = AuditAction.ACTION_PROPOSED,
@@ -252,12 +258,92 @@ class ActionsRepositoryDelegate(
         observerJobs.remove(key)?.cancel()
     }
 
+    fun observePendingActionDrafts(limit: Int, observer: IActionDraftObserver) {
+        val key = IBinderKey(observer.asBinder())
+        observerJobs.remove(key)?.cancel()
+        val cappedLimit = limit.coerceIn(1, 50)
+        val job = scope.launch(Dispatchers.IO) {
+            proposalDao.observePendingDrafts(cappedLimit).collectLatest { rows ->
+                try {
+                    observer.onActionDraftsChanged(rows.map { it.toParcel() })
+                } catch (_: android.os.RemoteException) {
+                    observerJobs.remove(key)?.cancel()
+                }
+            }
+        }
+        observerJobs[key] = job
+    }
+
+    fun stopObservingActionDrafts(observer: IActionDraftObserver) {
+        val key = IBinderKey(observer.asBinder())
+        observerJobs.remove(key)?.cancel()
+    }
+
+    suspend fun debugSeedDemoActionProposals(): Int {
+        var count = 0
+        envelopeDao.searchActive("Concert ticket saved", 3).firstOrNull()?.let { source ->
+            val proposal = ActionProposalEntity(
+                id = "debug-calendar-${source.id}",
+                envelopeId = source.id,
+                functionId = "calendar.createEvent",
+                schemaVersion = 1,
+                argsJson = JSONObject().apply {
+                    val start = clock() + 3L * 24L * 60L * 60L * 1000L
+                    put("title", "Concert")
+                    put("startEpochMillis", start)
+                    put("endEpochMillis", start + 2L * 60L * 60L * 1000L)
+                    put("notes", "Created from Orbit demo capture.")
+                    put("tzId", ZoneId.systemDefault().id)
+                }.toString(),
+                previewTitle = "Add concert to calendar",
+                previewSubtitle = "Review before opening Calendar",
+                confidence = 0.94f,
+                provenance = LlmProvenance.LOCAL_NANO,
+                state = ActionProposalState.PROPOSED,
+                sensitivityScope = SensitivityScope.PERSONAL,
+                createdAt = clock(),
+                stateChangedAt = clock()
+            )
+            writeProposals(source.id, listOf(proposal))
+            count += 1
+        }
+        envelopeDao.searchActive("Shopping list for recipe night", 3).firstOrNull()?.let { source ->
+            val proposal = ActionProposalEntity(
+                id = "debug-todo-${source.id}",
+                envelopeId = source.id,
+                functionId = "tasks.createTodo",
+                schemaVersion = 1,
+                argsJson = JSONObject().apply {
+                    put("target", "local")
+                    put("items", JSONArray().apply {
+                        put("salmon")
+                        put("miso")
+                        put("ginger")
+                        put("rice")
+                        put("lemons")
+                    })
+                }.toString(),
+                previewTitle = "Create recipe shopping list",
+                previewSubtitle = "Local follow-up items",
+                confidence = 0.92f,
+                provenance = LlmProvenance.LOCAL_NANO,
+                state = ActionProposalState.PROPOSED,
+                sensitivityScope = SensitivityScope.PERSONAL,
+                createdAt = clock(),
+                stateChangedAt = clock()
+            )
+            writeProposals(source.id, listOf(proposal))
+            count += 1
+        }
+        return count
+    }
+
     // ---- T060/T061 — derived to-do envelopes ------------------------
 
     /**
      * T061 — local-target dispatch path for [TodoActionHandler]. Inserts
-     * one new envelope per parsed item in a single Room transaction:
-     *   kind=REGULAR, intent=WANT_IT, intentSource=AUTO_AMBIGUOUS,
+     * one derived list envelope in a single Room transaction:
+     *   kind=DERIVED, intent=WANT_IT, intentSource=AUTO_AMBIGUOUS,
      *   todoMetaJson populated, derivedFromEnvelopeIdsJson=[parentId].
      * Source envelope is NOT mutated (Principle III).
      *
@@ -265,10 +351,10 @@ class ActionsRepositoryDelegate(
      * (text-only item) or an object `{"text":"…","dueEpochMillis":<long>}`.
      * Malformed items are skipped silently. Empty array returns `[]`.
      *
-     * Each insert fires an `ENVELOPE_CREATED` audit row carrying
+     * The insert fires an `ENVELOPE_CREATED` audit row carrying
      * `derived_from_proposal_id` per quickstart §4 step 9.
      *
-     * Returns the list of newly created envelope ids in input order.
+     * Returns the newly created list envelope id.
      */
     suspend fun createDerivedTodoEnvelope(
         parentEnvelopeId: String,
@@ -281,52 +367,51 @@ class ActionsRepositoryDelegate(
 
         val now = clock()
         val parentIdsJson = JSONArray().apply { put(parentEnvelopeId) }.toString()
-        val newIds = mutableListOf<String>()
+        val proposal = proposalDao.getById(proposalId)
+        val newId = UUID.randomUUID().toString()
+        val todoMeta = buildTodoMetaJson(parsed, proposalId)
+        val listTitle = proposal?.previewTitle?.takeIf { it.isNotBlank() }
+            ?: if (parsed.size == 1) parsed.first().text else "To-do list (${parsed.size} items)"
 
         database.withTransaction {
-            for (item in parsed) {
-                val newId = UUID.randomUUID().toString()
-                val todoMeta = buildTodoMetaJson(item, proposalId)
-                val text = item.text
-                val derived = IntentEnvelopeEntity(
-                    id = newId,
-                    contentType = ContentType.TEXT,
-                    textContent = text,
-                    imageUri = null,
-                    textContentSha256 = null,
-                    intent = Intent.WANT_IT,
-                    intentConfidence = null,
-                    intentSource = IntentSource.AUTO_AMBIGUOUS,
-                    intentHistoryJson = JSONArray().put(
-                        JSONObject()
-                            .put("at", now)
-                            .put("intent", Intent.WANT_IT.name)
-                            .put("source", IntentSource.AUTO_AMBIGUOUS.name)
-                    ).toString(),
-                    state = parent.state.copy(),
-                    createdAt = now,
-                    dayLocal = computeDayLocal(now, parent.state.tzId),
-                    kind = EnvelopeKind.REGULAR,
-                    derivedFromEnvelopeIdsJson = parentIdsJson,
-                    todoMetaJson = todoMeta
+            val derived = IntentEnvelopeEntity(
+                id = newId,
+                contentType = ContentType.TEXT,
+                textContent = listTitle,
+                imageUri = null,
+                textContentSha256 = null,
+                intent = Intent.WANT_IT,
+                intentConfidence = null,
+                intentSource = IntentSource.AUTO_AMBIGUOUS,
+                intentHistoryJson = JSONArray().put(
+                    JSONObject()
+                        .put("at", now)
+                        .put("intent", Intent.WANT_IT.name)
+                        .put("source", IntentSource.AUTO_AMBIGUOUS.name)
+                ).toString(),
+                state = parent.state.copy(),
+                createdAt = now,
+                dayLocal = computeDayLocal(now, parent.state.tzId),
+                kind = EnvelopeKind.DERIVED,
+                derivedFromEnvelopeIdsJson = parentIdsJson,
+                todoMetaJson = todoMeta
+            )
+            envelopeDao.insert(derived)
+            auditDao.insert(
+                auditWriter.build(
+                    action = AuditAction.ENVELOPE_CREATED,
+                    description = "Derived to-do list from proposal $proposalId",
+                    envelopeId = newId,
+                    extraJson = JSONObject().apply {
+                        put("derived_from_proposal_id", proposalId)
+                        put("parent_envelope_id", parentEnvelopeId)
+                        put("source", "todo_add")
+                        put("item_count", parsed.size)
+                    }.toString()
                 )
-                envelopeDao.insert(derived)
-                auditDao.insert(
-                    auditWriter.build(
-                        action = AuditAction.ENVELOPE_CREATED,
-                        description = "Derived to-do from proposal $proposalId",
-                        envelopeId = newId,
-                        extraJson = JSONObject().apply {
-                            put("derived_from_proposal_id", proposalId)
-                            put("parent_envelope_id", parentEnvelopeId)
-                            put("source", "todo_add")
-                        }.toString()
-                    )
-                )
-                newIds.add(newId)
-            }
+            )
         }
-        return newIds
+        return listOf(newId)
     }
 
     /**
@@ -377,15 +462,20 @@ class ActionsRepositoryDelegate(
         return out
     }
 
-    private fun buildTodoMetaJson(item: ParsedItem, proposalId: String): String {
-        val itemObj = JSONObject().apply {
-            put("text", item.text)
-            put("done", false)
-            if (item.dueEpochMillis != null) put("dueEpochMillis", item.dueEpochMillis)
-            else put("dueEpochMillis", JSONObject.NULL)
+    private fun buildTodoMetaJson(items: List<ParsedItem>, proposalId: String): String {
+        val itemArray = JSONArray()
+        items.forEach { item ->
+            itemArray.put(
+                JSONObject().apply {
+                    put("text", item.text)
+                    put("done", false)
+                    if (item.dueEpochMillis != null) put("dueEpochMillis", item.dueEpochMillis)
+                    else put("dueEpochMillis", JSONObject.NULL)
+                }
+            )
         }
         return JSONObject().apply {
-            put("items", JSONArray().put(itemObj))
+            put("items", itemArray)
             put("derivedFromProposalId", proposalId)
         }.toString()
     }
@@ -408,6 +498,28 @@ private fun ActionProposalEntity.toParcel() = ActionProposalParcel(
     sensitivityScope = sensitivityScope.name,
     createdAtMillis = createdAt,
     stateChangedAtMillis = stateChangedAt
+)
+
+private fun com.orbit.app.data.dao.ActionDraftProjection.toParcel() = ActionDraftParcel(
+    proposalId = proposalId,
+    sourceEnvelopeId = sourceEnvelopeId,
+    functionId = functionId,
+    schemaVersion = schemaVersion,
+    argsJson = argsJson,
+    previewTitle = previewTitle,
+    previewSubtitle = previewSubtitle,
+    confidence = confidence,
+    provenance = provenance,
+    state = state,
+    sensitivityScope = sensitivityScope,
+    createdAtMillis = createdAtMillis,
+    stateChangedAtMillis = stateChangedAtMillis,
+    displayName = displayName,
+    sideEffects = sideEffects,
+    reversibility = reversibility,
+    sourceTitle = sourceTitle,
+    sourceAppLabel = sourceAppLabel,
+    sourceDayLocal = sourceDayLocal
 )
 
 private fun com.orbit.app.data.entity.AppFunctionSkillEntity.toParcel() = AppFunctionSummaryParcel(
