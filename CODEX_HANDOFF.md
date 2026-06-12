@@ -37,6 +37,26 @@ Active Spec 009 truth:
 - Pending/rejected memory candidates from Spec 007 must not become active graph facts.
 - Spec 008 cloud controls govern any compact graph mirror; cloud mirrors remain optional and non-authoritative.
 
+Spec 009 implemented so far:
+
+- Added pure graph domain/contract package:
+  - `app/src/main/java/com/orbit/app/graph/GraphModels.kt`
+  - `app/src/main/java/com/orbit/app/graph/GraphBackendAdapter.kt`
+- Added focused contract tests:
+  - `GraphBackendAdapterContractTest`
+  - `GraphExportPolicyTest`
+- Contract tests currently prove:
+  - facts require provenance;
+  - relationships require provenance;
+  - `whyThis` returns source evidence for active facts;
+  - deleting the only source invalidates a fact;
+  - deleting one of multiple sources preserves a fact with surviving support;
+  - `whyThis` is user scoped;
+  - feedback requires a local source episode;
+  - graph export models do not expose raw cloud payload field names.
+- Focused validation passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.graph.*" :app:compileDebugKotlin`
+
 Immediate Spec 009 task order:
 
 1. Commit Spec 009 artifacts and continuity docs.

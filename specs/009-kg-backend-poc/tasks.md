@@ -12,10 +12,10 @@
 
 ## Phase 2: Foundation Contract
 
-- [ ] **T009-003** [P] Add graph enums/drafts/results in `app/src/main/java/com/orbit/app/graph/GraphModels.kt`.
-- [ ] **T009-004** [P] Add `GraphBackendAdapter` in `app/src/main/java/com/orbit/app/graph/GraphBackendAdapter.kt`.
-- [ ] **T009-005** [P] Add adapter contract tests in `app/src/test/java/com/orbit/app/graph/GraphBackendAdapterContractTest.kt`.
-- [ ] **T009-006** [P] Add no-raw export/payload tests in `app/src/test/java/com/orbit/app/graph/GraphExportPolicyTest.kt`.
+- [x] **T009-003** [P] Add graph enums/drafts/results in `app/src/main/java/com/orbit/app/graph/GraphModels.kt`.
+- [x] **T009-004** [P] Add `GraphBackendAdapter` in `app/src/main/java/com/orbit/app/graph/GraphBackendAdapter.kt`.
+- [x] **T009-005** [P] Add adapter contract tests in `app/src/test/java/com/orbit/app/graph/GraphBackendAdapterContractTest.kt`.
+- [x] **T009-006** [P] Add no-raw export/payload tests in `app/src/test/java/com/orbit/app/graph/GraphExportPolicyTest.kt`.
 
 ## Phase 3: Room Baseline
 
@@ -53,7 +53,7 @@
 
 ## Phase 8: Validation
 
-- [ ] **T009-026** Run focused graph JVM tests.
+- [x] **T009-026** Run focused graph JVM tests.
 - [ ] **T009-027** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [ ] **T009-028** Run `git diff --check`.
 - [ ] **T009-029** Commit Spec 009 implementation without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.

@@ -15,6 +15,12 @@ Run from repo root:
 git diff --check
 ```
 
+## Validation Log
+
+2026-06-12:
+
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.graph.*" :app:compileDebugKotlin`
+
 ## Required Demo Evidence
 
 1. Promote or seed a memory candidate with source envelope support.
