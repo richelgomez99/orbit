@@ -38,25 +38,26 @@ Spec 007 implemented so far:
 - `DiaryViewModelTest` now covers memory candidate flow observation plus accept/reject command delegation and user-visible notices.
 - `OrbitCleanupScreen` has a Memory Review section after Action Drafts, with Open, Reject, Edit, and Accept.
 - `DebugDemoSeedReceiver` now seeds deterministic memory candidates after demo captures/action proposals.
+- `MemoryPayloadCaps` explicitly rejects memory-review payload keys (`memoryCandidate`, `promotedMemory`, `memory_candidate`, `promoted_memory`) before compact Atlas sync.
+- `MemoryBoundaryPolicyTest` proves Ask/action and compact-memory code do not read memory candidate/promoted memory review tables as facts.
 
 Latest Spec 007 validation:
 
 ```text
 focused_memory_parcel_test=PASS 2026-06-05 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.data.ipc.MemoryParcelTest" :app:compileDebugAndroidTestKotlin`
 focused_memory_viewmodel_test=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest"`
+focused_memory_boundary_tests=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.memory.*"`
 full_non_phone_gate=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 diff_whitespace=PASS 2026-06-12 `git diff --check`
 android_secret_scan=PASS 2026-06-12 no OPENAI_API_KEY/MONGODB_ATLAS_URI/mongodb+srv/MongoClient/ANTHROPIC_API_KEY/ZEROENTROPY hits under app/src
 android_network_boundary_scan=PASS 2026-06-12 no OkHttpClient/HttpURLConnection/Socket/HttpClient constructors in scanned app source
 apk_path=app/build/outputs/apk/debug/app-debug.apk
-apk_sha256=bb7ce6477f37d0ac3ff1d2e3d49292e365838e76120a004b41e91c0e937c3ea3
+apk_sha256=2759e7fcfd75276680b1f3caf9d85b1327c9e497834c80fdd10522fca9139f5f
 ```
 
 Remaining Spec 007 work:
 
 - Add explicit UI/Compose tests for Memory Review cards, no-empty-state noise, accept/reject callbacks, and edit validation.
-- Add explicit tests proving pending/rejected candidates are not used as facts by Ask/action answer code.
-- Add explicit compact memory/Atlas payload exclusion tests for sensitive/local-only candidates.
 - Execute `OrbitDatabaseMigrationV8toV9Test` and `MemoryRepositoryDelegateTest` on a connected device/emulator when available.
 - Build/copy final APK to `dist/` only when ready for phone validation; do not commit generated APK artifacts.
 - Update tasks/quickstart/roadmap/handoff again after connected/manual validation.

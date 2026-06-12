@@ -21,7 +21,13 @@ object MemoryPayloadCaps {
         "auditLog",
         "accessToken",
         "refreshToken",
-        "mongodbUri"
+        "mongodbUri",
+        "memoryCandidate",
+        "memoryCandidates",
+        "promotedMemory",
+        "promotedMemories",
+        "memory_candidate",
+        "promoted_memory"
     )
 
     fun cap(value: String?, max: Int): String? =

@@ -44,7 +44,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Remaining Spec 006 phone-only closeout: one concise demo pass on the latest APK for Action Drafts visible, Calendar approval opens Calendar insert, dismiss works, failure copy is user-friendly, and no misleading Calendar undo appears.
 - Older phone data may still contain pre-fix individual ingredient rows from earlier APKs; that is historical local data, not the current list approval behavior.
 - Queue row 3 (`007-memory-candidates-inspector`) is active on branch `feature/007-memory-candidates-inspector-20260605`.
-- Spec 007 currently has Room v9 candidate/promoted memory sidecars, support/provenance junction tables, compact Binder projections, local accept/reject/edit decision methods with audit rows, debug seeding, ViewModel decision-flow coverage, and an Orbit Memory Review UI. Local non-phone gate passed again on 2026-06-12; connected migration/repository execution and manual phone UI validation are deferred until a device/emulator is available.
+- Spec 007 currently has Room v9 candidate/promoted memory sidecars, support/provenance junction tables, compact Binder projections, local accept/reject/edit decision methods with audit rows, debug seeding, ViewModel decision-flow coverage, explicit Ask/action/cloud exclusion tests, and an Orbit Memory Review UI. Local non-phone gate passed again on 2026-06-12; connected migration/repository execution and manual phone UI validation are deferred until a device/emulator is available.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

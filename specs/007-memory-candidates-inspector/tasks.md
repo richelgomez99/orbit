@@ -2,7 +2,7 @@
 
 **Input**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`
 **Branch**: `feature/007-memory-candidates-inspector-20260605`
-**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, and non-phone local gates are implemented. Remaining work focuses on Compose UI tests, explicit Ask/action/cloud exclusion tests, connected migration/repository execution when a device/emulator is available, docs closeout, and commit.
+**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, explicit Ask/action/cloud exclusion tests, and non-phone local gates are implemented. Remaining work focuses on Compose UI tests, connected migration/repository execution when a device/emulator is available, docs closeout, and commit.
 
 ## Phase 0: Spec Kit Lock
 
@@ -40,8 +40,8 @@
 
 - [x] T007-021 Add debug-only deterministic memory candidate seeding.
 - [x] T007-022 Ensure release build has no arbitrary memory candidate insert API.
-- [ ] T007-023 Add tests proving pending/rejected candidates are not used as facts by Ask/action answer code.
-- [ ] T007-024 Add tests proving sensitive/local-only candidates are excluded from compact memory/Atlas sync payloads.
+- [x] T007-023 Add tests proving pending/rejected candidates are not used as facts by Ask/action answer code. Covered by `MemoryBoundaryPolicyTest.askAndActionSurfacesDoNotReadMemoryCandidateReviewTables`.
+- [x] T007-024 Add tests proving sensitive/local-only candidates are excluded from compact memory/Atlas sync payloads. Covered by `MemoryBoundaryPolicyTest.compactMemoryIndexCodeDoesNotReadMemoryCandidateReviewTables` and `CompactMemoryIndexBuilderTest.dropsMemoryReviewEvidenceBundleKeysFromCloudPayload`.
 - [x] T007-025 Run secret scan and network-boundary scan.
 
 ## Phase 5: Validation And Closeout

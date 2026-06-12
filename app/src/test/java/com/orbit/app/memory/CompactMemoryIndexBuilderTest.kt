@@ -91,6 +91,44 @@ class CompactMemoryIndexBuilderTest {
     }
 
     @Test
+    fun dropsMemoryReviewEvidenceBundleKeysFromCloudPayload() {
+        val item = builder.build(
+            envelope = envelope(text = "safe compact text"),
+            evidenceBundles = listOf(
+                evidence(
+                    """
+                    {
+                      "kind":"MEMORY_REVIEW",
+                      "label":"Pending profile memory",
+                      "source":"memory_candidate",
+                      "memoryCandidate":"user might be interested in fundraising",
+                      "excerpt":"pending candidate text that must not sync"
+                    }
+                    """.trimIndent()
+                ),
+                evidence(
+                    """
+                    {
+                      "kind":"SAFE_HINT",
+                      "label":"Safe",
+                      "source":"understanding",
+                      "excerpt":"saved event detail"
+                    }
+                    """.trimIndent()
+                )
+            )
+        )!!
+
+        assertTrue(item.evidence.any { it.kind == "SAFE_HINT" })
+        assertTrue(item.evidence.none { it.kind == "MEMORY_REVIEW" })
+        val encoded = json.encodeToString(item)
+        assertFalse(encoded.contains("pending candidate text"))
+        assertFalse(encoded.contains("fundraising"))
+        assertFalse(encoded.contains("memoryCandidate"))
+        assertFalse(encoded.contains("memory_candidate"))
+    }
+
+    @Test
     fun compactEmbeddingInputIncludesCappedNoteButExcludesRawPromptAndModelResponseFields() {
         val longNote = "context ".repeat(80) + "private tail that should be capped"
         val item = builder.build(
