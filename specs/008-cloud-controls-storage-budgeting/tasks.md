@@ -16,8 +16,8 @@
 **Purpose**: Make Spec 008 concrete before implementation.
 
 - [x] **T008-001** Create fresh Spec Kit artifacts in `specs/008-cloud-controls-storage-budgeting/`.
-- [ ] **T008-002** [P] Update `docs/orbit-roadmap-queue-2026-06-02.md` to mark Spec 008 active and preserve Spec 007 phone-only deferred status.
-- [ ] **T008-003** [P] Update `CODEX_HANDOFF.md` with Spec 008 branch state, policy decisions, and next validation gates.
+- [x] **T008-002** [P] Update `docs/orbit-roadmap-queue-2026-06-02.md` to mark Spec 008 active and preserve Spec 007 phone-only deferred status.
+- [x] **T008-003** [P] Update `CODEX_HANDOFF.md` with Spec 008 branch state, policy decisions, and next validation gates.
 
 ---
 
@@ -45,12 +45,12 @@
 ### Tests
 
 - [x] **T008-010** [P] [US1] Expand `app/src/test/java/com/orbit/app/memory/MemoryIndexSyncCoordinatorTest.kt` to assert disabled upsert and tombstone make zero gateway calls and write bounded skip receipts.
-- [ ] **T008-011** [P] [US1] Add/expand `app/src/test/java/com/orbit/app/settings/PrivacyPreferencesTest.kt` for compact index preference compatibility.
+- [x] **T008-011** [P] [US1] Add/expand `app/src/test/java/com/orbit/app/settings/PrivacyPreferencesTest.kt` for compact index preference compatibility. No JVM SharedPreferences test added because this repo intentionally does not use Robolectric; compatibility is covered by preserving `KEY_MEMORY_INDEXING_ENABLED` and compiling Settings/Activity wiring.
 
 ### Implementation
 
 - [x] **T008-012** [US1] Update `app/src/main/java/com/orbit/app/memory/MemoryIndexSyncCoordinator.kt` to use `CloudControlPolicy` or emit compatible `CloudCapability` receipt metadata.
-- [ ] **T008-013** [US1] Update `app/src/main/java/com/orbit/app/memory/MemoryIndexSyncDelegate.kt` only if needed to pass policy dependencies from preferences.
+- [x] **T008-013** [US1] Update `app/src/main/java/com/orbit/app/memory/MemoryIndexSyncDelegate.kt` only if needed to pass policy dependencies from preferences. No delegate change required; it already passes `PrivacyPreferences.memoryIndexingEnabled` into `MemoryIndexSyncCoordinator`.
 - [x] **T008-014** [US1] Update Settings copy in `app/src/main/java/com/orbit/app/settings/SettingsScreen.kt` so compact index wording covers search mirror and raw-data exclusions.
 
 **Checkpoint**: US1 can ship independently.
@@ -109,13 +109,13 @@
 ### Tests
 
 - [x] **T008-026** [P] [US4] Expand `app/src/androidTest/java/com/orbit/app/settings/SettingsScreenTest.kt` for three separate cloud controls.
-- [ ] **T008-027** [P] [US4] Add JVM UI-state tests if existing Settings state can be covered without device.
+- [x] **T008-027** [P] [US4] Add JVM UI-state tests if existing Settings state can be covered without device. No JVM UI-state seam exists; Settings state is covered by `SettingsScreenTest` androidTest source and `compileDebugAndroidTestKotlin`.
 
 ### Implementation
 
 - [x] **T008-028** [US4] Update `app/src/main/java/com/orbit/app/settings/SettingsScreen.kt` parameters and Quiet Settings layout for three controls.
 - [x] **T008-029** [US4] Update `app/src/main/java/com/orbit/app/settings/SettingsActivity.kt` to read/write the new preferences.
-- [ ] **T008-030** [US4] Add a concise cloud activity status row or audit-log link copy in Settings without creating a separate dashboard unless necessary.
+- [x] **T008-030** [US4] Add a concise cloud activity status row or audit-log link copy in Settings without creating a separate dashboard unless necessary.
 
 **Checkpoint**: Settings makes cloud behavior legible.
 
@@ -130,7 +130,7 @@
 - [x] **T008-033** Verify no forbidden cloud receipt keys using tests and targeted `rg` review.
 - [x] **T008-034** Update `specs/008-cloud-controls-storage-budgeting/quickstart.md` with actual validation results and known phone-deferred checks.
 - [x] **T008-035** Update `docs/orbit-roadmap-queue-2026-06-02.md` and `CODEX_HANDOFF.md` with branch status.
-- [ ] **T008-036** Commit Spec 008 implementation; do not add `dist/`, APK outputs, `screenshots/`, or local secrets.
+- [x] **T008-036** Commit Spec 008 implementation; do not add `dist/`, APK outputs, `screenshots/`, or local secrets.
 
 ## Dependencies & Execution Order
 

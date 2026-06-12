@@ -78,6 +78,7 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("Compact memory index").assertIsDisplayed()
         composeRule.onNodeWithText("Cloud Ask synthesis").assertIsDisplayed()
         composeRule.onNodeWithText("Cloud AI routing").assertIsDisplayed()
+        composeRule.onNodeWithText("Cloud activity").assertIsDisplayed()
         composeRule.onNodeWithText("Floating bubble").assertIsDisplayed()
         composeRule.onNodeWithTag(SettingsScreenTestTags.CAPTURE_SETUP_ROW).performClick()
         composeRule.waitForIdle()

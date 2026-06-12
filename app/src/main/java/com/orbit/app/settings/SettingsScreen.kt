@@ -212,6 +212,13 @@ fun SettingsScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(Modifier.height(4.dp))
                 SettingsNavRow(
+                    title = "Cloud activity",
+                    description = "Review compact index, Ask, and cloud AI decisions. Receipts use digests, not raw content.",
+                    onClick = onOpenAuditLog
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(4.dp))
+                SettingsNavRow(
                     title = "What Orbit did today",
                     description = "Audit every capture, enrichment, and network call.",
                     onClick = onOpenAuditLog
@@ -366,6 +373,12 @@ private fun QuietSettingsScreen(
                     )
                 }
                 if (onOpenAuditLog != null) {
+                    QuietNavRow(
+                        title = "Cloud activity",
+                        description = "Compact index, Ask, and cloud AI receipts with digests instead of raw content.",
+                        value = "RECEIPTS",
+                        onClick = onOpenAuditLog,
+                    )
                     QuietNavRow(
                         title = "What Orbit did today",
                         description = "Audit every capture, enrichment, and network call.",
