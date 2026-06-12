@@ -20,6 +20,8 @@ import com.orbit.app.data.OrbitDatabase
 import com.orbit.app.data.WeeklyDigestDelegate
 import com.orbit.app.ai.ClusterSummariser
 import com.orbit.app.ai.DigestComposer
+import com.orbit.app.graph.GraphRepositoryDelegate
+import com.orbit.app.graph.RoomGraphBackendAdapter
 import com.orbit.app.memory.MemoryIndexSyncScheduler
 import com.orbit.app.memory.MemoryIndexSyncDelegate
 import com.orbit.app.understanding.BasicUnderstandingWriter
@@ -80,6 +82,10 @@ class EnvelopeRepositoryService : Service() {
         val memoryRepositoryDelegate = MemoryRepositoryDelegate(
             database = db,
             auditWriter = auditWriter,
+            graphRepositoryDelegate = GraphRepositoryDelegate(
+                adapter = RoomGraphBackendAdapter(db),
+                promotedMemorySupportDao = db.promotedMemorySupportDao()
+            ),
             scope = serviceScope
         )
         // T043/T044 — extractor lives in :ml and is invoked via

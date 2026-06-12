@@ -20,6 +20,18 @@ git diff --check
 2026-06-12:
 
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.graph.*" :app:compileDebugKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.graph.*" :app:compileDebugKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS: `git diff --check`
+
+## Implemented Local Path
+
+- Room v10 graph tables exist for entities, mentions, facts, relationships, provenance, and feedback.
+- `RoomGraphBackendAdapter` enforces provenance-required fact/relationship writes and source invalidation semantics.
+- `GraphRepositoryDelegate` deterministically projects accepted/promoted Spec 007 memories into local graph facts.
+- Rejected/pending memory candidates are not projected into graph facts.
+- Android migration/adapter/projection tests are source-ready and compile; connected execution waits for device/emulator availability.
 
 ## Required Demo Evidence
 

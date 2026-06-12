@@ -8,7 +8,7 @@
 ## Phase 1: Setup And Artifact Lock
 
 - [x] **T009-001** Create fresh Spec Kit artifacts in `specs/009-kg-backend-poc/`.
-- [ ] **T009-002** Update `docs/orbit-roadmap-queue-2026-06-02.md` and `CODEX_HANDOFF.md` to mark Spec 009 active.
+- [x] **T009-002** Update `docs/orbit-roadmap-queue-2026-06-02.md` and `CODEX_HANDOFF.md` to mark Spec 009 active.
 
 ## Phase 2: Foundation Contract
 
@@ -19,24 +19,24 @@
 
 ## Phase 3: Room Baseline
 
-- [ ] **T009-007** Add Room v10 graph entities in `app/src/main/java/com/orbit/app/data/entity/`.
-- [ ] **T009-008** Add graph DAOs in `app/src/main/java/com/orbit/app/data/dao/`.
-- [ ] **T009-009** Add `MIGRATION_9_10` and export schema `app/schemas/com.orbit.app.data.OrbitDatabase/10.json`.
-- [ ] **T009-010** Add migration test source `app/src/androidTest/java/com/orbit/app/data/OrbitDatabaseMigrationV9toV10Test.kt`.
-- [ ] **T009-011** Implement `RoomGraphBackendAdapter` in `app/src/main/java/com/orbit/app/graph/RoomGraphBackendAdapter.kt`.
+- [x] **T009-007** Add Room v10 graph entities in `app/src/main/java/com/orbit/app/data/entity/`.
+- [x] **T009-008** Add graph DAOs in `app/src/main/java/com/orbit/app/data/dao/`.
+- [x] **T009-009** Add `MIGRATION_9_10` and export schema `app/schemas/com.orbit.app.data.OrbitDatabase/10.json`.
+- [x] **T009-010** Add migration test source `app/src/androidTest/java/com/orbit/app/data/OrbitDatabaseMigrationV9toV10Test.kt`.
+- [x] **T009-011** Implement `RoomGraphBackendAdapter` in `app/src/main/java/com/orbit/app/graph/RoomGraphBackendAdapter.kt`.
 
 ## Phase 4: Provenance And Invalidation
 
-- [ ] **T009-012** [US1] Enforce no-provenance fact rejection in `RoomGraphBackendAdapter`.
-- [ ] **T009-013** [US1] Enforce no-provenance relationship rejection in `RoomGraphBackendAdapter`.
-- [ ] **T009-014** [US2] Implement `invalidateBySource` preserving facts with surviving provenance.
-- [ ] **T009-015** [US2] Add repository tests for single-source invalidation and multi-source survival.
-- [ ] **T009-016** [US2] Add user correction/rejection feedback model and tests.
+- [x] **T009-012** [US1] Enforce no-provenance fact rejection in `RoomGraphBackendAdapter`.
+- [x] **T009-013** [US1] Enforce no-provenance relationship rejection in `RoomGraphBackendAdapter`.
+- [x] **T009-014** [US2] Implement `invalidateBySource` preserving facts with surviving provenance.
+- [x] **T009-015** [US2] Add repository tests for single-source invalidation and multi-source survival.
+- [x] **T009-016** [US2] Add user correction/rejection feedback model and tests.
 
 ## Phase 5: Spec 007 Projection
 
-- [ ] **T009-017** [US1] Add deterministic promoted-memory-to-fact projection in `GraphRepositoryDelegate`.
-- [ ] **T009-018** [US1] Prove pending/rejected memory candidates do not become active KG facts.
+- [x] **T009-017** [US1] Add deterministic promoted-memory-to-fact projection in `GraphRepositoryDelegate`.
+- [x] **T009-018** [US1] Prove pending/rejected memory candidates do not become active KG facts.
 - [ ] **T009-019** [US1] Add audit rows for KG fact proposed/promoted/rejected/invalidated if new audit actions are needed.
 
 ## Phase 6: Binder And Why-This Projection
@@ -54,8 +54,8 @@
 ## Phase 8: Validation
 
 - [x] **T009-026** Run focused graph JVM tests.
-- [ ] **T009-027** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
-- [ ] **T009-028** Run `git diff --check`.
+- [x] **T009-027** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
+- [x] **T009-028** Run `git diff --check`.
 - [ ] **T009-029** Commit Spec 009 implementation without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Notes

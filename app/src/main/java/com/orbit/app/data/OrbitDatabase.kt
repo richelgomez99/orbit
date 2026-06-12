@@ -15,6 +15,7 @@ import com.orbit.app.data.dao.ContinuationDao
 import com.orbit.app.data.dao.ContinuationResultDao
 import com.orbit.app.data.dao.EnvelopeNoteDao
 import com.orbit.app.data.dao.EvidenceBundleDao
+import com.orbit.app.data.dao.GraphDao
 import com.orbit.app.data.dao.InvalidationRecordDao
 import com.orbit.app.data.dao.IntentEnvelopeDao
 import com.orbit.app.data.dao.MemoryCandidateDao
@@ -34,6 +35,12 @@ import com.orbit.app.data.entity.ContinuationEntity
 import com.orbit.app.data.entity.ContinuationResultEntity
 import com.orbit.app.data.entity.EnvelopeNoteEntity
 import com.orbit.app.data.entity.EvidenceBundleEntity
+import com.orbit.app.data.entity.GraphEntityEntity
+import com.orbit.app.data.entity.GraphFactEntity
+import com.orbit.app.data.entity.GraphFeedbackEntity
+import com.orbit.app.data.entity.GraphMentionEntity
+import com.orbit.app.data.entity.GraphProvenanceEntity
+import com.orbit.app.data.entity.GraphRelationshipEntity
 import com.orbit.app.data.entity.InvalidationRecordEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.MemoryCandidateEntity
@@ -68,9 +75,16 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         MemoryCandidateEntity::class,
         MemoryCandidateSupportEntity::class,
         PromotedMemoryEntity::class,
-        PromotedMemorySupportEntity::class
+        PromotedMemorySupportEntity::class,
+        // 009 — Local-first knowledge graph backend POC
+        GraphEntityEntity::class,
+        GraphMentionEntity::class,
+        GraphFactEntity::class,
+        GraphRelationshipEntity::class,
+        GraphProvenanceEntity::class,
+        GraphFeedbackEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 abstract class OrbitDatabase : RoomDatabase() {
@@ -101,6 +115,9 @@ abstract class OrbitDatabase : RoomDatabase() {
     abstract fun memoryCandidateSupportDao(): MemoryCandidateSupportDao
     abstract fun promotedMemoryDao(): PromotedMemoryDao
     abstract fun promotedMemorySupportDao(): PromotedMemorySupportDao
+
+    // 009 — Local-first knowledge graph backend POC
+    abstract fun graphDao(): GraphDao
 
     companion object {
         private const val DB_NAME = "orbit.db"
@@ -149,7 +166,8 @@ abstract class OrbitDatabase : RoomDatabase() {
                     MIGRATION_5_6,
                     MIGRATION_6_7,
                     MIGRATION_7_8,
-                    MIGRATION_8_9
+                    MIGRATION_8_9,
+                    MIGRATION_9_10
                 )
                 .build()
         }

@@ -538,3 +538,148 @@ internal val MIGRATION_8_9: Migration = object : Migration(8, 9) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_promoted_memory_support_envelopeId ON promoted_memory_support(envelopeId)")
     }
 }
+
+/** v10 — spec 009 Local-first Knowledge Graph backend POC sidecars. */
+internal val MIGRATION_9_10: Migration = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS graph_entity (
+                id TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                type TEXT NOT NULL,
+                canonicalName TEXT NOT NULL,
+                normalizedName TEXT NOT NULL,
+                description TEXT,
+                status TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                invalidatedReason TEXT
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_entity_userId ON graph_entity(userId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_entity_type ON graph_entity(type)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_entity_normalizedName ON graph_entity(normalizedName)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_entity_status ON graph_entity(status)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_entity_invalidatedAt ON graph_entity(invalidatedAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS graph_mention (
+                id TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                entityId TEXT NOT NULL,
+                sourceType TEXT NOT NULL,
+                sourceId TEXT NOT NULL,
+                label TEXT,
+                excerptDigest TEXT,
+                createdAt INTEGER NOT NULL,
+                FOREIGN KEY(entityId) REFERENCES graph_entity(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_mention_userId ON graph_mention(userId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_mention_entityId ON graph_mention(entityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_mention_sourceType_sourceId ON graph_mention(sourceType, sourceId)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS graph_fact (
+                id TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                subjectEntityId TEXT NOT NULL,
+                predicate TEXT NOT NULL,
+                objectText TEXT,
+                objectEntityId TEXT,
+                confidence REAL NOT NULL,
+                status TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                invalidatedReason TEXT,
+                FOREIGN KEY(subjectEntityId) REFERENCES graph_entity(id) ON DELETE CASCADE,
+                FOREIGN KEY(objectEntityId) REFERENCES graph_entity(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_fact_userId ON graph_fact(userId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_fact_status ON graph_fact(status)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_fact_subjectEntityId ON graph_fact(subjectEntityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_fact_objectEntityId ON graph_fact(objectEntityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_fact_predicate ON graph_fact(predicate)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_fact_invalidatedAt ON graph_fact(invalidatedAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS graph_relationship (
+                id TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                fromEntityId TEXT NOT NULL,
+                toEntityId TEXT NOT NULL,
+                relationshipType TEXT NOT NULL,
+                confidence REAL NOT NULL,
+                status TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                invalidatedReason TEXT,
+                FOREIGN KEY(fromEntityId) REFERENCES graph_entity(id) ON DELETE CASCADE,
+                FOREIGN KEY(toEntityId) REFERENCES graph_entity(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_relationship_userId ON graph_relationship(userId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_relationship_status ON graph_relationship(status)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_relationship_fromEntityId ON graph_relationship(fromEntityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_relationship_toEntityId ON graph_relationship(toEntityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_relationship_relationshipType ON graph_relationship(relationshipType)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_relationship_invalidatedAt ON graph_relationship(invalidatedAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS graph_provenance (
+                id TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                targetType TEXT NOT NULL,
+                targetId TEXT NOT NULL,
+                sourceType TEXT NOT NULL,
+                sourceId TEXT NOT NULL,
+                supportKind TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                invalidatedAt INTEGER,
+                invalidatedReason TEXT
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_provenance_userId ON graph_provenance(userId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_provenance_targetType_targetId ON graph_provenance(targetType, targetId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_provenance_sourceType_sourceId ON graph_provenance(sourceType, sourceId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_provenance_supportKind ON graph_provenance(supportKind)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_provenance_invalidatedAt ON graph_provenance(invalidatedAt)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS graph_feedback (
+                id TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                targetType TEXT NOT NULL,
+                targetId TEXT NOT NULL,
+                feedbackType TEXT NOT NULL,
+                replacementText TEXT,
+                replacementEntityId TEXT,
+                sourceType TEXT NOT NULL,
+                sourceId TEXT NOT NULL,
+                createdAt INTEGER NOT NULL,
+                FOREIGN KEY(replacementEntityId) REFERENCES graph_entity(id) ON DELETE SET NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_feedback_userId ON graph_feedback(userId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_feedback_targetType_targetId ON graph_feedback(targetType, targetId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_feedback_feedbackType ON graph_feedback(feedbackType)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_feedback_replacementEntityId ON graph_feedback(replacementEntityId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_feedback_sourceType_sourceId ON graph_feedback(sourceType, sourceId)")
+    }
+}

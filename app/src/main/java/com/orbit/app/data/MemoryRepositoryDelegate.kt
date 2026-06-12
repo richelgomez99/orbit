@@ -23,6 +23,7 @@ import com.orbit.app.data.model.PromotedMemoryConfidence
 import com.orbit.app.data.model.PromotedMemoryKind
 import com.orbit.app.data.model.PromotedMemorySource
 import com.orbit.app.data.model.PromotedMemoryState
+import com.orbit.app.graph.GraphRepositoryDelegate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,6 +38,7 @@ class MemoryRepositoryDelegate(
     private val database: OrbitDatabase,
     private val auditWriter: AuditLogWriter,
     private val scope: CoroutineScope,
+    private val graphRepositoryDelegate: GraphRepositoryDelegate? = null,
     private val clock: () -> Long = { System.currentTimeMillis() }
 ) {
     private val candidateDao = database.memoryCandidateDao()
@@ -103,11 +105,13 @@ class MemoryRepositoryDelegate(
             status = "not_found",
             message = "I could not find that memory suggestion."
         )
+        var memoryToProject: PromotedMemoryEntity? = null
         database.withTransaction {
             val candidate = candidateDao.getById(candidateId)
             if (candidate == null) return@withTransaction
 
             promotedDao.findByCandidateId(candidateId)?.let { existing ->
+                memoryToProject = existing
                 result = MemoryDecisionResultParcel(
                     ok = true,
                     candidateId = candidateId,
@@ -156,30 +160,31 @@ class MemoryRepositoryDelegate(
             }
 
             val memoryId = UUID.randomUUID().toString()
+            val promotedMemory = PromotedMemoryEntity(
+                id = memoryId,
+                candidateId = candidateId,
+                memoryKind = candidate.candidateKind.toPromotedKind(),
+                state = PromotedMemoryState.ACTIVE,
+                displayLabel = label,
+                subject = candidate.subject,
+                predicate = candidate.predicate,
+                objectValue = factObject,
+                confidenceLabel = PromotedMemoryConfidence.CONFIRMED,
+                sensitivity = candidate.sensitivity,
+                source = PromotedMemorySource.USER_CONFIRMED,
+                supportingEnvelopeIdsJson = support.envelopeIdsJson(),
+                supportingEvidenceIdsJson = candidate.supportingEvidenceIdsJson,
+                supportingFeedbackIdsJson = candidate.supportingFeedbackIdsJson,
+                createdAt = now,
+                updatedAt = now,
+                validFrom = now,
+                validTo = null,
+                invalidatedAt = null,
+                lastUsedAt = null,
+                useCount = 0
+            )
             promotedDao.insert(
-                PromotedMemoryEntity(
-                    id = memoryId,
-                    candidateId = candidateId,
-                    memoryKind = candidate.candidateKind.toPromotedKind(),
-                    state = PromotedMemoryState.ACTIVE,
-                    displayLabel = label,
-                    subject = candidate.subject,
-                    predicate = candidate.predicate,
-                    objectValue = factObject,
-                    confidenceLabel = PromotedMemoryConfidence.CONFIRMED,
-                    sensitivity = candidate.sensitivity,
-                    source = PromotedMemorySource.USER_CONFIRMED,
-                    supportingEnvelopeIdsJson = support.envelopeIdsJson(),
-                    supportingEvidenceIdsJson = candidate.supportingEvidenceIdsJson,
-                    supportingFeedbackIdsJson = candidate.supportingFeedbackIdsJson,
-                    createdAt = now,
-                    updatedAt = now,
-                    validFrom = now,
-                    validTo = null,
-                    invalidatedAt = null,
-                    lastUsedAt = null,
-                    useCount = 0
-                )
+                promotedMemory
             )
             promotedSupportDao.insertAll(
                 support.map {
@@ -213,6 +218,12 @@ class MemoryRepositoryDelegate(
                 status = "promoted",
                 message = "Saved to Orbit memory."
             )
+            memoryToProject = promotedMemory
+        }
+        if (result.ok) {
+            memoryToProject?.let { memory ->
+                runCatching { graphRepositoryDelegate?.projectPromotedMemory(memory) }
+            }
         }
         return result
     }

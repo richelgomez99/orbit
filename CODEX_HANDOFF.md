@@ -42,9 +42,26 @@ Spec 009 implemented so far:
 - Added pure graph domain/contract package:
   - `app/src/main/java/com/orbit/app/graph/GraphModels.kt`
   - `app/src/main/java/com/orbit/app/graph/GraphBackendAdapter.kt`
+  - `app/src/main/java/com/orbit/app/graph/RoomGraphBackendAdapter.kt`
+  - `app/src/main/java/com/orbit/app/graph/GraphRepositoryDelegate.kt`
+- Added Room v10 local KG schema:
+  - `graph_entity`
+  - `graph_mention`
+  - `graph_fact`
+  - `graph_relationship`
+  - `graph_provenance`
+  - `graph_feedback`
+  - schema export: `app/schemas/com.orbit.app.data.OrbitDatabase/10.json`
+- Added `MIGRATION_9_10` and `GraphDao`.
+- Wired `EnvelopeRepositoryService` to construct `MemoryRepositoryDelegate` with `GraphRepositoryDelegate(RoomGraphBackendAdapter(db))` in `:ml`.
+- Accepted/promoted Spec 007 memories now project deterministically to local graph facts.
+- Pending/rejected memory candidates still do not project into graph facts.
 - Added focused contract tests:
   - `GraphBackendAdapterContractTest`
   - `GraphExportPolicyTest`
+  - source-ready `OrbitDatabaseMigrationV9toV10Test`
+  - source-ready `RoomGraphBackendAdapterTest`
+  - source-ready `MemoryRepositoryDelegateTest` coverage for accepted-vs-rejected graph projection
 - Contract tests currently prove:
   - facts require provenance;
   - relationships require provenance;
@@ -56,16 +73,27 @@ Spec 009 implemented so far:
   - graph export models do not expose raw cloud payload field names.
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.graph.*" :app:compileDebugKotlin`
+- Full non-phone gate passed:
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- Diff whitespace passed:
+  - `git diff --check`
+
+Current Spec 009 next task:
+
+1. Commit the Room v10 graph backend/projection slice.
+2. Continue with Phase 6: compact Binder/`whyThis` projection surface.
+3. Add graph-specific audit rows only if the Binder/UI surface needs distinct graph actions beyond existing memory acceptance/rejection audits.
+4. Connected migration/adapter/projection test execution remains deferred until phone/emulator availability.
 
 Immediate Spec 009 task order:
 
-1. Commit Spec 009 artifacts and continuity docs.
-2. Add pure graph models and `GraphBackendAdapter` contract tests.
-3. Add Room v10 graph tables/DAOs/migration and source-ready migration test.
-4. Implement provenance-required writes and source invalidation.
-5. Project promoted memories only, never pending/rejected candidates.
-6. Add compact Binder/`why this?` projection.
-7. Run focused graph tests and full non-phone gate.
+1. Commit Spec 009 artifacts and continuity docs. Done in `8198d4f`.
+2. Add pure graph models and `GraphBackendAdapter` contract tests. Done in `435cf92`.
+3. Add Room v10 graph tables/DAOs/migration and source-ready migration test. Done in current uncommitted slice.
+4. Implement provenance-required writes and source invalidation. Done in current uncommitted slice.
+5. Project promoted memories only, never pending/rejected candidates. Done in current uncommitted slice.
+6. Add compact Binder/`why this?` projection. Next.
+7. Run focused graph tests and full non-phone gate. Done for current uncommitted slice.
 
 Important Spec 009 constraints:
 

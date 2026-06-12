@@ -13,6 +13,9 @@ import com.orbit.app.data.model.MemoryCandidateState
 import com.orbit.app.data.model.MemorySensitivity
 import com.orbit.app.data.model.MemorySupportType
 import com.orbit.app.data.model.PromotedMemoryState
+import com.orbit.app.graph.GraphRepositoryDelegate
+import com.orbit.app.graph.GraphTargetType
+import com.orbit.app.graph.RoomGraphBackendAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -46,6 +49,10 @@ class MemoryRepositoryDelegateTest {
         delegate = MemoryRepositoryDelegate(
             database = db,
             auditWriter = AuditLogWriter(clock = now, idGen = { UUID.randomUUID().toString() }),
+            graphRepositoryDelegate = GraphRepositoryDelegate(
+                adapter = RoomGraphBackendAdapter(db, clock = now),
+                promotedMemorySupportDao = db.promotedMemorySupportDao()
+            ),
             scope = scope,
             clock = now
         )
@@ -117,6 +124,35 @@ class MemoryRepositoryDelegateTest {
         val promoted = db.promotedMemoryDao().getById(result.memoryId!!)!!
         assertEquals("Tracks founder events", promoted.displayLabel)
         assertEquals("founder events", promoted.objectValue)
+    }
+
+    @Test
+    fun acceptCandidate_projectsPromotedMemoryIntoGraphFact() = runTest {
+        seedCandidate("candidate-1")
+
+        val result = delegate.acceptCandidate("candidate-1", null, null)
+
+        val graph = db.graphDao().exportFacts(GraphRepositoryDelegate.LOCAL_USER_ID)
+        assertEquals(1, graph.size)
+        assertEquals("promoted-memory-fact-${result.memoryId}", graph.single().id)
+        assertEquals("interested_in", graph.single().predicate)
+        assertEquals("startup events", graph.single().objectText)
+
+        val whyThis = RoomGraphBackendAdapter(db, clock = now).whyThis(
+            userId = GraphRepositoryDelegate.LOCAL_USER_ID,
+            targetType = GraphTargetType.FACT,
+            targetId = graph.single().id
+        )
+        assertEquals(listOf("env-1"), whyThis!!.sources.map { it.sourceId })
+    }
+
+    @Test
+    fun rejectCandidate_doesNotProjectGraphFact() = runTest {
+        seedCandidate("candidate-1")
+
+        delegate.rejectCandidate("candidate-1", "wrong")
+
+        assertEquals(0, db.graphDao().exportFacts(GraphRepositoryDelegate.LOCAL_USER_ID).size)
     }
 
     @Test

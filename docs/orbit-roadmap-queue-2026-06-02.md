@@ -48,7 +48,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Queue row 4 (`008-cloud-controls-storage-budgeting`) is repo-side complete on branch `feature/008-cloud-controls-storage-budgeting-20260612`.
 - Spec 008 artifacts were regenerated on 2026-06-12. The implementation adds durable preferences, policy/receipt primitives, compact index receipt metadata, a cloud Ask synthesis gate, a cloud AI routing gate, three distinct Settings controls, and a Cloud activity audit entry point. Full non-phone gate passed on 2026-06-12. Connected/manual validation is deferred until a phone/emulator is available.
 - Queue row 5 (`009-kg-backend-poc`) is active on branch `feature/009-kg-backend-poc-20260612`.
-- Spec 009 artifacts were regenerated on 2026-06-12. The branch defines a local Room-first KG foundation behind an adapter contract, with no-provenance write rejection, deletion/correction invalidation, promoted-memory projection, and compact `why this?` projections as the core implementation path. External graph products remain adapter candidates only.
+- Spec 009 artifacts were regenerated on 2026-06-12. Current implementation adds a local Room v10 KG schema, `GraphBackendAdapter`, `RoomGraphBackendAdapter`, provenance-required fact/relationship writes, source invalidation with surviving-support preservation, source-ready migration/adapter tests, and deterministic promoted-memory-to-graph-fact projection. Compact Binder/`why this?` projection remains the next slice. External graph products remain adapter candidates only.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 
