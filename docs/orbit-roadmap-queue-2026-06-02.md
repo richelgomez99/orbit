@@ -33,7 +33,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 | 12 | `021-generative-ui-runtime` / `feature/021-generative-ui-runtime-...` | Render agent outputs as safe native Orbit UI. | Structured UI needs trustworthy agent outputs first. | Action cards, pickers, lists, and memory views render natively and degrade safely to text. |
 | 13 | `022-local-model-manager` / `feature/022-local-model-manager-...` | Add BYOM/local model manager as the strategic local AI path. | Hardware-adaptive local-first AI comes after feature scope and memory pressure are understood. | Speed/intelligence/cloud tiers are explicit; local mode supports core capabilities; memory pressure is profiled. |
 
-## Current Status Update - 2026-06-05
+## Current Status Update - 2026-06-12
 
 - Queue row 1 (`005A-semantic-retrieval-grounded-ask`) is implemented and locally/S24 validated on branch `feature/005a-semantic-retrieval-grounded-ask-20260603`.
 - Verified row 1 gates: backend typecheck, backend unit tests, retrieval eval, production memory-gateway deploy, live semantic smoke, Android focused tests, compile, lint, assemble, Android secret scan, and connected-device smoke.
@@ -43,8 +43,10 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Current Spec 006 APK for final phone validation: `dist/orbit-mvp-debug-20260603-006.apk` (`05cb7026b5738b7c55f3cba7a0d168a4dabcb182270b2f18ad05863d7fad71c5`).
 - Remaining Spec 006 phone-only closeout: one concise demo pass on the latest APK for Action Drafts visible, Calendar approval opens Calendar insert, dismiss works, failure copy is user-friendly, and no misleading Calendar undo appears.
 - Older phone data may still contain pre-fix individual ingredient rows from earlier APKs; that is historical local data, not the current list approval behavior.
-- Queue row 3 (`007-memory-candidates-inspector`) is active on branch `feature/007-memory-candidates-inspector-20260605`.
-- Spec 007 currently has Room v9 candidate/promoted memory sidecars, support/provenance junction tables, compact Binder projections, local accept/reject/edit decision methods with audit rows, debug seeding, ViewModel decision-flow coverage, source-ready Compose UI tests, expanded source-ready DAO/repository tests, explicit Ask/action/cloud exclusion tests, and an Orbit Memory Review UI. Local non-phone gate passed again on 2026-06-12; connected migration/repository/UI execution and manual phone UI validation are deferred until a device/emulator is available.
+- Queue row 3 (`007-memory-candidates-inspector`) is repo-side complete on branch `feature/007-memory-candidates-inspector-20260605`.
+- Spec 007 has Room v9 candidate/promoted memory sidecars, support/provenance junction tables, compact Binder projections, local accept/reject/edit decision methods with audit rows, debug seeding, ViewModel decision-flow coverage, source-ready Compose UI tests, expanded source-ready DAO/repository tests, explicit Ask/action/cloud exclusion tests, and an Orbit Memory Review UI. Local non-phone gate passed again on 2026-06-12; connected migration/repository/UI execution and manual phone UI validation are deferred until a device/emulator is available.
+- Queue row 4 (`008-cloud-controls-storage-budgeting`) is now active on branch `feature/008-cloud-controls-storage-budgeting-20260612`.
+- Spec 008 artifacts were regenerated on 2026-06-12. The branch must implement three separate controls: compact memory index, cloud Ask synthesis, and cloud AI routing. Exit requires durable preferences, local bounded receipts, disabled-cloud fallback behavior, and tests proving no raw screenshots/full OCR/prompts/questions/model responses/embeddings/secrets enter receipts.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

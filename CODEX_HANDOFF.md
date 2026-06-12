@@ -2,7 +2,77 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-12 Spec 007 Active
+## Current Status - 2026-06-12 Spec 008 Active
+
+Authoritative current branch:
+
+- `feature/008-cloud-controls-storage-budgeting-20260612`
+
+Base checkpoint:
+
+- Branched from committed Spec 007 checkpoint `0e2bf58` (`docs(spec-007): record clean branch checkpoint`).
+- Spec 007 is repo-side complete and clean except phone/emulator execution for connected tests/manual demo.
+- `screenshots/` remains untracked and must not be committed.
+
+Active Spec 008 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/008-cloud-controls-storage-budgeting/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/cloud-controls-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 008 is not a generic "cloud on/off" settings branch. It must implement three independent user controls:
+  1. Compact memory index sync/search mirror.
+  2. Cloud Ask synthesis / `MemoryGatewayRequest.GroundedAsk`.
+  3. Cloud AI routing / `CloudLlmProvider`.
+- The GStack engineering review conclusion was to split these controls because they send different payloads and have different product/privacy meaning.
+- MongoDB Atlas remains a compact retrieval mirror only. Room/SQLCipher on device remains the source of truth.
+- Audit/receipt data remains local-only and bounded. Do not store raw screenshots, full OCR, raw questions, prompts, embeddings, raw model responses, tokens, API keys, JWTs, or cookies in receipts.
+
+Spec 008 code seams already identified:
+
+- `PrivacyPreferences.memoryIndexingEnabled` already exists and defaults to false.
+- `SettingsScreen` and `SettingsActivity` already expose "Cloud memory index".
+- `MemoryIndexSyncCoordinator` already accepts `indexingEnabled` and writes skipped audit rows.
+- `BinderAskOrbitRepository` currently attempts `GroundedAsk(... allowSynthesis = true)` before local fallback and needs a cloud-Ask preference gate.
+- `LlmProviderRouter` currently defaults to `CloudLlmProvider` unless `RuntimeFlags.useLocalAi` and hardware capability both allow local Nano; this needs a durable cloud-AI routing policy before deeper agent work.
+- `MemoryAudit` already stores request IDs, digests, counts, latency, outcomes, and avoids raw text; Spec 008 should generalize that receipt discipline.
+
+Immediate Spec 008 task order:
+
+1. Finish artifact lock/update continuity docs: `T008-002`, `T008-003`.
+2. Add policy/receipt primitives: `CloudCapability`, `BudgetDecision`, `CloudControlPolicy`, receipt writer/tests.
+3. Normalize compact index skip/receipt behavior under the policy vocabulary.
+4. Gate Ask cloud synthesis before `GroundedAsk`; disabled means no gateway call.
+5. Gate cloud LLM routing before `CloudLlmProvider`; disabled means local fallback/unavailable copy, not silent cloud.
+6. Update Settings to show three separate controls.
+7. Run local gate and commit without `dist/`, `screenshots/`, APKs, or secrets.
+
+Spec 008 validation targets:
+
+```text
+cloud_policy_tests=PENDING
+cloud_receipt_forbidden_key_tests=PENDING
+memory_index_disabled_no_gateway_test=PENDING
+ask_cloud_disabled_no_groundedask_test=PENDING
+llm_router_cloud_disabled_test=PENDING
+settings_three_controls_test=PENDING
+full_non_phone_gate=PENDING `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+```
+
+Important Spec 008 constraints:
+
+- Do not add BYOC/BYOK UI in this branch.
+- Do not change Atlas into backup/source-of-truth storage.
+- Do not add server-side consent/audit ledger.
+- Do not introduce network clients outside `com.orbit.app.net`.
+- Do not make cloud Ask disabled mean `allowSynthesis=false`; it must skip `GroundedAsk` entirely.
+- Do not overbuild a dashboard before policy gates and tests exist.
+
+## Previous Status - 2026-06-12 Spec 007 Checkpoint
 
 Authoritative current branch:
 
