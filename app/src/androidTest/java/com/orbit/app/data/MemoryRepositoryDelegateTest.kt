@@ -12,9 +12,11 @@ import com.orbit.app.data.model.MemoryCandidateSource
 import com.orbit.app.data.model.MemoryCandidateState
 import com.orbit.app.data.model.MemorySensitivity
 import com.orbit.app.data.model.MemorySupportType
+import com.orbit.app.data.model.PromotedMemoryState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.json.JSONArray
 import org.junit.After
@@ -95,6 +97,11 @@ class MemoryRepositoryDelegateTest {
         assertEquals(MemoryCandidateState.REJECTED, db.memoryCandidateDao().getById("candidate-1")!!.state)
         assertEquals(0, db.auditLogDao().listAll().count { it.action == AuditAction.MEMORY_CANDIDATE_ACCEPTED })
         assertEquals(1, db.auditLogDao().listAll().count { it.action == AuditAction.MEMORY_CANDIDATE_REJECTED })
+
+        val second = delegate.rejectCandidate("candidate-1", "wrong")
+        assertEquals(true, second.ok)
+        assertEquals("already_rejected", second.status)
+        assertEquals(1, db.auditLogDao().listAll().count { it.action == AuditAction.MEMORY_CANDIDATE_REJECTED })
     }
 
     @Test
@@ -112,47 +119,128 @@ class MemoryRepositoryDelegateTest {
         assertEquals("founder events", promoted.objectValue)
     }
 
-    private fun seedCandidate(id: String) {
+    @Test
+    fun pendingProjection_ordersOldestFirstAndHidesTerminalCandidates() = runTest {
+        seedEnvelope("env-2", text = "Recipe night note")
+        seedCandidate("candidate-new", envelopeId = "env-2", createdAt = clock + 2_000, objectValue = "recipe nights")
+        seedCandidate("candidate-old", envelopeId = "env-1", createdAt = clock + 1_000, objectValue = "startup events")
+        delegate.rejectCandidate("candidate-new", "wrong")
+
+        val rows = db.memoryCandidateDao().observePendingProjections(limit = 10).first()
+
+        assertEquals(listOf("candidate-old"), rows.map { it.candidateId })
+        assertEquals(1, rows.single().sourceCount)
+        assertEquals("env-1", rows.single().primarySourceEnvelopeId)
+        assertEquals("Startup event ticket", rows.single().primarySourceTitle)
+    }
+
+    @Test
+    fun duplicateActiveFactKeyIsSuppressedUntilOriginalIsTerminal() = runTest {
+        seedCandidate("candidate-1")
+
+        val duplicate = candidateEntity("candidate-dup")
+        assertEquals(-1L, db.memoryCandidateDao().insert(duplicate))
+        assertEquals(
+            "candidate-1",
+            db.memoryCandidateDao()
+                .findActiveDuplicate("INTEREST", "user", "interested_in", "startup events")
+                ?.id
+        )
+
+        delegate.rejectCandidate("candidate-1", "wrong")
+
+        assertEquals(
+            null,
+            db.memoryCandidateDao()
+                .findActiveDuplicate("INTEREST", "user", "interested_in", "startup events")
+        )
+        assertEquals(1L, db.memoryCandidateDao().insert(duplicate.copy(id = "candidate-after-terminal")))
+    }
+
+    @Test
+    fun sourceLessPendingAndPromotedMemoriesInvalidateConservatively() = runTest {
+        seedEnvelope("env-2", text = "Recurring founder meetup")
+        seedCandidate("candidate-pending", envelopeId = "env-2", objectValue = "founder meetups")
+        seedCandidate("candidate-promoted", envelopeId = "env-1", objectValue = "startup events")
+        val promoted = delegate.acceptCandidate("candidate-promoted", null, null)
+
+        db.intentEnvelopeDao().hardDelete("env-2")
+        val invalidatedPending = db.memoryCandidateDao()
+            .invalidateSourceLessPending(reason = "source_deleted", at = clock + 5_000)
+        assertEquals(1, invalidatedPending)
+        assertEquals(
+            MemoryCandidateState.INVALIDATED,
+            db.memoryCandidateDao().getById("candidate-pending")!!.state
+        )
+
+        db.intentEnvelopeDao().hardDelete("env-1")
+        val invalidatedPromoted = db.promotedMemoryDao().invalidateSourceLessActive(at = clock + 6_000)
+        assertEquals(1, invalidatedPromoted)
+        assertEquals(
+            PromotedMemoryState.INVALIDATED,
+            db.promotedMemoryDao().getById(promoted.memoryId!!)!!.state
+        )
+        assertEquals(0, db.promotedMemorySupportDao().countForMemory(promoted.memoryId!!))
+    }
+
+    private fun seedCandidate(
+        id: String,
+        envelopeId: String = "env-1",
+        createdAt: Long = clock,
+        objectValue: String = "startup events"
+    ) {
         kotlinx.coroutines.runBlocking {
-            val candidate = MemoryCandidateEntity(
+            val candidate = candidateEntity(
                 id = id,
-                candidateKind = MemoryCandidateKind.INTEREST,
-                state = MemoryCandidateState.PENDING,
-                displayLabel = "Interested in startup events",
-                subject = "user",
-                predicate = "interested_in",
-                objectValue = "startup events",
-                confidence = 0.78f,
-                sensitivity = MemorySensitivity.NORMAL,
-                supportingEnvelopeIdsJson = JSONArray().put("env-1").toString(),
-                supportingEvidenceIdsJson = null,
-                supportingFeedbackIdsJson = null,
-                askUserCopy = "Remember this?",
-                createdAt = clock,
-                updatedAt = clock,
-                expiresAt = null,
-                decidedAt = null,
-                decisionReason = null,
-                modelLabel = "debug_seed",
-                promptVersion = null,
-                source = MemoryCandidateSource.DEBUG_SEED
+                envelopeId = envelopeId,
+                createdAt = createdAt,
+                objectValue = objectValue
             )
             db.memoryCandidateDao().insert(candidate)
             db.memoryCandidateSupportDao().insertAll(
                 listOf(
                     MemoryCandidateSupportEntity(
                         candidateId = id,
-                        envelopeId = "env-1",
+                        envelopeId = envelopeId,
                         supportType = MemorySupportType.CAPTURE,
                         evidenceId = null,
-                        createdAt = clock
+                        createdAt = createdAt
                     )
                 )
             )
         }
     }
 
-    private fun seedEnvelope(id: String) {
+    private fun candidateEntity(
+        id: String,
+        envelopeId: String = "env-1",
+        createdAt: Long = clock,
+        objectValue: String = "startup events"
+    ) = MemoryCandidateEntity(
+        id = id,
+        candidateKind = MemoryCandidateKind.INTEREST,
+        state = MemoryCandidateState.PENDING,
+        displayLabel = "Interested in $objectValue",
+        subject = "user",
+        predicate = "interested_in",
+        objectValue = objectValue,
+        confidence = 0.78f,
+        sensitivity = MemorySensitivity.NORMAL,
+        supportingEnvelopeIdsJson = JSONArray().put(envelopeId).toString(),
+        supportingEvidenceIdsJson = null,
+        supportingFeedbackIdsJson = null,
+        askUserCopy = "Remember this?",
+        createdAt = createdAt,
+        updatedAt = createdAt,
+        expiresAt = null,
+        decidedAt = null,
+        decisionReason = null,
+        modelLabel = "debug_seed",
+        promptVersion = null,
+        source = MemoryCandidateSource.DEBUG_SEED
+    )
+
+    private fun seedEnvelope(id: String, text: String = "Startup event ticket") {
         db.openHelper.writableDatabase.execSQL(
             """
             INSERT INTO intent_envelope(
@@ -162,7 +250,7 @@ class MemoryRepositoryDelegateTest {
                 sharedContinuationResultId, appCategory, activityState,
                 tzId, hourLocal, dayOfWeekLocal,
                 kind, derivedFromEnvelopeIdsJson, todoMetaJson
-            ) VALUES('$id', 'TEXT', 'Startup event ticket', NULL, NULL,
+            ) VALUES('$id', 'TEXT', '$text', NULL, NULL,
                 'REFERENCE', NULL, 'USER_CHIP', '[]',
                 $clock, '2026-06-05', 0, 0, NULL, NULL,
                 'WORK_EMAIL', 'STILL', 'UTC', 21, 5,

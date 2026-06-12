@@ -47,6 +47,7 @@ Expected: no Android secret/client hits and no direct network constructors outsi
 android_unit_tests=PASS 2026-06-05 `./gradlew :app:testDebugUnitTest`; focused `MemoryParcelTest` passed
 memory_viewmodel_tests=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest"` covers candidate observation and accept/reject notice delegation
 memory_review_compose_tests=SOURCE_READY 2026-06-12 `OrbitCleanupMemoryReviewTest` covers empty-state silence, card rendering/open/reject/accept callbacks, and edit validation; `./gradlew :app:compileDebugAndroidTestKotlin` passes; connected execution deferred
+memory_repository_dao_tests=SOURCE_READY 2026-06-12 expanded `MemoryRepositoryDelegateTest` covers pending projection ordering, duplicate active fact-key suppression, accept/reject idempotency, edited promotion, and source-less invalidation; `./gradlew :app:compileDebugAndroidTestKotlin` passes; connected execution deferred
 android_lint=PASS 2026-06-05 `./gradlew :app:lintDebug`
 android_compile=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 room_migration_tests=SOURCE_READY 2026-06-05 `OrbitDatabaseMigrationV8toV9Test` compiles; connected execution deferred until device/emulator available
@@ -59,7 +60,7 @@ diff_whitespace=PASS 2026-06-12 `git diff --check`
 permission_scan=PASS 2026-06-12 no Android secret/client hits under `app/src`
 network_boundary_scan=PASS 2026-06-12 no direct network constructors in scanned app source
 apk_path=app/build/outputs/apk/debug/app-debug.apk
-apk_sha256=ae7b73d161d0c011542c0ee42d2c0b1fd70ade7d52ff3c494f509f91ac2e0be9
+apk_sha256=559ad0f6f02c031da01b35231ad3e4de4171446cc2fa4469c788f38cc5d4cc8b
 phone_validation=deferred until device available
 known_limits=Memory Review UI is source-compiled and locally gated, but not yet manually validated on phone. Compose UI assertions are source-ready and compile, but still need connected execution before final closeout.
 ```

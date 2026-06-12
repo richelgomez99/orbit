@@ -25,6 +25,7 @@ Spec 007 implemented so far:
 - New enums in `MemoryModels.kt`.
 - New DAOs and exported schema `app/schemas/com.orbit.app.data.OrbitDatabase/9.json`.
 - `MIGRATION_8_9` plus `OrbitDatabaseMigrationV8toV9Test` source.
+- Expanded `MemoryRepositoryDelegateTest` androidTest source covers pending projection ordering, duplicate active fact-key suppression, accept/reject idempotency, edited promotion, and source-less invalidation. Source compiles; connected execution is still deferred.
 - Compact Binder parcels/observers:
   - `MemoryCandidateParcel`
   - `PromotedMemoryParcel`
@@ -49,12 +50,13 @@ focused_memory_parcel_test=PASS 2026-06-05 `./gradlew :app:testDebugUnitTest --t
 focused_memory_viewmodel_test=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest"`
 focused_memory_boundary_tests=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.memory.*"`
 memory_review_compose_tests=SOURCE_READY 2026-06-12 `OrbitCleanupMemoryReviewTest`; `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin` passes; connected execution deferred
+memory_repository_dao_tests=SOURCE_READY 2026-06-12 expanded `MemoryRepositoryDelegateTest`; `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin` passes; connected execution deferred
 full_non_phone_gate=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 diff_whitespace=PASS 2026-06-12 `git diff --check`
 android_secret_scan=PASS 2026-06-12 no OPENAI_API_KEY/MONGODB_ATLAS_URI/mongodb+srv/MongoClient/ANTHROPIC_API_KEY/ZEROENTROPY hits under app/src
 android_network_boundary_scan=PASS 2026-06-12 no OkHttpClient/HttpURLConnection/Socket/HttpClient constructors in scanned app source
 apk_path=app/build/outputs/apk/debug/app-debug.apk
-apk_sha256=ae7b73d161d0c011542c0ee42d2c0b1fd70ade7d52ff3c494f509f91ac2e0be9
+apk_sha256=559ad0f6f02c031da01b35231ad3e4de4171446cc2fa4469c788f38cc5d4cc8b
 ```
 
 Remaining Spec 007 work:

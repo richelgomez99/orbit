@@ -2,7 +2,7 @@
 
 **Input**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`
 **Branch**: `feature/007-memory-candidates-inspector-20260605`
-**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, Compose UI test source, explicit Ask/action/cloud exclusion tests, and non-phone local gates are implemented. Remaining work focuses on connected migration/repository/UI execution when a device/emulator is available, docs closeout, and commit.
+**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, Compose UI test source, expanded DAO/repository source coverage, explicit Ask/action/cloud exclusion tests, and non-phone local gates are implemented. Remaining work focuses on connected migration/repository/UI execution when a device/emulator is available, docs closeout, and commit.
 
 ## Phase 0: Spec Kit Lock
 
@@ -17,7 +17,7 @@
 - [x] T007-006 Add enums/models for candidate kind/state/sensitivity/source and promoted memory kind/state/source.
 - [x] T007-007 Bump `OrbitDatabase` to v9, register DAOs/entities, and add `MIGRATION_8_9`.
 - [x] T007-008 Export Room schema and add v8->v9 migration test. Source compile passes; connected migration execution deferred until a device/emulator is available.
-- [ ] T007-009 Add DAO tests for pending list, duplicate active candidate suppression, accept idempotency, reject idempotency, and source deletion invalidation. Repository decision androidTest source exists; remaining: focused DAO/source-deletion coverage and connected execution.
+- [x] T007-009 Add DAO tests for pending list, duplicate active candidate suppression, accept idempotency, reject idempotency, and source deletion invalidation. Source: expanded `MemoryRepositoryDelegateTest`; androidTest source compiles, connected execution deferred until a device/emulator is available.
 
 ## Phase 2: Binder And Repository
 
@@ -26,7 +26,7 @@
 - [x] T007-012 Add `MemoryRepositoryDelegate` in `:ml` for projection and decision logic.
 - [x] T007-013 Wire delegate through `EnvelopeRepositoryImpl` and `EnvelopeRepositoryService`.
 - [x] T007-014 Add audit rows for accept/reject/edit/invalidate decisions with compact extra JSON.
-- [x] T007-015 Add JVM/unit tests for parcel mapping and repository decision semantics. JVM parcel test passes; repository decision androidTest source compiles and awaits connected execution.
+- [x] T007-015 Add JVM/unit tests for parcel mapping and repository decision semantics. JVM parcel test passes; expanded repository decision androidTest source compiles and awaits connected execution.
 
 ## Phase 3: Orbit Memory Review UI
 
