@@ -16,6 +16,18 @@ Run from repo root:
 ./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin :build-logic:lint:test :app:lintDebug :app:assembleDebug
 ```
 
+## Validation Log
+
+2026-06-12:
+
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.cloud.*" --tests "com.orbit.app.memory.*" --tests "com.orbit.app.orbit.*" --tests "com.orbit.app.ai.*"`
+- PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :build-logic:lint:test :app:lintDebug :app:assembleDebug`
+- PASS: `git diff --check`
+- PASS: targeted forbidden-key review. Receipt writers persist digests/counts/capability/outcome metadata; raw private terms appear only as local variable/test fixture strings.
+- Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
+- Debug APK SHA-256: `17b52057aaa2b27ff1e2edf88bb3004461472acbfb426cac0d4c6fa2edf029b5`
+
 ## Manual Demo Script
 
 Device validation can wait until a phone/emulator is available.

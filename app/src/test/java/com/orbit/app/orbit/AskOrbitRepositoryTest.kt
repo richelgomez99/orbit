@@ -1,6 +1,9 @@
 package com.orbit.app.orbit
 
 import android.content.Context
+import com.orbit.app.cloud.CloudCapability
+import com.orbit.app.data.entity.AuditLogEntryEntity
+import com.orbit.app.data.model.AuditAction
 import com.orbit.app.library.LocalEnvelopeLookup
 import com.orbit.app.memory.AskOrbitAnswer
 import com.orbit.app.memory.AskOrbitCitation
@@ -9,6 +12,7 @@ import com.orbit.app.memory.MemoryGatewayRequest
 import com.orbit.app.memory.MemoryGatewayResponse
 import com.orbit.app.memory.MemorySearchResult
 import kotlinx.coroutines.test.runTest
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -107,6 +111,57 @@ class AskOrbitRepositoryTest {
         assertEquals("answered", answer.status)
         assertEquals(listOf("env-local-fallback"), answer.citations.map { it.envelopeId })
         assertTrue(answer.answer.contains("miso salmon"))
+    }
+
+    @Test
+    fun cloudAskDisabledSkipsGroundedGatewayAndUsesLocalSearch() = runTest {
+        val localFallback = result("env-local-fallback", "Dentist rescheduled", "Dentist appointment was rescheduled.", "Calendar")
+        val lookup = RecordingLocalEnvelopeLookup(
+            existingIds = emptySet(),
+            searchResults = listOf(localFallback)
+        )
+        var gatewayCalled = false
+        val receipts = mutableListOf<AuditLogEntryEntity>()
+        val repository = BinderAskOrbitRepository(
+            context = null,
+            localEnvelopeLookup = lookup,
+            requestIdFactory = { "req-skip-ask" },
+            cloudAskSynthesisEnabled = { false },
+            cloudReceiptAppender = { receipts += it },
+            memoryGatewayCaller = {
+                gatewayCalled = true
+                error("GroundedAsk must not be called when cloud Ask synthesis is disabled")
+            }
+        )
+
+        val answer = repository.ask("What was rescheduled?")
+
+        assertEquals("answered", answer.status)
+        assertEquals("local/deterministic", answer.modelLabel)
+        assertEquals(listOf("env-local-fallback"), answer.citations.map { it.envelopeId })
+        assertTrue(!gatewayCalled)
+        assertEquals(AuditAction.CLOUD_USAGE_RECORDED, receipts.single().action)
+        val extras = JSONObject(receipts.single().extraJson!!)
+        assertEquals(CloudCapability.ASK_GROUNDED_SYNTHESIS.name, extras.getString("capability"))
+        assertEquals("SKIPPED", extras.getString("outcome"))
+        assertEquals("DISABLED_BY_USER", extras.getString("reason"))
+        assertTrue(extras.has("inputDigest"))
+        assertTrue(!receipts.single().extraJson!!.contains("What was rescheduled?"))
+    }
+
+    @Test
+    fun unsupportedSensitiveIdentifierQuestionUsesUserFriendlyRefusalCopy() = runTest {
+        val repository = BinderAskOrbitRepository(
+            context = null,
+            localEnvelopeLookup = RecordingLocalEnvelopeLookup(existingIds = emptySet()),
+            cloudAskSynthesisEnabled = { false },
+        )
+
+        val answer = repository.ask("What is my passport number?")
+
+        assertEquals("insufficient_evidence", answer.status)
+        assertTrue(answer.answer.contains("saved capture explicitly contains"))
+        assertTrue(answer.citations.isEmpty())
     }
 
     @Test

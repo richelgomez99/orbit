@@ -2,6 +2,7 @@ package com.orbit.app.memory
 
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import com.orbit.app.cloud.CloudCapability
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
@@ -23,7 +24,14 @@ class MemoryIndexSyncCoordinator(
     suspend fun syncEnvelope(envelopeId: String): Outcome {
         val requestId = requestIdFactory()
         if (!indexingEnabled()) {
-            source.insertAudit(audit.syncSkipped(requestId, "memory_indexing_disabled", envelopeId))
+            source.insertAudit(
+                audit.syncSkipped(
+                    requestId = requestId,
+                    reason = "memory_indexing_disabled",
+                    envelopeId = envelopeId,
+                    capability = CloudCapability.COMPACT_INDEX_UPSERT,
+                )
+            )
             return Outcome.Skipped("memory_indexing_disabled")
         }
 
@@ -56,6 +64,7 @@ class MemoryIndexSyncCoordinator(
                         envelopeId = item.envelopeId,
                         payloadForDigest = payload,
                         latencyMs = latencyMs,
+                        capability = CloudCapability.COMPACT_INDEX_UPSERT,
                     )
                 )
                 Outcome.Upserted(item.envelopeId)
@@ -68,6 +77,7 @@ class MemoryIndexSyncCoordinator(
                         errorKind = response.code,
                         latencyMs = latencyMs,
                         envelopeId = item.envelopeId,
+                        capability = CloudCapability.COMPACT_INDEX_UPSERT,
                     )
                 )
                 Outcome.Failed(response.code)
@@ -80,6 +90,7 @@ class MemoryIndexSyncCoordinator(
                         errorKind = "UNEXPECTED_RESPONSE",
                         latencyMs = latencyMs,
                         envelopeId = item.envelopeId,
+                        capability = CloudCapability.COMPACT_INDEX_UPSERT,
                     )
                 )
                 Outcome.Failed("UNEXPECTED_RESPONSE")
@@ -93,7 +104,14 @@ class MemoryIndexSyncCoordinator(
         requestId: String = requestIdFactory(),
     ): Outcome {
         if (!indexingEnabled()) {
-            source.insertAudit(audit.syncSkipped(requestId, "memory_indexing_disabled", envelopeId))
+            source.insertAudit(
+                audit.syncSkipped(
+                    requestId = requestId,
+                    reason = "memory_indexing_disabled",
+                    envelopeId = envelopeId,
+                    capability = CloudCapability.COMPACT_INDEX_TOMBSTONE,
+                )
+            )
             return Outcome.Skipped("memory_indexing_disabled")
         }
 
@@ -114,6 +132,7 @@ class MemoryIndexSyncCoordinator(
                         envelopeId = envelopeId,
                         reason = reason,
                         latencyMs = latencyMs,
+                        capability = CloudCapability.COMPACT_INDEX_TOMBSTONE,
                     )
                 )
                 Outcome.Tombstoned(envelopeId)
@@ -126,6 +145,7 @@ class MemoryIndexSyncCoordinator(
                         errorKind = response.code,
                         latencyMs = latencyMs,
                         envelopeId = envelopeId,
+                        capability = CloudCapability.COMPACT_INDEX_TOMBSTONE,
                     )
                 )
                 Outcome.Failed(response.code)
@@ -138,6 +158,7 @@ class MemoryIndexSyncCoordinator(
                         errorKind = "UNEXPECTED_RESPONSE",
                         latencyMs = latencyMs,
                         envelopeId = envelopeId,
+                        capability = CloudCapability.COMPACT_INDEX_TOMBSTONE,
                     )
                 )
                 Outcome.Failed("UNEXPECTED_RESPONSE")

@@ -94,6 +94,10 @@ enum class AuditAction {
     /** Memory sync was skipped before network dispatch. */
     MEMORY_SYNC_SKIPPED,
 
+    // Spec 008 — cloud controls/storage budgeting:
+    /** Local-only bounded receipt for a cloud policy decision or gateway result. */
+    CLOUD_USAGE_RECORDED,
+
     // Spec 007 — memory candidates inspector:
     /** Orbit proposed a candidate memory for user review. */
     MEMORY_CANDIDATE_PROPOSED,

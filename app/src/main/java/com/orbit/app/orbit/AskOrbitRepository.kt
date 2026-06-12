@@ -5,6 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import com.orbit.app.audit.BinderAuditLogClient
+import com.orbit.app.cloud.BudgetDecisionReason
+import com.orbit.app.cloud.CloudCapability
+import com.orbit.app.cloud.CloudUsageOutcome
+import com.orbit.app.cloud.CloudUsageReceiptWriter
+import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.library.BinderLocalEnvelopeLookup
 import com.orbit.app.library.LocalEnvelopeLookup
 import com.orbit.app.memory.AskOrbitAnswer
@@ -16,6 +22,7 @@ import com.orbit.app.memory.MemorySearchResult
 import com.orbit.app.net.NetworkGatewayService
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
+import com.orbit.app.settings.PrivacyPreferences
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,9 +49,15 @@ class BinderAskOrbitRepository(
         encodeDefaults = true
     },
     private val memoryGatewayCaller: (suspend (MemoryGatewayRequest) -> MemoryGatewayResponse)? = null,
+    private val cloudAskSynthesisEnabled: () -> Boolean = {
+        context?.let { PrivacyPreferences(it).cloudAskSynthesisEnabled } ?: true
+    },
+    private val cloudReceiptAppender: (suspend (AuditLogEntryEntity) -> Unit)? = null,
+    private val cloudReceiptWriter: CloudUsageReceiptWriter = CloudUsageReceiptWriter(),
 ) : AskOrbitRepository {
     private var binder: INetworkGateway? = null
     private var connection: ServiceConnection? = null
+    private val auditClient: BinderAuditLogClient? = context?.let { BinderAuditLogClient(it) }
 
     override suspend fun ask(
         question: String,
@@ -52,7 +65,7 @@ class BinderAskOrbitRepository(
         limit: Int,
     ): AskOrbitAnswer = withContext(Dispatchers.IO) {
         val trimmed = question.trim()
-        if (trimmed.isBlank()) return@withContext insufficientEvidence(emptyList())
+        if (trimmed.isBlank()) return@withContext insufficientEvidence(emptyList(), trimmed)
         val cappedLimit = limit.coerceIn(1, 5)
         requestGroundedAsk(trimmed, filters, cappedLimit)?.let { return@withContext it }
         val localResults = AskOrbitQueryText.queryVariants(trimmed)
@@ -64,7 +77,7 @@ class BinderAskOrbitRepository(
         if (localResults.isNotEmpty()) {
             return@withContext buildLocalAnswer(localResults)
         }
-        insufficientEvidence(emptyList())
+        insufficientEvidence(emptyList(), trimmed)
     }
 
     fun disconnect() {
@@ -75,6 +88,7 @@ class BinderAskOrbitRepository(
             connection = null
             binder = null
         }
+        auditClient?.disconnect()
         (localEnvelopeLookup as? BinderLocalEnvelopeLookup)?.disconnect()
     }
 
@@ -83,6 +97,10 @@ class BinderAskOrbitRepository(
         filters: MemorySearchFilters?,
         limit: Int,
     ): AskOrbitAnswer? {
+        if (!cloudAskSynthesisEnabled()) {
+            recordCloudAskSkipped(question)
+            return null
+        }
         return runCatching {
             val request = MemoryGatewayRequest.GroundedAsk(
                 requestId = requestIdFactory(),
@@ -107,6 +125,25 @@ class BinderAskOrbitRepository(
                 else -> null
             }
         }.getOrNull()
+    }
+
+    private suspend fun recordCloudAskSkipped(question: String) {
+        val entry = cloudReceiptWriter.receipt(
+            requestId = requestIdFactory(),
+            capability = CloudCapability.ASK_GROUNDED_SYNTHESIS,
+            outcome = CloudUsageOutcome.SKIPPED,
+            reason = BudgetDecisionReason.DISABLED_BY_USER,
+            endpoint = "grounded_ask",
+            inputForDigest = question,
+        )
+        runCatching {
+            val appender = cloudReceiptAppender
+            if (appender != null) {
+                appender(entry)
+            } else {
+                auditClient?.append(entry)
+            }
+        }
     }
 
     private suspend fun AskOrbitAnswer.localBackedOrNull(): AskOrbitAnswer? =
@@ -137,7 +174,7 @@ class BinderAskOrbitRepository(
     }
 
     private fun buildLocalAnswer(results: List<MemorySearchResult>): AskOrbitAnswer {
-        if (results.isEmpty()) return insufficientEvidence(emptyList())
+        if (results.isEmpty()) return insufficientEvidence(emptyList(), null)
         val top = results.take(5)
         val citations = top.mapIndexed { index, result ->
             AskOrbitCitation(
@@ -164,9 +201,16 @@ class BinderAskOrbitRepository(
         )
     }
 
-    private fun insufficientEvidence(candidates: List<MemorySearchResult>) = AskOrbitAnswer(
+    private fun insufficientEvidence(
+        candidates: List<MemorySearchResult>,
+        question: String?,
+    ) = AskOrbitAnswer(
         status = "insufficient_evidence",
-        answer = "I could not find enough saved evidence to answer that.",
+        answer = if (question?.let(AskOrbitQueryText::isSensitiveIdentifierQuestion) == true) {
+            "I can answer sensitive identifier questions only when a saved capture explicitly contains the detail. I could not find that saved evidence."
+        } else {
+            "I could not find enough saved evidence to answer that."
+        },
         citations = emptyList(),
         candidates = candidates,
         modelLabel = "local/deterministic",
@@ -263,6 +307,21 @@ internal object AskOrbitQueryText {
             0f
         }
         return result.score + groupHits * 5f + titleHits * 3f + evidenceHits * 2f + exactPhraseBonus
+    }
+
+    fun isSensitiveIdentifierQuestion(question: String): Boolean {
+        val normalized = question.lowercase()
+        return listOf(
+            "passport",
+            "social security",
+            "ssn",
+            "tax id",
+            "driver license",
+            "driver's license",
+            "bank account",
+            "routing number",
+            "credit card",
+        ).any { normalized.contains(it) }
     }
 
     private fun meaningfulTokens(question: String): List<String> = question

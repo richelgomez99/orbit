@@ -51,6 +51,8 @@ class SettingsActivity : ComponentActivity() {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     var paused by remember { mutableStateOf(prefs.continuationsPaused) }
                     var memoryIndexingEnabled by remember { mutableStateOf(prefs.memoryIndexingEnabled) }
+                    var cloudAskSynthesisEnabled by remember { mutableStateOf(prefs.cloudAskSynthesisEnabled) }
+                    var cloudAiRoutingEnabled by remember { mutableStateOf(prefs.cloudAiRoutingEnabled) }
                     val count = remember { mutableIntStateOf(0) }
                     trashCountState = count
                     var exportInProgress by remember { mutableStateOf(false) }
@@ -67,6 +69,16 @@ class SettingsActivity : ComponentActivity() {
                         onMemoryIndexingChange = { next ->
                             memoryIndexingEnabled = next
                             prefs.memoryIndexingEnabled = next
+                        },
+                        cloudAskSynthesisEnabled = cloudAskSynthesisEnabled,
+                        onCloudAskSynthesisChange = { next ->
+                            cloudAskSynthesisEnabled = next
+                            prefs.cloudAskSynthesisEnabled = next
+                        },
+                        cloudAiRoutingEnabled = cloudAiRoutingEnabled,
+                        onCloudAiRoutingChange = { next ->
+                            cloudAiRoutingEnabled = next
+                            prefs.cloudAiRoutingEnabled = next
                         },
                         onNavigateBack = { finish() },
                         onOpenCaptureSetup = {

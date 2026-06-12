@@ -1,6 +1,9 @@
 package com.orbit.app.memory
 
 import com.orbit.app.audit.AuditLogWriter
+import com.orbit.app.cloud.BudgetDecisionReason
+import com.orbit.app.cloud.CloudCapability
+import com.orbit.app.cloud.CloudUsageOutcome
 import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.data.model.AuditAction
 import org.json.JSONObject
@@ -22,6 +25,7 @@ class MemoryAudit(
         payloadForDigest: String,
         latencyMs: Long,
         outcome: String = "success",
+        capability: CloudCapability = CloudCapability.COMPACT_INDEX_UPSERT,
     ): AuditLogEntryEntity = writer.build(
         action = AuditAction.MEMORY_INDEX_UPSERTED,
         description = "Memory index upserted",
@@ -33,6 +37,8 @@ class MemoryAudit(
             payloadDigest = sha256(payloadForDigest),
             latencyMs = latencyMs,
             outcome = outcome,
+            cloudCapability = capability,
+            cloudOutcome = CloudUsageOutcome.SUCCESS,
         ),
     )
 
@@ -42,6 +48,7 @@ class MemoryAudit(
         reason: String,
         latencyMs: Long,
         outcome: String = "success",
+        capability: CloudCapability = CloudCapability.COMPACT_INDEX_TOMBSTONE,
     ): AuditLogEntryEntity = writer.build(
         action = AuditAction.MEMORY_INDEX_TOMBSTONED,
         description = "Memory index tombstoned",
@@ -52,6 +59,8 @@ class MemoryAudit(
             envelopeId = envelopeId,
             latencyMs = latencyMs,
             outcome = outcome,
+            cloudCapability = capability,
+            cloudOutcome = CloudUsageOutcome.SUCCESS,
             errorKind = null,
             extra = mapOf("reason" to reason),
         ),
@@ -192,6 +201,7 @@ class MemoryAudit(
         errorKind: String,
         latencyMs: Long? = null,
         envelopeId: String? = null,
+        capability: CloudCapability? = null,
     ): AuditLogEntryEntity = writer.build(
         action = AuditAction.MEMORY_GATEWAY_FAILED,
         description = "Memory gateway failed",
@@ -203,6 +213,8 @@ class MemoryAudit(
             latencyMs = latencyMs,
             outcome = "failed",
             errorKind = errorKind,
+            cloudCapability = capability,
+            cloudOutcome = CloudUsageOutcome.FAILED,
         ),
     )
 
@@ -210,6 +222,7 @@ class MemoryAudit(
         requestId: String,
         reason: String,
         envelopeId: String? = null,
+        capability: CloudCapability? = null,
     ): AuditLogEntryEntity = writer.build(
         action = AuditAction.MEMORY_SYNC_SKIPPED,
         description = "Memory sync skipped",
@@ -219,6 +232,9 @@ class MemoryAudit(
             requestId = requestId,
             envelopeId = envelopeId,
             outcome = "skipped",
+            cloudCapability = capability,
+            cloudOutcome = CloudUsageOutcome.SKIPPED,
+            cloudReason = BudgetDecisionReason.DISABLED_BY_USER,
             extra = mapOf("reason" to reason),
         ),
     )
@@ -233,6 +249,9 @@ class MemoryAudit(
         latencyMs: Long? = null,
         outcome: String,
         errorKind: String? = null,
+        cloudCapability: CloudCapability? = null,
+        cloudOutcome: CloudUsageOutcome? = null,
+        cloudReason: BudgetDecisionReason? = null,
         extra: Map<String, Any> = emptyMap(),
     ): String {
         val json = JSONObject()
@@ -246,6 +265,9 @@ class MemoryAudit(
         resultCount?.let { json.put("resultCount", it) }
         latencyMs?.let { json.put("latencyMs", it) }
         errorKind?.let { json.put("errorKind", it) }
+        cloudCapability?.let { json.put("capability", it.name) }
+        cloudOutcome?.let { json.put("cloudOutcome", it.name) }
+        cloudReason?.let { json.put("cloudReason", it.name) }
         extra.forEach { (key, value) -> json.put(key, value) }
         return json.toString()
     }

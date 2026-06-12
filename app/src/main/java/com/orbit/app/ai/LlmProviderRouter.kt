@@ -3,6 +3,7 @@ package com.orbit.app.ai
 import android.content.Context
 import com.orbit.app.RuntimeFlags
 import com.orbit.app.net.ipc.INetworkGateway
+import com.orbit.app.settings.PrivacyPreferences
 
 /**
  * Spec 013 (FR-013-014, FR-013-015) — single resolution point for the
@@ -34,11 +35,12 @@ object LlmProviderRouter {
      *   the FR-013-016 carve-out and does not call this object).
      */
     fun create(
-        @Suppress("UNUSED_PARAMETER") context: Context,
+        context: Context,
         networkGateway: INetworkGateway?,
     ): LlmProvider = resolve(
         useLocalAi = RuntimeFlags.useLocalAi,
         hasNanoCapableHardware = hasNanoCapableHardware(),
+        cloudAiRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
         networkGateway = networkGateway,
     )
 
@@ -65,9 +67,12 @@ object LlmProviderRouter {
     internal fun resolve(
         useLocalAi: Boolean,
         hasNanoCapableHardware: Boolean,
+        cloudAiRoutingEnabled: Boolean = true,
         networkGateway: INetworkGateway?,
     ): LlmProvider = if (useLocalAi && hasNanoCapableHardware) {
         NanoLlmProvider()
+    } else if (!cloudAiRoutingEnabled) {
+        UnavailableLlmProvider()
     } else {
         CloudLlmProvider(
             checkNotNull(networkGateway) {

@@ -18,6 +18,7 @@ import com.orbit.app.net.ipc.MemoryGatewayRequestParcel
 import com.orbit.app.net.ipc.MemoryGatewayResponseParcel
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -40,6 +41,26 @@ class MemoryIndexSyncCoordinatorTest {
         assertTrue(outcome is MemoryIndexSyncCoordinator.Outcome.Skipped)
         assertEquals(0, gateway.requests.size)
         assertEquals(AuditAction.MEMORY_SYNC_SKIPPED, source.audit.single().action)
+        val extras = JSONObject(source.audit.single().extraJson!!)
+        assertEquals("COMPACT_INDEX_UPSERT", extras.getString("capability"))
+        assertEquals("SKIPPED", extras.getString("cloudOutcome"))
+        assertEquals("DISABLED_BY_USER", extras.getString("cloudReason"))
+    }
+
+    @Test
+    fun disabledIndexingSkipsTombstoneBeforeGatewayCallAndAudits() = runTest {
+        val source = FakeSource(snapshot = null)
+        val gateway = FakeGateway(json)
+        val coordinator = coordinator(source, gateway, enabled = false)
+
+        val outcome = coordinator.tombstoneEnvelope("env-1", reason = "user_deleted")
+
+        assertTrue(outcome is MemoryIndexSyncCoordinator.Outcome.Skipped)
+        assertEquals(0, gateway.requests.size)
+        assertEquals(AuditAction.MEMORY_SYNC_SKIPPED, source.audit.single().action)
+        val extras = JSONObject(source.audit.single().extraJson!!)
+        assertEquals("COMPACT_INDEX_TOMBSTONE", extras.getString("capability"))
+        assertEquals("SKIPPED", extras.getString("cloudOutcome"))
     }
 
     @Test
@@ -57,6 +78,9 @@ class MemoryIndexSyncCoordinatorTest {
         assertEquals("env-1", request.item.envelopeId)
         assertEquals("Saved article about Atlas search", request.item.title)
         assertEquals(AuditAction.MEMORY_INDEX_UPSERTED, source.audit.single().action)
+        val extras = JSONObject(source.audit.single().extraJson!!)
+        assertEquals("COMPACT_INDEX_UPSERT", extras.getString("capability"))
+        assertEquals("SUCCESS", extras.getString("cloudOutcome"))
     }
 
     @Test
@@ -73,6 +97,9 @@ class MemoryIndexSyncCoordinatorTest {
         request as MemoryGatewayRequest.Tombstone
         assertEquals("local_envelope_deleted", request.reason)
         assertEquals(AuditAction.MEMORY_INDEX_TOMBSTONED, source.audit.single().action)
+        val extras = JSONObject(source.audit.single().extraJson!!)
+        assertEquals("COMPACT_INDEX_TOMBSTONE", extras.getString("capability"))
+        assertEquals("SUCCESS", extras.getString("cloudOutcome"))
     }
 
     @Test
@@ -89,6 +116,9 @@ class MemoryIndexSyncCoordinatorTest {
         assertTrue(outcome is MemoryIndexSyncCoordinator.Outcome.Failed)
         assertEquals(AuditAction.MEMORY_GATEWAY_FAILED, source.audit.single().action)
         assertTrue(source.audit.single().extraJson!!.contains("NETWORK_UNAVAILABLE"))
+        val extras = JSONObject(source.audit.single().extraJson!!)
+        assertEquals("COMPACT_INDEX_UPSERT", extras.getString("capability"))
+        assertEquals("FAILED", extras.getString("cloudOutcome"))
     }
 
     private fun coordinator(

@@ -32,6 +32,42 @@ Active Spec 008 truth:
 - MongoDB Atlas remains a compact retrieval mirror only. Room/SQLCipher on device remains the source of truth.
 - Audit/receipt data remains local-only and bounded. Do not store raw screenshots, full OCR, raw questions, prompts, embeddings, raw model responses, tokens, API keys, JWTs, or cookies in receipts.
 
+Spec 008 implemented so far:
+
+- Added `com.orbit.app.cloud` policy primitives:
+  - `CloudCapability`
+  - `BudgetDecision`
+  - `BudgetDecisionReason`
+  - `FallbackMode`
+  - `CloudUsageOutcome`
+  - `CloudControlSettings`
+  - `CloudControlPolicy`
+  - `CloudUsageReceiptWriter`
+- Extended `PrivacyPreferences` with:
+  - `cloudAskSynthesisEnabled` (default true)
+  - `cloudAiRoutingEnabled` (default true)
+  - `dailyCloudBudgetCents` (`null` means no local cap)
+- Added `AuditAction.CLOUD_USAGE_RECORDED`.
+- Compact memory index audit rows now carry bounded Spec 008 metadata:
+  - `capability`
+  - `cloudOutcome`
+  - `cloudReason` where applicable
+- `MemoryIndexSyncCoordinator` disabled upsert/tombstone paths still make zero gateway calls and now record capability-specific skipped receipts.
+- `BinderAskOrbitRepository` now checks `PrivacyPreferences.cloudAskSynthesisEnabled` before `GroundedAsk`.
+  - When disabled, it skips `GroundedAsk` entirely.
+  - It records a best-effort local `CLOUD_USAGE_RECORDED` receipt through `BinderAuditLogClient` when a real context exists.
+  - It keeps local cited retrieval/refusal behavior.
+  - Sensitive identifier insufficient-evidence copy is now more user-friendly.
+- `LlmProviderRouter` now reads `PrivacyPreferences.cloudAiRoutingEnabled`.
+  - If cloud AI is disabled and local Nano is not available, it returns `UnavailableLlmProvider`.
+  - If future local Nano hardware is available and `useLocalAi` is true, it still returns `NanoLlmProvider`.
+- Added `UnavailableLlmProvider` as a non-network, fail-closed fallback.
+- Settings now shows three distinct controls in both UI variants:
+  - Compact memory index.
+  - Cloud Ask synthesis.
+  - Cloud AI routing.
+- Settings test tags are now distinct per toggle instead of every switch reusing the pause tag.
+
 Spec 008 code seams already identified:
 
 - `PrivacyPreferences.memoryIndexingEnabled` already exists and defaults to false.
@@ -51,16 +87,22 @@ Immediate Spec 008 task order:
 6. Update Settings to show three separate controls.
 7. Run local gate and commit without `dist/`, `screenshots/`, APKs, or secrets.
 
-Spec 008 validation targets:
+Spec 008 validation:
 
 ```text
-cloud_policy_tests=PENDING
-cloud_receipt_forbidden_key_tests=PENDING
-memory_index_disabled_no_gateway_test=PENDING
-ask_cloud_disabled_no_groundedask_test=PENDING
-llm_router_cloud_disabled_test=PENDING
-settings_three_controls_test=PENDING
-full_non_phone_gate=PENDING `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+cloud_policy_tests=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.cloud.*"`
+cloud_receipt_forbidden_key_tests=PASS 2026-06-12 `CloudUsageReceiptTest`
+memory_index_disabled_no_gateway_test=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.memory.*"`
+ask_cloud_disabled_no_groundedask_test=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.orbit.*"`
+llm_router_cloud_disabled_test=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.ai.LlmProviderRouterTest"`
+settings_three_controls_test=SOURCE_READY 2026-06-12 `./gradlew :app:compileDebugAndroidTestKotlin`
+focused_jvm_gate=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.cloud.*" --tests "com.orbit.app.memory.*" --tests "com.orbit.app.orbit.*" --tests "com.orbit.app.ai.*"`
+lint_build_gate=PASS 2026-06-12 `./gradlew :build-logic:lint:test :app:lintDebug :app:assembleDebug`
+compile_gate=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+diff_whitespace=PASS 2026-06-12 `git diff --check`
+receipt_forbidden_key_review=PASS 2026-06-12 targeted rg found raw/private words only as local variable names/test fixture assertions; persisted receipt fields are digest/count/capability/outcome metadata.
+apk_path=app/build/outputs/apk/debug/app-debug.apk
+apk_sha256=17b52057aaa2b27ff1e2edf88bb3004461472acbfb426cac0d4c6fa2edf029b5
 ```
 
 Important Spec 008 constraints:

@@ -44,6 +44,9 @@ class SettingsScreenTest {
     @Test
     fun quietFlagPauseToggle_preservesCallbackAndCopyContract() {
         var lastPauseValue: Boolean? = null
+        var lastMemoryIndexValue: Boolean? = null
+        var lastCloudAskValue: Boolean? = null
+        var lastCloudAiValue: Boolean? = null
         var openedCaptureSetup = false
 
         composeRule.setContent {
@@ -54,6 +57,12 @@ class SettingsScreenTest {
                     SettingsScreen(
                         paused = false,
                         onPauseChange = { lastPauseValue = it },
+                        memoryIndexingEnabled = false,
+                        onMemoryIndexingChange = { lastMemoryIndexValue = it },
+                        cloudAskSynthesisEnabled = true,
+                        onCloudAskSynthesisChange = { lastCloudAskValue = it },
+                        cloudAiRoutingEnabled = true,
+                        onCloudAiRoutingChange = { lastCloudAiValue = it },
                         onOpenCaptureSetup = { openedCaptureSetup = true },
                         trashCount = 2,
                         onOpenTrash = {},
@@ -66,6 +75,9 @@ class SettingsScreenTest {
 
         composeRule.onNodeWithText("// PRINCIPLE I · DEFAULT PRIVACY").assertIsDisplayed()
         composeRule.onNodeWithText("WHERE YOUR CAPTURES THINK").assertIsDisplayed()
+        composeRule.onNodeWithText("Compact memory index").assertIsDisplayed()
+        composeRule.onNodeWithText("Cloud Ask synthesis").assertIsDisplayed()
+        composeRule.onNodeWithText("Cloud AI routing").assertIsDisplayed()
         composeRule.onNodeWithText("Floating bubble").assertIsDisplayed()
         composeRule.onNodeWithTag(SettingsScreenTestTags.CAPTURE_SETUP_ROW).performClick()
         composeRule.waitForIdle()
@@ -75,6 +87,14 @@ class SettingsScreenTest {
         composeRule.waitForIdle()
 
         assert(lastPauseValue == true) { "Quiet pause toggle must call onPauseChange(true)" }
+        composeRule.onNodeWithTag(SettingsScreenTestTags.MEMORY_INDEX_TOGGLE).performClick()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.CLOUD_ASK_TOGGLE).performClick()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.CLOUD_AI_TOGGLE).performClick()
+        composeRule.waitForIdle()
+
+        assert(lastMemoryIndexValue == true) { "Memory index toggle must call onMemoryIndexingChange(true)" }
+        assert(lastCloudAskValue == false) { "Cloud Ask toggle must call onCloudAskSynthesisChange(false)" }
+        assert(lastCloudAiValue == false) { "Cloud AI toggle must call onCloudAiRoutingChange(false)" }
     }
 
     @Test

@@ -93,6 +93,38 @@ class LlmProviderRouterTest {
     }
 
     @Test
+    fun cloud_ai_disabled_returns_unavailable_provider_without_gateway() {
+        val provider = LlmProviderRouter.resolve(
+            useLocalAi = false,
+            hasNanoCapableHardware = false,
+            cloudAiRoutingEnabled = false,
+            networkGateway = null,
+        )
+
+        assertTrue(
+            "cloudAiRoutingEnabled=false must fail closed without CloudLlmProvider, " +
+                "was ${provider::class.java.simpleName}",
+            provider is UnavailableLlmProvider,
+        )
+    }
+
+    @Test
+    fun local_ai_with_nano_hardware_still_returns_nano_when_cloud_disabled() {
+        val provider = LlmProviderRouter.resolve(
+            useLocalAi = true,
+            hasNanoCapableHardware = true,
+            cloudAiRoutingEnabled = false,
+            networkGateway = null,
+        )
+
+        assertTrue(
+            "local-capable hardware should keep the local provider when cloud is disabled, " +
+                "was ${provider::class.java.simpleName}",
+            provider is NanoLlmProvider,
+        )
+    }
+
+    @Test
     fun use_local_ai_with_nano_capable_hardware_returns_nano_provider() {
         val provider = LlmProviderRouter.resolve(
             useLocalAi = true,

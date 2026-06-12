@@ -66,6 +66,10 @@ fun SettingsScreen(
     onPauseChange: (Boolean) -> Unit,
     memoryIndexingEnabled: Boolean = false,
     onMemoryIndexingChange: (Boolean) -> Unit = {},
+    cloudAskSynthesisEnabled: Boolean = true,
+    onCloudAskSynthesisChange: (Boolean) -> Unit = {},
+    cloudAiRoutingEnabled: Boolean = true,
+    onCloudAiRoutingChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)? = null,
     onOpenCaptureSetup: (() -> Unit)? = null,
@@ -80,6 +84,12 @@ fun SettingsScreen(
 ) {
     var localPaused by remember(paused) { mutableStateOf(paused) }
     var localMemoryIndexingEnabled by remember(memoryIndexingEnabled) { mutableStateOf(memoryIndexingEnabled) }
+    var localCloudAskSynthesisEnabled by remember(cloudAskSynthesisEnabled) {
+        mutableStateOf(cloudAskSynthesisEnabled)
+    }
+    var localCloudAiRoutingEnabled by remember(cloudAiRoutingEnabled) {
+        mutableStateOf(cloudAiRoutingEnabled)
+    }
     var showExportConfirm by remember { mutableStateOf(false) }
     val useNewVisualLanguage = LocalRuntimeFlags.current.useNewVisualLanguage
 
@@ -94,6 +104,16 @@ fun SettingsScreen(
             onMemoryIndexingChange = { next ->
                 localMemoryIndexingEnabled = next
                 onMemoryIndexingChange(next)
+            },
+            cloudAskSynthesisEnabled = localCloudAskSynthesisEnabled,
+            onCloudAskSynthesisChange = { next ->
+                localCloudAskSynthesisEnabled = next
+                onCloudAskSynthesisChange(next)
+            },
+            cloudAiRoutingEnabled = localCloudAiRoutingEnabled,
+            onCloudAiRoutingChange = { next ->
+                localCloudAiRoutingEnabled = next
+                onCloudAiRoutingChange(next)
             },
             modifier = modifier,
             onNavigateBack = onNavigateBack,
@@ -126,6 +146,7 @@ fun SettingsScreen(
                 title = "Pause continuations",
                 description = "Stops Orbit from fetching link summaries. Local captures still work.",
                 checked = localPaused,
+                testTag = SettingsScreenTestTags.PAUSE_TOGGLE,
                 onCheckedChange = { next ->
                     localPaused = next
                     onPauseChange(next)
@@ -136,9 +157,32 @@ fun SettingsScreen(
                 title = "Cloud memory index",
                 description = "Syncs compact memory records for Library search. Raw screenshots and full OCR stay out.",
                 checked = localMemoryIndexingEnabled,
+                testTag = SettingsScreenTestTags.MEMORY_INDEX_TOGGLE,
                 onCheckedChange = { next ->
                     localMemoryIndexingEnabled = next
                     onMemoryIndexingChange(next)
+                }
+            )
+            Spacer(Modifier.height(12.dp))
+            SettingsToggleRow(
+                title = "Cloud Ask synthesis",
+                description = "Lets Ask Orbit use the gateway to synthesize cited answers. Local cited retrieval still works when off.",
+                checked = localCloudAskSynthesisEnabled,
+                testTag = SettingsScreenTestTags.CLOUD_ASK_TOGGLE,
+                onCheckedChange = { next ->
+                    localCloudAskSynthesisEnabled = next
+                    onCloudAskSynthesisChange(next)
+                }
+            )
+            Spacer(Modifier.height(12.dp))
+            SettingsToggleRow(
+                title = "Cloud AI routing",
+                description = "Allows summaries, action extraction, and classifiers to use cloud AI when local models are unavailable.",
+                checked = localCloudAiRoutingEnabled,
+                testTag = SettingsScreenTestTags.CLOUD_AI_TOGGLE,
+                onCheckedChange = { next ->
+                    localCloudAiRoutingEnabled = next
+                    onCloudAiRoutingChange(next)
                 }
             )
 
@@ -233,6 +277,10 @@ private fun QuietSettingsScreen(
     onPauseChange: (Boolean) -> Unit,
     memoryIndexingEnabled: Boolean,
     onMemoryIndexingChange: (Boolean) -> Unit,
+    cloudAskSynthesisEnabled: Boolean,
+    onCloudAskSynthesisChange: (Boolean) -> Unit,
+    cloudAiRoutingEnabled: Boolean,
+    onCloudAiRoutingChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)?,
     onOpenCaptureSetup: (() -> Unit)?,
@@ -267,14 +315,32 @@ private fun QuietSettingsScreen(
                     description = "Stops link summaries and cloud continuation jobs. Local captures still work.",
                     tag = if (paused) "PAUSED" else "ON",
                     checked = paused,
+                    testTag = SettingsScreenTestTags.PAUSE_TOGGLE,
                     onCheckedChange = onPauseChange,
                 )
                 QuietToggleRow(
-                    title = "Cloud memory index",
-                    description = "Syncs compact memory records for Library search. Raw artifacts stay local.",
+                    title = "Compact memory index",
+                    description = "Syncs compact search records. Raw screenshots, full OCR, and prompts stay out.",
                     tag = if (memoryIndexingEnabled) "ON" else "OFF",
                     checked = memoryIndexingEnabled,
+                    testTag = SettingsScreenTestTags.MEMORY_INDEX_TOGGLE,
                     onCheckedChange = onMemoryIndexingChange,
+                )
+                QuietToggleRow(
+                    title = "Cloud Ask synthesis",
+                    description = "Allows Ask Orbit to synthesize cited answers through the gateway. Off keeps local cited retrieval.",
+                    tag = if (cloudAskSynthesisEnabled) "ON" else "LOCAL",
+                    checked = cloudAskSynthesisEnabled,
+                    testTag = SettingsScreenTestTags.CLOUD_ASK_TOGGLE,
+                    onCheckedChange = onCloudAskSynthesisChange,
+                )
+                QuietToggleRow(
+                    title = "Cloud AI routing",
+                    description = "Allows model-backed summaries, actions, and classifiers to use cloud AI when local models are unavailable.",
+                    tag = if (cloudAiRoutingEnabled) "ON" else "LOCAL",
+                    checked = cloudAiRoutingEnabled,
+                    testTag = SettingsScreenTestTags.CLOUD_AI_TOGGLE,
+                    onCheckedChange = onCloudAiRoutingChange,
                 )
             }
 
@@ -430,12 +496,13 @@ private fun QuietToggleRow(
     description: String,
     tag: String? = null,
     checked: Boolean,
+    testTag: String,
     onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .testTag(SettingsScreenTestTags.PAUSE_TOGGLE)
+            .testTag(testTag)
             .toggleable(
                 value = checked,
                 role = Role.Switch,
@@ -695,6 +762,7 @@ private fun SettingsToggleRow(
     title: String,
     description: String,
     checked: Boolean,
+    testTag: String,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
@@ -719,7 +787,7 @@ private fun SettingsToggleRow(
         }
         Spacer(Modifier.width(12.dp))
         Switch(
-            modifier = Modifier.testTag(SettingsScreenTestTags.PAUSE_TOGGLE),
+            modifier = Modifier.testTag(testTag),
             checked = checked,
             onCheckedChange = onCheckedChange
         )
@@ -728,5 +796,8 @@ private fun SettingsToggleRow(
 
 internal object SettingsScreenTestTags {
     const val PAUSE_TOGGLE = "settings-pause-toggle"
+    const val MEMORY_INDEX_TOGGLE = "settings-memory-index-toggle"
+    const val CLOUD_ASK_TOGGLE = "settings-cloud-ask-toggle"
+    const val CLOUD_AI_TOGGLE = "settings-cloud-ai-toggle"
     const val CAPTURE_SETUP_ROW = "settings-capture-setup-row"
 }
