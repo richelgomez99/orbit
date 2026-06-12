@@ -2,7 +2,7 @@
 
 **Input**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`
 **Branch**: `feature/007-memory-candidates-inspector-20260605`
-**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, Compose UI test source, expanded DAO/repository source coverage, explicit Ask/action/cloud exclusion tests, and non-phone local gates are implemented. Remaining work focuses on connected migration/repository/UI execution when a device/emulator is available, docs closeout, and commit.
+**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, Compose UI test source, expanded DAO/repository source coverage, explicit Ask/action/cloud exclusion tests, non-phone local gates, docs evidence, and clean commits are complete. Remaining work focuses on connected migration/repository/UI execution and manual phone validation when a device/emulator is available.
 
 ## Phase 0: Spec Kit Lock
 
@@ -50,7 +50,7 @@
 - [x] T007-027 Run full local Android gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] T007-028 Build APK and record SHA in `quickstart.md`.
 - [x] T007-029 Update roadmap and `CODEX_HANDOFF.md` with evidence.
-- [ ] T007-030 Commit branch without generated APK/screenshot artifacts.
+- [x] T007-030 Commit branch without generated APK/screenshot artifacts. Latest source checkpoint: `49e4a9b`; generated APKs/screenshots remain untracked/ignored.
 
 ## Deferred Explicitly Out Of Scope
 

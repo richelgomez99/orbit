@@ -64,6 +64,7 @@ Remaining Spec 007 work:
 - Execute `OrbitCleanupMemoryReviewTest`, `OrbitDatabaseMigrationV8toV9Test`, and `MemoryRepositoryDelegateTest` on a connected device/emulator when available.
 - Build/copy final APK to `dist/` only when ready for phone validation; do not commit generated APK artifacts.
 - Update tasks/quickstart/roadmap/handoff again after connected/manual validation.
+- Latest committed Spec 007 checkpoints include `d46f322`, `4dd1b82`, `e630fef`, `7bce9a3`, and `49e4a9b`; `screenshots/` remains untracked and must stay out of commits.
 
 Important constraints:
 
