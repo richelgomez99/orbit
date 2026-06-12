@@ -1528,6 +1528,11 @@ internal object DiaryScreenTestTags {
     const val DAY_HEADER = "diary-day-header"
     const val ACTIVE_INTENT_PANEL = "diary-active-intent-panel"
     const val ACTIVE_INTENT_TOGGLE = "diary-active-intent-toggle"
+    const val MEMORY_REVIEW_PANEL = "orbit-memory-review-panel"
+    const val MEMORY_CANDIDATE_EDIT_DIALOG = "orbit-memory-candidate-edit-dialog"
+    const val MEMORY_CANDIDATE_EDIT_LABEL = "orbit-memory-candidate-edit-label"
+    const val MEMORY_CANDIDATE_EDIT_FACT = "orbit-memory-candidate-edit-fact"
+    const val MEMORY_CANDIDATE_EDIT_SAVE = "orbit-memory-candidate-edit-save"
 
     fun activeIntentGroup(lifecycleStatus: String, category: String): String =
         "diary-active-intent-group-$lifecycleStatus-$category"
@@ -1545,4 +1550,10 @@ internal object DiaryScreenTestTags {
     fun activeIntentDecisionReview(intentId: String): String = "diary-active-intent-decision-review-$intentId"
     fun activeIntentDecisionResolve(intentId: String): String = "diary-active-intent-decision-resolve-$intentId"
     fun activeIntentDecisionArchive(intentId: String): String = "diary-active-intent-decision-archive-$intentId"
+
+    fun memoryCandidateCard(candidateId: String): String = "orbit-memory-candidate-card-$candidateId"
+    fun memoryCandidateOpenCapture(candidateId: String): String = "orbit-memory-candidate-open-$candidateId"
+    fun memoryCandidateReject(candidateId: String): String = "orbit-memory-candidate-reject-$candidateId"
+    fun memoryCandidateEdit(candidateId: String): String = "orbit-memory-candidate-edit-$candidateId"
+    fun memoryCandidateAccept(candidateId: String): String = "orbit-memory-candidate-accept-$candidateId"
 }

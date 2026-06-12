@@ -2,7 +2,7 @@
 
 **Input**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`
 **Branch**: `feature/007-memory-candidates-inspector-20260605`
-**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, explicit Ask/action/cloud exclusion tests, and non-phone local gates are implemented. Remaining work focuses on Compose UI tests, connected migration/repository execution when a device/emulator is available, docs closeout, and commit.
+**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, Compose UI test source, explicit Ask/action/cloud exclusion tests, and non-phone local gates are implemented. Remaining work focuses on connected migration/repository/UI execution when a device/emulator is available, docs closeout, and commit.
 
 ## Phase 0: Spec Kit Lock
 
@@ -34,7 +34,7 @@
 - [x] T007-017 Add Memory Review section/cards to `OrbitCleanupScreen` after Action Drafts.
 - [x] T007-018 Add source-open, accept, reject, and edit sheet flows.
 - [x] T007-019 Add user-facing failure/success state that does not rely only on transient toast.
-- [ ] T007-020 Add Compose/UI tests for pending candidates, no-empty-state noise, accept/reject callbacks, and edited acceptance validation.
+- [x] T007-020 Add Compose/UI tests for pending candidates, no-empty-state noise, accept/reject callbacks, and edited acceptance validation. Source: `OrbitCleanupMemoryReviewTest`; androidTest source compiles, connected execution deferred until a device/emulator is available.
 
 ## Phase 4: Debug Demo And Boundary Tests
 

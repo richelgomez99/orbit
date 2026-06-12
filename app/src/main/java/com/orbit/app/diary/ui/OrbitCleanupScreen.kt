@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.orbit.app.data.ipc.ActionDraftParcel
@@ -312,7 +313,9 @@ private fun MemoryReviewPanel(
     if (candidates.isEmpty()) return
 
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(DiaryScreenTestTags.MEMORY_REVIEW_PANEL),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
@@ -353,7 +356,9 @@ private fun MemoryCandidateCard(
         candidate.primarySourceDayLocal?.let { append(" • ").append(it) }
     }
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(DiaryScreenTestTags.memoryCandidateCard(candidate.candidateId)),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -400,10 +405,28 @@ private fun MemoryCandidateCard(
                 TextButton(
                     onClick = onOpenCapture,
                     enabled = candidate.primarySourceEnvelopeId != null,
+                    modifier = Modifier.testTag(
+                        DiaryScreenTestTags.memoryCandidateOpenCapture(candidate.candidateId)
+                    ),
                 ) { Text("Open") }
-                TextButton(onClick = onReject) { Text("Reject") }
-                TextButton(onClick = onEdit) { Text("Edit") }
-                Button(onClick = onAccept) { Text("Accept") }
+                TextButton(
+                    onClick = onReject,
+                    modifier = Modifier.testTag(
+                        DiaryScreenTestTags.memoryCandidateReject(candidate.candidateId)
+                    ),
+                ) { Text("Reject") }
+                TextButton(
+                    onClick = onEdit,
+                    modifier = Modifier.testTag(
+                        DiaryScreenTestTags.memoryCandidateEdit(candidate.candidateId)
+                    ),
+                ) { Text("Edit") }
+                Button(
+                    onClick = onAccept,
+                    modifier = Modifier.testTag(
+                        DiaryScreenTestTags.memoryCandidateAccept(candidate.candidateId)
+                    ),
+                ) { Text("Accept") }
             }
         }
     }
@@ -420,6 +443,7 @@ private fun MemoryCandidateEditDialog(
     val labelValid = label.trim().isNotEmpty() && label.length <= 200
     val factValid = fact.trim().isNotEmpty() && fact.length <= 300
     AlertDialog(
+        modifier = Modifier.testTag(DiaryScreenTestTags.MEMORY_CANDIDATE_EDIT_DIALOG),
         onDismissRequest = onDismiss,
         title = { Text("Edit memory") },
         text = {
@@ -430,6 +454,7 @@ private fun MemoryCandidateEditDialog(
                     label = { Text("Label") },
                     singleLine = false,
                     isError = !labelValid,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.MEMORY_CANDIDATE_EDIT_LABEL),
                 )
                 OutlinedTextField(
                     value = fact,
@@ -437,6 +462,7 @@ private fun MemoryCandidateEditDialog(
                     label = { Text("Memory") },
                     singleLine = false,
                     isError = !factValid,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.MEMORY_CANDIDATE_EDIT_FACT),
                 )
             }
         },
@@ -444,6 +470,7 @@ private fun MemoryCandidateEditDialog(
             Button(
                 onClick = { onAccept(label.trim(), fact.trim()) },
                 enabled = labelValid && factValid,
+                modifier = Modifier.testTag(DiaryScreenTestTags.MEMORY_CANDIDATE_EDIT_SAVE),
             ) {
                 Text("Save")
             }
