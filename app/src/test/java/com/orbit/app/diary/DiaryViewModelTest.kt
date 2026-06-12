@@ -11,6 +11,9 @@ import com.orbit.app.data.ClusterMemberRef
 import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
+import com.orbit.app.data.ipc.MemoryCandidateParcel
+import com.orbit.app.data.ipc.MemoryDecisionResultParcel
+import com.orbit.app.data.ipc.PromotedMemoryParcel
 import com.orbit.app.data.model.ClusterState
 import com.orbit.app.understanding.domain.ResolutionReason
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,6 +22,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -62,12 +66,16 @@ class DiaryViewModelTest {
         // from tests so we can verify combine + day-filter behaviour.
         val clusters = MutableSharedFlow<List<ClusterCardModel>>(replay = 1)
         val activeIntents = MutableSharedFlow<List<ActiveIntentParcel>>(replay = 1)
+        val memoryCandidates = MutableSharedFlow<List<MemoryCandidateParcel>>(replay = 1)
+        val promotedMemories = MutableSharedFlow<List<PromotedMemoryParcel>>(replay = 1)
         var throwOnObserve: Throwable? = null
         var reassignCalls = mutableListOf<Triple<String, String, String?>>()
         var archiveCalls = mutableListOf<String>()
         var deleteCalls = mutableListOf<String>()
         var resolveActiveIntentCalls = mutableListOf<Triple<String, String, Boolean>>()
         var escalationCalls = mutableListOf<Pair<String, String>>()
+        var acceptedMemoryCalls = mutableListOf<Triple<String, String?, String?>>()
+        var rejectedMemoryCalls = mutableListOf<Pair<String, String?>>()
 
         override fun observeDay(isoDate: String): Flow<DayPageParcel> = flow {
             throwOnObserve?.let { throw it }
@@ -132,6 +140,43 @@ class DiaryViewModelTest {
         override suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean {
             escalationCalls += intentId to mode
             return true
+        }
+
+        override fun observeMemoryCandidates(limit: Int): Flow<List<MemoryCandidateParcel>> = flow {
+            memoryCandidates.collect { emit(it) }
+        }
+
+        override fun observePromotedMemories(limit: Int): Flow<List<PromotedMemoryParcel>> = flow {
+            promotedMemories.collect { emit(it) }
+        }
+
+        override suspend fun acceptMemoryCandidate(
+            candidateId: String,
+            editedLabel: String?,
+            editedFactText: String?
+        ): MemoryDecisionResultParcel {
+            acceptedMemoryCalls += Triple(candidateId, editedLabel, editedFactText)
+            return MemoryDecisionResultParcel(
+                ok = true,
+                candidateId = candidateId,
+                memoryId = "memory-$candidateId",
+                status = "promoted",
+                message = "Saved to Orbit memory."
+            )
+        }
+
+        override suspend fun rejectMemoryCandidate(
+            candidateId: String,
+            reason: String?
+        ): MemoryDecisionResultParcel {
+            rejectedMemoryCalls += candidateId to reason
+            return MemoryDecisionResultParcel(
+                ok = true,
+                candidateId = candidateId,
+                memoryId = null,
+                status = "rejected",
+                message = "Dismissed. Orbit will not remember that."
+            )
         }
     }
 
@@ -311,6 +356,23 @@ class DiaryViewModelTest {
         updatedAtMillis = baseTime
     )
 
+    private fun memoryCandidateParcel(id: String = "candidate-1") = MemoryCandidateParcel(
+        candidateId = id,
+        candidateKind = "INTEREST",
+        state = "PENDING",
+        displayLabel = "Interested in startup events",
+        factText = "user interested in startup events",
+        confidenceLabel = "medium",
+        sensitivity = "NORMAL",
+        sourceCount = 1,
+        primarySourceEnvelopeId = "env-1",
+        primarySourceTitle = "Startup event ticket",
+        primarySourceDayLocal = "2026-06-05",
+        askUserCopy = "Remember this?",
+        createdAtMillis = baseTime,
+        updatedAtMillis = baseTime
+    )
+
     @Test
     fun activeIntentState_updatesFromRepositoryQueue() = runTest {
         val repo = FakeRepo()
@@ -335,6 +397,46 @@ class DiaryViewModelTest {
 
         assertEquals(listOf(Triple("intent-1", "USER_ARCHIVED", true)), repo.resolveActiveIntentCalls)
         assertEquals(listOf("intent-1" to "SMART"), repo.escalationCalls)
+    }
+
+    @Test
+    fun observeMemoryCandidates_delegatesToRepositoryFlow() = runTest {
+        val repo = FakeRepo()
+        val vm = TestScopeVm(this, repo)
+        val seen = mutableListOf<List<MemoryCandidateParcel>>()
+        val job = launch(UnconfinedTestDispatcher(testScheduler)) {
+            vm.observeMemoryCandidates().collect { seen += it }
+        }
+
+        repo.memoryCandidates.emit(listOf(memoryCandidateParcel("candidate-1")))
+        advanceUntilIdle()
+
+        assertEquals("candidate-1", seen.last().single().candidateId)
+        job.cancel()
+    }
+
+    @Test
+    fun memoryCandidateDecisions_delegateAndSurfaceNotice() = runTest {
+        val repo = FakeRepo()
+        val vm = TestScopeVm(this, repo)
+
+        vm.onAcceptMemoryCandidate(
+            candidateId = "candidate-1",
+            editedLabel = "Tracks founder events",
+            editedFactText = "founder events"
+        )
+        advanceUntilIdle()
+        assertEquals(
+            listOf(Triple("candidate-1", "Tracks founder events", "founder events")),
+            repo.acceptedMemoryCalls
+        )
+        assertEquals("Saved to Orbit memory.", vm.actionNotice.value?.message)
+
+        vm.onActionNoticeDismissed()
+        vm.onRejectMemoryCandidate("candidate-2", "wrong")
+        advanceUntilIdle()
+        assertEquals(listOf("candidate-2" to "wrong"), repo.rejectedMemoryCalls)
+        assertEquals("Dismissed. Orbit will not remember that.", vm.actionNotice.value?.message)
     }
 
     @Test

@@ -2,7 +2,7 @@
 
 **Input**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`
 **Branch**: `feature/007-memory-candidates-inspector-20260605`
-**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, and non-phone local gates are implemented. Remaining work focuses on UI tests, explicit Ask/action/cloud exclusion tests, connected migration/repository execution when a device/emulator is available, docs closeout, and commit.
+**Status**: Room v9 foundation, compact Binder/repository layer, Orbit Memory Review UI, debug seeding, ViewModel decision-flow coverage, and non-phone local gates are implemented. Remaining work focuses on Compose UI tests, explicit Ask/action/cloud exclusion tests, connected migration/repository execution when a device/emulator is available, docs closeout, and commit.
 
 ## Phase 0: Spec Kit Lock
 
@@ -30,7 +30,7 @@
 
 ## Phase 3: Orbit Memory Review UI
 
-- [x] T007-016 Extend `DiaryRepository`, `BinderDiaryRepository`, and `DiaryViewModel` with candidate/promoted memory state.
+- [x] T007-016 Extend `DiaryRepository`, `BinderDiaryRepository`, and `DiaryViewModel` with candidate/promoted memory state and ViewModel-level flow/decision coverage.
 - [x] T007-017 Add Memory Review section/cards to `OrbitCleanupScreen` after Action Drafts.
 - [x] T007-018 Add source-open, accept, reject, and edit sheet flows.
 - [x] T007-019 Add user-facing failure/success state that does not rely only on transient toast.
@@ -46,10 +46,10 @@
 
 ## Phase 5: Validation And Closeout
 
-- [x] T007-026 Run focused gates for memory DAO/repository/UI tests.
+- [x] T007-026 Run focused gates for memory DAO/repository/UI tests. Latest focused ViewModel coverage: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest"`.
 - [x] T007-027 Run full local Android gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] T007-028 Build APK and record SHA in `quickstart.md`.
-- [ ] T007-029 Update roadmap and `CODEX_HANDOFF.md` with evidence.
+- [x] T007-029 Update roadmap and `CODEX_HANDOFF.md` with evidence.
 - [ ] T007-030 Commit branch without generated APK/screenshot artifacts.
 
 ## Deferred Explicitly Out Of Scope

@@ -45,15 +45,18 @@ Expected: no Android secret/client hits and no direct network constructors outsi
 
 ```text
 android_unit_tests=PASS 2026-06-05 `./gradlew :app:testDebugUnitTest`; focused `MemoryParcelTest` passed
+memory_viewmodel_tests=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest"` covers candidate observation and accept/reject notice delegation
 android_lint=PASS 2026-06-05 `./gradlew :app:lintDebug`
-android_compile=PASS 2026-06-05 `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+android_compile=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 room_migration_tests=SOURCE_READY 2026-06-05 `OrbitDatabaseMigrationV8toV9Test` compiles; connected execution deferred until device/emulator available
 memory_decision_tests=SOURCE_READY 2026-06-05 `MemoryRepositoryDelegateTest` compiles; connected execution deferred until device/emulator available
 cloud_payload_exclusion=PARTIAL 2026-06-05 no references to `memory_candidate`, `promoted_memory`, `MemoryCandidate`, `PromotedMemory`, or `MemoryRepository` under compact memory/Ask/action code paths; explicit assertion test still pending
-permission_scan=PASS 2026-06-05 no Android secret/client hits under `app/src`
-network_boundary_scan=PASS 2026-06-05 no direct network constructors in scanned app source
+full_non_phone_gate=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+diff_whitespace=PASS 2026-06-12 `git diff --check`
+permission_scan=PASS 2026-06-12 no Android secret/client hits under `app/src`
+network_boundary_scan=PASS 2026-06-12 no direct network constructors in scanned app source
 apk_path=app/build/outputs/apk/debug/app-debug.apk
 apk_sha256=bb7ce6477f37d0ac3ff1d2e3d49292e365838e76120a004b41e91c0e937c3ea3
 phone_validation=deferred until device available
-known_limits=Memory Review UI is source-compiled and locally gated, but not yet manually validated on phone. Pending/rejected candidate exclusion from Ask/action/cloud needs explicit regression tests before closeout.
+known_limits=Memory Review UI is source-compiled and locally gated, but not yet manually validated on phone. Compose UI assertions and pending/rejected candidate exclusion from Ask/action/cloud still need explicit regression tests before closeout.
 ```
