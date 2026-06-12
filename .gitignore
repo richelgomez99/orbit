@@ -23,6 +23,7 @@ build_output.log
 .kotlin/
 .claude/
 dist/
+.gbrain-source
 
 # Private working notes (never push)
 .specify/memory/linkedin*.md

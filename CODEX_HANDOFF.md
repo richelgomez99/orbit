@@ -103,6 +103,22 @@ apk_path=app/build/outputs/apk/debug/app-debug.apk
 apk_sha256=4c9caa89658c937195ba2edd851ed66d06cef2dd913a7e01dd805f741918bac5
 ```
 
+GStack/GBrain continuity status:
+
+- Ran GStack `sync-gbrain` preamble after Spec 008 closeout.
+- Initial `gstack-gbrain-sync --incremental` partially succeeded:
+  - memory/artifact ingest succeeded (`7 imported, 0 unchanged, 0 failed`);
+  - curated artifact sync succeeded;
+  - code sync failed because local GBrain PGLite is configured for `zeroentropyai:zembed-1` and `ZEROENTROPY_API_KEY` is not set.
+- Did not wipe/re-init GBrain to switch embedding dimensions. That requires explicit user approval because GBrain reports PGLite embedding model changes need a schema-sized re-init.
+- Ran non-destructive code import with embeddings disabled:
+  - `gbrain sync --strategy code --source gstack-code-orbit-015537d5 --no-embed --yes`
+  - imported `1031` code files and created `3783` chunks.
+- Attached this worktree to the imported source:
+  - source id: `gstack-code-orbit-015537d5`
+  - `.gbrain-source` contains that id and is ignored by `.gitignore` so the pin remains local.
+- Smoke `gbrain search "Cloud Ask synthesis" --source gstack-code-orbit-015537d5` timed out waiting for the PGLite lock. Treat GBrain search as not yet reliable in this worktree until the lock clears and/or embeddings are configured.
+
 Important Spec 008 constraints:
 
 - Do not add BYOC/BYOK UI in this branch.
