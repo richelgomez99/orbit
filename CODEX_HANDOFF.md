@@ -77,15 +77,12 @@ Spec 008 code seams already identified:
 - `LlmProviderRouter` currently defaults to `CloudLlmProvider` unless `RuntimeFlags.useLocalAi` and hardware capability both allow local Nano; this needs a durable cloud-AI routing policy before deeper agent work.
 - `MemoryAudit` already stores request IDs, digests, counts, latency, outcomes, and avoids raw text; Spec 008 should generalize that receipt discipline.
 
-Immediate Spec 008 task order:
+Spec 008 completed task order:
 
-1. Finish artifact lock/update continuity docs: `T008-002`, `T008-003`.
-2. Add policy/receipt primitives: `CloudCapability`, `BudgetDecision`, `CloudControlPolicy`, receipt writer/tests.
-3. Normalize compact index skip/receipt behavior under the policy vocabulary.
-4. Gate Ask cloud synthesis before `GroundedAsk`; disabled means no gateway call.
-5. Gate cloud LLM routing before `CloudLlmProvider`; disabled means local fallback/unavailable copy, not silent cloud.
-6. Update Settings to show three separate controls.
-7. Run local gate and commit without `dist/`, `screenshots/`, APKs, or secrets.
+1. Fresh Spec Kit artifacts landed in `22474aa`.
+2. Policy gates, receipts, compact index metadata, Ask synthesis gate, cloud AI routing gate, and Settings controls landed in `84fc216`.
+3. Cloud activity Settings entry point and task cleanup landed in `e56dc49`.
+4. Full non-phone gate passed after the final polish. `dist/`, APK outputs, screenshots, and secrets were not committed.
 
 Spec 008 validation:
 
@@ -99,10 +96,11 @@ settings_three_controls_test=SOURCE_READY 2026-06-12 `./gradlew :app:compileDebu
 focused_jvm_gate=PASS 2026-06-12 `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.cloud.*" --tests "com.orbit.app.memory.*" --tests "com.orbit.app.orbit.*" --tests "com.orbit.app.ai.*"`
 lint_build_gate=PASS 2026-06-12 `./gradlew :build-logic:lint:test :app:lintDebug :app:assembleDebug`
 compile_gate=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+full_non_phone_gate=PASS 2026-06-12 `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 diff_whitespace=PASS 2026-06-12 `git diff --check`
 receipt_forbidden_key_review=PASS 2026-06-12 targeted rg found raw/private words only as local variable names/test fixture assertions; persisted receipt fields are digest/count/capability/outcome metadata.
 apk_path=app/build/outputs/apk/debug/app-debug.apk
-apk_sha256=17b52057aaa2b27ff1e2edf88bb3004461472acbfb426cac0d4c6fa2edf029b5
+apk_sha256=4c9caa89658c937195ba2edd851ed66d06cef2dd913a7e01dd805f741918bac5
 ```
 
 Important Spec 008 constraints:

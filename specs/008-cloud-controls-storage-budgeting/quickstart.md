@@ -23,10 +23,11 @@ Run from repo root:
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.cloud.*" --tests "com.orbit.app.memory.*" --tests "com.orbit.app.orbit.*" --tests "com.orbit.app.ai.*"`
 - PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 - PASS: `./gradlew :build-logic:lint:test :app:lintDebug :app:assembleDebug`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - PASS: `git diff --check`
 - PASS: targeted forbidden-key review. Receipt writers persist digests/counts/capability/outcome metadata; raw private terms appear only as local variable/test fixture strings.
 - Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
-- Debug APK SHA-256: `17b52057aaa2b27ff1e2edf88bb3004461472acbfb426cac0d4c6fa2edf029b5`
+- Debug APK SHA-256: `4c9caa89658c937195ba2edd851ed66d06cef2dd913a7e01dd805f741918bac5`
 
 ## Manual Demo Script
 
