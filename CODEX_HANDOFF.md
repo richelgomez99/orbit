@@ -56,12 +56,18 @@ Spec 009 implemented so far:
 - Wired `EnvelopeRepositoryService` to construct `MemoryRepositoryDelegate` with `GraphRepositoryDelegate(RoomGraphBackendAdapter(db))` in `:ml`.
 - Accepted/promoted Spec 007 memories now project deterministically to local graph facts.
 - Pending/rejected memory candidates still do not project into graph facts.
+- Added compact graph provenance Binder projection:
+  - `GraphSourceParcel`
+  - `GraphWhyThisParcel`
+  - `IEnvelopeRepository.getGraphWhyThis(targetType, targetId)`
+  - `EnvelopeRepositoryImpl` caps sources and string lengths before crossing Binder.
 - Added focused contract tests:
   - `GraphBackendAdapterContractTest`
   - `GraphExportPolicyTest`
   - source-ready `OrbitDatabaseMigrationV9toV10Test`
   - source-ready `RoomGraphBackendAdapterTest`
   - source-ready `MemoryRepositoryDelegateTest` coverage for accepted-vs-rejected graph projection
+  - source-ready `GraphWhyThisBinderContractTest`
 - Contract tests currently prove:
   - facts require provenance;
   - relationships require provenance;
@@ -77,11 +83,15 @@ Spec 009 implemented so far:
   - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - Diff whitespace passed:
   - `git diff --check`
+- Binder projection validation passed:
+  - `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
 
 Current Spec 009 next task:
 
-1. Commit the Room v10 graph backend/projection slice.
-2. Continue with Phase 6: compact Binder/`whyThis` projection surface.
+1. Commit the compact Binder/`whyThis` projection slice.
+2. Continue with Phase 7: adapter evaluation closeout and cloud-control mirror deferral notes.
 3. Add graph-specific audit rows only if the Binder/UI surface needs distinct graph actions beyond existing memory acceptance/rejection audits.
 4. Connected migration/adapter/projection test execution remains deferred until phone/emulator availability.
 
@@ -92,7 +102,7 @@ Immediate Spec 009 task order:
 3. Add Room v10 graph tables/DAOs/migration and source-ready migration test. Done in current uncommitted slice.
 4. Implement provenance-required writes and source invalidation. Done in current uncommitted slice.
 5. Project promoted memories only, never pending/rejected candidates. Done in current uncommitted slice.
-6. Add compact Binder/`why this?` projection. Next.
+6. Add compact Binder/`why this?` projection. Done in current uncommitted slice.
 7. Run focused graph tests and full non-phone gate. Done for current uncommitted slice.
 
 Important Spec 009 constraints:

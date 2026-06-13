@@ -19,6 +19,7 @@ import com.orbit.app.data.ipc.ClusterCardParcel;
 import com.orbit.app.data.ipc.IClusterObserver;
 import com.orbit.app.data.ipc.ActiveIntentParcel;
 import com.orbit.app.data.ipc.IActiveIntentObserver;
+import com.orbit.app.data.ipc.GraphWhyThisParcel;
 
 interface IEnvelopeRepository {
 
@@ -223,6 +224,15 @@ interface IEnvelopeRepository {
     // Debug-build demo helper. Seeds deterministic memory candidates for
     // known debug captures. Release implementation returns "UNAVAILABLE".
     String debugSeedDemoMemoryCandidates();
+
+    // ---- Spec 009 — compact graph provenance projection ----
+
+    // Returns a bounded provenance projection for a local graph target.
+    // `targetType` is one of ENTITY | FACT | RELATIONSHIP. The payload
+    // carries only ids, labels, dates, and source types; it must not carry
+    // raw screenshots, full OCR, prompts, model responses, embeddings, or
+    // cloud payloads across Binder.
+    GraphWhyThisParcel getGraphWhyThis(String targetType, String targetId);
 
     // T061 — TodoActionHandler local-target dispatch entry point.
     //

@@ -252,6 +252,10 @@ class ScreenshotObserverTest {
             reason: String?
         ): com.orbit.app.data.ipc.MemoryDecisionResultParcel = error("unused")
         override fun debugSeedDemoMemoryCandidates(): String = error("unused")
+        override fun getGraphWhyThis(
+            targetType: String?,
+            targetId: String?
+        ): com.orbit.app.data.ipc.GraphWhyThisParcel? = null
 
         override fun observeClusters(observer: com.orbit.app.data.ipc.IClusterObserver) = error("unused")
 

@@ -79,11 +79,12 @@ class EnvelopeRepositoryService : Service() {
             auditWriter = auditWriter,
             scope = serviceScope
         )
+        val graphBackendAdapter = RoomGraphBackendAdapter(db)
         val memoryRepositoryDelegate = MemoryRepositoryDelegate(
             database = db,
             auditWriter = auditWriter,
             graphRepositoryDelegate = GraphRepositoryDelegate(
-                adapter = RoomGraphBackendAdapter(db),
+                adapter = graphBackendAdapter,
                 promotedMemorySupportDao = db.promotedMemorySupportDao()
             ),
             scope = serviceScope
@@ -162,7 +163,8 @@ class EnvelopeRepositoryService : Service() {
             basicUnderstandingWriter = basicUnderstandingWriter,
             memoryIndexSyncScheduler = memoryIndexSyncScheduler,
             memoryIndexSyncDelegate = memoryIndexSyncDelegate,
-            memoryRepositoryDelegate = memoryRepositoryDelegate
+            memoryRepositoryDelegate = memoryRepositoryDelegate,
+            graphBackendAdapter = graphBackendAdapter
         )
         // T088 — same service binder pool exposes the audit-log surface on a
         // distinct intent action so the Settings / audit viewer process can

@@ -24,6 +24,9 @@ git diff --check
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.graph.*" :app:compileDebugKotlin`
 - PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - PASS: `git diff --check`
+- PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin` after graph Binder projection was added.
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin` after graph Binder projection was added.
+- PASS: `git diff --check` after graph Binder projection was added.
 
 ## Implemented Local Path
 
@@ -31,6 +34,7 @@ git diff --check
 - `RoomGraphBackendAdapter` enforces provenance-required fact/relationship writes and source invalidation semantics.
 - `GraphRepositoryDelegate` deterministically projects accepted/promoted Spec 007 memories into local graph facts.
 - Rejected/pending memory candidates are not projected into graph facts.
+- `IEnvelopeRepository.getGraphWhyThis(targetType, targetId)` exposes a capped Binder projection for graph provenance.
 - Android migration/adapter/projection tests are source-ready and compile; connected execution waits for device/emulator availability.
 
 ## Required Demo Evidence

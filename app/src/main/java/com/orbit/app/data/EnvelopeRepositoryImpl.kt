@@ -11,6 +11,8 @@ import com.orbit.app.data.entity.EnvelopeNoteEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.StateSnapshot
 import com.orbit.app.data.ipc.EnvelopeViewParcel
+import com.orbit.app.data.ipc.GraphSourceParcel
+import com.orbit.app.data.ipc.GraphWhyThisParcel
 import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.ipc.IActionDraftObserver
 import com.orbit.app.data.ipc.IEnvelopeObserver
@@ -29,6 +31,9 @@ import com.orbit.app.data.model.ContinuationStatus
 import com.orbit.app.data.model.ContinuationType
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
+import com.orbit.app.graph.GraphBackendAdapter
+import com.orbit.app.graph.GraphRepositoryDelegate
+import com.orbit.app.graph.GraphTargetType
 import com.orbit.app.memory.MemoryIndexSyncScheduler
 import com.orbit.app.memory.MemoryIndexSyncDelegate
 import com.orbit.app.memory.MemoryIndexSyncWorker
@@ -136,7 +141,12 @@ class EnvelopeRepositoryImpl(
      * Spec 007 — candidate/promoted memory inspector. Nullable for older
      * repository tests; production wires it in EnvelopeRepositoryService.
      */
-    private val memoryRepositoryDelegate: MemoryRepositoryDelegate? = null
+    private val memoryRepositoryDelegate: MemoryRepositoryDelegate? = null,
+    /**
+     * Spec 009 — local graph provenance read surface. Nullable for older
+     * repository tests; production wires it in EnvelopeRepositoryService.
+     */
+    private val graphBackendAdapter: GraphBackendAdapter? = null
 ) : IEnvelopeRepository.Stub() {
 
     /** envelopeId → millis-deadline after which `undo()` returns false. */
@@ -1192,6 +1202,39 @@ class EnvelopeRepositoryImpl(
         }
     }
 
+    override fun getGraphWhyThis(targetType: String?, targetId: String?): GraphWhyThisParcel? {
+        val adapter = graphBackendAdapter ?: return null
+        val parsedTargetType = runCatching {
+            GraphTargetType.valueOf(targetType.orEmpty())
+        }.getOrNull() ?: return null
+        val safeTargetId = targetId?.trim()?.takeIf { it.isNotEmpty() }?.take(MAX_GRAPH_ID_CHARS)
+            ?: return null
+
+        return runBlocking {
+            adapter.whyThis(
+                userId = GraphRepositoryDelegate.LOCAL_USER_ID,
+                targetType = parsedTargetType,
+                targetId = safeTargetId
+            )?.let { projection ->
+                GraphWhyThisParcel(
+                    targetType = projection.targetType.name,
+                    targetId = projection.targetId.take(MAX_GRAPH_ID_CHARS),
+                    title = projection.title.take(MAX_GRAPH_TITLE_CHARS),
+                    summary = projection.summary?.take(MAX_GRAPH_SUMMARY_CHARS),
+                    sources = projection.sources.take(MAX_GRAPH_SOURCES).map {
+                        GraphSourceParcel(
+                            sourceType = it.sourceType.name,
+                            sourceId = it.sourceId.take(MAX_GRAPH_ID_CHARS),
+                            label = it.label.take(MAX_GRAPH_LABEL_CHARS),
+                            dayLocal = it.dayLocal?.take(MAX_DAY_LOCAL_CHARS),
+                            createdAtMillis = it.createdAtMillis
+                        )
+                    }
+                )
+            }
+        }
+    }
+
     override fun resolveActiveIntent(
         intentId: String,
         resolutionReason: String,
@@ -1339,5 +1382,11 @@ class EnvelopeRepositoryImpl(
         const val UNDO_WINDOW_MS: Long = 10_000L
         private const val MAX_HYDRATION_SOURCE_CHARS = 80
         private const val MAX_HYDRATION_NOTE_CHARS = 300
+        private const val MAX_GRAPH_SOURCES = 10
+        private const val MAX_GRAPH_ID_CHARS = 128
+        private const val MAX_GRAPH_TITLE_CHARS = 160
+        private const val MAX_GRAPH_SUMMARY_CHARS = 240
+        private const val MAX_GRAPH_LABEL_CHARS = 160
+        private const val MAX_DAY_LOCAL_CHARS = 16
     }
 }

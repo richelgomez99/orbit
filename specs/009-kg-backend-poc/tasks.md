@@ -41,9 +41,9 @@
 
 ## Phase 6: Binder And Why-This Projection
 
-- [ ] **T009-020** [US1] Add compact graph projection parcels/AIDL methods or a narrow graph Binder surface.
-- [ ] **T009-021** [US1] Implement `whyThis` projection with source envelope/user-confirmation ids.
-- [ ] **T009-022** [US1] Add Binder payload cap/source-ready tests.
+- [x] **T009-020** [US1] Add compact graph projection parcels/AIDL methods or a narrow graph Binder surface.
+- [x] **T009-021** [US1] Implement `whyThis` projection with source envelope/user-confirmation ids.
+- [x] **T009-022** [US1] Add Binder payload cap/source-ready tests.
 
 ## Phase 7: Adapter Evaluation Closeout
 
