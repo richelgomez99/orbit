@@ -2,7 +2,48 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-12 Spec 009 Repo-Side Complete
+## Current Status - 2026-06-12 Spec 010 Active
+
+Authoritative branch:
+
+- `feature/010-agent-coordinator-20260612`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 009 branch `feature/009-kg-backend-poc-20260612`.
+- Latest Spec 009 commits in stack:
+  - `8198d4f docs(spec-009): add kg backend poc artifacts`
+  - `435cf92 feat(spec-009): add graph adapter contract`
+  - `d47ce74 feat(spec-009): add room graph backend`
+  - `bb63752 feat(spec-009): expose graph provenance binder`
+  - `b997cd2 docs(spec-009): close graph backend poc`
+
+Active Spec 010 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/010-agent-coordinator/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/agent-coordinator-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 010 is approval-first agent planning, not autonomous execution.
+- Implementation order is product/coordinator surface first, model assistance last.
+- Deterministic local planning must work without cloud/model availability.
+- Model assistance, if implemented, routes through existing `LlmProviderRouter`/Spec 008 controls and validates all output against local evidence ids and registered functions.
+- No AppFunctions/Spark/platform-agent interop, no A2UI, no durable chat sessions, and no BYOM local model manager in this branch.
+
+Immediate Spec 010 task order:
+
+1. Commit the Spec 010 artifact lock and roadmap/handoff update.
+2. Add pure `com.orbit.app.agent` models and coordinator contract tests.
+3. Implement deterministic local planner for cited plan/refusal/gap-question outcomes.
+4. Integrate action/KG evidence as approval-required plan steps.
+5. Add compact Binder projection and Orbit tab plan surface.
+6. Add optional model-assisted planning only after deterministic surface tests pass.
+
+## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 
 ## Previous Status - 2026-06-12 Spec 008 Checkpoint
 
