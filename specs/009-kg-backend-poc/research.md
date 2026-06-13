@@ -60,12 +60,51 @@
 
 **Rationale**: The product promise is local-first provenance-backed memory, not use of a specific graph vendor.
 
+## Adapter Evaluation Verdicts
+
+### Room/SQLCipher Baseline
+
+**Verdict**: Accepted as the Spec 009 canonical backend.
+
+**Evidence**:
+
+- Room v10 graph tables are exported in `app/schemas/com.orbit.app.data.OrbitDatabase/10.json`.
+- `RoomGraphBackendAdapter` implements provenance-required fact and relationship writes.
+- `invalidateBySource` invalidates targets only when all provenance is gone and preserves targets with surviving support.
+- `GraphRepositoryDelegate` projects only promoted memories; pending/rejected candidates remain outside active graph facts.
+- `IEnvelopeRepository.getGraphWhyThis(targetType, targetId)` exposes a compact Binder projection without raw screenshots, OCR, prompts, embeddings, model responses, or cloud payloads.
+
+**Tradeoff**: The first projection uses the current local-user bridge because Spec 007 promoted memories do not yet carry durable user ids. That is acceptable for this single-user local MVP branch, but a future auth/user-identity spec should thread the actual user id into promoted memory and graph projection.
+
+### MongoDB Atlas / Compact Cloud Mirror
+
+**Verdict**: Deferred. Do not implement a graph mirror in Spec 009.
+
+**Reason**: Spec 008 cloud controls now distinguish compact index sync, cloud Ask synthesis, and cloud AI routing, but there is no graph-mirror control, receipt shape, or user-facing cloud activity row for KG mirrors yet. Any mirror must be compact, opt-in, bounded, and non-authoritative.
+
+### Graphiti
+
+**Verdict**: Deferred adapter candidate only.
+
+**Reason**: Graphiti may be useful for temporal/entity graph experiments, but it cannot become canonical storage unless it passes Orbit's local-first adapter contract, provenance invalidation, deletion behavior, and no-raw-export rules. No production wiring in this branch.
+
+### Zep / Mem0
+
+**Verdict**: Deferred adapter candidates only.
+
+**Reason**: These products optimize hosted memory workflows. Orbit's current requirement is private local graph memory in `:ml`; hosted memory products can only be evaluated as optional compact mirrors or test adapters after user controls and contract tests exist.
+
+### Supabase Graph/Postgres
+
+**Verdict**: Deferred.
+
+**Reason**: Supabase remains useful for authenticated gateways and future cloud control surfaces, but a remote graph store would violate the current branch scope unless it is only a compact, opt-in mirror governed by Spec 008-style controls.
+
 ## Open Questions For Implementation
 
-- Which first entity taxonomy is narrow enough for MVP: `PERSON`, `ORG`, `PROJECT`, `PLACE`, `EVENT`, `PRODUCT`, `TOPIC`, `TASK`, `USER` is the likely starting set.
-- Whether promoted-memory facts should write synchronously on accept or via a deterministic projection worker.
-- Whether `GraphFact` should support confidence at v1 or only active/invalidated plus source count. Recommendation: include confidence but keep decisions deterministic.
-- Whether UI for "why this?" belongs initially in Memory Review detail, Orbit tab, or a small repository projection test only. Recommendation: start repository/Binder projection first.
+- Which UI should first expose `getGraphWhyThis`: Memory Review detail, Orbit tab, or a future agent workbench.
+- Whether graph-specific audit rows are needed once a user-visible graph surface lands. Current branch relies on existing memory accepted/rejected audit rows and local provenance tables.
+- When auth/user identity should replace the current `GraphRepositoryDelegate.LOCAL_USER_ID` bridge.
 
 ## Non-Goals
 

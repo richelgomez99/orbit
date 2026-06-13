@@ -2,7 +2,7 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-12 Spec 009 Active
+## Current Status - 2026-06-12 Spec 009 Repo-Side Complete
 
 ## Previous Status - 2026-06-12 Spec 008 Checkpoint
 
@@ -36,6 +36,7 @@ Active Spec 009 truth:
 - No active `GraphFact` or `GraphRelationship` may be written without provenance.
 - Pending/rejected memory candidates from Spec 007 must not become active graph facts.
 - Spec 008 cloud controls govern any compact graph mirror; cloud mirrors remain optional and non-authoritative.
+- Spec 009 is now repo-side complete. Connected migration/adapter/Binder execution remains deferred until phone/emulator availability.
 
 Spec 009 implemented so far:
 
@@ -88,12 +89,12 @@ Spec 009 implemented so far:
   - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
   - `git diff --check`
 
-Current Spec 009 next task:
+Current next task:
 
-1. Commit the compact Binder/`whyThis` projection slice.
-2. Continue with Phase 7: adapter evaluation closeout and cloud-control mirror deferral notes.
-3. Add graph-specific audit rows only if the Binder/UI surface needs distinct graph actions beyond existing memory acceptance/rejection audits.
-4. Connected migration/adapter/projection test execution remains deferred until phone/emulator availability.
+1. Commit Spec 009 closeout docs.
+2. Move to the next queued branch after checking `docs/orbit-roadmap-queue-2026-06-02.md`. The next row is Spec 010 (`010-agent-coordinator`) unless the user changes direction.
+3. Add graph-specific audit rows only if a future graph-specific user action exists beyond existing memory acceptance/rejection audits.
+4. Connected migration/adapter/projection/Binder test execution remains deferred until phone/emulator availability.
 
 Immediate Spec 009 task order:
 
@@ -102,8 +103,8 @@ Immediate Spec 009 task order:
 3. Add Room v10 graph tables/DAOs/migration and source-ready migration test. Done in current uncommitted slice.
 4. Implement provenance-required writes and source invalidation. Done in current uncommitted slice.
 5. Project promoted memories only, never pending/rejected candidates. Done in current uncommitted slice.
-6. Add compact Binder/`why this?` projection. Done in current uncommitted slice.
-7. Run focused graph tests and full non-phone gate. Done for current uncommitted slice.
+6. Add compact Binder/`why this?` projection. Done in `bb63752`.
+7. Run focused graph tests and full non-phone gate. Done for Spec 009.
 
 Important Spec 009 constraints:
 

@@ -37,7 +37,7 @@
 
 - [x] **T009-017** [US1] Add deterministic promoted-memory-to-fact projection in `GraphRepositoryDelegate`.
 - [x] **T009-018** [US1] Prove pending/rejected memory candidates do not become active KG facts.
-- [ ] **T009-019** [US1] Add audit rows for KG fact proposed/promoted/rejected/invalidated if new audit actions are needed.
+- [x] **T009-019** [US1] Add audit rows for KG fact proposed/promoted/rejected/invalidated if new audit actions are needed. No new rows needed in this slice; existing memory acceptance/rejection audit rows plus graph provenance tables cover current writes until a graph-specific UI action exists.
 
 ## Phase 6: Binder And Why-This Projection
 
@@ -47,16 +47,16 @@
 
 ## Phase 7: Adapter Evaluation Closeout
 
-- [ ] **T009-023** [US3] Document adapter evaluation verdicts for Room baseline and deferred external candidates in `research.md`.
-- [ ] **T009-024** [US4] Verify Spec 008 cloud controls gate any compact graph mirror work; defer remote mirror if not implemented.
-- [ ] **T009-025** Update `quickstart.md`, roadmap, and handoff with validation evidence.
+- [x] **T009-023** [US3] Document adapter evaluation verdicts for Room baseline and deferred external candidates in `research.md`.
+- [x] **T009-024** [US4] Verify Spec 008 cloud controls gate any compact graph mirror work; defer remote mirror if not implemented.
+- [x] **T009-025** Update `quickstart.md`, roadmap, and handoff with validation evidence.
 
 ## Phase 8: Validation
 
 - [x] **T009-026** Run focused graph JVM tests.
 - [x] **T009-027** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] **T009-028** Run `git diff --check`.
-- [ ] **T009-029** Commit Spec 009 implementation without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T009-029** Commit Spec 009 implementation without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Notes
 
