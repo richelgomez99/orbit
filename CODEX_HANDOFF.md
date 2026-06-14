@@ -2,7 +2,51 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-13 Spec 010 Repo-Side Complete
+## Current Status - 2026-06-13 Spec 011 Active
+
+Authoritative branch:
+
+- `feature/011-manual-compose-capture-context-20260613`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 010 branch `feature/010-agent-coordinator-20260612`.
+- Latest Spec 010 commits in stack:
+  - `488e276 docs(spec-010): add agent coordinator artifacts`
+  - `829e868 feat(spec-010): add agent plan models`
+  - `f6660d0 feat(spec-010): add deterministic agent planner`
+  - `49ed1eb feat(spec-010): map action and graph evidence`
+  - `47d5b25 feat(spec-010): expose agent plan binder`
+  - `893293a docs(spec-010): record agent binder validation`
+  - `b825261 feat(spec-010): add orbit agent plan panel`
+  - `cb58b60 feat(spec-010): add advisory model-assisted planning`
+  - `5365f33 docs(spec-010): close agent coordinator branch`
+
+Active Spec 011 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/011-manual-compose/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/manual-compose-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 011 is capture-time context plus manual text compose.
+- It should reuse existing `IntentEnvelope` seal/storage, duplicate detection, audit, and `envelope_note` APIs.
+- It should not add a new context/notes table unless the current note path cannot satisfy the contract.
+- P1 is post-capture `Add context` for freshly saved overlay captures.
+- P2 is manual text compose from Diary using the same repository/Binder path.
+- Voice compose, share sheet compose, rich media compose, transparent pre-seal Clarify activity, A2UI, and BYOM local model manager are deferred.
+
+Immediate Spec 011 task order:
+
+1. Commit the Spec 011 artifacts and active roadmap/handoff update.
+2. Implement T011-003..T011-006: post-capture context action for new captures without removing undo.
+3. Run focused overlay tests and compile.
+4. Implement manual compose repository seam and UI only after P1 validates.
+
+## Previous Status - 2026-06-13 Spec 010 Repo-Side Complete
 
 Authoritative branch:
 
