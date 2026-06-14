@@ -290,7 +290,7 @@ class DiaryViewModel(
                     query = trimmed,
                     attachedEnvelopeIds = emptyList(),
                     maxEvidence = 8,
-                    allowModelAssist = false
+                    allowModelAssist = true
                 )
             }
             _agentPlanState.value = result.fold(

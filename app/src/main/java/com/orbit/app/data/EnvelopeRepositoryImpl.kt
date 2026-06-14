@@ -3,6 +3,7 @@ package com.orbit.app.data
 import com.orbit.app.BuildConfig
 import com.orbit.app.agent.AgentEvidenceRef
 import com.orbit.app.agent.AgentEvidenceSourceType
+import com.orbit.app.agent.AgentModelAssist
 import com.orbit.app.agent.AgentRequest
 import com.orbit.app.agent.DeterministicAgentPlanner
 import com.orbit.app.agent.toAgentActionCapability
@@ -153,7 +154,13 @@ class EnvelopeRepositoryImpl(
      * Spec 009 — local graph provenance read surface. Nullable for older
      * repository tests; production wires it in EnvelopeRepositoryService.
      */
-    private val graphBackendAdapter: GraphBackendAdapter? = null
+    private val graphBackendAdapter: GraphBackendAdapter? = null,
+    /**
+     * Spec 010 — optional model copy/selection assist. The deterministic plan
+     * remains the authority; model output is discarded unless it validates
+     * against local evidence ids, step ids, and function ids.
+     */
+    private val agentModelAssist: AgentModelAssist? = null
 ) : IEnvelopeRepository.Stub() {
 
     /** envelopeId → millis-deadline after which `undo()` returns false. */
@@ -1261,18 +1268,28 @@ class EnvelopeRepositoryImpl(
             ?.listAppFunctions(ORBIT_APP_PACKAGE)
             ?.map { it.toAgentActionCapability() }
             .orEmpty()
-        val plan = DeterministicAgentPlanner(clock = clock).plan(
-            request = AgentRequest(
-                requestId = safeRequestId,
-                query = safeQuery,
-                attachedEnvelopeIds = attachedIds,
-                maxEvidence = cappedEvidenceLimit,
-                allowModelAssist = allowModelAssist,
-            ),
+        val request = AgentRequest(
+            requestId = safeRequestId,
+            query = safeQuery,
+            attachedEnvelopeIds = attachedIds,
+            maxEvidence = cappedEvidenceLimit,
+            allowModelAssist = allowModelAssist,
+        )
+        val deterministicPlan = DeterministicAgentPlanner(clock = clock).plan(
+            request = request,
             evidence = evidence,
             actionCapabilities = capabilities,
         )
-        plan.toParcel()
+        val assistedPlan = if (allowModelAssist) {
+            agentModelAssist?.assist(
+                request = request,
+                deterministicPlan = deterministicPlan,
+                actionCapabilities = capabilities,
+            )
+        } else {
+            null
+        }
+        (assistedPlan ?: deterministicPlan).toParcel()
     }
 
     override fun resolveActiveIntent(

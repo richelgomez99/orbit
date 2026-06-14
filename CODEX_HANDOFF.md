@@ -76,19 +76,31 @@ Spec 010 implemented so far:
   - `DiaryViewModel` owns `agentPlanState` and `onPlanAgentRequest`.
   - UI renders plan/refusal/question/evidence states and opens envelope evidence only through existing capture-open path.
 - Focused ViewModel tests cover ready, blank-query error, and repository-failure states.
+- Added optional model-assisted planning:
+  - `AgentModelAssistPlanner` uses existing `LlmProvider.summarize()` as a bounded copy-assist path rather than adding a broad chat/gateway method.
+  - `AndroidAgentModelAssist` binds `:ml` to `:net` on demand and resolves through `LlmProviderRouter`.
+  - The Orbit tab sends `allowModelAssist=true` for explicit user planning requests.
+  - The deterministic plan remains the authority; model output is discarded unless it references only known local evidence ids, known step ids, and unchanged function ids.
+  - Spec 008 cloud AI routing disablement returns deterministic fallback by skipping model assist.
+- Focused model-assist tests cover valid structured copy, unknown evidence/function fallback, unavailable provider fallback, and no model call for refused/no-evidence plans.
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
   - `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest" --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" --tests "com.orbit.app.diary.DiaryViewModelTest" :app:compileDebugKotlin`
 - Full non-phone gate passed after AIDL/repository changes:
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- Full non-phone gate passed again after model-assist wiring:
   - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - Diff whitespace passed:
   - `git diff --check`
 
 Immediate Spec 010 task order:
 
-1. Commit the Orbit tab agent plan surface slice.
-2. Add optional model-assisted planning only after deterministic surface tests pass, or defer it if branch scope should close after another full gate.
+1. Run the full non-phone gate after model-assist wiring.
+2. Run `git diff --check`.
+3. Commit the model-assist slice without `screenshots/`, `dist/`, APK outputs, `.gbrain-source`, or secrets.
+4. Close Spec 010 if the full gate is clean; connected phone validation remains deferred until device availability.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 

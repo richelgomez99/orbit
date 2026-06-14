@@ -39,6 +39,15 @@ git diff --check
 - PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - PASS: `git diff --check`
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest" --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" --tests "com.orbit.app.diary.DiaryViewModelTest" :app:compileDebugKotlin`
+- PASS after model-assist wiring: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS after model-assist wiring: `git diff --check`
+
+## Model Assistance Notes
+
+- The Orbit tab now requests `allowModelAssist=true` for explicit user planning requests.
+- Model assistance is advisory only: it can rewrite bounded display copy for an already-valid deterministic plan, but it cannot add steps, cite unknown evidence, change function ids, or execute actions.
+- Android production wiring binds `:ml` to `:net` on demand and resolves the provider through `LlmProviderRouter`. If Spec 008 cloud AI routing is disabled, assistance returns `null` and the deterministic plan/refusal is displayed.
 
 ## Known Deferred Checks
 

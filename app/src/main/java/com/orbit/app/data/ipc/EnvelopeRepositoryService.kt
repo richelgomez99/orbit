@@ -3,6 +3,7 @@ package com.orbit.app.data.ipc
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import com.orbit.app.agent.AndroidAgentModelAssist
 import com.orbit.app.audit.AuditLogImpl
 import com.orbit.app.audit.AuditLogWriter
 import com.orbit.app.ai.LlmProviderRouter
@@ -164,7 +165,8 @@ class EnvelopeRepositoryService : Service() {
             memoryIndexSyncScheduler = memoryIndexSyncScheduler,
             memoryIndexSyncDelegate = memoryIndexSyncDelegate,
             memoryRepositoryDelegate = memoryRepositoryDelegate,
-            graphBackendAdapter = graphBackendAdapter
+            graphBackendAdapter = graphBackendAdapter,
+            agentModelAssist = AndroidAgentModelAssist(applicationContext)
         )
         // T088 — same service binder pool exposes the audit-log surface on a
         // distinct intent action so the Settings / audit viewer process can

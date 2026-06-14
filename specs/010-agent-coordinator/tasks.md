@@ -44,17 +44,17 @@
 
 ## Phase 7: Model Assistance
 
-- [ ] **T010-021** [US4] Add optional model-assisted planning adapter behind existing `LlmProviderRouter`.
-- [ ] **T010-022** [US4] Validate model output against local evidence ids/function ids before display.
-- [ ] **T010-023** [US4] Add tests for invalid model output forcing deterministic fallback/refusal.
-- [ ] **T010-024** [US3] Verify Spec 008 cloud AI controls disable model-assisted planning.
+- [x] **T010-021** [US4] Add optional model-assisted planning adapter behind existing `LlmProviderRouter`.
+- [x] **T010-022** [US4] Validate model output against local evidence ids/function ids before display.
+- [x] **T010-023** [US4] Add tests for invalid model output forcing deterministic fallback/refusal.
+- [x] **T010-024** [US3] Verify Spec 008 cloud AI controls disable model-assisted planning.
 
 ## Phase 8: Validation
 
 - [x] **T010-025** Run focused agent JVM tests.
 - [x] **T010-026** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] **T010-027** Run `git diff --check`.
-- [ ] **T010-028** Update `quickstart.md`, roadmap, and handoff with validation evidence.
+- [x] **T010-028** Update `quickstart.md`, roadmap, and handoff with validation evidence.
 - [ ] **T010-029** Commit Spec 010 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Deferred
