@@ -23,6 +23,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Settings
@@ -117,6 +118,7 @@ fun DiaryScreen(
     modifier: Modifier = Modifier,
     onOpenSetup: (() -> Unit)? = null,
     onOpenSettings: (() -> Unit)? = null,
+    onOpenManualCompose: ((String) -> Unit)? = null,
     pagingSource: DiaryPagingSource? = null,
     bottomBar: @Composable () -> Unit = {}
 ) {
@@ -132,11 +134,22 @@ fun DiaryScreen(
                 QuietDiaryTopBar(
                     dateLabel = state.diaryHeaderDateLabel(),
                     onOpenSettings = settingsAction,
+                    onOpenManualCompose = onOpenManualCompose?.let { open ->
+                        { open(state.isoDate) }
+                    },
                 )
             } else {
                 TopAppBar(
                     title = { Text("Orbit") },
                     actions = {
+                        if (onOpenManualCompose != null) {
+                            IconButton(onClick = { onOpenManualCompose(state.isoDate) }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "Manual compose"
+                                )
+                            }
+                        }
                         if (settingsAction != null) {
                             IconButton(onClick = settingsAction) {
                                 Icon(
@@ -185,6 +198,7 @@ fun DiaryScreen(
 private fun QuietDiaryTopBar(
     dateLabel: String,
     onOpenSettings: (() -> Unit)?,
+    onOpenManualCompose: (() -> Unit)?,
 ) {
     Column(
         modifier = Modifier
@@ -213,13 +227,24 @@ private fun QuietDiaryTopBar(
                     accent = QuietDiaryColors.Accent,
                 )
             }
-            if (onOpenSettings != null) {
-                IconButton(onClick = onOpenSettings) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Settings",
-                        tint = QuietDiaryColors.Cream,
-                    )
+            Row {
+                if (onOpenManualCompose != null) {
+                    IconButton(onClick = onOpenManualCompose) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Manual compose",
+                            tint = QuietDiaryColors.Cream,
+                        )
+                    }
+                }
+                if (onOpenSettings != null) {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings",
+                            tint = QuietDiaryColors.Cream,
+                        )
+                    }
                 }
             }
         }

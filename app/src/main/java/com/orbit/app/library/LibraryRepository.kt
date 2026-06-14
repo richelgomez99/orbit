@@ -334,7 +334,11 @@ class BinderLocalEnvelopeLookup(
                     .distinctBy { it.id }
                     .mapNotNull { envelope ->
                         val note = runCatching { repository.getLatestNote(envelope.id) }.getOrNull()
-                        envelope.toMemorySearchResult(query = trimmed, note = note)
+                        LocalEnvelopeMemoryResultMapper.toMemorySearchResult(
+                            envelope = envelope,
+                            query = trimmed,
+                            note = note,
+                        )
                     }
                     .filter { LibrarySearchText.resultMatchesQuery(it, trimmed) }
                     .mapIndexed { index, result ->
@@ -382,10 +386,15 @@ class BinderLocalEnvelopeLookup(
         deferred.await()
     }
 
-    private fun com.orbit.app.data.ipc.EnvelopeViewParcel.toMemorySearchResult(
+}
+
+internal object LocalEnvelopeMemoryResultMapper {
+    fun toMemorySearchResult(
+        envelope: EnvelopeViewParcel,
         query: String,
         note: String?,
     ): MemorySearchResult {
+        with(envelope) {
         val text = textContent.orEmpty()
         val noteMatch = note?.takeIf { it.containsQuery(query) }
         val excerpt = noteMatch?.let { MemoryDisplayText.compact(it, maxChars = 180) } ?: excerptFor(query)
@@ -415,9 +424,10 @@ class BinderLocalEnvelopeLookup(
                 emptyList()
             },
         )
+        }
     }
 
-    private fun com.orbit.app.data.ipc.EnvelopeViewParcel.localScore(query: String, note: String?): Float {
+    private fun EnvelopeViewParcel.localScore(query: String, note: String?): Float {
         val q = query.lowercase()
         var score = 0f
         if (note?.lowercase()?.contains(q) == true) score += 8f
@@ -451,7 +461,6 @@ class BinderLocalEnvelopeLookup(
             tokens.all { haystack.contains(it) }
         }
     }
-
 }
 
 class MemoryGatewayUnavailable(

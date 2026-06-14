@@ -47,6 +47,17 @@ git diff --check
 - PASS: `./gradlew :app:compileDebugAndroidTestKotlin`
 - Implemented manual compose repository seam for current-day text capture through `sealWithResult`; optional context attaches only after CREATED results. Exact duplicates return `AlreadySaved` and do not auto-attach context to the existing envelope.
 - Selected-day backfill still requires a repository/AIDL extension because the existing seal API computes `dayLocal` from repository wall-clock time.
+- Implemented Diary manual compose entry point and dialog. Saves open the saved capture detail; duplicates open the existing capture detail.
+- Added `ManualComposeViewModelTest` for blank body, save result, duplicate result, and failure copy.
+- Added `ManualComposeDialogTest` instrumented Compose source coverage for blank-body error and save-to-open flow.
+- Added `LocalEnvelopeMemoryResultMapperTest` so note-only Library matches produce `Context` evidence.
+- Verified downstream context reuse:
+  - Library local fallback uses latest note/context as title, summary, score, and `Context` citation when the note matches.
+  - URL hydration context includes capped `latestNote` and source label only, with cap metadata.
+  - Compact memory index already includes capped note context and has banned-key coverage.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.ManualComposeViewModelTest" --tests "com.orbit.app.diary.ManualComposeSaverTest" --tests "com.orbit.app.library.LocalEnvelopeMemoryResultMapperTest" --tests "com.orbit.app.memory.CompactMemoryIndexBuilderTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS: `git diff --check`
 
 ## Known Deferred Checks
 

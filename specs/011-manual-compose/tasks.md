@@ -26,27 +26,27 @@
 
 ## Phase 4: Manual Compose UI
 
-- [ ] **T011-012** [P] Add `ManualComposeViewModel` with body/context/day state and save result states.
-- [ ] **T011-013** [P] Add `ManualComposeScreen` using Quiet Almanac controls.
-- [ ] **T011-014** Wire Diary entry point to open manual compose for the current/selected day.
-- [ ] **T011-015** On successful save, open or highlight the saved capture through existing detail/diary paths.
-- [ ] **T011-016** Add ViewModel/UI tests for blank body, successful save, context save, duplicate result, and failure copy.
+- [x] **T011-012** [P] Add `ManualComposeViewModel` with body/context/day state and save result states.
+- [x] **T011-013** [P] Add `ManualComposeScreen` using Quiet Almanac controls.
+- [x] **T011-014** Wire Diary entry point to open manual compose for the current/selected day.
+- [x] **T011-015** On successful save, open or highlight the saved capture through existing detail/diary paths.
+- [x] **T011-016** Add ViewModel/UI tests for blank body, successful save, context save, duplicate result, and failure copy.
 
 ## Phase 5: Downstream Context Verification
 
-- [ ] **T011-017** Verify Library local search still matches note-only terms and cites `Context`.
-- [ ] **T011-018** Verify hydration context packet includes capped latest note and excludes banned raw fields.
-- [ ] **T011-019** Verify compact memory index builder includes note context through existing snapshot path.
-- [ ] **T011-020** Add or update tests only where existing coverage does not prove these paths.
+- [x] **T011-017** Verify Library local search still matches note-only terms and cites `Context`.
+- [x] **T011-018** Verify hydration context packet includes capped latest note and excludes banned raw fields.
+- [x] **T011-019** Verify compact memory index builder includes note context through existing snapshot path.
+- [x] **T011-020** Add or update tests only where existing coverage does not prove these paths.
 
 ## Phase 6: Validation And Closeout
 
-- [ ] **T011-021** Run focused overlay/diary/manual compose JVM tests.
+- [x] **T011-021** Run focused overlay/diary/manual compose JVM tests.
 - [x] **T011-022** Run compile gates: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
-- [ ] **T011-023** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
-- [ ] **T011-024** Run `git diff --check`.
-- [ ] **T011-025** Update `quickstart.md`, roadmap, and handoff with validation evidence.
-- [ ] **T011-026** Commit Spec 011 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T011-023** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
+- [x] **T011-024** Run `git diff --check`.
+- [x] **T011-025** Update `quickstart.md`, roadmap, and handoff with validation evidence.
+- [x] **T011-026** Commit Spec 011 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Deferred
 

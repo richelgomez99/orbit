@@ -53,6 +53,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Spec 010 artifacts were regenerated on 2026-06-12. The branch adds deterministic cited agent planning, a minimal Orbit tab planning panel, and advisory model-assisted display copy behind existing `LlmProviderRouter`/Spec 008 controls. The deterministic plan remains authoritative; model output cannot add uncited steps, unknown evidence, or changed function ids. Full non-phone gate passed on 2026-06-13; connected/manual phone validation is deferred until device availability. AppFunctions/Spark interop, A2UI, durable chat sessions, and BYOM local model manager remain deferred.
 - Queue row 7 (`011-manual-compose-capture-context`) is active on branch `feature/011-manual-compose-capture-context-20260613`.
 - Spec 011 artifacts were regenerated on 2026-06-13. The branch should first ship post-capture `Add context` into the existing note path, then manual text compose through the existing seal/Binder path. It must not create a parallel notes/context model unless the current `envelope_note` contract proves insufficient.
+- Spec 011 repo-side progress: post-capture `Add context`, manual compose repository seam, Diary manual compose dialog, Library `Context` citation mapping, and downstream note-context verification are implemented. Full non-phone gate passed on 2026-06-13. Physical phone validation is still pending.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

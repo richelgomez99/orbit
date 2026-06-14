@@ -31,6 +31,7 @@ import com.orbit.app.ai.LlmProviderRouter
 import com.orbit.app.audit.DebugCounters
 import com.orbit.app.diary.ui.OrbitCleanupScreen
 import com.orbit.app.diary.ui.DiaryScreen
+import com.orbit.app.diary.ui.ManualComposeDialog
 import com.orbit.app.library.BinderLibraryRepository
 import com.orbit.app.library.LibraryViewModel
 import com.orbit.app.library.ui.LibraryScreen
@@ -123,6 +124,7 @@ class DiaryActivity : ComponentActivity() {
         setContent {
             OrbitTheme {
                 var tabName by rememberSaveable { mutableStateOf(OrbitHomeTab.DIARY.name) }
+                var manualComposeDay by rememberSaveable { mutableStateOf<String?>(null) }
                 val selectedTab = remember(tabName) {
                     runCatching { OrbitHomeTab.valueOf(tabName) }.getOrDefault(OrbitHomeTab.DIARY)
                 }
@@ -143,6 +145,7 @@ class DiaryActivity : ComponentActivity() {
                             viewModel = viewModel,
                             onOpenSetup = { openSetup() },
                             onOpenSettings = { openSettings() },
+                            onOpenManualCompose = { dayLocal -> manualComposeDay = dayLocal },
                             pagingSource = pagingSource,
                             bottomBar = bottomBar,
                         )
@@ -183,6 +186,27 @@ class DiaryActivity : ComponentActivity() {
                                 modifier = Modifier.padding(padding),
                             )
                         }
+                    }
+                    manualComposeDay?.let { dayLocal ->
+                        val manualComposeViewModel = remember(dayLocal) {
+                            ManualComposeViewModel(
+                                repository = repository,
+                                dayLocal = dayLocal,
+                            )
+                        }
+                        ManualComposeDialog(
+                            viewModel = manualComposeViewModel,
+                            onDismiss = { manualComposeDay = null },
+                            onOpenCapture = { envelopeId ->
+                                startActivity(
+                                    EnvelopeDetailActivity.newIntent(
+                                        this,
+                                        envelopeId,
+                                        dayLocal = null,
+                                    )
+                                )
+                            },
+                        )
                     }
                 }
             }

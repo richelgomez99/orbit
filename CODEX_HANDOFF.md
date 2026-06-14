@@ -56,13 +56,28 @@ Spec 011 implemented so far:
 - Validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.ManualComposeSaverTest" :app:compileDebugKotlin`
   - `./gradlew :app:compileDebugAndroidTestKotlin`
+- Added manual compose Diary UI:
+  - `ManualComposeViewModel` tracks body/context/day/save/error/result state.
+  - `ManualComposeDialog` prompts for "What should Orbit remember?" and "Why are you saving it?".
+  - Diary top bar has a plus action wired to the current visible day string.
+  - Successful saves open the saved capture detail; duplicates open the existing capture detail.
+  - Selected-day backfill is still not implemented; the UI passes the visible day into the ViewModel, but the current repository seal path still computes `dayLocal` from repository wall-clock time.
+- Added validation:
+  - `ManualComposeViewModelTest` for blank body, successful save, duplicate result, and blocked copy.
+  - `ManualComposeDialogTest` instrumented Compose source coverage for blank-body error and save-to-open interaction.
+  - `LocalEnvelopeMemoryResultMapperTest` for note-only Library hits producing `Context` evidence.
+  - Existing compact memory index tests already prove note context is included and capped.
+- Focused gate passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.ManualComposeViewModelTest" --tests "com.orbit.app.diary.ManualComposeSaverTest" --tests "com.orbit.app.library.LocalEnvelopeMemoryResultMapperTest" --tests "com.orbit.app.memory.CompactMemoryIndexBuilderTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- Full non-phone gate passed:
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
 
 Immediate Spec 011 task order:
 
-1. Commit the manual compose repository seam.
-2. Implement manual compose ViewModel/UI (T011-012..T011-016).
-3. Decide whether selected-day backfill needs to land in this branch or remain a documented follow-up.
-4. Run focused overlay/diary tests and then the full non-phone gate.
+1. Commit the Spec 011 UI/downstream-context slice without `screenshots/`, `dist/`, `.gbrain-source`, APKs, or secrets.
+2. Wait for phone availability for manual validation/APK install.
+3. Decide whether selected-day backfill remains deferred or gets a small follow-up AIDL/repository extension.
 
 ## Previous Status - 2026-06-13 Spec 010 Repo-Side Complete
 
