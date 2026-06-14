@@ -73,6 +73,10 @@ Spec 010 implemented so far:
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
   - `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- Full non-phone gate passed after AIDL/repository changes:
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- Diff whitespace passed:
+  - `git diff --check`
 
 Immediate Spec 010 task order:
 
