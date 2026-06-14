@@ -2,7 +2,7 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-12 Spec 010 Active
+## Current Status - 2026-06-13 Spec 010 Repo-Side Complete
 
 Authoritative branch:
 
@@ -18,7 +18,7 @@ Base checkpoint:
   - `bb63752 feat(spec-009): expose graph provenance binder`
   - `b997cd2 docs(spec-009): close graph backend poc`
 
-Active Spec 010 truth:
+Spec 010 truth:
 
 - Fresh Spec Kit artifacts now exist under `specs/010-agent-coordinator/`:
   - `spec.md`
@@ -29,12 +29,11 @@ Active Spec 010 truth:
   - `tasks.md`
   - `quickstart.md`
 - Spec 010 is approval-first agent planning, not autonomous execution.
-- Implementation order is product/coordinator surface first, model assistance last.
-- Deterministic local planning must work without cloud/model availability.
-- Model assistance, if implemented, routes through existing `LlmProviderRouter`/Spec 008 controls and validates all output against local evidence ids and registered functions.
+- Deterministic local planning works without cloud/model availability.
+- Model assistance routes through existing `LlmProviderRouter`/Spec 008 controls and validates all output against local evidence ids and registered functions.
 - No AppFunctions/Spark/platform-agent interop, no A2UI, no durable chat sessions, and no BYOM local model manager in this branch.
 
-Spec 010 implemented so far:
+Spec 010 implemented:
 
 - Added pure agent model/validation package:
   - `app/src/main/java/com/orbit/app/agent/AgentModels.kt`
@@ -95,12 +94,12 @@ Spec 010 implemented so far:
 - Diff whitespace passed:
   - `git diff --check`
 
-Immediate Spec 010 task order:
+Immediate next task order:
 
-1. Run the full non-phone gate after model-assist wiring.
-2. Run `git diff --check`.
-3. Commit the model-assist slice without `screenshots/`, `dist/`, APK outputs, `.gbrain-source`, or secrets.
-4. Close Spec 010 if the full gate is clean; connected phone validation remains deferred until device availability.
+1. Commit the Spec 010 closeout docs.
+2. Sync/record context in GBrain/GStack if useful for continuity.
+3. Create or switch to the next queued branch/spec after rereading the roadmap and latest code.
+4. Connected phone validation for Spec 010 remains deferred until device availability.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 

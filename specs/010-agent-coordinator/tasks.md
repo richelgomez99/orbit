@@ -55,7 +55,7 @@
 - [x] **T010-026** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] **T010-027** Run `git diff --check`.
 - [x] **T010-028** Update `quickstart.md`, roadmap, and handoff with validation evidence.
-- [ ] **T010-029** Commit Spec 010 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T010-029** Commit Spec 010 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Deferred
 
