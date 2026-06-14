@@ -32,6 +32,10 @@ git diff --check
 
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
 
+2026-06-13:
+
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
+
 ## Known Deferred Checks
 
 - Physical phone/manual validation waits for device availability.

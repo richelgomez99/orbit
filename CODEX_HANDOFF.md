@@ -52,14 +52,22 @@ Spec 010 implemented so far:
   - ambiguous evidence returns a gap question with cited choices;
   - missing evidence refuses without using a model;
   - explicit attached envelopes avoid ambiguity.
+- Added action/KG integration mappers:
+  - `app/src/main/java/com/orbit/app/agent/AgentIntegrationMappers.kt`
+  - `app/src/test/java/com/orbit/app/agent/AgentIntegrationMappersTest.kt`
+- Mapper tests prove:
+  - registered AppFunction summaries map to approval-required agent capabilities;
+  - existing action drafts map to approval-required plan steps, not execution;
+  - compact graph `whyThis` projections map to cited evidence refs;
+  - mapped draft/evidence plans pass `AgentPlanValidator`.
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
 
 Immediate Spec 010 task order:
 
-1. Commit the deterministic planner slice.
-2. Integrate action/KG evidence as approval-required plan steps.
-3. Add compact Binder projection and Orbit tab plan surface.
+1. Commit the action/KG mapper slice.
+2. Add compact Binder projection for `AgentPlanDraft`.
+3. Add a minimal Orbit tab plan surface.
 4. Add optional model-assisted planning only after deterministic surface tests pass.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete

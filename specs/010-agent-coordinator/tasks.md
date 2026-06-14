@@ -24,10 +24,10 @@
 
 ## Phase 4: Action And KG Integration
 
-- [ ] **T010-010** [US1] Read registered AppFunction/action capability summaries through existing delegates.
-- [ ] **T010-011** [US1] Reference existing action proposals/drafts as approval-required plan steps.
-- [ ] **T010-012** [US1] Read compact graph `whyThis` projections for graph evidence.
-- [ ] **T010-013** [US1] Add tests that action steps never execute and always require approval.
+- [x] **T010-010** [US1] Read registered AppFunction/action capability summaries through existing delegates.
+- [x] **T010-011** [US1] Reference existing action proposals/drafts as approval-required plan steps.
+- [x] **T010-012** [US1] Read compact graph `whyThis` projections for graph evidence.
+- [x] **T010-013** [US1] Add tests that action steps never execute and always require approval.
 
 ## Phase 5: Binder Projection
 
