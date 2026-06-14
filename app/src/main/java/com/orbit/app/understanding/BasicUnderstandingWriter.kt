@@ -8,6 +8,11 @@ import com.orbit.app.data.dao.EvidenceBundleDao
 import com.orbit.app.data.entity.CaptureUnderstandingEntity
 import com.orbit.app.data.entity.EvidenceBundleEntity
 import com.orbit.app.data.model.AuditAction
+import com.orbit.app.data.ResolutionReceiptSink
+import com.orbit.app.resolution.ResolutionActor
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionReceipt
+import com.orbit.app.resolution.ResolutionTargetType
 import com.orbit.app.understanding.domain.ActiveIntentStatus
 import org.json.JSONObject
 
@@ -17,6 +22,7 @@ class BasicUnderstandingWriter(
     private val activeIntentDao: ActiveIntentDao,
     private val auditLogDao: AuditLogDao? = null,
     private val auditWriter: AuditLogWriter = AuditLogWriter(),
+    private val resolutionReceiptSink: ResolutionReceiptSink? = null,
     private val engine: BasicUnderstandingEngine = BasicUnderstandingEngine(),
     private val projector: ActiveIntentProjector = ActiveIntentProjector { result -> "basic:${result.captureId}" },
     private val evidenceIdFactory: (captureId: String, index: Int) -> String = { captureId, index ->
@@ -50,6 +56,7 @@ class BasicUnderstandingWriter(
 
         if (duplicateUnderstanding != null) {
             recordDuplicateSuppression(result, duplicateUnderstanding.captureId)
+            recordDuplicateSuppressionReceipt(result, duplicateUnderstanding.captureId, input.nowMillis)
             return result
         }
         val projected = projector.project(result, input.nowMillis).entity ?: return result
@@ -145,6 +152,32 @@ class BasicUnderstandingWriter(
                     .put("contentHashHex", hash)
                     .put("outcome", "active_intent_projection_skipped")
                     .toString()
+            )
+        )
+    }
+
+    private suspend fun recordDuplicateSuppressionReceipt(
+        result: BasicUnderstandingResult,
+        existingCaptureId: String,
+        nowMillis: Long,
+    ) {
+        val hash = result.contentHashHex ?: return
+        resolutionReceiptSink?.record(
+            ResolutionReceipt(
+                id = "understanding-duplicate:$existingCaptureId:${result.captureId}",
+                targetType = ResolutionTargetType.ENVELOPE,
+                targetId = existingCaptureId,
+                envelopeId = existingCaptureId,
+                relatedType = ResolutionTargetType.ENVELOPE,
+                relatedId = result.captureId,
+                kind = ResolutionKind.DUPLICATE_RECAPTURE,
+                actor = ResolutionActor.DUPLICATE_DETECTOR,
+                reason = "CONTENT_HASH",
+                occurredAtMillis = nowMillis,
+                metadataJson = JSONObject()
+                    .put("contentHashHex", hash)
+                    .put("duplicateCaptureId", result.captureId)
+                    .toString(),
             )
         )
     }

@@ -6,6 +6,12 @@ import com.orbit.app.data.dao.AuditLogDao
 import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.IActiveIntentObserver
 import com.orbit.app.data.model.AuditAction
+import com.orbit.app.resolution.ResolutionActor
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionReceipt
+import com.orbit.app.resolution.ResolutionSurface
+import com.orbit.app.resolution.ResolutionSurfacingVerdict
+import com.orbit.app.resolution.ResolutionTargetType
 import com.orbit.app.understanding.ActiveIntentResolver
 import com.orbit.app.understanding.domain.ResolutionReason
 import com.orbit.app.understanding.domain.UnderstandingMode
@@ -23,7 +29,9 @@ class ActiveIntentRepository(
     private val scope: CoroutineScope,
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val auditWriter: AuditLogWriter = AuditLogWriter(clock = clock),
-    private val resolver: ActiveIntentResolver = ActiveIntentResolver()
+    private val resolver: ActiveIntentResolver = ActiveIntentResolver(),
+    private val resolutionReceiptSink: ResolutionReceiptSink? = null,
+    private val resolutionVerdictProvider: ResolutionVerdictProvider? = null
 ) {
     private val observerJobs = ConcurrentHashMap<IBinderKey, Job>()
 
@@ -33,7 +41,17 @@ class ActiveIntentRepository(
         val job = scope.launch(Dispatchers.IO) {
             activeIntentDao.observeCleanupQueue().collectLatest { rows ->
                 try {
-                    observer.onActiveIntentsChanged(rows.map(ActiveIntentParcel::fromEntity))
+                    val visibleRows = rows.filter { row ->
+                        resolutionVerdictProvider?.verdictFor(
+                            targetType = ResolutionTargetType.ACTIVE_INTENT,
+                            targetId = row.intentId,
+                            nowMillis = clock(),
+                            surface = ResolutionSurface.CLEANUP_QUEUE,
+                        )?.verdict?.let { verdict ->
+                            verdict == ResolutionSurfacingVerdict.ACTIVE
+                        } ?: true
+                    }
+                    observer.onActiveIntentsChanged(visibleRows.map(ActiveIntentParcel::fromEntity))
                 } catch (_: android.os.RemoteException) {
                     observerJobs.remove(key)?.cancel()
                 }
@@ -67,7 +85,11 @@ class ActiveIntentRepository(
             resolvedAt = resolved.resolvedAt,
             userConfirmed = resolved.userConfirmed,
             updatedAt = resolved.updatedAt
-        ) > 0
+        ).also { changed ->
+            if (changed > 0) {
+                recordResolutionReceipt(entity, reason, resolved.resolvedAt ?: clock(), userConfirmed)
+            }
+        } > 0
     }
 
     suspend fun requestEscalation(intentId: String, mode: String): Boolean {
@@ -100,6 +122,46 @@ class ActiveIntentRepository(
             )
         )
         return true
+    }
+
+    private suspend fun recordResolutionReceipt(
+        entity: com.orbit.app.data.entity.ActiveIntentEntity,
+        reason: ResolutionReason,
+        occurredAtMillis: Long,
+        userConfirmed: Boolean,
+    ) {
+        val kind = when (reason) {
+            ResolutionReason.NOT_INTERESTED,
+            ResolutionReason.USER_ARCHIVED -> ResolutionKind.DISMISSED
+            ResolutionReason.AUTO_EXPIRED -> ResolutionKind.STALE
+            ResolutionReason.INVALIDATED,
+            ResolutionReason.SOURCE_DELETED -> ResolutionKind.INVALIDATED
+            ResolutionReason.BOUGHT,
+            ResolutionReason.COOKED,
+            ResolutionReason.READ_OR_WATCHED,
+            ResolutionReason.VISITED,
+            ResolutionReason.REPLIED_OR_DONE -> ResolutionKind.RESOLVED
+        }
+        resolutionReceiptSink?.record(
+            ResolutionReceipt(
+                id = "active-intent:${entity.intentId}:$occurredAtMillis",
+                targetType = ResolutionTargetType.ACTIVE_INTENT,
+                targetId = entity.intentId,
+                envelopeId = entity.captureId,
+                relatedType = ResolutionTargetType.ENVELOPE,
+                relatedId = entity.captureId,
+                kind = kind,
+                actor = if (userConfirmed) ResolutionActor.USER else ResolutionActor.SYSTEM,
+                reason = reason.name,
+                occurredAtMillis = occurredAtMillis,
+                metadataJson = JSONObject()
+                    .put("intentId", entity.intentId)
+                    .put("captureId", entity.captureId)
+                    .put("resolutionReason", reason.name)
+                    .put("userConfirmed", userConfirmed)
+                    .toString(),
+            )
+        )
     }
 
     private fun decisionReviewEvidence(

@@ -18,6 +18,7 @@ import com.orbit.app.data.EnvelopeRepositoryImpl
 import com.orbit.app.data.LocalRoomBackend
 import com.orbit.app.data.MemoryRepositoryDelegate
 import com.orbit.app.data.OrbitDatabase
+import com.orbit.app.data.ResolutionRepository
 import com.orbit.app.data.WeeklyDigestDelegate
 import com.orbit.app.ai.ClusterSummariser
 import com.orbit.app.ai.DigestComposer
@@ -64,6 +65,7 @@ class EnvelopeRepositoryService : Service() {
             context = applicationContext,
             database = db,
         )
+        val resolutionRepository = ResolutionRepository(db.resolutionReceiptDao())
         // T025/T027 — actions registry + delegate live in :ml so binder
         // calls from :ui flow through here. Registry is constructed eagerly
         // but boot-time `registerAll(BUILT_IN)` is owned by Application.
@@ -78,7 +80,8 @@ class EnvelopeRepositoryService : Service() {
             database = db,
             registry = registry,
             auditWriter = auditWriter,
-            scope = serviceScope
+            scope = serviceScope,
+            resolutionReceiptSink = resolutionRepository
         )
         val graphBackendAdapter = RoomGraphBackendAdapter(db)
         val memoryRepositoryDelegate = MemoryRepositoryDelegate(
@@ -135,14 +138,17 @@ class EnvelopeRepositoryService : Service() {
         val activeIntentRepository = ActiveIntentRepository(
             activeIntentDao = db.activeIntentDao(),
             auditLogDao = db.auditLogDao(),
-            scope = serviceScope
+            scope = serviceScope,
+            resolutionReceiptSink = resolutionRepository,
+            resolutionVerdictProvider = resolutionRepository
         )
         val basicUnderstandingWriter = BasicUnderstandingWriter(
             captureUnderstandingDao = db.captureUnderstandingDao(),
             evidenceBundleDao = db.evidenceBundleDao(),
             activeIntentDao = db.activeIntentDao(),
             auditLogDao = db.auditLogDao(),
-            auditWriter = auditWriter
+            auditWriter = auditWriter,
+            resolutionReceiptSink = resolutionRepository
         )
         serviceScope.launch(Dispatchers.IO) {
             basicUnderstandingWriter.refreshActiveFromSidecars()
@@ -166,7 +172,8 @@ class EnvelopeRepositoryService : Service() {
             memoryIndexSyncDelegate = memoryIndexSyncDelegate,
             memoryRepositoryDelegate = memoryRepositoryDelegate,
             graphBackendAdapter = graphBackendAdapter,
-            agentModelAssist = AndroidAgentModelAssist(applicationContext)
+            agentModelAssist = AndroidAgentModelAssist(applicationContext),
+            resolutionReceiptSink = resolutionRepository
         )
         // T088 — same service binder pool exposes the audit-log surface on a
         // distinct intent action so the Settings / audit viewer process can

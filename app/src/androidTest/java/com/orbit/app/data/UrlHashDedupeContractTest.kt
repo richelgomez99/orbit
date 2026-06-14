@@ -88,7 +88,8 @@ class UrlHashDedupeContractTest {
             backend = LocalRoomBackend(db),
             auditWriter = AuditLogWriter(clock = { clock.now }),
             scope = scope,
-            clock = { clock.now }
+            clock = { clock.now },
+            resolutionReceiptSink = ResolutionRepository(db.resolutionReceiptDao())
             // continuationEngine = null — no WorkManager in this test.
         )
     }
@@ -144,6 +145,13 @@ class UrlHashDedupeContractTest {
             .entriesForEnvelope(seeded.envelopeId)
             .filter { it.action == AuditAction.DUPLICATE_CAPTURE_ATTEMPT }
         assertEquals(1, duplicateRows.size)
+        val receipts = db.resolutionReceiptDao().getForTarget(
+            com.orbit.app.resolution.ResolutionTargetType.ENVELOPE,
+            seeded.envelopeId,
+        )
+        assertEquals(1, receipts.size)
+        assertEquals(com.orbit.app.resolution.ResolutionKind.DUPLICATE_RECAPTURE, receipts.single().kind)
+        assertEquals(SealResultParcel.MATCHED_BY_CANONICAL_URL, receipts.single().reason)
     }
 
     @Test
@@ -174,6 +182,13 @@ class UrlHashDedupeContractTest {
         assertEquals(SealResultParcel.MATCHED_BY_EXACT_TEXT, result.matchedBy)
         assertEquals(seededEnvelopeId, result.envelopeId)
         assertEquals(1, db.intentEnvelopeDao().countAll())
+        val receipts = db.resolutionReceiptDao().getForTarget(
+            com.orbit.app.resolution.ResolutionTargetType.ENVELOPE,
+            seededEnvelopeId,
+        )
+        assertEquals(1, receipts.size)
+        assertEquals(com.orbit.app.resolution.ResolutionKind.DUPLICATE_RECAPTURE, receipts.single().kind)
+        assertEquals(SealResultParcel.MATCHED_BY_EXACT_TEXT, receipts.single().reason)
     }
 
     @Test

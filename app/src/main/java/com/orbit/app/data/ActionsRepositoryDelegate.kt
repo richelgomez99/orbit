@@ -20,6 +20,10 @@ import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
 import com.orbit.app.data.model.LlmProvenance
 import com.orbit.app.data.model.SensitivityScope
+import com.orbit.app.resolution.ResolutionActor
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionReceipt
+import com.orbit.app.resolution.ResolutionTargetType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,7 +50,8 @@ class ActionsRepositoryDelegate(
     private val registry: AppFunctionRegistry,
     private val auditWriter: AuditLogWriter,
     private val scope: CoroutineScope,
-    private val clock: () -> Long = { System.currentTimeMillis() }
+    private val clock: () -> Long = { System.currentTimeMillis() },
+    private val resolutionReceiptSink: ResolutionReceiptSink? = null
 ) {
 
     private val proposalDao = database.actionProposalDao()
@@ -135,6 +140,25 @@ class ActionsRepositoryDelegate(
                         extraJson = """{"proposalId":"$proposalId","functionId":"${proposal?.functionId}"}"""
                     )
                 )
+                if (proposal != null) {
+                    recordResolutionReceipt(
+                        ResolutionReceipt(
+                            id = "action-dismissed:$proposalId:$now",
+                            targetType = ResolutionTargetType.ACTION_PROPOSAL,
+                            targetId = proposalId,
+                            envelopeId = proposal.envelopeId,
+                            kind = ResolutionKind.DISMISSED,
+                            actor = ResolutionActor.USER,
+                            reason = "user_dismissed",
+                            occurredAtMillis = now,
+                            metadataJson = JSONObject()
+                                .put("proposalId", proposalId)
+                                .put("functionId", proposal.functionId)
+                                .put("schemaVersion", proposal.schemaVersion)
+                                .toString(),
+                        )
+                    )
+                }
             }
         }
         return changed
@@ -229,6 +253,27 @@ class ActionsRepositoryDelegate(
                 (outcomeReason == "schema_invalidated" || outcomeReason == "schema_mismatch")
             ) {
                 proposalDao.markInvalidated(proposalId, completedAtMillis.coerceAtLeast(dispatchedAtMillis))
+                if (proposal != null) {
+                    val at = completedAtMillis.coerceAtLeast(dispatchedAtMillis)
+                    recordResolutionReceipt(
+                        ResolutionReceipt(
+                            id = "action-invalidated:$proposalId:$at",
+                            targetType = ResolutionTargetType.ACTION_PROPOSAL,
+                            targetId = proposalId,
+                            envelopeId = proposal.envelopeId,
+                            kind = ResolutionKind.INVALIDATED,
+                            actor = ResolutionActor.ACTION_RUNTIME,
+                            reason = outcomeReason,
+                            occurredAtMillis = at,
+                            metadataJson = JSONObject()
+                                .put("proposalId", proposalId)
+                                .put("functionId", functionId)
+                                .put("outcome", outcome.name)
+                                .put("reason", outcomeReason)
+                                .toString(),
+                        )
+                    )
+                }
             }
         }
     }
@@ -424,6 +469,7 @@ class ActionsRepositoryDelegate(
     suspend fun setTodoItemDone(envelopeId: String, itemIndex: Int, done: Boolean) {
         val envelope = envelopeDao.getById(envelopeId) ?: return
         val current = envelope.todoMetaJson ?: return
+        val before = todoCompletionState(current) ?: return
         val updated = runCatching {
             val obj = JSONObject(current)
             val items = obj.optJSONArray("items") ?: return@runCatching null
@@ -432,12 +478,86 @@ class ActionsRepositoryDelegate(
             item.put("done", done)
             obj.toString()
         }.getOrNull() ?: return
+        val after = todoCompletionState(updated) ?: return
         envelopeDao.updateTodoMetaJson(envelopeId, updated)
+        when {
+            !before.allDone && after.allDone -> {
+                recordResolutionReceipt(
+                    ResolutionReceipt(
+                        id = "todo-done:$envelopeId:${clock()}",
+                        targetType = ResolutionTargetType.TODO_LIST,
+                        targetId = envelopeId,
+                        envelopeId = envelopeId,
+                        relatedType = ResolutionTargetType.ACTION_PROPOSAL,
+                        relatedId = after.derivedFromProposalId,
+                        kind = ResolutionKind.DONE,
+                        actor = ResolutionActor.USER,
+                        reason = "all_items_done",
+                        occurredAtMillis = clock(),
+                        metadataJson = JSONObject()
+                            .put("itemCount", after.itemCount)
+                            .put("derivedFromProposalId", after.derivedFromProposalId)
+                            .toString(),
+                    )
+                )
+            }
+            before.allDone && !after.allDone -> {
+                recordResolutionReceipt(
+                    ResolutionReceipt(
+                        id = "todo-reopened:$envelopeId:${clock()}",
+                        targetType = ResolutionTargetType.TODO_LIST,
+                        targetId = envelopeId,
+                        envelopeId = envelopeId,
+                        relatedType = ResolutionTargetType.ACTION_PROPOSAL,
+                        relatedId = after.derivedFromProposalId,
+                        kind = ResolutionKind.REOPENED,
+                        actor = ResolutionActor.USER,
+                        reason = "item_reopened",
+                        occurredAtMillis = clock(),
+                        metadataJson = JSONObject()
+                            .put("itemCount", after.itemCount)
+                            .put("derivedFromProposalId", after.derivedFromProposalId)
+                            .toString(),
+                    )
+                )
+            }
+        }
     }
 
     // ---- helpers ----
 
     private data class ParsedItem(val text: String, val dueEpochMillis: Long?)
+    private data class TodoCompletionState(
+        val itemCount: Int,
+        val allDone: Boolean,
+        val derivedFromProposalId: String?
+    )
+
+    private suspend fun recordResolutionReceipt(receipt: ResolutionReceipt) {
+        resolutionReceiptSink?.record(receipt)
+    }
+
+    private fun todoCompletionState(raw: String): TodoCompletionState? {
+        val obj = runCatching { JSONObject(raw) }.getOrNull() ?: return null
+        val items = obj.optJSONArray("items") ?: return null
+        if (items.length() == 0) return TodoCompletionState(
+            itemCount = 0,
+            allDone = false,
+            derivedFromProposalId = obj.optString("derivedFromProposalId").takeIf { it.isNotBlank() }
+        )
+        var allDone = true
+        for (i in 0 until items.length()) {
+            val item = items.optJSONObject(i) ?: return null
+            if (!item.optBoolean("done", false)) {
+                allDone = false
+            }
+        }
+        return TodoCompletionState(
+            itemCount = items.length(),
+            allDone = allDone,
+            derivedFromProposalId = obj.optString("derivedFromProposalId").takeIf { it.isNotBlank() }
+        )
+    }
 
     private fun parseItemsJson(raw: String): List<ParsedItem> {
         val arr = runCatching { JSONArray(raw) }.getOrNull() ?: return emptyList()

@@ -12,21 +12,34 @@ import com.orbit.app.resolution.ResolutionVerdictResolver
 import org.json.JSONArray
 import org.json.JSONObject
 
-class ResolutionRepository(
-    private val dao: ResolutionReceiptDao,
-    private val resolver: ResolutionVerdictResolver = ResolutionVerdictResolver(),
-) {
+fun interface ResolutionReceiptSink {
+    suspend fun record(receipt: ResolutionReceipt): Boolean
+}
 
-    suspend fun record(receipt: ResolutionReceipt): Boolean {
-        if (!ResolutionReceiptValidator.isValid(receipt)) return false
-        return dao.insert(receipt.toEntity()) >= 0
-    }
-
+interface ResolutionVerdictProvider {
     suspend fun verdictFor(
         targetType: ResolutionTargetType,
         targetId: String,
         nowMillis: Long,
         surface: ResolutionSurface = ResolutionSurface.CLEANUP_QUEUE,
+    ): ResolutionVerdict
+}
+
+class ResolutionRepository(
+    private val dao: ResolutionReceiptDao,
+    private val resolver: ResolutionVerdictResolver = ResolutionVerdictResolver(),
+) : ResolutionReceiptSink, ResolutionVerdictProvider {
+
+    override suspend fun record(receipt: ResolutionReceipt): Boolean {
+        if (!ResolutionReceiptValidator.isValid(receipt)) return false
+        return dao.insert(receipt.toEntity()) >= 0
+    }
+
+    override suspend fun verdictFor(
+        targetType: ResolutionTargetType,
+        targetId: String,
+        nowMillis: Long,
+        surface: ResolutionSurface,
     ): ResolutionVerdict {
         if (targetId.isBlank()) {
             return resolver.resolve(emptyList(), nowMillis = nowMillis, surface = surface)

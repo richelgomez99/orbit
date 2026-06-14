@@ -46,6 +46,10 @@ import com.orbit.app.memory.MemoryIndexSyncScheduler
 import com.orbit.app.memory.MemoryIndexSyncDelegate
 import com.orbit.app.memory.MemoryIndexSyncWorker
 import com.orbit.app.net.CanonicalUrlHasher
+import com.orbit.app.resolution.ResolutionActor
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionReceipt
+import com.orbit.app.resolution.ResolutionTargetType
 import com.orbit.app.understanding.BasicUnderstandingInput
 import com.orbit.app.understanding.BasicUnderstandingWriter
 import kotlinx.coroutines.CoroutineScope
@@ -160,7 +164,12 @@ class EnvelopeRepositoryImpl(
      * remains the authority; model output is discarded unless it validates
      * against local evidence ids, step ids, and function ids.
      */
-    private val agentModelAssist: AgentModelAssist? = null
+    private val agentModelAssist: AgentModelAssist? = null,
+    /**
+     * Spec 012 — durable lifecycle semantics. Optional for older tests; when
+     * absent, existing audit-only behavior is preserved.
+     */
+    private val resolutionReceiptSink: ResolutionReceiptSink? = null
 ) : IEnvelopeRepository.Stub() {
 
     /** envelopeId → millis-deadline after which `undo()` returns false. */
@@ -231,6 +240,12 @@ class EnvelopeRepositoryImpl(
                     .toString()
             )
             runBlocking { backend.recordDuplicateCaptureAttempt(audit) }
+            recordDuplicateRecaptureReceipt(
+                canonicalEnvelopeId = existing.id,
+                attemptId = id,
+                matchedBy = matchedBy,
+                occurredAtMillis = now,
+            )
             return SealResultParcel.alreadySaved(existing.id, matchedBy)
         }
 
@@ -361,6 +376,12 @@ class EnvelopeRepositoryImpl(
                     .toString()
             )
             runBlocking { backend.recordDuplicateCaptureAttempt(duplicateAudit) }
+            recordDuplicateRecaptureReceipt(
+                canonicalEnvelopeId = existing.id,
+                attemptId = id,
+                matchedBy = matchedBy,
+                occurredAtMillis = now,
+            )
             return SealResultParcel.alreadySaved(existing.id, matchedBy)
         }
 
@@ -417,6 +438,35 @@ class EnvelopeRepositoryImpl(
 
         undoWindow[id] = now + undoWindowMillis
         return SealResultParcel.created(id)
+    }
+
+    private fun recordDuplicateRecaptureReceipt(
+        canonicalEnvelopeId: String,
+        attemptId: String,
+        matchedBy: String,
+        occurredAtMillis: Long,
+    ) {
+        val sink = resolutionReceiptSink ?: return
+        runBlocking {
+            sink.record(
+                ResolutionReceipt(
+                    id = "duplicate:$canonicalEnvelopeId:$attemptId",
+                    targetType = ResolutionTargetType.ENVELOPE,
+                    targetId = canonicalEnvelopeId,
+                    envelopeId = canonicalEnvelopeId,
+                    relatedType = ResolutionTargetType.DUPLICATE_ATTEMPT,
+                    relatedId = attemptId,
+                    kind = ResolutionKind.DUPLICATE_RECAPTURE,
+                    actor = ResolutionActor.DUPLICATE_DETECTOR,
+                    reason = matchedBy,
+                    occurredAtMillis = occurredAtMillis,
+                    metadataJson = JSONObject()
+                        .put("matchedBy", matchedBy)
+                        .put("attemptId", attemptId)
+                        .toString(),
+                )
+            )
+        }
     }
 
     // ---- Read path ----

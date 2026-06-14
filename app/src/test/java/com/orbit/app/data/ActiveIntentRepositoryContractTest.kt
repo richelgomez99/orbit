@@ -6,6 +6,8 @@ import com.orbit.app.data.entity.ActiveIntentEntity
 import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.model.AuditAction
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionReceipt
 import com.orbit.app.understanding.domain.ActiveIntentStatus
 import com.orbit.app.understanding.domain.CompletionKeyStatus
 import com.orbit.app.understanding.domain.IntentCategory
@@ -82,10 +84,12 @@ class ActiveIntentRepositoryContractTest {
     @Test
     fun repositoryResolveUpdatesRowThroughDaoOnly() = runTest {
         val dao = FakeActiveIntentDao(activeIntent())
+        val receiptSink = FakeResolutionReceiptSink()
         val repo = ActiveIntentRepository(
             activeIntentDao = dao,
             scope = TestScope(testScheduler) as CoroutineScope,
-            clock = { NOW }
+            clock = { NOW },
+            resolutionReceiptSink = receiptSink
         )
 
         val changed = repo.resolveActiveIntent(
@@ -99,6 +103,11 @@ class ActiveIntentRepositoryContractTest {
         assertEquals("BOUGHT", dao.lastResolutionReason)
         assertEquals(true, dao.lastUserConfirmed)
         assertEquals(NOW, dao.lastResolvedAt)
+        val receipt = receiptSink.receipts.single()
+        assertEquals(ResolutionKind.RESOLVED, receipt.kind)
+        assertEquals("intent-1", receipt.targetId)
+        assertEquals("capture-1", receipt.envelopeId)
+        assertEquals(ResolutionReason.BOUGHT.name, receipt.reason)
     }
 
     @Test
@@ -215,6 +224,15 @@ class ActiveIntentRepositoryContractTest {
         override suspend fun deleteOlderThan(cutoffMillis: Long): Int = 0
         override suspend fun deleteByEnvelopeId(envelopeId: String) = Unit
         override suspend fun listAll(): List<AuditLogEntryEntity> = emptyList()
+    }
+
+    private class FakeResolutionReceiptSink : ResolutionReceiptSink {
+        val receipts = mutableListOf<ResolutionReceipt>()
+
+        override suspend fun record(receipt: ResolutionReceipt): Boolean {
+            receipts += receipt
+            return true
+        }
     }
 
     private companion object {

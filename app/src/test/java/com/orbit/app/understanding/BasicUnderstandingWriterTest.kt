@@ -9,6 +9,9 @@ import com.orbit.app.data.entity.AuditLogEntryEntity
 import com.orbit.app.data.entity.CaptureUnderstandingEntity
 import com.orbit.app.data.entity.EvidenceBundleEntity
 import com.orbit.app.data.model.AuditAction
+import com.orbit.app.data.ResolutionReceiptSink
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionReceipt
 import com.orbit.app.understanding.domain.ActiveIntentStatus
 import com.orbit.app.understanding.domain.CompletionKeyStatus
 import com.orbit.app.understanding.domain.IntentCategory
@@ -72,11 +75,13 @@ class BasicUnderstandingWriterTest {
         )
         val activeDao = FakeActiveIntentDao()
         val auditDao = FakeAuditLogDao()
+        val receiptSink = FakeResolutionReceiptSink()
         val writer = BasicUnderstandingWriter(
             captureUnderstandingDao = captureDao,
             evidenceBundleDao = FakeEvidenceBundleDao(),
             activeIntentDao = activeDao,
-            auditLogDao = auditDao
+            auditLogDao = auditDao,
+            resolutionReceiptSink = receiptSink
         )
 
         val result = writer.persist(input())
@@ -91,6 +96,14 @@ class BasicUnderstandingWriterTest {
         assertTrue(audit.extraJson?.contains(result.contentHashHex!!) == true)
         assertTrue(audit.extraJson?.contains("Running shoes") != true)
         assertTrue(audit.extraJson?.contains("$42.00") != true)
+        val receipt = receiptSink.receipts.single()
+        assertEquals(ResolutionKind.DUPLICATE_RECAPTURE, receipt.kind)
+        assertEquals("existing-capture", receipt.targetId)
+        assertEquals("capture-1", receipt.relatedId)
+        assertEquals("CONTENT_HASH", receipt.reason)
+        assertTrue(receipt.metadataJson?.contains(result.contentHashHex!!) == true)
+        assertTrue(receipt.metadataJson?.contains("Running shoes") != true)
+        assertTrue(receipt.metadataJson?.contains("$42.00") != true)
     }
 
     @Test
@@ -323,6 +336,15 @@ class BasicUnderstandingWriterTest {
         override suspend fun deleteOlderThan(cutoffMillis: Long): Int = 0
         override suspend fun deleteByEnvelopeId(envelopeId: String) = Unit
         override suspend fun listAll(): List<AuditLogEntryEntity> = inserted
+    }
+
+    private class FakeResolutionReceiptSink : ResolutionReceiptSink {
+        val receipts = mutableListOf<ResolutionReceipt>()
+
+        override suspend fun record(receipt: ResolutionReceipt): Boolean {
+            receipts += receipt
+            return true
+        }
     }
 
     private companion object {

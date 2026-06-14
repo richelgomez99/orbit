@@ -13,6 +13,8 @@ import com.orbit.app.data.model.EnvelopeKind
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.LlmProvenance
 import com.orbit.app.data.model.SensitivityScope
+import com.orbit.app.resolution.ResolutionKind
+import com.orbit.app.resolution.ResolutionTargetType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -76,7 +78,8 @@ class ActionsRepositoryDelegateTest {
             registry = registry,
             auditWriter = auditWriter,
             scope = scope,
-            clock = now
+            clock = now,
+            resolutionReceiptSink = ResolutionRepository(db.resolutionReceiptDao())
         )
         seedEnvelope("env-1")
     }
@@ -130,10 +133,22 @@ class ActionsRepositoryDelegateTest {
         val first = delegate.markProposalDismissed("p1")
         assertTrue(first)
         assertEquals(baseline + 1, countAudit(AuditAction.ACTION_DISMISSED))
+        val receipts = db.resolutionReceiptDao().getForTarget(
+            ResolutionTargetType.ACTION_PROPOSAL,
+            "p1",
+        )
+        assertEquals(1, receipts.size)
+        assertEquals(ResolutionKind.DISMISSED, receipts.single().kind)
+        assertEquals("env-1", receipts.single().envelopeId)
 
         val second = delegate.markProposalDismissed("p1")
         assertFalse(second)
         assertEquals(baseline + 1, countAudit(AuditAction.ACTION_DISMISSED))
+        assertEquals(
+            "no-op dismiss MUST NOT write a phantom resolution receipt",
+            1,
+            db.resolutionReceiptDao().getForTarget(ResolutionTargetType.ACTION_PROPOSAL, "p1").size,
+        )
     }
 
     @Test
@@ -196,6 +211,33 @@ class ActionsRepositoryDelegateTest {
     }
 
     @Test
+    fun recordActionInvocation_schemaInvalidation_writesInvalidatedReceipt() = runTest {
+        delegate.writeProposals("env-1", listOf(makeProposal("p1", "calendar.createEvent")))
+
+        delegate.recordActionInvocation(
+            executionId = "exec-schema",
+            proposalId = "p1",
+            functionId = "calendar.createEvent",
+            outcome = ActionExecutionOutcome.FAILED,
+            outcomeReason = "schema_invalidated",
+            dispatchedAtMillis = clock,
+            completedAtMillis = clock,
+            latencyMs = 5L,
+            episodeId = null
+        )
+
+        val row = db.actionProposalDao().getById("p1")!!
+        assertEquals(ActionProposalState.INVALIDATED, row.state)
+        val receipts = db.resolutionReceiptDao().getForTarget(
+            ResolutionTargetType.ACTION_PROPOSAL,
+            "p1",
+        )
+        assertEquals(1, receipts.size)
+        assertEquals(ResolutionKind.INVALIDATED, receipts.single().kind)
+        assertEquals("schema_invalidated", receipts.single().reason)
+    }
+
+    @Test
     fun createDerivedTodoEnvelope_writesOneDerivedListEnvelopeAndAuditProvenance() = runTest {
         delegate.writeProposals("env-1", listOf(makeProposal("p-todo", "tasks.createTodo")))
         val itemsJson = JSONArray()
@@ -246,6 +288,24 @@ class ActionsRepositoryDelegateTest {
             listOf(row.id),
             ingredientMatches.map { it.id }
         )
+
+        delegate.setTodoItemDone(row.id, itemIndex = 0, done = true)
+        assertEquals(
+            "first done item should not create aggregate completion yet",
+            0,
+            db.resolutionReceiptDao().getForTarget(ResolutionTargetType.TODO_LIST, row.id).size,
+        )
+
+        delegate.setTodoItemDone(row.id, itemIndex = 1, done = true)
+        var receipts = db.resolutionReceiptDao().getForTarget(ResolutionTargetType.TODO_LIST, row.id)
+        assertEquals(1, receipts.size)
+        assertEquals(ResolutionKind.DONE, receipts.single().kind)
+        assertEquals("p-todo", receipts.single().relatedId)
+
+        delegate.setTodoItemDone(row.id, itemIndex = 0, done = false)
+        receipts = db.resolutionReceiptDao().getForTarget(ResolutionTargetType.TODO_LIST, row.id)
+        assertEquals(2, receipts.size)
+        assertEquals(ResolutionKind.REOPENED, receipts.last().kind)
     }
 
     @Test

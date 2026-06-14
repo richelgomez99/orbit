@@ -25,21 +25,21 @@
 
 ## Phase 4: Duplicate Hooks
 
-- [ ] **T012-011** Hook exact duplicate `sealWithResult` paths to write `DUPLICATE_RECAPTURE` receipts.
-- [ ] **T012-012** Hook Basic-understanding duplicate suppression to write `DUPLICATE_RECAPTURE` receipts.
-- [ ] **T012-013** Add tests proving duplicate receipt metadata carries ids/matched-by/content-hash reason only and no raw text.
+- [x] **T012-011** Hook exact duplicate `sealWithResult` paths to write `DUPLICATE_RECAPTURE` receipts.
+- [x] **T012-012** Hook Basic-understanding duplicate suppression to write `DUPLICATE_RECAPTURE` receipts.
+- [x] **T012-013** Add tests proving duplicate receipt metadata carries ids/matched-by/content-hash reason only and no raw text.
 
 ## Phase 5: Action And Todo Hooks
 
-- [ ] **T012-014** Hook action proposal dismiss to write `DISMISSED` receipt.
-- [ ] **T012-015** Hook action schema/runtime invalidation to write `INVALIDATED` or `STALE` receipt.
-- [ ] **T012-016** Hook derived todo aggregate completion to write `DONE` when all items become done.
-- [ ] **T012-017** Hook derived todo reopen to write `REOPENED` when a completed list becomes incomplete.
-- [ ] **T012-018** Add repository tests for action/todo receipt hooks.
+- [x] **T012-014** Hook action proposal dismiss to write `DISMISSED` receipt.
+- [x] **T012-015** Hook action schema/runtime invalidation to write `INVALIDATED` or `STALE` receipt.
+- [x] **T012-016** Hook derived todo aggregate completion to write `DONE` when all items become done.
+- [x] **T012-017** Hook derived todo reopen to write `REOPENED` when a completed list becomes incomplete.
+- [x] **T012-018** Add repository tests for action/todo receipt hooks.
 
 ## Phase 6: Follow-Up Surfacing
 
-- [ ] **T012-019** Add Active Intent/Follow-up surfacing filter using resolution verdicts.
+- [x] **T012-019** Add Active Intent/Follow-up surfacing filter using resolution verdicts.
 - [ ] **T012-020** Add minimal user affordances for dismiss, not-now, and snooze if current UI cannot produce those receipts.
 - [ ] **T012-021** Add ViewModel/UI tests for dismiss/not-now/snooze surfacing behavior.
 
