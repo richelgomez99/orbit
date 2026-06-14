@@ -256,6 +256,13 @@ class ScreenshotObserverTest {
             targetType: String?,
             targetId: String?
         ): com.orbit.app.data.ipc.GraphWhyThisParcel? = null
+        override fun planAgentRequest(
+            requestId: String?,
+            query: String?,
+            attachedEnvelopeIds: Array<String>?,
+            maxEvidence: Int,
+            allowModelAssist: Boolean
+        ): com.orbit.app.data.ipc.AgentPlanParcel = error("unused")
 
         override fun observeClusters(observer: com.orbit.app.data.ipc.IClusterObserver) = error("unused")
 

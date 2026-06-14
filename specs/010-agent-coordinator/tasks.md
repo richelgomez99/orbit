@@ -31,9 +31,9 @@
 
 ## Phase 5: Binder Projection
 
-- [ ] **T010-014** [US1] Add compact Agent parcel/AIDL surfaces under `app/src/main/aidl/com/orbit/app/data/ipc/` and `app/src/main/java/com/orbit/app/data/ipc/`.
-- [ ] **T010-015** [US1] Wire repository/Binder method through `EnvelopeRepositoryImpl` or a narrow agent Binder service.
-- [ ] **T010-016** [US1] Add source-ready Binder tests for caps and no raw content.
+- [x] **T010-014** [US1] Add compact Agent parcel/AIDL surfaces under `app/src/main/aidl/com/orbit/app/data/ipc/` and `app/src/main/java/com/orbit/app/data/ipc/`.
+- [x] **T010-015** [US1] Wire repository/Binder method through `EnvelopeRepositoryImpl` or a narrow agent Binder service.
+- [x] **T010-016** [US1] Add source-ready Binder tests for caps and no raw content.
 
 ## Phase 6: Orbit Surface
 

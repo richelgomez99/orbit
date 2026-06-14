@@ -60,15 +60,25 @@ Spec 010 implemented so far:
   - existing action drafts map to approval-required plan steps, not execution;
   - compact graph `whyThis` projections map to cited evidence refs;
   - mapped draft/evidence plans pass `AgentPlanValidator`.
+- Added compact agent Binder projection:
+  - `AgentPlanParcel`
+  - `AgentPlanStepParcel`
+  - `AgentEvidenceParcel`
+  - `AgentQuestionParcel`
+  - `AgentChoiceParcel`
+  - `IEnvelopeRepository.planAgentRequest(...)`
+  - `EnvelopeRepositoryImpl.planAgentRequest(...)`
+  - source-ready `AgentPlanBinderContractTest`
+- Binder method currently uses deterministic local planning over attached envelopes or local search evidence plus registered Orbit AppFunctions. `allowModelAssist` is accepted for forward compatibility but does not call a model yet.
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 
 Immediate Spec 010 task order:
 
-1. Commit the action/KG mapper slice.
-2. Add compact Binder projection for `AgentPlanDraft`.
-3. Add a minimal Orbit tab plan surface.
-4. Add optional model-assisted planning only after deterministic surface tests pass.
+1. Commit the compact Binder projection slice.
+2. Add a minimal Orbit tab plan surface.
+3. Add optional model-assisted planning only after deterministic surface tests pass.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 

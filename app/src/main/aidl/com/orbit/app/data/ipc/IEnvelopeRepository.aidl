@@ -20,6 +20,7 @@ import com.orbit.app.data.ipc.IClusterObserver;
 import com.orbit.app.data.ipc.ActiveIntentParcel;
 import com.orbit.app.data.ipc.IActiveIntentObserver;
 import com.orbit.app.data.ipc.GraphWhyThisParcel;
+import com.orbit.app.data.ipc.AgentPlanParcel;
 
 interface IEnvelopeRepository {
 
@@ -233,6 +234,20 @@ interface IEnvelopeRepository {
     // raw screenshots, full OCR, prompts, model responses, embeddings, or
     // cloud payloads across Binder.
     GraphWhyThisParcel getGraphWhyThis(String targetType, String targetId);
+
+    // ---- Spec 010 — approval-first agent coordinator ----
+
+    // Deterministic local v1 coordinator. It returns cited plan/question/refusal
+    // projections only; it does not execute actions. `allowModelAssist` is
+    // accepted for forward compatibility but this path must still work when
+    // cloud/model routing is unavailable or disabled.
+    AgentPlanParcel planAgentRequest(
+        String requestId,
+        String query,
+        in String[] attachedEnvelopeIds,
+        int maxEvidence,
+        boolean allowModelAssist
+    );
 
     // T061 — TodoActionHandler local-target dispatch entry point.
     //

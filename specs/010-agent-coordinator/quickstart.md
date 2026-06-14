@@ -35,6 +35,7 @@ git diff --check
 2026-06-13:
 
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 
 ## Known Deferred Checks
 

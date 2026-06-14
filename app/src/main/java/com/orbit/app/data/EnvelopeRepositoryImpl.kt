@@ -1,6 +1,12 @@
 package com.orbit.app.data
 
 import com.orbit.app.BuildConfig
+import com.orbit.app.agent.AgentEvidenceRef
+import com.orbit.app.agent.AgentEvidenceSourceType
+import com.orbit.app.agent.AgentRequest
+import com.orbit.app.agent.DeterministicAgentPlanner
+import com.orbit.app.agent.toAgentActionCapability
+import com.orbit.app.agent.toParcel
 import com.orbit.app.ai.extract.ActionExtractionPrefilter
 import com.orbit.app.ai.extract.ActionExtractor
 import com.orbit.app.ai.extract.ExtractOutcome
@@ -11,6 +17,7 @@ import com.orbit.app.data.entity.EnvelopeNoteEntity
 import com.orbit.app.data.entity.IntentEnvelopeEntity
 import com.orbit.app.data.entity.StateSnapshot
 import com.orbit.app.data.ipc.EnvelopeViewParcel
+import com.orbit.app.data.ipc.AgentPlanParcel
 import com.orbit.app.data.ipc.GraphSourceParcel
 import com.orbit.app.data.ipc.GraphWhyThisParcel
 import com.orbit.app.data.ipc.IActiveIntentObserver
@@ -1235,6 +1242,39 @@ class EnvelopeRepositoryImpl(
         }
     }
 
+    override fun planAgentRequest(
+        requestId: String?,
+        query: String?,
+        attachedEnvelopeIds: Array<String>?,
+        maxEvidence: Int,
+        allowModelAssist: Boolean
+    ): AgentPlanParcel = runBlocking {
+        val safeRequestId = requestId?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+        val safeQuery = query.orEmpty().trim().take(MAX_AGENT_QUERY_CHARS)
+        val attachedIds = attachedEnvelopeIds
+            ?.mapNotNull { it.trim().takeIf(String::isNotEmpty)?.take(MAX_AGENT_ID_CHARS) }
+            ?.distinct()
+            .orEmpty()
+        val cappedEvidenceLimit = maxEvidence.coerceIn(1, MAX_AGENT_EVIDENCE)
+        val evidence = loadAgentEvidence(safeQuery, attachedIds, cappedEvidenceLimit)
+        val capabilities = actionsDelegate
+            ?.listAppFunctions(ORBIT_APP_PACKAGE)
+            ?.map { it.toAgentActionCapability() }
+            .orEmpty()
+        val plan = DeterministicAgentPlanner(clock = clock).plan(
+            request = AgentRequest(
+                requestId = safeRequestId,
+                query = safeQuery,
+                attachedEnvelopeIds = attachedIds,
+                maxEvidence = cappedEvidenceLimit,
+                allowModelAssist = allowModelAssist,
+            ),
+            evidence = evidence,
+            actionCapabilities = capabilities,
+        )
+        plan.toParcel()
+    }
+
     override fun resolveActiveIntent(
         intentId: String,
         resolutionReason: String,
@@ -1295,7 +1335,43 @@ class EnvelopeRepositoryImpl(
             android.util.Log.w("EnvelopeRepo", "basic understanding write failed for $captureId", error)
         }
     }
+
+    private suspend fun loadAgentEvidence(
+        query: String,
+        attachedEnvelopeIds: List<String>,
+        limit: Int
+    ): List<AgentEvidenceRef> {
+        val envelopes = if (attachedEnvelopeIds.isNotEmpty()) {
+            attachedEnvelopeIds.mapNotNull { backend.getEnvelope(it) }
+        } else if (query.isNotBlank()) {
+            backend.searchActiveEnvelopes(query, limit)
+        } else {
+            emptyList()
+        }
+        return envelopes
+            .take(limit)
+            .mapIndexed { index, envelope ->
+                AgentEvidenceRef(
+                    evidenceId = "envelope-${index + 1}",
+                    sourceType = AgentEvidenceSourceType.ENVELOPE,
+                    sourceId = envelope.id,
+                    label = envelope.agentEvidenceLabel(),
+                    dayLocal = envelope.dayLocal,
+                    whyThisTargetType = null,
+                    whyThisTargetId = null,
+                )
+            }
+    }
     // ---- Helpers ----
+
+    private fun IntentEnvelopeEntity.agentEvidenceLabel(): String {
+        val source = state.sourceAppLabel?.trim()?.takeIf { it.isNotEmpty() }
+        return when {
+            source != null -> "$source capture"
+            contentType == ContentType.IMAGE -> "Screenshot capture"
+            else -> "Saved text capture"
+        }.take(MAX_AGENT_LABEL_CHARS)
+    }
 
     private fun computeDayLocal(nowMillis: Long, tzId: String): String {
         return Instant.ofEpochMilli(nowMillis)
@@ -1388,5 +1464,10 @@ class EnvelopeRepositoryImpl(
         private const val MAX_GRAPH_SUMMARY_CHARS = 240
         private const val MAX_GRAPH_LABEL_CHARS = 160
         private const val MAX_DAY_LOCAL_CHARS = 16
+        private const val ORBIT_APP_PACKAGE = "com.orbit.app"
+        private const val MAX_AGENT_QUERY_CHARS = 240
+        private const val MAX_AGENT_ID_CHARS = 128
+        private const val MAX_AGENT_EVIDENCE = 10
+        private const val MAX_AGENT_LABEL_CHARS = 160
     }
 }
