@@ -11,10 +11,10 @@
 
 ## Phase 2: Capture Context Foundation
 
-- [ ] **T011-003** [P] Add/extend overlay UI tests for post-capture context affordance in `app/src/test/java/com/orbit/app/overlay/`.
-- [ ] **T011-004** Add `Add context` action to new-capture post-save UI without removing undo behavior.
-- [ ] **T011-005** Route new-capture context action from `OverlayViewModel`/`OrbitOverlayService` to `EnvelopeDetailActivity` with `startNote = true`.
-- [ ] **T011-006** Verify duplicate-capture context still targets the existing envelope and does not create a new one.
+- [x] **T011-003** [P] Add/extend overlay UI tests for post-capture context affordance in `app/src/test/java/com/orbit/app/overlay/`.
+- [x] **T011-004** Add `Add context` action to new-capture post-save UI without removing undo behavior.
+- [x] **T011-005** Route new-capture context action from `OverlayViewModel`/`OrbitOverlayService` to `EnvelopeDetailActivity` with `startNote = true`.
+- [x] **T011-006** Verify duplicate-capture context still targets the existing envelope and does not create a new one.
 
 ## Phase 3: Manual Compose Repository Seam
 
@@ -42,7 +42,7 @@
 ## Phase 6: Validation And Closeout
 
 - [ ] **T011-021** Run focused overlay/diary/manual compose JVM tests.
-- [ ] **T011-022** Run compile gates: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
+- [x] **T011-022** Run compile gates: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
 - [ ] **T011-023** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [ ] **T011-024** Run `git diff --check`.
 - [ ] **T011-025** Update `quickstart.md`, roadmap, and handoff with validation evidence.

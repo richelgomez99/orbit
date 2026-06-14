@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 fun UndoPill(
     intent: Intent,
     onUndo: () -> Unit,
+    onAddContext: (() -> Unit)? = null,
     onExpire: () -> Unit,
     modifier: Modifier = Modifier,
     windowMillis: Long = OverlayMotion.UNDO_WINDOW_MS
@@ -150,6 +151,16 @@ fun UndoPill(
                     ) else MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = contentColor
                 )
+                if (onAddContext != null) {
+                    IconButton(onClick = onAddContext) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.StickyNote2,
+                            contentDescription = "Add context",
+                            tint = accentColor,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                }
             }
         }
     }

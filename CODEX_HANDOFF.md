@@ -39,12 +39,21 @@ Active Spec 011 truth:
 - P2 is manual text compose from Diary using the same repository/Binder path.
 - Voice compose, share sheet compose, rich media compose, transparent pre-seal Clarify activity, A2UI, and BYOM local model manager are deferred.
 
+Spec 011 implemented so far:
+
+- Added post-capture `Add context` action for new capture `SilentWrapPill` and `UndoPill` states.
+- `OverlayViewModel.onNewCaptureAddContext(envelopeId)` invokes the existing note-entry callback without clearing the current undo/silent state.
+- `PostCaptureOverlay` routes the context action to the saved envelope id.
+- Existing `OrbitOverlayService.openExistingEnvelope(..., startNote = true)` remains the service-side path into `EnvelopeDetailActivity`.
+- Android test source coverage in `OverlayDuplicateFeedbackTest` proves new-capture context targets the saved envelope and does not dismiss the current post-capture state.
+- Validation passed: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
+
 Immediate Spec 011 task order:
 
-1. Commit the Spec 011 artifacts and active roadmap/handoff update.
-2. Implement T011-003..T011-006: post-capture context action for new captures without removing undo.
-3. Run focused overlay tests and compile.
-4. Implement manual compose repository seam and UI only after P1 validates.
+1. Commit the post-capture context slice.
+2. Implement manual compose repository seam (T011-007..T011-011).
+3. Implement manual compose ViewModel/UI after the repository seam validates.
+4. Run focused overlay/diary tests and then the full non-phone gate.
 
 ## Previous Status - 2026-06-13 Spec 010 Repo-Side Complete
 

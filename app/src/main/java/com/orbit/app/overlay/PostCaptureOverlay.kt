@@ -71,6 +71,7 @@ fun PostCaptureOverlay(
                 SilentWrapPill(
                     intent = ui.intent,
                     onUndo = { viewModel.onUndoTapped(ui.envelopeId) },
+                    onAddContext = { viewModel.onNewCaptureAddContext(ui.envelopeId) },
                     onExpire = viewModel::onSilentWrapPillExpired
                 )
             }
@@ -80,6 +81,7 @@ fun PostCaptureOverlay(
                 UndoPill(
                     intent = ui.intent,
                     onUndo = { viewModel.onUndoTapped(ui.envelopeId) },
+                    onAddContext = { viewModel.onNewCaptureAddContext(ui.envelopeId) },
                     onExpire = viewModel::onUndoPillExpired
                 )
             }

@@ -23,8 +23,10 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -66,6 +68,7 @@ import kotlinx.coroutines.delay
 fun SilentWrapPill(
     intent: Intent,
     onUndo: () -> Unit,
+    onAddContext: (() -> Unit)? = null,
     onExpire: () -> Unit,
     modifier: Modifier = Modifier,
     visibleMillis: Long = OverlayMotion.SILENT_WRAP_PILL_MS,
@@ -157,6 +160,15 @@ fun SilentWrapPill(
                         maxLines = 1
                     )
                     Spacer(Modifier.width(4.dp))
+                    if (onAddContext != null) {
+                        IconButton(onClick = onAddContext) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.StickyNote2,
+                                contentDescription = "Add context",
+                                tint = accentColor,
+                            )
+                        }
+                    }
                     Surface(
                         color = if (useNewVisualLanguage) quietColors.Accent else MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(14.dp),

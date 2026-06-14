@@ -41,6 +41,8 @@ git diff --check
 2026-06-13:
 
 - Created Spec Kit artifacts for Spec 011 after closing Spec 010.
+- PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- Implemented post-capture `Add context` for new silent/undo capture states using the existing note-entry callback. Android test sources cover that the context action targets the saved envelope and does not dismiss the current undo/silent state.
 
 ## Known Deferred Checks
 

@@ -62,6 +62,46 @@ class OverlayDuplicateFeedbackTest {
     }
 
     @Test
+    fun newCaptureAddContext_invokesNoteCallbackWithoutDismissingUndo() = runTest {
+        val vm = OverlayViewModel()
+        var noteTarget: String? = null
+        vm.onAddNoteToExistingEnvelope = { noteTarget = it }
+        vm.sealOrchestrator = FakeSealOrchestrator(
+            captureOutcome = SealOutcome.UserChip("env-new", Intent.REFERENCE)
+        )
+
+        vm.onClipboardReadResult(content())
+        vm.onSaveCapture()
+        advanceUntilIdle()
+
+        assertTrue(vm.postCaptureUi.value is PostCaptureUi.UndoPill)
+        vm.onNewCaptureAddContext("env-new")
+
+        assertEquals("env-new", noteTarget)
+        assertTrue(vm.postCaptureUi.value is PostCaptureUi.UndoPill)
+    }
+
+    @Test
+    fun silentWrapAddContext_invokesNoteCallbackWithoutDismissingSilentPill() = runTest {
+        val vm = OverlayViewModel()
+        var noteTarget: String? = null
+        vm.onAddNoteToExistingEnvelope = { noteTarget = it }
+        vm.sealOrchestrator = FakeSealOrchestrator(
+            captureOutcome = SealOutcome.Silent("env-silent", Intent.READ_LATER)
+        )
+
+        vm.onClipboardReadResult(content())
+        vm.onSaveCapture()
+        advanceUntilIdle()
+
+        assertTrue(vm.postCaptureUi.value is PostCaptureUi.SilentWrapPill)
+        vm.onNewCaptureAddContext("env-silent")
+
+        assertEquals("env-silent", noteTarget)
+        assertTrue(vm.postCaptureUi.value is PostCaptureUi.SilentWrapPill)
+    }
+
+    @Test
     fun duplicateReclassify_updatesExistingEnvelopeWithoutNewSeal() = runTest {
         val fake = FakeSealOrchestrator(
             captureOutcome = SealOutcome.AlreadySaved("existing-3", "EXACT_TEXT")

@@ -420,6 +420,10 @@ class OverlayViewModel : ViewModel() {
         onAddNoteToExistingEnvelope?.invoke(envelopeId)
     }
 
+    fun onNewCaptureAddContext(envelopeId: String) {
+        onAddNoteToExistingEnvelope?.invoke(envelopeId)
+    }
+
     fun onAlreadySavedReclassify(envelopeId: String) {
         _postCaptureUi.value = PostCaptureUi.ReclassifyChipRow(
             existingEnvelopeId = envelopeId,
@@ -481,4 +485,3 @@ class OverlayViewModel : ViewModel() {
         _bubbleState.value = _bubbleState.value.copy(x = x, y = y, edgeSide = edgeSide)
     }
 }
-
