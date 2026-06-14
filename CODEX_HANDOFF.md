@@ -2,7 +2,47 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-13 Spec 011 Active
+## Current Status - 2026-06-13 Spec 012 Active
+
+Authoritative branch:
+
+- `feature/012-resolution-semantics-20260613`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 011 branch `feature/011-manual-compose-capture-context-20260613`.
+- Latest Spec 011 commits in stack:
+  - `cdb2b2b docs(spec-011): add manual compose artifacts`
+  - `f399c75 feat(spec-011): add post-capture context action`
+  - `9ab2701 feat(spec-011): add manual compose seal seam`
+  - `e5cf6fb feat(spec-011): add manual compose diary surface`
+
+Active Spec 012 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/012-resolution-semantics/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/resolution-semantics-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 012 should add durable local `resolution_receipt` semantics before UI polish.
+- Scope includes duplicate recapture, dismissed, not-now, snoozed, done, reopened, stale, invalidated, source-deleted, and conflict receipt shapes.
+- The intended implementation path is Room v11 additive schema, receipt DAO/repository, `ResolutionVerdictResolver`, then hooks for duplicate seal, Basic-understanding duplicate suppression, action proposal dismiss/invalidation, and derived todo aggregate done/reopened.
+- Receipts must remain compact: ids, enums, counts, timestamps, reason codes only. No raw screenshots, raw OCR/full text, prompts, model responses, embeddings, JWTs, cookies, API keys, or raw HTML.
+- Current branch has only Spec 012 artifacts so far. Implementation should start at `T012-003`.
+
+Immediate Spec 012 task order:
+
+1. Add domain enums/verdict model and tests.
+2. Add `ResolutionReceiptEntity`/DAO and Room v11 migration.
+3. Add `ResolutionRepository` validation/write/query helper.
+4. Hook duplicate/action/todo lifecycle paths.
+5. Add Follow-up surfacing filters and minimal dismiss/not-now/snooze affordances only if needed.
+6. Run focused and full non-phone gates.
+
+## Previous Status - 2026-06-13 Spec 011 Repo-Side Complete
 
 Authoritative branch:
 
@@ -11,16 +51,6 @@ Authoritative branch:
 Base checkpoint:
 
 - Branched from repo-side complete Spec 010 branch `feature/010-agent-coordinator-20260612`.
-- Latest Spec 010 commits in stack:
-  - `488e276 docs(spec-010): add agent coordinator artifacts`
-  - `829e868 feat(spec-010): add agent plan models`
-  - `f6660d0 feat(spec-010): add deterministic agent planner`
-  - `49ed1eb feat(spec-010): map action and graph evidence`
-  - `47d5b25 feat(spec-010): expose agent plan binder`
-  - `893293a docs(spec-010): record agent binder validation`
-  - `b825261 feat(spec-010): add orbit agent plan panel`
-  - `cb58b60 feat(spec-010): add advisory model-assisted planning`
-  - `5365f33 docs(spec-010): close agent coordinator branch`
 
 Active Spec 011 truth:
 
