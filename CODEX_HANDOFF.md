@@ -34,14 +34,26 @@ Active Spec 010 truth:
 - Model assistance, if implemented, routes through existing `LlmProviderRouter`/Spec 008 controls and validates all output against local evidence ids and registered functions.
 - No AppFunctions/Spark/platform-agent interop, no A2UI, no durable chat sessions, and no BYOM local model manager in this branch.
 
+Spec 010 implemented so far:
+
+- Added pure agent model/validation package:
+  - `app/src/main/java/com/orbit/app/agent/AgentModels.kt`
+  - `app/src/test/java/com/orbit/app/agent/AgentModelsTest.kt`
+- `AgentPlanValidator` currently proves:
+  - action steps require approval;
+  - evidence-backed steps must cite known evidence;
+  - bounded no-raw payload field names are rejected;
+  - trace receipts carry bounded metadata only.
+- Focused validation passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
+
 Immediate Spec 010 task order:
 
-1. Commit the Spec 010 artifact lock and roadmap/handoff update.
-2. Add pure `com.orbit.app.agent` models and coordinator contract tests.
-3. Implement deterministic local planner for cited plan/refusal/gap-question outcomes.
-4. Integrate action/KG evidence as approval-required plan steps.
-5. Add compact Binder projection and Orbit tab plan surface.
-6. Add optional model-assisted planning only after deterministic surface tests pass.
+1. Commit the Spec 010 agent model/validation slice.
+2. Implement deterministic local planner for cited plan/refusal/gap-question outcomes.
+3. Integrate action/KG evidence as approval-required plan steps.
+4. Add compact Binder projection and Orbit tab plan surface.
+5. Add optional model-assisted planning only after deterministic surface tests pass.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 

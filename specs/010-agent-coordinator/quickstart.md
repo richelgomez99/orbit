@@ -28,7 +28,9 @@ git diff --check
 
 ## Validation Log
 
-Pending implementation.
+2026-06-12:
+
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
 
 ## Known Deferred Checks
 

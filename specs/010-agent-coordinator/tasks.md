@@ -11,9 +11,9 @@
 
 ## Phase 2: Coordinator Contract
 
-- [ ] **T010-003** [P] Add `AgentModels.kt` under `app/src/main/java/com/orbit/app/agent/`.
-- [ ] **T010-004** [P] Add pure coordinator contract tests under `app/src/test/java/com/orbit/app/agent/`.
-- [ ] **T010-005** [P] Add no-raw trace/payload tests.
+- [x] **T010-003** [P] Add `AgentModels.kt` under `app/src/main/java/com/orbit/app/agent/`.
+- [x] **T010-004** [P] Add pure coordinator contract tests under `app/src/test/java/com/orbit/app/agent/`.
+- [x] **T010-005** [P] Add no-raw trace/payload tests.
 
 ## Phase 3: Deterministic Local Planner
 
@@ -51,7 +51,7 @@
 
 ## Phase 8: Validation
 
-- [ ] **T010-025** Run focused agent JVM tests.
+- [x] **T010-025** Run focused agent JVM tests.
 - [ ] **T010-026** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [ ] **T010-027** Run `git diff --check`.
 - [ ] **T010-028** Update `quickstart.md`, roadmap, and handoff with validation evidence.
