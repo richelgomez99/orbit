@@ -29,6 +29,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.orbit.app.data.ipc.ActionDraftParcel
+import com.orbit.app.data.ipc.AgentEvidenceParcel
+import com.orbit.app.data.ipc.AgentPlanParcel
+import com.orbit.app.data.ipc.AgentPlanStepParcel
+import com.orbit.app.data.ipc.AgentQuestionParcel
 import com.orbit.app.data.ipc.MemoryCandidateParcel
 import com.orbit.app.diary.ActionPreviewSheet
 import com.orbit.app.diary.ActiveIntentUiState
@@ -51,6 +55,7 @@ fun OrbitCleanupScreen(
     val actionDrafts by viewModel.observeActionDrafts().collectAsState(initial = emptyList())
     val memoryCandidates by viewModel.observeMemoryCandidates().collectAsState(initial = emptyList())
     val actionNotice by viewModel.actionNotice.collectAsState()
+    val agentPlanState by viewModel.agentPlanState.collectAsState()
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     var pendingActionDraft by remember { mutableStateOf<ActionDraftParcel?>(null) }
@@ -78,6 +83,22 @@ fun OrbitCleanupScreen(
                 onDismiss = { viewModel.onActionNoticeDismissed() },
             )
         }
+        AgentPlanPanel(
+            state = agentPlanState,
+            onPlan = viewModel::onPlanAgentRequest,
+            onOpenEvidence = { evidence ->
+                if (evidence.sourceType == "ENVELOPE") {
+                    onOpenCapture?.invoke(evidence.sourceId)
+                        ?: context.startActivity(
+                            EnvelopeDetailActivity.newIntent(
+                                context,
+                                evidence.sourceId,
+                                dayLocal = null,
+                            )
+                        )
+                }
+            },
+        )
         ActionDraftsPanel(
             drafts = actionDrafts,
             onReview = { pendingActionDraft = it },
@@ -178,6 +199,187 @@ fun OrbitCleanupScreen(
                 editingMemoryCandidate = null
             },
         )
+    }
+}
+
+@Composable
+private fun AgentPlanPanel(
+    state: DiaryViewModel.AgentPlanUiState,
+    onPlan: (String) -> Unit,
+    onOpenEvidence: (AgentEvidenceParcel) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var query by remember { mutableStateOf("") }
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("agent-plan-panel"),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = "Agent plan",
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("agent-plan-query"),
+            label = { Text("What loop should Orbit help close?") },
+            singleLine = false,
+            minLines = 2,
+        )
+        Button(
+            onClick = { onPlan(query) },
+            modifier = Modifier.testTag("agent-plan-submit"),
+            enabled = state !is DiaryViewModel.AgentPlanUiState.Loading,
+        ) {
+            Text(if (state is DiaryViewModel.AgentPlanUiState.Loading) "Planning" else "Plan")
+        }
+        when (state) {
+            DiaryViewModel.AgentPlanUiState.Idle -> Unit
+            DiaryViewModel.AgentPlanUiState.Loading -> Text(
+                text = "Finding saved evidence",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            is DiaryViewModel.AgentPlanUiState.Error -> Text(
+                text = state.message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            is DiaryViewModel.AgentPlanUiState.Ready -> AgentPlanResult(
+                plan = state.plan,
+                onOpenEvidence = onOpenEvidence,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AgentPlanResult(
+    plan: AgentPlanParcel,
+    onOpenEvidence: (AgentEvidenceParcel) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("agent-plan-result"),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = plan.title,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            plan.summary?.takeIf { it.isNotBlank() }?.let {
+                Text(text = it, style = MaterialTheme.typography.bodySmall)
+            }
+            if (plan.limitations.isNotEmpty()) {
+                Text(
+                    text = plan.limitations.joinToString(", ") { it.replace('_', ' ') },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            plan.questions.forEach { question ->
+                AgentQuestionBlock(question = question)
+            }
+            plan.steps.forEach { step ->
+                AgentPlanStepRow(step = step)
+            }
+            plan.evidence.forEach { evidence ->
+                AgentEvidenceRow(evidence = evidence, onOpen = { onOpenEvidence(evidence) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun AgentQuestionBlock(question: AgentQuestionParcel) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = question.text,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        question.choices.forEach { choice ->
+            Text(
+                text = choice.label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AgentPlanStepRow(step: AgentPlanStepParcel) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = step.label,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        val detail = buildList {
+            step.detail?.takeIf { it.isNotBlank() }?.let(::add)
+            if (step.requiredApproval) add("Requires your approval")
+        }.joinToString(" • ")
+        if (detail.isNotBlank()) {
+            Text(
+                text = detail,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AgentEvidenceRow(
+    evidence: AgentEvidenceParcel,
+    onOpen: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = evidence.label,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            evidence.dayLocal?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
+        if (evidence.sourceType == "ENVELOPE") {
+            TextButton(onClick = onOpen) {
+                Text("Open")
+            }
+        }
     }
 }
 

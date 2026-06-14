@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
 import com.orbit.app.data.ClusterCardModel
+import com.orbit.app.data.ipc.AgentPlanParcel
 import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.MemoryDecisionResultParcel
 import com.orbit.app.understanding.domain.ResolutionReason
@@ -159,6 +160,9 @@ class DiaryViewModel(
     private val _actionNotice = MutableStateFlow<ActionNoticeState?>(null)
     val actionNotice: StateFlow<ActionNoticeState?> = _actionNotice.asStateFlow()
 
+    private val _agentPlanState = MutableStateFlow<AgentPlanUiState>(AgentPlanUiState.Idle)
+    val agentPlanState: StateFlow<AgentPlanUiState> = _agentPlanState.asStateFlow()
+
     /**
      * Confirm a proposal — flips state to CONFIRMED, dispatches the side
      * effect via the `:capture` executor, opens the 5s undo window. The
@@ -270,6 +274,38 @@ class DiaryViewModel(
 
     fun onActionNoticeDismissed() {
         _actionNotice.value = null
+    }
+
+    fun onPlanAgentRequest(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isBlank()) {
+            _agentPlanState.value = AgentPlanUiState.Error("Ask Orbit what loop to close.")
+            return
+        }
+        scope.launch {
+            _agentPlanState.value = AgentPlanUiState.Loading
+            val result = runCatching {
+                repository.planAgentRequest(
+                    requestId = "agent-${System.currentTimeMillis()}",
+                    query = trimmed,
+                    attachedEnvelopeIds = emptyList(),
+                    maxEvidence = 8,
+                    allowModelAssist = false
+                )
+            }
+            _agentPlanState.value = result.fold(
+                onSuccess = { plan ->
+                    if (plan == null) {
+                        AgentPlanUiState.Error("Agent planning is not available yet.")
+                    } else {
+                        AgentPlanUiState.Ready(plan)
+                    }
+                },
+                onFailure = { error ->
+                    AgentPlanUiState.Error(error.message ?: "Agent planning failed.")
+                }
+            )
+        }
     }
 
     fun onAcceptMemoryCandidate(
@@ -386,6 +422,13 @@ class DiaryViewModel(
         val id: String,
         val message: String
     )
+
+    sealed interface AgentPlanUiState {
+        data object Idle : AgentPlanUiState
+        data object Loading : AgentPlanUiState
+        data class Ready(val plan: AgentPlanParcel) : AgentPlanUiState
+        data class Error(val message: String) : AgentPlanUiState
+    }
 
     private companion object {
         /** Per action-execution-contract.md §5: 5 s undo window. */

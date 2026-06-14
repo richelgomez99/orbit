@@ -9,6 +9,9 @@ import com.orbit.app.ai.model.SummaryResult
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ClusterMemberRef
 import com.orbit.app.data.ipc.ActiveIntentParcel
+import com.orbit.app.data.ipc.AgentEvidenceParcel
+import com.orbit.app.data.ipc.AgentPlanParcel
+import com.orbit.app.data.ipc.AgentPlanStepParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.ipc.MemoryCandidateParcel
@@ -76,6 +79,9 @@ class DiaryViewModelTest {
         var escalationCalls = mutableListOf<Pair<String, String>>()
         var acceptedMemoryCalls = mutableListOf<Triple<String, String?, String?>>()
         var rejectedMemoryCalls = mutableListOf<Pair<String, String?>>()
+        var agentPlanCalls = mutableListOf<String>()
+        var agentPlanResponse: AgentPlanParcel? = null
+        var agentPlanFailure: Throwable? = null
 
         override fun observeDay(isoDate: String): Flow<DayPageParcel> = flow {
             throwOnObserve?.let { throw it }
@@ -177,6 +183,18 @@ class DiaryViewModelTest {
                 status = "rejected",
                 message = "Dismissed. Orbit will not remember that."
             )
+        }
+
+        override suspend fun planAgentRequest(
+            requestId: String,
+            query: String,
+            attachedEnvelopeIds: List<String>,
+            maxEvidence: Int,
+            allowModelAssist: Boolean
+        ): AgentPlanParcel? {
+            agentPlanFailure?.let { throw it }
+            agentPlanCalls += query
+            return agentPlanResponse
         }
     }
 
@@ -373,6 +391,40 @@ class DiaryViewModelTest {
         updatedAtMillis = baseTime
     )
 
+    private fun agentPlanParcel() = AgentPlanParcel(
+        planId = "plan-1",
+        outcome = "PLAN",
+        title = "Dentist plan",
+        summary = "Review the saved capture before acting.",
+        steps = listOf(
+            AgentPlanStepParcel(
+                stepId = "step-1",
+                kind = "DRAFT_ACTION",
+                label = "Draft calendar follow-up",
+                detail = "Requires review",
+                requiredApproval = true,
+                actionProposalId = null,
+                functionId = "calendar.createEvent",
+                evidenceIds = listOf("evidence-1")
+            )
+        ),
+        questions = emptyList(),
+        evidence = listOf(
+            AgentEvidenceParcel(
+                evidenceId = "evidence-1",
+                sourceType = "ENVELOPE",
+                sourceId = "env-1",
+                label = "Dentist capture",
+                dayLocal = "2026-06-12",
+                whyThisTargetType = null,
+                whyThisTargetId = null
+            )
+        ),
+        limitations = emptyList(),
+        modelLabel = null,
+        createdAtMillis = baseTime
+    )
+
     @Test
     fun activeIntentState_updatesFromRepositoryQueue() = runTest {
         val repo = FakeRepo()
@@ -437,6 +489,49 @@ class DiaryViewModelTest {
         advanceUntilIdle()
         assertEquals(listOf("candidate-2" to "wrong"), repo.rejectedMemoryCalls)
         assertEquals("Dismissed. Orbit will not remember that.", vm.actionNotice.value?.message)
+    }
+
+    @Test
+    fun agentPlanRequest_updatesReadyState() = runTest {
+        val repo = FakeRepo().apply {
+            agentPlanResponse = agentPlanParcel()
+        }
+        val vm = TestScopeVm(this, repo)
+
+        vm.onPlanAgentRequest("help me reschedule dentist")
+        advanceUntilIdle()
+
+        assertEquals(listOf("help me reschedule dentist"), repo.agentPlanCalls)
+        val ready = vm.agentPlanState.value as DiaryViewModel.AgentPlanUiState.Ready
+        assertEquals("PLAN", ready.plan.outcome)
+        assertEquals("Dentist plan", ready.plan.title)
+    }
+
+    @Test
+    fun agentPlanRequest_blankQueryShowsErrorWithoutRepositoryCall() = runTest {
+        val repo = FakeRepo()
+        val vm = TestScopeVm(this, repo)
+
+        vm.onPlanAgentRequest("   ")
+        advanceUntilIdle()
+
+        assertTrue(repo.agentPlanCalls.isEmpty())
+        val error = vm.agentPlanState.value as DiaryViewModel.AgentPlanUiState.Error
+        assertEquals("Ask Orbit what loop to close.", error.message)
+    }
+
+    @Test
+    fun agentPlanRequest_repositoryFailureShowsError() = runTest {
+        val repo = FakeRepo().apply {
+            agentPlanFailure = IllegalStateException("offline")
+        }
+        val vm = TestScopeVm(this, repo)
+
+        vm.onPlanAgentRequest("help")
+        advanceUntilIdle()
+
+        val error = vm.agentPlanState.value as DiaryViewModel.AgentPlanUiState.Error
+        assertEquals("offline", error.message)
     }
 
     @Test

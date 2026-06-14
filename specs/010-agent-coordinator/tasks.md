@@ -37,10 +37,10 @@
 
 ## Phase 6: Orbit Surface
 
-- [ ] **T010-017** [US1] Add minimal Orbit tab plan panel using existing Quiet Almanac components.
-- [ ] **T010-018** [US2] Render gap questions/choices without executing actions.
-- [ ] **T010-019** [US1] Wire plan action steps to existing capture open/action approval paths only.
-- [ ] **T010-020** [US1] Add ViewModel/UI tests for plan/refusal/question states.
+- [x] **T010-017** [US1] Add minimal Orbit tab plan panel using existing Quiet Almanac components.
+- [x] **T010-018** [US2] Render gap questions/choices without executing actions.
+- [x] **T010-019** [US1] Wire plan action steps to existing capture open/action approval paths only.
+- [x] **T010-020** [US1] Add ViewModel/UI tests for plan/refusal/question states.
 
 ## Phase 7: Model Assistance
 

@@ -70,9 +70,16 @@ Spec 010 implemented so far:
   - `EnvelopeRepositoryImpl.planAgentRequest(...)`
   - source-ready `AgentPlanBinderContractTest`
 - Binder method currently uses deterministic local planning over attached envelopes or local search evidence plus registered Orbit AppFunctions. `allowModelAssist` is accepted for forward compatibility but does not call a model yet.
+- Added minimal Orbit tab agent plan surface:
+  - `OrbitCleanupScreen` now renders an `AgentPlanPanel`.
+  - `DiaryRepository` and `BinderDiaryRepository` expose `planAgentRequest`.
+  - `DiaryViewModel` owns `agentPlanState` and `onPlanAgentRequest`.
+  - UI renders plan/refusal/question/evidence states and opens envelope evidence only through existing capture-open path.
+- Focused ViewModel tests cover ready, blank-query error, and repository-failure states.
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
   - `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest" --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
 - Full non-phone gate passed after AIDL/repository changes:
   - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - Diff whitespace passed:
@@ -80,9 +87,8 @@ Spec 010 implemented so far:
 
 Immediate Spec 010 task order:
 
-1. Commit the compact Binder projection slice.
-2. Add a minimal Orbit tab plan surface.
-3. Add optional model-assisted planning only after deterministic surface tests pass.
+1. Commit the Orbit tab agent plan surface slice.
+2. Add optional model-assisted planning only after deterministic surface tests pass, or defer it if branch scope should close after another full gate.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 

@@ -6,6 +6,7 @@ import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.ActionDraftParcel
+import com.orbit.app.data.ipc.AgentPlanParcel
 import com.orbit.app.data.ipc.DayPageParcel
 import com.orbit.app.data.ipc.EnvelopeViewParcel
 import com.orbit.app.data.ipc.MemoryCandidateParcel
@@ -159,4 +160,14 @@ interface DiaryRepository {
         status = "unavailable",
         message = "Orbit memory review is not available yet."
     )
+
+    // ---- Spec 010 — Agent coordinator ----------------------------------
+
+    suspend fun planAgentRequest(
+        requestId: String,
+        query: String,
+        attachedEnvelopeIds: List<String> = emptyList(),
+        maxEvidence: Int = 8,
+        allowModelAssist: Boolean = false
+    ): AgentPlanParcel? = null
 }

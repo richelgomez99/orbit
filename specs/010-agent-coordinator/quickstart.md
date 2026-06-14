@@ -38,6 +38,7 @@ git diff --check
 - PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 - PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
 - PASS: `git diff --check`
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.DiaryViewModelTest" --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
 
 ## Known Deferred Checks
 

@@ -12,6 +12,7 @@ import com.orbit.app.action.ipc.IActionExecutor
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ClusterMemberRef
 import com.orbit.app.data.ipc.ActionDraftParcel
+import com.orbit.app.data.ipc.AgentPlanParcel
 import com.orbit.app.data.ipc.ActionProposalParcel
 import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.ipc.ClusterCardParcel
@@ -384,6 +385,25 @@ class BinderDiaryRepository(
         val repo = connect()
         return withContext(Dispatchers.IO) {
             repo.rejectMemoryCandidate(candidateId, reason)
+        }
+    }
+
+    override suspend fun planAgentRequest(
+        requestId: String,
+        query: String,
+        attachedEnvelopeIds: List<String>,
+        maxEvidence: Int,
+        allowModelAssist: Boolean
+    ): AgentPlanParcel {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.planAgentRequest(
+                requestId,
+                query,
+                attachedEnvelopeIds.toTypedArray(),
+                maxEvidence,
+                allowModelAssist
+            )
         }
     }
 }
