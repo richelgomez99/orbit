@@ -18,11 +18,11 @@
 
 ## Phase 3: Manual Compose Repository Seam
 
-- [ ] **T011-007** [P] Add manual compose result/domain models under `app/src/main/java/com/orbit/app/diary/`.
-- [ ] **T011-008** Add `DiaryRepository`/`BinderDiaryRepository` method for manual text compose using existing seal/Binder path.
-- [ ] **T011-009** Add tests proving blank manual body blocks before repository calls.
-- [ ] **T011-010** Add tests proving save body first, then attach optional context note.
-- [ ] **T011-011** Add duplicate manual compose test using existing `SealResultParcel.alreadySaved` behavior.
+- [x] **T011-007** [P] Add manual compose result/domain models under `app/src/main/java/com/orbit/app/diary/`.
+- [x] **T011-008** Add `DiaryRepository`/`BinderDiaryRepository` method for manual text compose using existing seal/Binder path.
+- [x] **T011-009** Add tests proving blank manual body blocks before repository calls.
+- [x] **T011-010** Add tests proving save body first, then attach optional context note.
+- [x] **T011-011** Add duplicate manual compose test using existing `SealResultParcel.alreadySaved` behavior.
 
 ## Phase 4: Manual Compose UI
 

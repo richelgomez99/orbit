@@ -205,6 +205,31 @@ class BinderDiaryRepository(
         return withContext(Dispatchers.IO) { repo.createOrUpdateLatestNote(envelopeId, text) }
     }
 
+    override suspend fun createManualTextCapture(
+        bodyText: String,
+        contextText: String?,
+        dayLocal: String,
+        intentName: String?
+    ): ManualComposeResult {
+        val repo = connect()
+        val saver = ManualComposeSaver(
+            sealWithResult = { draft, state -> repo.sealWithResult(draft, state) },
+            createOrUpdateLatestNote = { envelopeId, text ->
+                repo.createOrUpdateLatestNote(envelopeId, text)
+            },
+        )
+        return withContext(Dispatchers.IO) {
+            saver.save(
+                ManualComposeDraft(
+                    bodyText = bodyText,
+                    contextText = contextText,
+                    dayLocal = dayLocal,
+                    intentName = intentName,
+                )
+            )
+        }
+    }
+
     override suspend fun distinctDayLocalsWithContent(limit: Int, offset: Int): List<String> {
         val repo = connect()
         return withContext(Dispatchers.IO) {

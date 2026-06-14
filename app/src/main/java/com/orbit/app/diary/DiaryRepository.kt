@@ -51,6 +51,14 @@ interface DiaryRepository {
     /** Spec 017 — create or edit the latest note attached to an envelope. */
     suspend fun createOrUpdateLatestNote(envelopeId: String, text: String): Boolean = false
 
+    /** Spec 011 — deliberate manual text capture through the normal seal path. */
+    suspend fun createManualTextCapture(
+        bodyText: String,
+        contextText: String?,
+        dayLocal: String,
+        intentName: String? = null,
+    ): ManualComposeResult = ManualComposeResult.Blocked("manual_compose_unavailable")
+
     /**
      * T056 — paginated list of ISO local dates (newest first) that have
      * at least one non-archived, non-deleted envelope. Backs the Diary's

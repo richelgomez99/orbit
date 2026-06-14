@@ -43,6 +43,10 @@ git diff --check
 - Created Spec Kit artifacts for Spec 011 after closing Spec 010.
 - PASS: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 - Implemented post-capture `Add context` for new silent/undo capture states using the existing note-entry callback. Android test sources cover that the context action targets the saved envelope and does not dismiss the current undo/silent state.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.ManualComposeSaverTest" :app:compileDebugKotlin`
+- PASS: `./gradlew :app:compileDebugAndroidTestKotlin`
+- Implemented manual compose repository seam for current-day text capture through `sealWithResult`; optional context attaches only after CREATED results. Exact duplicates return `AlreadySaved` and do not auto-attach context to the existing envelope.
+- Selected-day backfill still requires a repository/AIDL extension because the existing seal API computes `dayLocal` from repository wall-clock time.
 
 ## Known Deferred Checks
 

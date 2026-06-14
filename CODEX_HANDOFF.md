@@ -47,12 +47,21 @@ Spec 011 implemented so far:
 - Existing `OrbitOverlayService.openExistingEnvelope(..., startNote = true)` remains the service-side path into `EnvelopeDetailActivity`.
 - Android test source coverage in `OverlayDuplicateFeedbackTest` proves new-capture context targets the saved envelope and does not dismiss the current post-capture state.
 - Validation passed: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
+- Added manual compose repository seam:
+  - `ManualComposeDraft`, `ManualComposeResult`, and `ManualComposeSaver`.
+  - `DiaryRepository.createManualTextCapture(...)` default seam.
+  - `BinderDiaryRepository.createManualTextCapture(...)` calls existing `IEnvelopeRepository.sealWithResult(...)`, then attaches optional context with `createOrUpdateLatestNote(...)` only after CREATED.
+  - Duplicate manual compose returns `AlreadySaved` and does not auto-attach context to the existing envelope.
+  - Selected-day backfill is not implemented yet because existing `sealWithResult` computes `dayLocal` from repository wall-clock time; it needs an AIDL/repository extension if pulled into this branch.
+- Validation passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.diary.ManualComposeSaverTest" :app:compileDebugKotlin`
+  - `./gradlew :app:compileDebugAndroidTestKotlin`
 
 Immediate Spec 011 task order:
 
-1. Commit the post-capture context slice.
-2. Implement manual compose repository seam (T011-007..T011-011).
-3. Implement manual compose ViewModel/UI after the repository seam validates.
+1. Commit the manual compose repository seam.
+2. Implement manual compose ViewModel/UI (T011-012..T011-016).
+3. Decide whether selected-day backfill needs to land in this branch or remain a documented follow-up.
 4. Run focused overlay/diary tests and then the full non-phone gate.
 
 ## Previous Status - 2026-06-13 Spec 010 Repo-Side Complete
