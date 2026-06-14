@@ -11,16 +11,16 @@
 
 ## Phase 2: Receipt Domain And Schema
 
-- [ ] **T012-003** [P] Add resolution domain enums and verdict model under `app/src/main/java/com/orbit/app/resolution/`.
-- [ ] **T012-004** [P] Add `ResolutionReceiptEntity` and `ResolutionReceiptDao`.
-- [ ] **T012-005** Add Room v11 migration for `resolution_receipt` and export schema.
-- [ ] **T012-006** Add migration/schema tests for v10 to v11.
-- [ ] **T012-007** Add validation tests that receipts reject blank targets, invalid snooze windows, oversized metadata, and banned keys.
+- [x] **T012-003** [P] Add resolution domain enums and verdict model under `app/src/main/java/com/orbit/app/resolution/`.
+- [x] **T012-004** [P] Add `ResolutionReceiptEntity` and `ResolutionReceiptDao`.
+- [x] **T012-005** Add Room v11 migration for `resolution_receipt` and export schema.
+- [x] **T012-006** Add migration/schema tests for v10 to v11.
+- [x] **T012-007** Add validation tests that receipts reject blank targets, invalid snooze windows, oversized metadata, and banned keys.
 
 ## Phase 3: Repository Semantics
 
-- [ ] **T012-008** Add `ResolutionRepository` helper for validated receipt writes and verdict queries.
-- [ ] **T012-009** Add `ResolutionVerdictResolver` tests for active, dismissed, not-now, snoozed, done, reopened, invalidated, stale, and source-deleted precedence.
+- [x] **T012-008** Add `ResolutionRepository` helper for validated receipt writes and verdict queries.
+- [x] **T012-009** Add `ResolutionVerdictResolver` tests for active, dismissed, not-now, snoozed, done, reopened, invalidated, stale, and source-deleted precedence.
 - [ ] **T012-010** Add Binder parcels/methods only if UI or cross-process callers need direct receipt/verdict access.
 
 ## Phase 4: Duplicate Hooks
@@ -46,7 +46,7 @@
 ## Phase 7: Validation And Closeout
 
 - [ ] **T012-022** Run focused resolution/duplicate/action/todo tests.
-- [ ] **T012-023** Run compile gates: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
+- [x] **T012-023** Run compile gates: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
 - [ ] **T012-024** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [ ] **T012-025** Run `git diff --check`.
 - [ ] **T012-026** Update `quickstart.md`, roadmap, and handoff with validation evidence.

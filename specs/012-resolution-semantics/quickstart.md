@@ -45,6 +45,8 @@ git diff --check
 2026-06-13:
 
 - Created fresh Spec Kit artifacts for Spec 012 after repo-side Spec 011 validation.
+- Added pure resolution domain models, `ResolutionVerdictResolver`, Room v11 `resolution_receipt` schema/DAO, v10-to-v11 migration test source, and `ResolutionRepository` validation/write/query helper.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.resolution.ResolutionVerdictResolverTest" --tests "com.orbit.app.data.ResolutionRepositoryTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 - Physical phone/manual validation is deferred until device availability.
 
 ## Known Deferred Checks

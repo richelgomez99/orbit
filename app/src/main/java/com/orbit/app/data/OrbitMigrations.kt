@@ -683,3 +683,52 @@ internal val MIGRATION_9_10: Migration = object : Migration(9, 10) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_graph_feedback_sourceType_sourceId ON graph_feedback(sourceType, sourceId)")
     }
 }
+
+/**
+ * v11 — spec 012 resolution semantics.
+ *
+ * Adds a compact local receipt table for durable semantic state such as
+ * duplicate recapture, dismissed, not-now, snoozed, done, reopened, stale,
+ * invalidated, source-deleted, and conflict. The table intentionally avoids
+ * FK constraints to preserve history even when the referenced target is later
+ * invalidated or hard-deleted.
+ */
+internal val MIGRATION_10_11: Migration = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS resolution_receipt (
+                id TEXT NOT NULL PRIMARY KEY,
+                targetType TEXT NOT NULL,
+                targetId TEXT NOT NULL,
+                envelopeId TEXT,
+                relatedType TEXT,
+                relatedId TEXT,
+                kind TEXT NOT NULL,
+                actor TEXT NOT NULL,
+                reason TEXT,
+                occurredAtMillis INTEGER NOT NULL,
+                effectiveUntilMillis INTEGER,
+                invalidatesReceiptId TEXT,
+                metadataJson TEXT
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_resolution_receipt_targetType_targetId_occurredAtMillis " +
+                "ON resolution_receipt(targetType, targetId, occurredAtMillis)"
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_resolution_receipt_envelopeId_occurredAtMillis " +
+                "ON resolution_receipt(envelopeId, occurredAtMillis)"
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_resolution_receipt_kind_occurredAtMillis " +
+                "ON resolution_receipt(kind, occurredAtMillis)"
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_resolution_receipt_effectiveUntilMillis " +
+                "ON resolution_receipt(effectiveUntilMillis)"
+        )
+    }
+}

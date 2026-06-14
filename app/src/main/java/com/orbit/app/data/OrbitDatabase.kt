@@ -22,6 +22,7 @@ import com.orbit.app.data.dao.MemoryCandidateDao
 import com.orbit.app.data.dao.MemoryCandidateSupportDao
 import com.orbit.app.data.dao.PromotedMemoryDao
 import com.orbit.app.data.dao.PromotedMemorySupportDao
+import com.orbit.app.data.dao.ResolutionReceiptDao
 import com.orbit.app.data.dao.SkillUsageDao
 import com.orbit.app.data.entity.ActionExecutionEntity
 import com.orbit.app.data.entity.ActionProposalEntity
@@ -47,6 +48,7 @@ import com.orbit.app.data.entity.MemoryCandidateEntity
 import com.orbit.app.data.entity.MemoryCandidateSupportEntity
 import com.orbit.app.data.entity.PromotedMemoryEntity
 import com.orbit.app.data.entity.PromotedMemorySupportEntity
+import com.orbit.app.data.entity.ResolutionReceiptEntity
 import com.orbit.app.data.entity.SkillUsageEntity
 import com.orbit.app.data.security.KeystoreKeyProvider
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
@@ -82,9 +84,11 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         GraphFactEntity::class,
         GraphRelationshipEntity::class,
         GraphProvenanceEntity::class,
-        GraphFeedbackEntity::class
+        GraphFeedbackEntity::class,
+        // 012 — Durable resolution semantics
+        ResolutionReceiptEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 abstract class OrbitDatabase : RoomDatabase() {
@@ -118,6 +122,9 @@ abstract class OrbitDatabase : RoomDatabase() {
 
     // 009 — Local-first knowledge graph backend POC
     abstract fun graphDao(): GraphDao
+
+    // 012 — Resolution semantics
+    abstract fun resolutionReceiptDao(): ResolutionReceiptDao
 
     companion object {
         private const val DB_NAME = "orbit.db"
@@ -167,7 +174,8 @@ abstract class OrbitDatabase : RoomDatabase() {
                     MIGRATION_6_7,
                     MIGRATION_7_8,
                     MIGRATION_8_9,
-                    MIGRATION_9_10
+                    MIGRATION_9_10,
+                    MIGRATION_10_11
                 )
                 .build()
         }
