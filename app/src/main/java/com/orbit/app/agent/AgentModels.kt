@@ -67,7 +67,7 @@ data class AgentEvidenceRef(
 
 data class AgentQuestion(
     val questionId: String,
-    val prompt: String,
+    val text: String,
     val choices: List<AgentChoice>,
     val evidenceIds: List<String>,
 )
@@ -76,6 +76,13 @@ data class AgentChoice(
     val choiceId: String,
     val label: String,
     val evidenceIds: List<String>,
+)
+
+data class AgentActionCapability(
+    val functionId: String,
+    val displayName: String,
+    val verbs: List<String>,
+    val requiresApproval: Boolean = true,
 )
 
 data class AgentTraceReceipt(

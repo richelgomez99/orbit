@@ -17,10 +17,10 @@
 
 ## Phase 3: Deterministic Local Planner
 
-- [ ] **T010-006** [US1] Implement `DeterministicAgentPlanner` for cited plan/refusal/question outcomes.
-- [ ] **T010-007** [US1] Add evidence validation that rejects uncited plan steps.
-- [ ] **T010-008** [US2] Add ambiguity handling with cited choice/gap question output.
-- [ ] **T010-009** [US3] Add local-only/cloud-disabled tests proving no model/gateway dependency.
+- [x] **T010-006** [US1] Implement `DeterministicAgentPlanner` for cited plan/refusal/question outcomes.
+- [x] **T010-007** [US1] Add evidence validation that rejects uncited plan steps.
+- [x] **T010-008** [US2] Add ambiguity handling with cited choice/gap question output.
+- [x] **T010-009** [US3] Add local-only/cloud-disabled tests proving no model/gateway dependency.
 
 ## Phase 4: Action And KG Integration
 

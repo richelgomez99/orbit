@@ -59,7 +59,7 @@ Coordinator output.
 | Field | Type | Notes |
 | --- | --- | --- |
 | `questionId` | String | Stable within plan. |
-| `prompt` | String | One focused question. |
+| `text` | String | One focused question. Avoid naming this `prompt` so local UI text is not confused with model/provider prompts. |
 | `choices` | List<AgentChoice> | Empty for free-text; max 5 for choices. |
 | `evidenceIds` | List<String> | Why this question is being asked. |
 

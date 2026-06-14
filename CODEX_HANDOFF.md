@@ -44,16 +44,23 @@ Spec 010 implemented so far:
   - evidence-backed steps must cite known evidence;
   - bounded no-raw payload field names are rejected;
   - trace receipts carry bounded metadata only.
+- Added deterministic local planner:
+  - `app/src/main/java/com/orbit/app/agent/DeterministicAgentPlanner.kt`
+  - `app/src/test/java/com/orbit/app/agent/DeterministicAgentPlannerTest.kt`
+- Deterministic planner currently proves:
+  - cited evidence plus matching action capability returns an approval-required plan;
+  - ambiguous evidence returns a gap question with cited choices;
+  - missing evidence refuses without using a model;
+  - explicit attached envelopes avoid ambiguity.
 - Focused validation passed:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.agent.*" :app:compileDebugKotlin`
 
 Immediate Spec 010 task order:
 
-1. Commit the Spec 010 agent model/validation slice.
-2. Implement deterministic local planner for cited plan/refusal/gap-question outcomes.
-3. Integrate action/KG evidence as approval-required plan steps.
-4. Add compact Binder projection and Orbit tab plan surface.
-5. Add optional model-assisted planning only after deterministic surface tests pass.
+1. Commit the deterministic planner slice.
+2. Integrate action/KG evidence as approval-required plan steps.
+3. Add compact Binder projection and Orbit tab plan surface.
+4. Add optional model-assisted planning only after deterministic surface tests pass.
 
 ## Previous Status - 2026-06-12 Spec 009 Repo-Side Complete
 
