@@ -28,4 +28,4 @@
 - [x] **T020-011** Run full non-phone gate.
 - [x] **T020-012** Run `git diff --check`.
 - [x] **T020-013** Update quickstart, roadmap, and handoff with validation evidence.
-- [ ] **T020-014** Commit without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T020-014** Commit without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
