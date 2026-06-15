@@ -2,7 +2,48 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-14 Spec 012 Active
+## Current Status - 2026-06-14 Spec 018 Active
+
+Authoritative branch:
+
+- `feature/018-capture-context-affordance-20260614`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 012 branch `feature/012-resolution-semantics-20260613`.
+- Latest Spec 012 commits in stack:
+  - `23976b0 docs(spec-012): add resolution semantics artifacts`
+  - `4e0770c feat(spec-012): add resolution receipt schema`
+  - `55e056c feat(spec-012): record resolution lifecycle receipts`
+  - `239bd7a feat(spec-012): add active intent resolution controls`
+  - `b114112 docs(spec-012): close active intent controls checklist`
+
+Active Spec 018 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/018-capture-context-affordance/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/capture-context-affordance-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 018 is a narrow reconciliation branch for the May 22 "Clarify" capture affordance slot.
+- Spec 011 already shipped post-save `Add context` and manual compose using `EnvelopeNote`; Spec 018 must preserve that storage decision.
+- Current implementation gap: `SilentWrapPill`, `UndoPill`, and `AlreadySaved` have context actions, but they call through `OverlayViewModel.onNewCaptureAddContext` / `onAlreadySavedAddNote` into `OrbitOverlayService.openExistingEnvelope(..., startNote = true)`, which opens full capture detail note entry.
+- Spec 018 should add a focused post-save context surface, or explicitly close as absorbed/no-op if implementation risk is not worth it.
+- True pre-seal transparent Clarify is deferred unless evidence changes; do not add a pre-seal context model, new table, network call, or LLM/model dependency in this branch.
+- Context writes must reuse `createOrUpdateLatestNote(envelopeId, text)` and preserve `:capture`/`:ui`/`:ml` process boundaries.
+
+Immediate Spec 018 task order:
+
+1. Commit the Spec 018 artifacts.
+2. Add a small context-save seam with blank/failure/no-raw-payload tests.
+3. Wire focused post-capture context UI for new captures and duplicates.
+4. Verify detail/search downstream behavior still comes from the existing note path.
+5. Run focused and full non-phone gates.
+
+## Previous Status - 2026-06-14 Spec 012 Repo-Side Complete
 
 Authoritative branch:
 

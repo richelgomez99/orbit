@@ -56,6 +56,8 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Spec 011 repo-side progress: post-capture `Add context`, manual compose repository seam, Diary manual compose dialog, Library `Context` citation mapping, and downstream note-context verification are implemented. Full non-phone gate passed on 2026-06-13. Physical phone validation is still pending.
 - Queue row 8 (`012-resolution-semantics`) is active on branch `feature/012-resolution-semantics-20260613`.
 - Spec 012 artifacts were regenerated on 2026-06-13. Repo-side progress now includes Room v11 local `resolution_receipt` storage, compact receipt validation, duplicate recapture receipts, Basic-understanding duplicate receipts, action dismiss/invalidation receipts, derived-list done/reopened receipts, Active Intent resolution receipts, verdict-based Follow-up filtering, and receipt-only Not now/Tomorrow snooze controls. Focused and full non-phone gates passed on 2026-06-14; connected/manual validation remains deferred until device availability.
+- Queue row 9 (`018-capture-context-affordance`) is active on branch `feature/018-capture-context-affordance-20260614`.
+- Spec 018 artifacts were regenerated on 2026-06-14 after Spec 012 repo-side completion. Scope is intentionally narrow: reconcile the May 22 Clarify vision slot by replacing the current full-detail post-save context jump with a focused post-save context surface, while preserving Spec 011 `EnvelopeNote` storage, existing Binder note writes, duplicate targeting, and local-first/no-model behavior. True pre-seal transparent Clarify remains deferred unless implementation research proves it can be added without destabilizing overlay capture.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 
