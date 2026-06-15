@@ -62,6 +62,8 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Spec 019 artifacts were regenerated on 2026-06-14. Current app already has Diary/Library/Orbit tabs; this branch hardens route boundaries rather than replacing navigation. Implementation adds Library transient state reset on tab exit, preserves existing Ask reset on Orbit exit, and adds tests proving the tab-exit reset contract. Focused and full non-phone gates passed on 2026-06-14.
 - Queue row 11 (`020-curious-agent-profiling`) is active on branch `feature/020-curious-agent-profiling-20260614`.
 - Spec 020 artifacts were regenerated on 2026-06-14. Scope is conservative: evidence-backed curious question candidates before profile facts, deterministic local generator first, no cloud/model persona inference, no silent profile promotion, and no proactive notifications. The branch now adds pure curious-agent domain models and a deterministic question generator with evidence thresholds, output caps, source refs, dismissed suppression, and capped labels. Persistence/UI remain deferred until repository-backed evidence integration. Focused and full non-phone gates passed on 2026-06-14.
+- Queue row 12 (`021-generative-ui-runtime`) is active on branch `feature/021-generative-ui-runtime-20260614`.
+- Spec 021 artifacts were regenerated on 2026-06-14. Scope is a safe internal typed runtime over current `AgentPlanParcel` outputs: document/component model, Compose renderer, and deterministic text fallback. External A2UI dependency, provider JSON parsing, durable chat sessions, direct action execution, and BYOM/local-model-manager work remain deferred.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

@@ -2,7 +2,49 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-14 Spec 020 Active
+## Current Status - 2026-06-14 Spec 021 Active
+
+Authoritative branch:
+
+- `feature/021-generative-ui-runtime-20260614`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 020 branch `feature/020-curious-agent-profiling-20260614`.
+- Latest Spec 020 commits in stack:
+  - `319ce99 docs(spec-020): add curious agent profiling artifacts`
+  - `f164f3e feat(spec-020): add curious question generator`
+  - `cfe1fae docs(spec-020): close curious generator checklist`
+
+Active Spec 021 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/021-generative-ui-runtime/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/generative-ui-runtime-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 021 is a safe internal typed-renderer foundation over existing compact `AgentPlanParcel` outputs.
+- Initial implementation should add:
+  - typed Orbit agent UI document/component models;
+  - an `AgentPlanParcel` adapter with display caps and evidence preservation;
+  - a deterministic plain-text fallback renderer;
+  - a Compose renderer for known components;
+  - wiring from `OrbitCleanupScreen` agent-plan result to the typed renderer.
+- Explicitly deferred: external A2UI dependency, raw provider JSON parsing, LLM-defined styling, durable chat/workbench sessions, direct action execution, BYOM/local-model-manager work, AppFunctions/Spark interop, and any new Room/Binder contract.
+- Trust boundary: renderer accepts app-defined typed components only; actions remain approval affordances through existing Spec 006 paths; evidence opens through existing capture handlers.
+
+Immediate Spec 021 task order:
+
+1. Commit the Spec 021 artifacts.
+2. Implement the typed model/adapter/fallback with focused JVM tests.
+3. Add the Compose renderer and wire the current agent-plan result.
+4. Run focused and full non-phone gates.
+5. Update quickstart, roadmap, and handoff with validation evidence.
+
+## Previous Status - 2026-06-14 Spec 020 Repo-Side Complete
 
 Authoritative branch:
 
@@ -43,12 +85,6 @@ Active Spec 020 truth:
   - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.curious.*" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
   - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
   - `git diff --check`
-
-Immediate Spec 020 task order:
-
-1. Commit the pure generator implementation and documentation closeout.
-2. Mark T020-014 complete after commit.
-3. If continuing the stack, rerun the Spec Kit loop for Spec 021 before implementation; do not treat A2UI/generative UI as already designed or shipped.
 
 ## Previous Status - 2026-06-14 Spec 019 Repo-Side Complete
 
