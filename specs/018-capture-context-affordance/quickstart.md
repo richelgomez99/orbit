@@ -46,6 +46,12 @@ git diff --check
 
 - Created Spec 018 artifacts after Spec 012 repo-side completion.
 - Current implementation gap: Spec 011 has post-save `Add context` that opens full detail note entry; this branch scopes a focused post-save context surface and keeps true pre-seal Clarify deferred unless evidence changes.
+- Added focused post-capture context entry state/UI for new and duplicate captures. Saves route through `IEnvelopeRepository.createOrUpdateLatestNote`; no new AIDL, Room table, network call, or model path was added.
+- Focused overlay state tests cover blank rejection before Binder calls, trimmed successful save, duplicate existing-envelope targeting, failure retry copy, no raw context echo in failure copy, cancel, and full-detail fallback.
+- Existing downstream note-context tests still pass for manual compose context, Library `Context` evidence, and compact memory index context.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.overlay.*" --tests "com.orbit.app.diary.ManualComposeSaverTest" --tests "com.orbit.app.library.LocalEnvelopeMemoryResultMapperTest" --tests "com.orbit.app.memory.CompactMemoryIndexBuilderTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS: `git diff --check`
 
 ## Known Deferred Checks
 

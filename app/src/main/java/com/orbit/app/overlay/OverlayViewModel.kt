@@ -117,6 +117,9 @@ class OverlayViewModel : ViewModel() {
     /** Callback set by service to open the existing envelope in note-entry context. */
     var onAddNoteToExistingEnvelope: ((String) -> Unit)? = null
 
+    /** Callback set by service to save focused post-capture context through :ml. */
+    var onSaveContextToEnvelope: (suspend (String, String) -> Boolean)? = null
+
     /** IPC seam; service installs a real impl on bind, null when not bound. */
     var sealOrchestrator: SealOrchestrator? = null
 
@@ -416,12 +419,69 @@ class OverlayViewModel : ViewModel() {
     }
 
     fun onAlreadySavedAddNote(envelopeId: String) {
-        _postCaptureUi.value = PostCaptureUi.None
-        onAddNoteToExistingEnvelope?.invoke(envelopeId)
+        _postCaptureUi.value = PostCaptureUi.ContextEntry(
+            targetEnvelopeId = envelopeId,
+            origin = ContextOrigin.DUPLICATE_CAPTURE,
+            returnUi = _postCaptureUi.value
+        )
     }
 
     fun onNewCaptureAddContext(envelopeId: String) {
-        onAddNoteToExistingEnvelope?.invoke(envelopeId)
+        _postCaptureUi.value = PostCaptureUi.ContextEntry(
+            targetEnvelopeId = envelopeId,
+            origin = ContextOrigin.NEW_CAPTURE,
+            returnUi = _postCaptureUi.value
+        )
+    }
+
+    fun onCaptureContextTextChanged(text: String) {
+        val current = _postCaptureUi.value as? PostCaptureUi.ContextEntry ?: return
+        _postCaptureUi.value = current.copy(text = text, errorMessage = null)
+    }
+
+    fun onCaptureContextCancel() {
+        val current = _postCaptureUi.value as? PostCaptureUi.ContextEntry ?: return
+        _postCaptureUi.value = current.returnUi ?: PostCaptureUi.None
+    }
+
+    fun onCaptureContextOpenDetail() {
+        val current = _postCaptureUi.value as? PostCaptureUi.ContextEntry ?: return
+        _postCaptureUi.value = PostCaptureUi.None
+        onAddNoteToExistingEnvelope?.invoke(current.targetEnvelopeId)
+    }
+
+    fun onCaptureContextSave() {
+        val current = _postCaptureUi.value as? PostCaptureUi.ContextEntry ?: return
+        val clean = current.text.trim()
+        if (clean.isBlank()) {
+            _postCaptureUi.value = current.copy(errorMessage = "Add a short reason, or cancel.")
+            return
+        }
+        val saver = onSaveContextToEnvelope
+        if (saver == null) {
+            _postCaptureUi.value = current.copy(
+                errorMessage = CONTEXT_SAVE_UNAVAILABLE
+            )
+            return
+        }
+        _postCaptureUi.value = current.copy(isSaving = true, errorMessage = null, text = clean)
+        postCaptureJob?.cancel()
+        postCaptureJob = viewModelScope.launch {
+            val ok = runCatching { saver(current.targetEnvelopeId, clean) }
+                .getOrElse {
+                    Log.w(TAG, "context save failed", it)
+                    false
+                }
+            _postCaptureUi.value = if (ok) {
+                PostCaptureUi.ContextSavedConfirmation
+            } else {
+                current.copy(
+                    text = clean,
+                    isSaving = false,
+                    errorMessage = CONTEXT_SAVE_FAILED,
+                )
+            }
+        }
     }
 
     fun onAlreadySavedReclassify(envelopeId: String) {
@@ -485,3 +545,8 @@ class OverlayViewModel : ViewModel() {
         _bubbleState.value = _bubbleState.value.copy(x = x, y = y, edgeSide = edgeSide)
     }
 }
+
+private const val CONTEXT_SAVE_UNAVAILABLE =
+    "Orbit saved this capture, but context is unavailable right now."
+private const val CONTEXT_SAVE_FAILED =
+    "Orbit saved this capture, but could not attach context yet. Try again."

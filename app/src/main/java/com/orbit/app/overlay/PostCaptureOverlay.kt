@@ -27,7 +27,11 @@ fun PostCaptureOverlay(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.postCaptureUi.collectAsState()
-    val layoutModifier = if (state is PostCaptureUi.ChipRow || state is PostCaptureUi.ReclassifyChipRow) {
+    val layoutModifier = if (
+        state is PostCaptureUi.ChipRow ||
+        state is PostCaptureUi.ReclassifyChipRow ||
+        state is PostCaptureUi.ContextEntry
+    ) {
         modifier.fillMaxWidth()
     } else {
         modifier.wrapContentSize()
@@ -97,6 +101,16 @@ fun PostCaptureOverlay(
                 onReclassify = { viewModel.onAlreadySavedReclassify(ui.existingEnvelopeId) },
                 onOpen = { viewModel.onAlreadySavedOpen(ui.existingEnvelopeId) },
                 onExpire = viewModel::onAlreadySavedExpired
+            )
+            is PostCaptureUi.ContextEntry -> CaptureContextPanel(
+                state = ui,
+                onTextChange = viewModel::onCaptureContextTextChanged,
+                onSave = viewModel::onCaptureContextSave,
+                onCancel = viewModel::onCaptureContextCancel,
+                onOpenDetail = viewModel::onCaptureContextOpenDetail,
+            )
+            PostCaptureUi.ContextSavedConfirmation -> ContextSavedConfirmationPill(
+                onExpire = viewModel::onConfirmationExpired
             )
         }
     }

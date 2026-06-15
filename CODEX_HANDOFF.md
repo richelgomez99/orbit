@@ -30,18 +30,25 @@ Active Spec 018 truth:
   - `quickstart.md`
 - Spec 018 is a narrow reconciliation branch for the May 22 "Clarify" capture affordance slot.
 - Spec 011 already shipped post-save `Add context` and manual compose using `EnvelopeNote`; Spec 018 must preserve that storage decision.
-- Current implementation gap: `SilentWrapPill`, `UndoPill`, and `AlreadySaved` have context actions, but they call through `OverlayViewModel.onNewCaptureAddContext` / `onAlreadySavedAddNote` into `OrbitOverlayService.openExistingEnvelope(..., startNote = true)`, which opens full capture detail note entry.
-- Spec 018 should add a focused post-save context surface, or explicitly close as absorbed/no-op if implementation risk is not worth it.
+- Implemented so far:
+  - Added `PostCaptureUi.ContextEntry`, `ContextOrigin`, and `ContextSavedConfirmation`.
+  - `OverlayViewModel` now opens focused context entry for new captures and duplicate `AlreadySaved` states, validates blank text locally, saves through a suspend callback, keeps retry state on failure, supports cancel, and keeps full-detail note entry as fallback.
+  - Added `CaptureContextPanel` and `ContextSavedConfirmationPill` under `app/src/main/java/com/orbit/app/overlay/`.
+  - `PostCaptureOverlay` renders focused context entry full-width while compact pills still wrap.
+  - `OrbitOverlayService` saves through existing `IEnvelopeRepository.createOrUpdateLatestNote(envelopeId, text)`, with no new AIDL or Room schema. The post-capture window becomes focusable only for `ContextEntry`; compact states remain `FLAG_NOT_FOCUSABLE` and outside-tap-pass-through.
+  - Added `CaptureContextViewModelTest` and updated `PostCaptureOverlayBoundsRegressionTest`.
 - True pre-seal transparent Clarify is deferred unless evidence changes; do not add a pre-seal context model, new table, network call, or LLM/model dependency in this branch.
 - Context writes must reuse `createOrUpdateLatestNote(envelopeId, text)` and preserve `:capture`/`:ui`/`:ml` process boundaries.
+- Validation passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.overlay.*" --tests "com.orbit.app.diary.ManualComposeSaverTest" --tests "com.orbit.app.library.LocalEnvelopeMemoryResultMapperTest" --tests "com.orbit.app.memory.CompactMemoryIndexBuilderTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
 
 Immediate Spec 018 task order:
 
-1. Commit the Spec 018 artifacts.
-2. Add a small context-save seam with blank/failure/no-raw-payload tests.
-3. Wire focused post-capture context UI for new captures and duplicates.
-4. Verify detail/search downstream behavior still comes from the existing note path.
-5. Run focused and full non-phone gates.
+1. Commit the focused context implementation without `screenshots/`, `dist/`, APKs, `.gbrain-source`, or secrets.
+2. Mark final commit/checklist closeout if needed.
+3. Phone/manual validation is deferred while the device is unavailable.
 
 ## Previous Status - 2026-06-14 Spec 012 Repo-Side Complete
 

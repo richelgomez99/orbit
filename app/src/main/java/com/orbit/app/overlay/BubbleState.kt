@@ -94,5 +94,20 @@ sealed class PostCaptureUi {
         val matchedBy: String,
         val startedAtMillis: Long
     ) : PostCaptureUi()
+
+    data class ContextEntry(
+        val targetEnvelopeId: String,
+        val origin: ContextOrigin,
+        val text: String = "",
+        val isSaving: Boolean = false,
+        val errorMessage: String? = null,
+        val returnUi: PostCaptureUi? = null
+    ) : PostCaptureUi()
+
+    data object ContextSavedConfirmation : PostCaptureUi()
 }
 
+enum class ContextOrigin {
+    NEW_CAPTURE,
+    DUPLICATE_CAPTURE
+}

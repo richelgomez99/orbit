@@ -25,9 +25,10 @@ class PostCaptureOverlayBoundsRegressionTest {
         val src = resolve("src/main/java/com/orbit/app/overlay/PostCaptureOverlay.kt").readText()
 
         assertTrue(
-            "Chip rows must keep the full-width target row.",
+            "Chip rows and focused context entry must keep the full-width target row.",
             src.contains("state is PostCaptureUi.ChipRow") &&
                 src.contains("state is PostCaptureUi.ReclassifyChipRow") &&
+                src.contains("state is PostCaptureUi.ContextEntry") &&
                 src.contains("modifier.fillMaxWidth()")
         )
         assertTrue(
@@ -45,10 +46,16 @@ class PostCaptureOverlayBoundsRegressionTest {
             src.contains("WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL")
         )
         assertTrue(
-            "Chip rows must use MATCH_PARENT while compact post-capture states use WRAP_CONTENT.",
+            "Chip rows and focused context entry must use MATCH_PARENT while compact post-capture states use WRAP_CONTENT.",
             src.contains("is PostCaptureUi.ChipRow -> WindowManager.LayoutParams.MATCH_PARENT") &&
                 src.contains("is PostCaptureUi.ReclassifyChipRow -> WindowManager.LayoutParams.MATCH_PARENT") &&
+                src.contains("is PostCaptureUi.ContextEntry -> WindowManager.LayoutParams.MATCH_PARENT") &&
                 src.contains("else -> WindowManager.LayoutParams.WRAP_CONTENT")
+        )
+        assertTrue(
+            "Focused context entry must be focusable for keyboard input while compact states stay NOT_FOCUSABLE.",
+            src.contains("ui is PostCaptureUi.ContextEntry") &&
+                src.contains("base or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE")
         )
     }
 

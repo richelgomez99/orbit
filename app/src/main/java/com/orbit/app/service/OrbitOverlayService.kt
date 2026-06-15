@@ -347,6 +347,13 @@ class OrbitOverlayService : LifecycleService() {
             openExistingEnvelope(envelopeId, startNote = true)
         }
 
+        vm.onSaveContextToEnvelope = { envelopeId, text ->
+            ensureRepoBound()
+            kotlinx.coroutines.withContext(Dispatchers.IO) {
+                envelopeRepo?.createOrUpdateLatestNote(envelopeId, text) == true
+            }
+        }
+
         lifecycleScope.launch {
             vm.bubbleState.collectLatest { bubbleState ->
                 syncCollapsedOverlayPosition(view, params, bubbleState)
@@ -640,16 +647,12 @@ class OrbitOverlayService : LifecycleService() {
             postCaptureWidthFor(ui),
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            // NOT_FOCUSABLE: keyboards in other apps still work.
-            // NOT_TOUCH_MODAL: taps outside compact pill bounds pass through.
-            // LAYOUT_NO_LIMITS: allowed to extend behind system bars.
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            postCaptureFlagsFor(ui),
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             y = bottomMarginPx
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
         }
 
         try {
@@ -665,10 +668,12 @@ class OrbitOverlayService : LifecycleService() {
         val targetView = postCaptureView ?: return
         val params = postCaptureParams ?: return
         val desiredWidth = postCaptureWidthFor(ui)
-        if (params.width == desiredWidth) return
+        val desiredFlags = postCaptureFlagsFor(ui)
+        if (params.width == desiredWidth && params.flags == desiredFlags) return
 
         params.width = desiredWidth
         params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        params.flags = desiredFlags
         try {
             windowManager.updateViewLayout(targetView, params)
         } catch (e: Exception) {
@@ -679,7 +684,21 @@ class OrbitOverlayService : LifecycleService() {
     private fun postCaptureWidthFor(ui: PostCaptureUi): Int = when (ui) {
         is PostCaptureUi.ChipRow -> WindowManager.LayoutParams.MATCH_PARENT
         is PostCaptureUi.ReclassifyChipRow -> WindowManager.LayoutParams.MATCH_PARENT
+        is PostCaptureUi.ContextEntry -> WindowManager.LayoutParams.MATCH_PARENT
         else -> WindowManager.LayoutParams.WRAP_CONTENT
+    }
+
+    private fun postCaptureFlagsFor(ui: PostCaptureUi): Int {
+        val base = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        return if (ui is PostCaptureUi.ContextEntry) {
+            base
+        } else {
+            // NOT_FOCUSABLE: keyboards in other apps still work for compact states.
+            // NOT_TOUCH_MODAL: taps outside compact pill bounds pass through.
+            // LAYOUT_NO_LIMITS: allowed to extend behind system bars.
+            base or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        }
     }
 
     private fun hidePostCaptureOverlay() {
