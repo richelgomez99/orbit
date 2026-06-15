@@ -50,7 +50,7 @@
 - [x] **T012-024** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] **T012-025** Run `git diff --check`.
 - [x] **T012-026** Update `quickstart.md`, roadmap, and handoff with validation evidence.
-- [ ] **T012-027** Commit Spec 012 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T012-027** Commit Spec 012 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Deferred
 
