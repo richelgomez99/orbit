@@ -44,7 +44,7 @@
 - [x] **T018-021** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
 - [x] **T018-022** Run `git diff --check`.
 - [x] **T018-023** Update `quickstart.md`, roadmap, and handoff with validation evidence.
-- [ ] **T018-024** Commit Spec 018 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T018-024** Commit Spec 018 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Deferred
 
