@@ -61,7 +61,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Queue row 10 (`019-agent-workspace-ia`) is active on branch `feature/019-agent-workspace-ia-20260614`.
 - Spec 019 artifacts were regenerated on 2026-06-14. Current app already has Diary/Library/Orbit tabs; this branch hardens route boundaries rather than replacing navigation. Implementation adds Library transient state reset on tab exit, preserves existing Ask reset on Orbit exit, and adds tests proving the tab-exit reset contract. Focused and full non-phone gates passed on 2026-06-14.
 - Queue row 11 (`020-curious-agent-profiling`) is active on branch `feature/020-curious-agent-profiling-20260614`.
-- Spec 020 artifacts were regenerated on 2026-06-14. Scope is conservative: evidence-backed curious question candidates before profile facts, deterministic local generator first, no cloud/model persona inference, no silent profile promotion, and no proactive notifications.
+- Spec 020 artifacts were regenerated on 2026-06-14. Scope is conservative: evidence-backed curious question candidates before profile facts, deterministic local generator first, no cloud/model persona inference, no silent profile promotion, and no proactive notifications. The branch now adds pure curious-agent domain models and a deterministic question generator with evidence thresholds, output caps, source refs, dismissed suppression, and capped labels. Persistence/UI remain deferred until repository-backed evidence integration. Focused and full non-phone gates passed on 2026-06-14.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

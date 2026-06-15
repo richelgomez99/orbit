@@ -21,3 +21,8 @@ git diff --check
 2026-06-14:
 
 - Created Spec 020 artifacts. Scope is conservative: question candidates before profile facts, deterministic local generator first.
+- Added pure curious-agent domain models and a deterministic local question generator under `app/src/main/java/com/orbit/app/curious/`.
+- The generator enforces minimum evidence threshold, max question cap, source refs, suppressed question ids, and capped source labels. Persistence/UI remains deferred until the pure model is integrated with repository-backed evidence.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.curious.*" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS: `git diff --check`

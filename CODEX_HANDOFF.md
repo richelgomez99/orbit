@@ -26,23 +26,29 @@ Active Spec 020 truth:
   - `plan.md`
   - `tasks.md`
   - `quickstart.md`
-- Spec 020 must be conservative: question candidates before profile facts.
+- Spec 020 is conservative: question candidates before profile facts.
 - No silent profile fact promotion, no cloud/model persona inference, no push/proactive interruption, no AppFunctions/Spark interop, no A2UI.
-- First implementation should add pure `com.orbit.app.curious` domain models and deterministic question generator with:
+- Implementation now adds pure `com.orbit.app.curious` domain models and deterministic question generator with:
   - minimum evidence threshold;
   - max output cap;
   - source refs on every question;
   - dismissed/answered suppression;
   - no raw text/secrets in question display payloads.
-- Persistence/UI should be decided only after the pure generator and tests exist; if persistence is added, it must go through Room/Binder in `:ml`.
+- Files added:
+  - `app/src/main/java/com/orbit/app/curious/CuriousModels.kt`
+  - `app/src/main/java/com/orbit/app/curious/CuriousQuestionGenerator.kt`
+  - `app/src/test/java/com/orbit/app/curious/CuriousQuestionGeneratorTest.kt`
+- Persistence/UI are explicitly deferred until repository-backed evidence integration exists. No Room, Binder, Compose, push, or background notification surface was added in this slice.
+- Validation passed on 2026-06-14:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.curious.*" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
 
 Immediate Spec 020 task order:
 
-1. Commit the Spec 020 artifacts.
-2. Add pure curious-agent domain models and deterministic generator.
-3. Add focused JVM tests for insufficient evidence, source refs, capped output, dismissed suppression, and no raw text.
-4. Decide whether answer/dismiss persistence belongs now or remains deferred.
-5. Run focused and full non-phone gates.
+1. Commit the pure generator implementation and documentation closeout.
+2. Mark T020-014 complete after commit.
+3. If continuing the stack, rerun the Spec Kit loop for Spec 021 before implementation; do not treat A2UI/generative UI as already designed or shipped.
 
 ## Previous Status - 2026-06-14 Spec 019 Repo-Side Complete
 
