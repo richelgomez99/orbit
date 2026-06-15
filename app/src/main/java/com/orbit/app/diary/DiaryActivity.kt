@@ -135,6 +135,9 @@ class DiaryActivity : ComponentActivity() {
                             if (selectedTab == OrbitHomeTab.ORBIT && it != OrbitHomeTab.ORBIT) {
                                 askOrbitViewModel.reset()
                             }
+                            if (selectedTab == OrbitHomeTab.LIBRARY && it != OrbitHomeTab.LIBRARY) {
+                                libraryViewModel.reset()
+                            }
                             tabName = it.name
                         },
                     )

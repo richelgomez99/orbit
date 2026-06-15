@@ -2,6 +2,7 @@ package com.orbit.app.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +46,13 @@ class LibraryViewModel(
                 unavailableTitle = null,
                 unavailableDetail = null,
             )
-            val outcome = runCatching { repository.search(query) }
+            val outcome = try {
+                Result.success(repository.search(query))
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Throwable) {
+                Result.failure(error)
+            }
             _state.value = outcome.fold(
                 onSuccess = { results ->
                     _state.value.copy(
@@ -74,6 +81,11 @@ class LibraryViewModel(
 
     fun onOpenCaptureHandled() {
         _state.value = _state.value.copy(openEnvelopeId = null)
+    }
+
+    fun reset() {
+        searchJob?.cancel()
+        _state.value = LibraryUiState()
     }
 
     private fun Throwable.toUnavailableCopy(): UnavailableCopy = when (this) {

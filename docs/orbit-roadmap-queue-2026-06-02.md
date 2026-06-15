@@ -59,7 +59,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Queue row 9 (`018-capture-context-affordance`) is active on branch `feature/018-capture-context-affordance-20260614`.
 - Spec 018 artifacts were regenerated on 2026-06-14 after Spec 012 repo-side completion. The branch now adds a focused post-save context surface for new and duplicate captures, while preserving Spec 011 `EnvelopeNote` storage, existing Binder note writes, duplicate targeting, full-detail fallback, and local-first/no-model behavior. Focused and full non-phone gates passed on 2026-06-14. True pre-seal transparent Clarify remains deferred unless implementation research proves it can be added without destabilizing overlay capture.
 - Queue row 10 (`019-agent-workspace-ia`) is active on branch `feature/019-agent-workspace-ia-20260614`.
-- Spec 019 artifacts were regenerated on 2026-06-14. Current app already has Diary/Library/Orbit tabs; this branch hardens route boundaries rather than replacing navigation. Scope: Library transient state reset on tab exit, existing Ask reset preservation on Orbit exit, and tests proving tab switches do not mutate durable repository state.
+- Spec 019 artifacts were regenerated on 2026-06-14. Current app already has Diary/Library/Orbit tabs; this branch hardens route boundaries rather than replacing navigation. Implementation adds Library transient state reset on tab exit, preserves existing Ask reset on Orbit exit, and adds tests proving the tab-exit reset contract. Focused and full non-phone gates passed on 2026-06-14.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

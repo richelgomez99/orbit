@@ -140,6 +140,42 @@ class LibraryViewModelTest {
         assertNull(viewModel.state.value.openEnvelopeId)
     }
 
+    @Test
+    fun resetClearsTransientSearchState() = runTest(dispatcher) {
+        val repo = FakeRepository(results = listOf(result("env-1")))
+        val viewModel = LibraryViewModel(repo, scopeOverride = this)
+
+        viewModel.onQueryChanged("flight receipt")
+        viewModel.onSearchSubmitted()
+        advanceUntilIdle()
+        viewModel.onOpenCapture("env-1")
+
+        viewModel.reset()
+
+        assertEquals(LibraryUiState(), viewModel.state.value)
+    }
+
+    @Test
+    fun resetCancelsInFlightSearch() = runTest(dispatcher) {
+        val gate = CompletableDeferred<Unit>()
+        val repo = FakeRepository(
+            results = listOf(result("env-1")),
+            beforeReturn = { gate.await() },
+        )
+        val viewModel = LibraryViewModel(repo, scopeOverride = this)
+
+        viewModel.onQueryChanged("flight")
+        viewModel.onSearchSubmitted()
+        dispatcher.scheduler.runCurrent()
+        assertTrue(viewModel.state.value.loading)
+
+        viewModel.reset()
+        gate.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals(LibraryUiState(), viewModel.state.value)
+    }
+
     private class FakeRepository(
         private val results: List<MemorySearchResult> = emptyList(),
         private val error: Throwable? = null,

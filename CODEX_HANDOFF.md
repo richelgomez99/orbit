@@ -32,14 +32,22 @@ Active Spec 019 truth:
   - Library owns retrieval/search state and should reset transient query/results/errors when leaving Library.
   - Orbit owns Ask/action/follow-up/workspace surfaces; existing `AskOrbitViewModel.reset()` already runs when leaving Orbit.
   - Durable repository-backed state such as action drafts, Active Intents, memory candidates, and receipts must not be cleared by tab switches.
+- Implemented so far:
+  - `LibraryViewModel.reset()` cancels in-flight search and restores `LibraryUiState()`.
+  - `LibraryViewModel.onSearchSubmitted()` now rethrows `CancellationException` so reset does not publish a fake Library error after cancellation.
+  - `DiaryActivity` tab selection resets Library when leaving Library and preserves existing Ask reset when leaving Orbit.
+  - Added `LibraryViewModelTest` coverage for reset and in-flight cancellation.
+  - Added `DiaryActivityTabBoundaryTest` source-level guard for the tab-exit reset contract.
+- Validation passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.library.LibraryViewModelTest" --tests "com.orbit.app.diary.DiaryActivityTabBoundaryTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
 
 Immediate Spec 019 task order:
 
-1. Commit the Spec 019 artifacts.
-2. Add `LibraryViewModel.reset()` and tests.
-3. Update `DiaryActivity` tab selection to reset Library when leaving Library while preserving Ask reset when leaving Orbit.
-4. Add source-level or extracted route-controller coverage for the tab-exit reset contract.
-5. Run focused and full non-phone gates.
+1. Commit the Spec 019 implementation without `screenshots/`, `dist/`, APKs, `.gbrain-source`, or secrets.
+2. Mark the final checklist commit item if needed.
+3. Move to the next queued branch/spec after rereading current roadmap and code.
 
 ## Previous Status - 2026-06-14 Spec 018 Repo-Side Complete
 

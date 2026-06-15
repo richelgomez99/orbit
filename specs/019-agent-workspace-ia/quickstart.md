@@ -23,3 +23,8 @@ git diff --check
 2026-06-14:
 
 - Created Spec 019 artifacts. Current app already has Diary/Library/Orbit tabs; branch scope is IA state-boundary hardening.
+- Added `LibraryViewModel.reset()` and route-exit wiring in `DiaryActivity` so leaving Library clears transient search state. Existing Ask reset on Orbit exit is preserved.
+- Added JVM coverage for Library reset, cancellation of in-flight search without error state, and the tab-exit reset contract.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.library.LibraryViewModelTest" --tests "com.orbit.app.diary.DiaryActivityTabBoundaryTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS: `git diff --check`
