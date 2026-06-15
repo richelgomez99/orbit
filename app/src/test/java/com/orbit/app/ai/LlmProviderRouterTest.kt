@@ -2,6 +2,17 @@ package com.orbit.app.ai
 
 import android.os.IBinder
 import com.orbit.app.RuntimeFlags
+import com.orbit.app.ai.local.LocalAiCapability
+import com.orbit.app.ai.local.LocalModelRoute
+import com.orbit.app.ai.local.LocalModelSelection
+import com.orbit.app.ai.local.LocalModelTier
+import com.orbit.app.ai.model.ActionExtractionResult
+import com.orbit.app.ai.model.AppFunctionSummary
+import com.orbit.app.ai.model.DayHeaderResult
+import com.orbit.app.ai.model.IntentClassification
+import com.orbit.app.ai.model.SensitivityResult
+import com.orbit.app.ai.model.SummaryResult
+import com.orbit.app.data.entity.StateSnapshot
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.net.ipc.LlmGatewayRequestParcel
 import com.orbit.app.net.ipc.LlmGatewayResponseParcel
@@ -39,6 +50,32 @@ class LlmProviderRouterTest {
             error("not used")
 
         override fun asBinder(): IBinder = throw UnsupportedOperationException("test fake")
+    }
+
+    private class FakeByomProvider : LlmProvider {
+        override suspend fun classifyIntent(text: String, appCategory: String): IntentClassification =
+            error("not used")
+
+        override suspend fun summarize(text: String, maxTokens: Int): SummaryResult =
+            error("not used")
+
+        override suspend fun scanSensitivity(text: String): SensitivityResult =
+            error("not used")
+
+        override suspend fun generateDayHeader(
+            dayIsoDate: String,
+            envelopeSummaries: List<String>,
+        ): DayHeaderResult = error("not used")
+
+        override suspend fun extractActions(
+            text: String,
+            contentType: String,
+            state: StateSnapshot,
+            registeredFunctions: List<AppFunctionSummary>,
+            maxCandidates: Int,
+        ): ActionExtractionResult = error("not used")
+
+        override suspend fun embed(text: String): EmbeddingResult? = error("not used")
     }
 
     @After
@@ -136,5 +173,59 @@ class LlmProviderRouterTest {
                 "was ${provider::class.java.simpleName}",
             provider is NanoLlmProvider,
         )
+    }
+
+    @Test
+    fun selected_byom_local_provider_wins_in_local_mode() {
+        val byom = FakeByomProvider()
+        val provider = LlmProviderRouter.resolve(
+            useLocalAi = true,
+            hasNanoCapableHardware = false,
+            cloudAiRoutingEnabled = true,
+            networkGateway = FakeGateway(),
+            localModelSelection = LocalModelSelection(
+                route = LocalModelRoute.LOCAL,
+                tier = LocalModelTier.SPEED,
+                modelLabel = "speed-test",
+                capabilities = setOf(LocalAiCapability.BASIC_UNDERSTANDING),
+                reason = "test",
+            ),
+            byomLocalProvider = byom,
+        )
+
+        assertTrue(provider === byom)
+    }
+
+    @Test
+    fun selected_byom_without_provider_fails_closed_when_cloud_disabled() {
+        val provider = LlmProviderRouter.resolve(
+            useLocalAi = true,
+            hasNanoCapableHardware = false,
+            cloudAiRoutingEnabled = false,
+            networkGateway = null,
+            localModelSelection = LocalModelSelection(
+                route = LocalModelRoute.LOCAL,
+                tier = LocalModelTier.INTELLIGENCE,
+                modelLabel = "intelligence-test",
+                capabilities = setOf(LocalAiCapability.GENERATIVE_UI),
+                reason = "test",
+            ),
+            byomLocalProvider = null,
+        )
+
+        assertTrue(provider is UnavailableLlmProvider)
+    }
+
+    @Test
+    fun unavailable_local_selection_fails_closed_when_cloud_disabled() {
+        val provider = LlmProviderRouter.resolve(
+            useLocalAi = true,
+            hasNanoCapableHardware = false,
+            cloudAiRoutingEnabled = false,
+            networkGateway = null,
+            localModelSelection = LocalModelSelection.unavailable("no-local"),
+        )
+
+        assertTrue(provider is UnavailableLlmProvider)
     }
 }

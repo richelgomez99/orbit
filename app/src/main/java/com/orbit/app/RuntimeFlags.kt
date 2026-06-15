@@ -38,12 +38,15 @@ object RuntimeFlags {
         internal set
 
     /**
-     * Spec 013 (FR-013-002) — selects the on-device LLM provider.
+     * Spec 013 / Spec 022 — selects an on-device LLM provider when one is
+     * actually available.
      *  - `false` (default) → [com.orbit.app.ai.LlmProviderRouter] returns
      *    `CloudLlmProvider` (cloud is the Day-1 default per D-001).
-     *  - `true` → router returns `NanoLlmProvider` *if and only if*
-     *    `hasNanoCapableHardware()` also returns true; otherwise it
-     *    transparently falls through to `CloudLlmProvider`.
+     *  - `true` → router returns a BYOM/local-model-manager provider when
+     *    the Spec 022 selection seam supplies one, or the current/legacy
+     *    `NanoLlmProvider` if Nano hardware is available; otherwise it
+     *    falls through to `CloudLlmProvider` only when cloud routing is
+     *    enabled.
      *
      * SharedPreferences key (Block 10 surface): `"cloud.use_local_ai"`.
      * The hot path is the in-memory `@Volatile` field; `SharedPreferences`

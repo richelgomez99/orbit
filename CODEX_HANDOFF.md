@@ -27,22 +27,33 @@ Active Spec 022 truth:
   - `tasks.md`
   - `quickstart.md`
 - Spec 022 first slice is local-model policy and router seam, not native engine integration.
-- Initial implementation should add:
+- Implementation now adds:
   - local model tier/capability/hardware/installed-model/selection models under `app/src/main/java/com/orbit/app/ai/local/`;
   - deterministic selection policy for Speed, Intelligence, legacy Nano, Cloud, and Unavailable;
   - JVM tests for RAM/Vulkan/downloaded/cloud-disabled outcomes;
   - optional `LlmProviderRouter.resolve` seam for a BYOM local provider without changing production defaults;
   - comments/docs clarifying Nano is current/legacy local implementation, not strategic final architecture.
+- Files added/updated:
+  - `app/src/main/java/com/orbit/app/ai/local/LocalModelManagerModels.kt`
+  - `app/src/main/java/com/orbit/app/ai/local/LocalModelSelectionPolicy.kt`
+  - `app/src/test/java/com/orbit/app/ai/local/LocalModelSelectionPolicyTest.kt`
+  - `app/src/main/java/com/orbit/app/ai/LlmProviderRouter.kt`
+  - `app/src/test/java/com/orbit/app/ai/LlmProviderRouterTest.kt`
+  - `app/src/main/java/com/orbit/app/ai/LlmProvider.kt`
+  - `app/src/main/java/com/orbit/app/ai/NanoLlmProvider.kt`
+  - `app/src/main/java/com/orbit/app/RuntimeFlags.kt`
 - Explicitly deferred: native LiteRT-LM/MLC dependency, model downloads, JNI/Vulkan integration, model-store UI, persistent registry, memory profiling automation, and removing `NanoLlmProvider`.
 - Trust boundary: local providers still implement `LlmProvider`, run in `:ml`, and must not touch network; cloud fallback only happens when cloud routing is enabled.
+- Validation passed on 2026-06-14:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.ai.local.*" --tests "com.orbit.app.ai.LlmProviderRouterTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
 
 Immediate Spec 022 task order:
 
-1. Commit the Spec 022 artifacts.
-2. Implement pure local model selection policy with focused JVM tests.
-3. Add router seam tests and production-safe router defaults.
-4. Run focused and full non-phone gates.
-5. Update quickstart, roadmap, and handoff with validation evidence.
+1. Commit the local model policy/router seam implementation and documentation closeout.
+2. Mark T022-014 complete after commit.
+3. Next work should be a fresh Spec Kit decision: either a narrowly scoped model-store/settings surface, native engine spike behind `LlmProvider`, or phone/manual validation APK depending on user priority and device availability.
 
 ## Previous Status - 2026-06-14 Spec 021 Repo-Side Complete
 

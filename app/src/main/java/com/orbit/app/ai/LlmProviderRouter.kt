@@ -2,6 +2,9 @@ package com.orbit.app.ai
 
 import android.content.Context
 import com.orbit.app.RuntimeFlags
+import com.orbit.app.ai.local.LocalModelRoute
+import com.orbit.app.ai.local.LocalModelSelection
+import com.orbit.app.ai.local.LocalModelTier
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.settings.PrivacyPreferences
 
@@ -10,16 +13,19 @@ import com.orbit.app.settings.PrivacyPreferences
  * production [LlmProvider] selection.
  *
  * Resolution rules (per data-model + spec 013 acceptance scenarios):
- *  - if [RuntimeFlags.useLocalAi] is `true` AND [hasNanoCapableHardware]
- *    is `true` → return [NanoLlmProvider] (local mode).
+ *  - if [RuntimeFlags.useLocalAi] is `true` and a BYOM local model selection
+ *    plus provider are supplied → return that local provider.
+ *  - otherwise, if [RuntimeFlags.useLocalAi] is `true` AND
+ *    [hasNanoCapableHardware] is `true` → return [NanoLlmProvider]
+ *    (current/legacy local mode).
  *  - otherwise → return [CloudLlmProvider] backed by the supplied
  *    [INetworkGateway]. `null` here is a programmer error and surfaces
  *    via [checkNotNull] with a message naming the missing dependency.
  *
  * Day-1: [hasNanoCapableHardware] is a stub returning `false`
  * unconditionally — see TODO. Therefore even with `useLocalAi = true`
- * the router transparently falls through to the cloud impl until the
- * real Pixel 9 Pro / S24 detection lands (separate spec).
+ * the router transparently falls through to the cloud impl until a real
+ * BYOM/local-model-manager provider or Nano hardware probe is supplied.
  *
  * The router itself does NOT alter [NanoLlmProvider] (FR-013-017): the
  * local-mode impl stays byte-for-byte unchanged. Only the construction
@@ -69,17 +75,43 @@ object LlmProviderRouter {
         hasNanoCapableHardware: Boolean,
         cloudAiRoutingEnabled: Boolean = true,
         networkGateway: INetworkGateway?,
-    ): LlmProvider = if (useLocalAi && hasNanoCapableHardware) {
+        localModelSelection: LocalModelSelection? = null,
+        byomLocalProvider: LlmProvider? = null,
+    ): LlmProvider = if (useLocalAi && localModelSelection?.route == LocalModelRoute.LOCAL) {
+        when (localModelSelection.tier) {
+            LocalModelTier.SPEED,
+            LocalModelTier.INTELLIGENCE -> byomLocalProvider ?: if (cloudAiRoutingEnabled) {
+                cloudProvider(networkGateway)
+            } else {
+                UnavailableLlmProvider("local model selected but provider unavailable")
+            }
+            LocalModelTier.LEGACY_NANO -> NanoLlmProvider()
+            LocalModelTier.CLOUD,
+            null -> if (cloudAiRoutingEnabled) {
+                cloudProvider(networkGateway)
+            } else {
+                UnavailableLlmProvider("local model selection invalid and cloud disabled")
+            }
+        }
+    } else if (
+        useLocalAi &&
+        localModelSelection?.route == LocalModelRoute.UNAVAILABLE &&
+        !cloudAiRoutingEnabled
+    ) {
+        UnavailableLlmProvider(localModelSelection.reason)
+    } else if (useLocalAi && hasNanoCapableHardware) {
         NanoLlmProvider()
     } else if (!cloudAiRoutingEnabled) {
         UnavailableLlmProvider()
     } else {
-        CloudLlmProvider(
-            checkNotNull(networkGateway) {
-                "networkGateway required for cloud mode (LlmProviderRouter)"
-            },
-        )
+        cloudProvider(networkGateway)
     }
+
+    private fun cloudProvider(networkGateway: INetworkGateway?): LlmProvider = CloudLlmProvider(
+        checkNotNull(networkGateway) {
+            "networkGateway required for cloud mode (LlmProviderRouter)"
+        },
+    )
 
     /**
      * TODO: real Pixel 9 Pro / S24 detection — separate spec.

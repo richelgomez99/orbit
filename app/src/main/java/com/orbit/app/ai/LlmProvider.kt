@@ -11,10 +11,10 @@ import com.orbit.app.data.entity.StateSnapshot
 /**
  * Principle IX — LLM Sovereignty.
  *
- * All AI inference MUST go through this interface. Two production impls:
- *  - [NanoLlmProvider] — local-mode (on-device Gemini Nano via AICore).
- *    Local-mode impls run on the `:ml` process and **MUST NOT touch the
- *    network** (Principle II — Local by Default in local mode).
+ * All AI inference MUST go through this interface. Current production impls:
+ *  - [NanoLlmProvider] — current/legacy local-mode path (on-device
+ *    Gemini Nano via AICore). Local-mode impls run on the `:ml` process
+ *    and **MUST NOT touch the network**.
  *  - `CloudLlmProvider` — cloud-mode. Cloud impls do NOT call HTTP
  *    directly; they route every request through the `:net`-process
  *    `INetworkGateway` AIDL surface (Principle VI — single network
@@ -22,8 +22,9 @@ import com.orbit.app.data.entity.StateSnapshot
  *    still does not open sockets; the network egress lives in `:net`.
  *
  * Selection between local and cloud impls is owned by `LlmProviderRouter`
- * (see spec 013). Future providers (Cloud Boost, BYOK) will implement
- * this same interface and follow the same routing rule.
+ * (see spec 013/spec 022). Future BYOM providers based on a local model
+ * manager, plus Cloud Boost/BYOK providers, implement this same interface
+ * and follow the same process-boundary rules.
  */
 interface LlmProvider {
 

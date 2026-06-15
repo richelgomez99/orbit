@@ -10,10 +10,13 @@ import com.orbit.app.ai.model.SummaryResult
 import com.orbit.app.data.entity.StateSnapshot
 
 /**
- * Sole v1 LlmProvider — delegates to on-device Gemini Nano via AICore.
+ * Current/legacy local LlmProvider — delegates to on-device Gemini Nano
+ * via AICore when that path is available.
  *
  * All results carry [LlmProvenance.LocalNano] provenance.
- * Implementation will be fleshed out when AICore SDK integration lands (US2).
+ * Implementation will be fleshed out when AICore SDK integration lands
+ * where still useful. Spec 022's strategic local path is the BYOM/local
+ * model manager; do not treat this provider as the final architecture.
  *
  * **Diagnostic seam (T097, spec/003)**: when [LlmProviderDiagnostics.forceNanoUnavailable]
  * is `true`, the methods that production code routes through the LLM in 003's
@@ -105,4 +108,3 @@ class NanoLlmProvider : LlmProvider {
         const val MODEL_LABEL: String = "nano-v4-build-2026-05-01"
     }
 }
-
