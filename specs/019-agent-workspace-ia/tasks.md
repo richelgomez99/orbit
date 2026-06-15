@@ -27,4 +27,4 @@
 - [x] **T019-010** Run full non-phone gate.
 - [x] **T019-011** Run `git diff --check`.
 - [x] **T019-012** Update quickstart, roadmap, and handoff with validation evidence.
-- [ ] **T019-013** Commit without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
+- [x] **T019-013** Commit without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
