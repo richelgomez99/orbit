@@ -2,7 +2,46 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-14 Spec 018 Active
+## Current Status - 2026-06-14 Spec 019 Active
+
+Authoritative branch:
+
+- `feature/019-agent-workspace-ia-20260614`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 018 branch `feature/018-capture-context-affordance-20260614`.
+- Latest Spec 018 commits in stack:
+  - `3f55fa8 docs(spec-018): add capture context affordance artifacts`
+  - `cf64b16 feat(spec-018): add focused capture context entry`
+  - `7bbdf26 docs(spec-018): close focused context checklist`
+
+Active Spec 019 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/019-agent-workspace-ia/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/agent-workspace-ia-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- The app already has the three tabs in `DiaryActivity`: Diary, Library, Orbit.
+- Spec 019 should harden route boundaries, not replace navigation:
+  - Diary remains pure chronological memory.
+  - Library owns retrieval/search state and should reset transient query/results/errors when leaving Library.
+  - Orbit owns Ask/action/follow-up/workspace surfaces; existing `AskOrbitViewModel.reset()` already runs when leaving Orbit.
+  - Durable repository-backed state such as action drafts, Active Intents, memory candidates, and receipts must not be cleared by tab switches.
+
+Immediate Spec 019 task order:
+
+1. Commit the Spec 019 artifacts.
+2. Add `LibraryViewModel.reset()` and tests.
+3. Update `DiaryActivity` tab selection to reset Library when leaving Library while preserving Ask reset when leaving Orbit.
+4. Add source-level or extracted route-controller coverage for the tab-exit reset contract.
+5. Run focused and full non-phone gates.
+
+## Previous Status - 2026-06-14 Spec 018 Repo-Side Complete
 
 Authoritative branch:
 
