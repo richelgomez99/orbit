@@ -31,13 +31,13 @@ import androidx.compose.ui.unit.dp
 import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.AgentEvidenceParcel
 import com.orbit.app.data.ipc.AgentPlanParcel
-import com.orbit.app.data.ipc.AgentPlanStepParcel
-import com.orbit.app.data.ipc.AgentQuestionParcel
 import com.orbit.app.data.ipc.MemoryCandidateParcel
 import com.orbit.app.diary.ActionPreviewSheet
 import com.orbit.app.diary.ActiveIntentUiState
 import com.orbit.app.diary.DiaryViewModel
 import com.orbit.app.diary.EnvelopeDetailActivity
+import com.orbit.app.generativeui.OrbitAgentUiRenderer
+import com.orbit.app.generativeui.toOrbitAgentUiDocument
 import com.orbit.app.memory.SourceAppLabelDisplay
 import com.orbit.app.orbit.AskOrbitViewModel
 import com.orbit.app.orbit.ui.AskOrbitPanel
@@ -271,90 +271,15 @@ private fun AgentPlanResult(
     onOpenEvidence: (AgentEvidenceParcel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("agent-plan-result"),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(
-                text = plan.title,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            plan.summary?.takeIf { it.isNotBlank() }?.let {
-                Text(text = it, style = MaterialTheme.typography.bodySmall)
-            }
-            if (plan.limitations.isNotEmpty()) {
-                Text(
-                    text = plan.limitations.joinToString(", ") { it.replace('_', ' ') },
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            plan.questions.forEach { question ->
-                AgentQuestionBlock(question = question)
-            }
-            plan.steps.forEach { step ->
-                AgentPlanStepRow(step = step)
-            }
-            plan.evidence.forEach { evidence ->
-                AgentEvidenceRow(evidence = evidence, onOpen = { onOpenEvidence(evidence) })
-            }
-        }
-    }
-}
-
-@Composable
-private fun AgentQuestionBlock(question: AgentQuestionParcel) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-            text = question.text,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        question.choices.forEach { choice ->
-            Text(
-                text = choice.label,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-    }
-}
-
-@Composable
-private fun AgentPlanStepRow(step: AgentPlanStepParcel) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            text = step.label,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-        val detail = buildList {
-            step.detail?.takeIf { it.isNotBlank() }?.let(::add)
-            if (step.requiredApproval) add("Requires your approval")
-        }.joinToString(" • ")
-        if (detail.isNotBlank()) {
-            Text(
-                text = detail,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-    }
+    val document = remember(plan) { plan.toOrbitAgentUiDocument() }
+    val evidenceById = remember(plan.evidence) { plan.evidence.associateBy { it.evidenceId } }
+    OrbitAgentUiRenderer(
+        document = document,
+        onOpenEvidence = { evidence ->
+            evidenceById[evidence.id]?.let(onOpenEvidence)
+        },
+        modifier = modifier.testTag("agent-plan-result"),
+    )
 }
 
 @Composable
