@@ -60,6 +60,8 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Spec 018 artifacts were regenerated on 2026-06-14 after Spec 012 repo-side completion. The branch now adds a focused post-save context surface for new and duplicate captures, while preserving Spec 011 `EnvelopeNote` storage, existing Binder note writes, duplicate targeting, full-detail fallback, and local-first/no-model behavior. Focused and full non-phone gates passed on 2026-06-14. True pre-seal transparent Clarify remains deferred unless implementation research proves it can be added without destabilizing overlay capture.
 - Queue row 10 (`019-agent-workspace-ia`) is active on branch `feature/019-agent-workspace-ia-20260614`.
 - Spec 019 artifacts were regenerated on 2026-06-14. Current app already has Diary/Library/Orbit tabs; this branch hardens route boundaries rather than replacing navigation. Implementation adds Library transient state reset on tab exit, preserves existing Ask reset on Orbit exit, and adds tests proving the tab-exit reset contract. Focused and full non-phone gates passed on 2026-06-14.
+- Queue row 11 (`020-curious-agent-profiling`) is active on branch `feature/020-curious-agent-profiling-20260614`.
+- Spec 020 artifacts were regenerated on 2026-06-14. Scope is conservative: evidence-backed curious question candidates before profile facts, deterministic local generator first, no cloud/model persona inference, no silent profile promotion, and no proactive notifications.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

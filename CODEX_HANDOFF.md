@@ -2,7 +2,49 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-14 Spec 019 Active
+## Current Status - 2026-06-14 Spec 020 Active
+
+Authoritative branch:
+
+- `feature/020-curious-agent-profiling-20260614`
+
+Base checkpoint:
+
+- Branched from repo-side complete Spec 019 branch `feature/019-agent-workspace-ia-20260614`.
+- Latest Spec 019 commits in stack:
+  - `736f707 docs(spec-019): add agent workspace ia artifacts`
+  - `1b778ce feat(spec-019): reset transient workspace state`
+  - `9c96ec4 docs(spec-019): close workspace ia checklist`
+
+Active Spec 020 truth:
+
+- Fresh Spec Kit artifacts now exist under `specs/020-curious-agent-profiling/`:
+  - `spec.md`
+  - `research.md`
+  - `data-model.md`
+  - `contracts/curious-agent-contract.md`
+  - `plan.md`
+  - `tasks.md`
+  - `quickstart.md`
+- Spec 020 must be conservative: question candidates before profile facts.
+- No silent profile fact promotion, no cloud/model persona inference, no push/proactive interruption, no AppFunctions/Spark interop, no A2UI.
+- First implementation should add pure `com.orbit.app.curious` domain models and deterministic question generator with:
+  - minimum evidence threshold;
+  - max output cap;
+  - source refs on every question;
+  - dismissed/answered suppression;
+  - no raw text/secrets in question display payloads.
+- Persistence/UI should be decided only after the pure generator and tests exist; if persistence is added, it must go through Room/Binder in `:ml`.
+
+Immediate Spec 020 task order:
+
+1. Commit the Spec 020 artifacts.
+2. Add pure curious-agent domain models and deterministic generator.
+3. Add focused JVM tests for insufficient evidence, source refs, capped output, dismissed suppression, and no raw text.
+4. Decide whether answer/dismiss persistence belongs now or remains deferred.
+5. Run focused and full non-phone gates.
+
+## Previous Status - 2026-06-14 Spec 019 Repo-Side Complete
 
 Authoritative branch:
 
