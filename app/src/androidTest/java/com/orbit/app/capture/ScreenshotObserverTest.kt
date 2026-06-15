@@ -276,6 +276,8 @@ class ScreenshotObserverTest {
             resolutionReason: String?,
             userConfirmed: Boolean
         ): Boolean = error("unused")
+        override fun markActiveIntentNotNow(intentId: String?): Boolean = error("unused")
+        override fun snoozeActiveIntent(intentId: String?, untilMillis: Long): Boolean = error("unused")
         override fun requestActiveIntentEscalation(intentId: String?, mode: String?): Boolean = error("unused")
         override fun extractActionsForEnvelope(envelopeId: String): String = error("unused")
         override fun createDerivedTodoEnvelope(

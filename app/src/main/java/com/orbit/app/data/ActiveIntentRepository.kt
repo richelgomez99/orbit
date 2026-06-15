@@ -92,6 +92,54 @@ class ActiveIntentRepository(
         } > 0
     }
 
+    suspend fun markNotNow(intentId: String): Boolean {
+        val entity = activeIntentDao.getById(intentId) ?: return false
+        return resolutionReceiptSink?.record(
+            ResolutionReceipt(
+                id = "active-intent-not-now:$intentId:${clock()}",
+                targetType = ResolutionTargetType.ACTIVE_INTENT,
+                targetId = intentId,
+                envelopeId = entity.captureId,
+                relatedType = ResolutionTargetType.ENVELOPE,
+                relatedId = entity.captureId,
+                kind = ResolutionKind.NOT_NOW,
+                actor = ResolutionActor.USER,
+                reason = "user_not_now",
+                occurredAtMillis = clock(),
+                metadataJson = JSONObject()
+                    .put("intentId", intentId)
+                    .put("captureId", entity.captureId)
+                    .toString(),
+            )
+        ) == true
+    }
+
+    suspend fun snooze(intentId: String, untilMillis: Long): Boolean {
+        val now = clock()
+        if (untilMillis <= now) return false
+        val entity = activeIntentDao.getById(intentId) ?: return false
+        return resolutionReceiptSink?.record(
+            ResolutionReceipt(
+                id = "active-intent-snooze:$intentId:$untilMillis",
+                targetType = ResolutionTargetType.ACTIVE_INTENT,
+                targetId = intentId,
+                envelopeId = entity.captureId,
+                relatedType = ResolutionTargetType.ENVELOPE,
+                relatedId = entity.captureId,
+                kind = ResolutionKind.SNOOZED,
+                actor = ResolutionActor.USER,
+                reason = "user_snoozed",
+                occurredAtMillis = now,
+                effectiveUntilMillis = untilMillis,
+                metadataJson = JSONObject()
+                    .put("intentId", intentId)
+                    .put("captureId", entity.captureId)
+                    .put("effectiveUntilMillis", untilMillis)
+                    .toString(),
+            )
+        ) == true
+    }
+
     suspend fun requestEscalation(intentId: String, mode: String): Boolean {
         val auditDao = auditLogDao ?: return false
         val entity = activeIntentDao.getById(intentId) ?: return false

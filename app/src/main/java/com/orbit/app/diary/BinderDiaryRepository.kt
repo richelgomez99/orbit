@@ -342,6 +342,20 @@ class BinderDiaryRepository(
         }
     }
 
+    override suspend fun markActiveIntentNotNow(intentId: String): Boolean {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.markActiveIntentNotNow(intentId)
+        }
+    }
+
+    override suspend fun snoozeActiveIntent(intentId: String, untilMillis: Long): Boolean {
+        val repo = connect()
+        return withContext(Dispatchers.IO) {
+            repo.snoozeActiveIntent(intentId, untilMillis)
+        }
+    }
+
     override suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean {
         val repo = connect()
         return withContext(Dispatchers.IO) {

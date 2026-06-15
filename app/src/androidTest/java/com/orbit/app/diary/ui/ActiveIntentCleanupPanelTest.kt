@@ -118,6 +118,8 @@ class ActiveIntentCleanupPanelTest {
             onArchive = { calls += "archive:${it.intentId}" },
             onOpenCapture = { calls += "open:${it.intentId}" },
             onAddContext = { calls += "context:${it.intentId}" },
+            onNotNow = { calls += "not-now:${it.intentId}" },
+            onSnooze = { calls += "snooze:${it.intentId}" },
             onEscalate = { calls += "escalate:${it.intentId}" }
         )
 
@@ -125,6 +127,8 @@ class ActiveIntentCleanupPanelTest {
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentAddContext("intent-context")).performClick()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentResolve("intent-context")).performClick()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentArchive("intent-context")).performClick()
+        composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentNotNow("intent-context")).performClick()
+        composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentSnooze("intent-context")).performClick()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentEscalate("intent-context")).performClick()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionReview("intent-context")).performClick()
 
@@ -134,6 +138,8 @@ class ActiveIntentCleanupPanelTest {
                 "context:intent-context",
                 "resolve:intent-context",
                 "archive:intent-context",
+                "not-now:intent-context",
+                "snooze:intent-context",
                 "escalate:intent-context"
             ),
             calls
@@ -156,6 +162,8 @@ class ActiveIntentCleanupPanelTest {
             initiallyExpanded = true,
             onResolve = { calls += "resolve:${it.intentId}" },
             onArchive = { calls += "archive:${it.intentId}" },
+            onNotNow = { calls += "not-now:${it.intentId}" },
+            onSnooze = { calls += "snooze:${it.intentId}" },
             onEscalate = { calls += "review:${it.intentId}" }
         )
 
@@ -165,6 +173,8 @@ class ActiveIntentCleanupPanelTest {
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionOpenCapture("intent-review")).assertIsDisplayed()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionAddContext("intent-review")).assertIsDisplayed()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionReview("intent-review")).assertIsDisplayed()
+        composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionNotNow("intent-review")).assertIsDisplayed()
+        composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionSnooze("intent-review")).assertIsDisplayed()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionResolve("intent-review")).assertIsDisplayed()
         composeRule.onNodeWithTag(DiaryScreenTestTags.activeIntentDecisionArchive("intent-review")).assertIsDisplayed()
 
@@ -263,6 +273,8 @@ class ActiveIntentCleanupPanelTest {
         onArchive: (ActiveIntentItem) -> Unit = {},
         onOpenCapture: (ActiveIntentItem) -> Unit = {},
         onAddContext: (ActiveIntentItem) -> Unit = {},
+        onNotNow: (ActiveIntentItem) -> Unit = {},
+        onSnooze: (ActiveIntentItem) -> Unit = {},
         onEscalate: (ActiveIntentItem) -> Unit = {}
     ) {
         composeRule.setContent {
@@ -273,6 +285,8 @@ class ActiveIntentCleanupPanelTest {
                     onArchive = onArchive,
                     onOpenCapture = onOpenCapture,
                     onAddContext = onAddContext,
+                    onNotNow = onNotNow,
+                    onSnooze = onSnooze,
                     onEscalate = onEscalate,
                     initiallyExpanded = initiallyExpanded,
                 )

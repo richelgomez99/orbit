@@ -2,7 +2,7 @@
 
 This handoff was written for a session restart. It captures the repo orientation, the current product/spec truth, the MongoDB Atlas decision, and the proposed next branches/spec workflow.
 
-## Current Status - 2026-06-13 Spec 012 Active
+## Current Status - 2026-06-14 Spec 012 Active
 
 Authoritative branch:
 
@@ -27,20 +27,32 @@ Active Spec 012 truth:
   - `plan.md`
   - `tasks.md`
   - `quickstart.md`
-- Spec 012 should add durable local `resolution_receipt` semantics before UI polish.
+- Spec 012 adds durable local `resolution_receipt` semantics before deeper agent/UI polish.
 - Scope includes duplicate recapture, dismissed, not-now, snoozed, done, reopened, stale, invalidated, source-deleted, and conflict receipt shapes.
-- The intended implementation path is Room v11 additive schema, receipt DAO/repository, `ResolutionVerdictResolver`, then hooks for duplicate seal, Basic-understanding duplicate suppression, action proposal dismiss/invalidation, and derived todo aggregate done/reopened.
+- Implemented so far:
+  - Pure domain layer under `app/src/main/java/com/orbit/app/resolution/` with `ResolutionKind`, actors, target types, surfacing verdicts, receipts, and `ResolutionVerdictResolver`.
+  - Room v11 additive `resolution_receipt` table, DAO, migration, exported schema, and migration test source.
+  - `ResolutionRepository` for validated receipt writes and verdict queries.
+  - Exact duplicate `sealWithResult` paths write `DUPLICATE_RECAPTURE` receipts.
+  - Basic-understanding duplicate suppression writes compact duplicate receipts without raw text.
+  - Action proposal dismissal writes `DISMISSED`; schema/runtime invalidation writes `INVALIDATED`.
+  - Derived todo aggregate completion writes `DONE`; reopening a completed list writes `REOPENED`.
+  - Active Intent resolution/archive writes `RESOLVED`, `DISMISSED`, `STALE`, or `INVALIDATED` receipts as appropriate.
+  - Active Intent cleanup observation filters rows through resolution verdicts when the provider is available.
+  - AIDL/Binder/ViewModel/Orbit cleanup UI now expose receipt-only `Not now` and `Tomorrow` snooze controls for Active Intent follow-ups.
 - Receipts must remain compact: ids, enums, counts, timestamps, reason codes only. No raw screenshots, raw OCR/full text, prompts, model responses, embeddings, JWTs, cookies, API keys, or raw HTML.
-- Current branch has only Spec 012 artifacts so far. Implementation should start at `T012-003`.
+- Validation passed:
+  - `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.data.ActiveIntentRepositoryContractTest" --tests "com.orbit.app.diary.DiaryViewModelTest" --tests "com.orbit.app.understanding.BasicUnderstandingWriterTest" --tests "com.orbit.app.resolution.ResolutionVerdictResolverTest" --tests "com.orbit.app.data.ResolutionRepositoryTest" --tests "com.orbit.app.data.ActionsRepositoryDelegateTest" --tests "com.orbit.app.data.UrlHashDedupeContractTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+  - `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+  - `git diff --check`
+- Android UI test execution and physical phone validation are deferred until device availability, but Android test compilation passes.
 
 Immediate Spec 012 task order:
 
-1. Add domain enums/verdict model and tests.
-2. Add `ResolutionReceiptEntity`/DAO and Room v11 migration.
-3. Add `ResolutionRepository` validation/write/query helper.
-4. Hook duplicate/action/todo lifecycle paths.
-5. Add Follow-up surfacing filters and minimal dismiss/not-now/snooze affordances only if needed.
-6. Run focused and full non-phone gates.
+1. Commit the Active Intent `Not now`/snooze control slice without `screenshots/`, `dist/`, `.gbrain-source`, APKs, or secrets.
+2. Update Spec 012 closeout docs if anything else changes.
+3. Decide whether Spec 012 needs any additional repo-side closeout beyond phone-only validation.
+4. If not, commit closeout and prepare the next queued branch/spec.
 
 ## Previous Status - 2026-06-13 Spec 011 Repo-Side Complete
 

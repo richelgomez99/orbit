@@ -52,6 +52,16 @@ git diff --check
 - PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.data.ActiveIntentRepositoryContractTest" --tests "com.orbit.app.understanding.BasicUnderstandingWriterTest" --tests "com.orbit.app.resolution.ResolutionVerdictResolverTest" --tests "com.orbit.app.data.ResolutionRepositoryTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
 - Physical phone/manual validation is deferred until device availability.
 
+2026-06-14:
+
+- Added receipt-only Active Intent controls for Not now and Tomorrow snooze through AIDL, Binder repository, `DiaryViewModel`, Orbit cleanup UI, row actions, and decision dialog.
+- Added repository tests proving Not now and Snooze write compact `ACTIVE_INTENT` receipts without marking the source row resolved, and that snooze rejects past timestamps.
+- Added ViewModel and Compose callback coverage for the new controls; Android UI test execution is still deferred until a device/emulator is available, but Android test compilation passes.
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.data.ActiveIntentRepositoryContractTest" --tests "com.orbit.app.diary.DiaryViewModelTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:testDebugUnitTest --tests "com.orbit.app.data.ActiveIntentRepositoryContractTest" --tests "com.orbit.app.diary.DiaryViewModelTest" --tests "com.orbit.app.understanding.BasicUnderstandingWriterTest" --tests "com.orbit.app.resolution.ResolutionVerdictResolverTest" --tests "com.orbit.app.data.ResolutionRepositoryTest" --tests "com.orbit.app.data.ActionsRepositoryDelegateTest" --tests "com.orbit.app.data.UrlHashDedupeContractTest" :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`
+- PASS: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`
+- PASS: `git diff --check`
+
 ## Known Deferred Checks
 
 - Full conflict-resolution UI for graph/profile facts may wait for a later KG branch.

@@ -8,6 +8,7 @@ import com.orbit.app.data.ipc.ActiveIntentParcel
 import com.orbit.app.data.model.AuditAction
 import com.orbit.app.resolution.ResolutionKind
 import com.orbit.app.resolution.ResolutionReceipt
+import com.orbit.app.resolution.ResolutionTargetType
 import com.orbit.app.understanding.domain.ActiveIntentStatus
 import com.orbit.app.understanding.domain.CompletionKeyStatus
 import com.orbit.app.understanding.domain.IntentCategory
@@ -127,6 +128,54 @@ class ActiveIntentRepositoryContractTest {
 
         assertFalse(changed)
         assertNull(dao.lastStatus)
+    }
+
+    @Test
+    fun repositoryNotNowWritesReceiptWithoutResolvingRow() = runTest {
+        val dao = FakeActiveIntentDao(activeIntent())
+        val receiptSink = FakeResolutionReceiptSink()
+        val repo = ActiveIntentRepository(
+            activeIntentDao = dao,
+            scope = TestScope(testScheduler) as CoroutineScope,
+            clock = { NOW },
+            resolutionReceiptSink = receiptSink
+        )
+
+        val recorded = repo.markNotNow(intentId = "intent-1")
+
+        assertTrue(recorded)
+        assertNull(dao.lastStatus)
+        val receipt = receiptSink.receipts.single()
+        assertEquals(ResolutionKind.NOT_NOW, receipt.kind)
+        assertEquals(ResolutionTargetType.ACTIVE_INTENT, receipt.targetType)
+        assertEquals("intent-1", receipt.targetId)
+        assertEquals("capture-1", receipt.envelopeId)
+        assertEquals("user_not_now", receipt.reason)
+    }
+
+    @Test
+    fun repositorySnoozeWritesReceiptAndRejectsPastTimestamp() = runTest {
+        val dao = FakeActiveIntentDao(activeIntent())
+        val receiptSink = FakeResolutionReceiptSink()
+        val repo = ActiveIntentRepository(
+            activeIntentDao = dao,
+            scope = TestScope(testScheduler) as CoroutineScope,
+            clock = { NOW },
+            resolutionReceiptSink = receiptSink
+        )
+
+        val pastRecorded = repo.snooze(intentId = "intent-1", untilMillis = NOW - 1)
+        val futureRecorded = repo.snooze(intentId = "intent-1", untilMillis = NOW + 86_400_000L)
+
+        assertFalse(pastRecorded)
+        assertTrue(futureRecorded)
+        assertNull(dao.lastStatus)
+        val receipt = receiptSink.receipts.single()
+        assertEquals(ResolutionKind.SNOOZED, receipt.kind)
+        assertEquals(ResolutionTargetType.ACTIVE_INTENT, receipt.targetType)
+        assertEquals("intent-1", receipt.targetId)
+        assertEquals(NOW + 86_400_000L, receipt.effectiveUntilMillis)
+        assertTrue(requireNotNull(receipt.metadataJson).contains("\"effectiveUntilMillis\":${NOW + 86_400_000L}"))
     }
 
     @Test

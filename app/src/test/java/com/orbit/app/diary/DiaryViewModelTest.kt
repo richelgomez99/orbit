@@ -76,6 +76,8 @@ class DiaryViewModelTest {
         var archiveCalls = mutableListOf<String>()
         var deleteCalls = mutableListOf<String>()
         var resolveActiveIntentCalls = mutableListOf<Triple<String, String, Boolean>>()
+        var notNowCalls = mutableListOf<String>()
+        var snoozeCalls = mutableListOf<Pair<String, Long>>()
         var escalationCalls = mutableListOf<Pair<String, String>>()
         var acceptedMemoryCalls = mutableListOf<Triple<String, String?, String?>>()
         var rejectedMemoryCalls = mutableListOf<Pair<String, String?>>()
@@ -140,6 +142,16 @@ class DiaryViewModelTest {
             userConfirmed: Boolean
         ): Boolean {
             resolveActiveIntentCalls += Triple(intentId, resolutionReason, userConfirmed)
+            return true
+        }
+
+        override suspend fun markActiveIntentNotNow(intentId: String): Boolean {
+            notNowCalls += intentId
+            return true
+        }
+
+        override suspend fun snoozeActiveIntent(intentId: String, untilMillis: Long): Boolean {
+            snoozeCalls += intentId to untilMillis
             return true
         }
 
@@ -442,12 +454,18 @@ class DiaryViewModelTest {
     fun activeIntentActionsDelegateToRepository() = runTest {
         val repo = FakeRepo()
         val vm = TestScopeVm(this, repo)
+        val beforeSnooze = System.currentTimeMillis()
 
         vm.onResolveActiveIntent("intent-1", ResolutionReason.USER_ARCHIVED)
+        vm.onActiveIntentNotNow("intent-1")
+        vm.onSnoozeActiveIntentTomorrow("intent-1")
         vm.onRequestActiveIntentEscalation("intent-1")
         advanceUntilIdle()
 
         assertEquals(listOf(Triple("intent-1", "USER_ARCHIVED", true)), repo.resolveActiveIntentCalls)
+        assertEquals(listOf("intent-1"), repo.notNowCalls)
+        assertEquals("intent-1", repo.snoozeCalls.single().first)
+        assertTrue(repo.snoozeCalls.single().second >= beforeSnooze + 86_400_000L)
         assertEquals(listOf("intent-1" to "SMART"), repo.escalationCalls)
     }
 

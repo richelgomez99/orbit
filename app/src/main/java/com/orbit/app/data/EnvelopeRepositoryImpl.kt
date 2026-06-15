@@ -1357,6 +1357,16 @@ class EnvelopeRepositoryImpl(
         }
     }
 
+    override fun markActiveIntentNotNow(intentId: String): Boolean {
+        val repo = activeIntentRepository ?: return false
+        return runBlocking { repo.markNotNow(intentId) }
+    }
+
+    override fun snoozeActiveIntent(intentId: String, untilMillis: Long): Boolean {
+        val repo = activeIntentRepository ?: return false
+        return runBlocking { repo.snooze(intentId, untilMillis) }
+    }
+
     override fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean {
         val repo = activeIntentRepository ?: return false
         return runBlocking { repo.requestEscalation(intentId = intentId, mode = mode) }

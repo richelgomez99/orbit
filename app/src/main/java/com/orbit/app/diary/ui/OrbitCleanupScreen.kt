@@ -156,6 +156,12 @@ fun OrbitCleanupScreen(
                         )
                     )
                 },
+                onNotNow = { item ->
+                    viewModel.onActiveIntentNotNow(item.intentId)
+                },
+                onSnooze = { item ->
+                    viewModel.onSnoozeActiveIntentTomorrow(item.intentId)
+                },
                 onEscalate = { item ->
                     viewModel.onRequestActiveIntentEscalation(item.intentId)
                     Toast.makeText(context, "Orbit added a decision brief", Toast.LENGTH_SHORT).show()

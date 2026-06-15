@@ -712,6 +712,8 @@ internal fun ActiveIntentCleanupPanel(
     onArchive: (ActiveIntentItem) -> Unit,
     onOpenCapture: (ActiveIntentItem) -> Unit = {},
     onAddContext: (ActiveIntentItem) -> Unit = {},
+    onNotNow: (ActiveIntentItem) -> Unit = {},
+    onSnooze: (ActiveIntentItem) -> Unit = {},
     onEscalate: (ActiveIntentItem) -> Unit,
     modifier: Modifier = Modifier,
     initiallyExpanded: Boolean = false,
@@ -828,6 +830,8 @@ internal fun ActiveIntentCleanupPanel(
                                 onArchive = onArchive,
                                 onOpenCapture = onOpenCapture,
                                 onAddContext = onAddContext,
+                                onNotNow = onNotNow,
+                                onSnooze = onSnooze,
                                 onEscalate = { decisionItem = it },
                             )
                         }
@@ -851,6 +855,14 @@ internal fun ActiveIntentCleanupPanel(
             },
             onAddContext = {
                 onAddContext(item)
+                decisionItem = null
+            },
+            onNotNow = {
+                onNotNow(item)
+                decisionItem = null
+            },
+            onSnooze = {
+                onSnooze(item)
                 decisionItem = null
             },
             onResolve = {
@@ -939,6 +951,8 @@ private fun ActiveIntentDecisionDialog(
     onReview: () -> Unit,
     onOpenCapture: () -> Unit,
     onAddContext: () -> Unit,
+    onNotNow: () -> Unit,
+    onSnooze: () -> Unit,
     onResolve: () -> Unit,
     onArchive: () -> Unit,
 ) {
@@ -995,6 +1009,14 @@ private fun ActiveIntentDecisionDialog(
                     modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionReview(item.intentId)),
                 ) { Text(item.askOrbitActionLabel) }
                 TextButton(
+                    onClick = onNotNow,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionNotNow(item.intentId)),
+                ) { Text("Not now") }
+                TextButton(
+                    onClick = onSnooze,
+                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionSnooze(item.intentId)),
+                ) { Text("Tomorrow") }
+                TextButton(
                     onClick = onResolve,
                     modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionResolve(item.intentId)),
                 ) { Text(item.resolveActionLabel) }
@@ -1021,6 +1043,8 @@ private fun ActiveIntentRow(
     onArchive: (ActiveIntentItem) -> Unit,
     onOpenCapture: (ActiveIntentItem) -> Unit,
     onAddContext: (ActiveIntentItem) -> Unit,
+    onNotNow: (ActiveIntentItem) -> Unit,
+    onSnooze: (ActiveIntentItem) -> Unit,
     onEscalate: (ActiveIntentItem) -> Unit,
 ) {
     Column(
@@ -1107,6 +1131,14 @@ private fun ActiveIntentRow(
                 onClick = { onArchive(item) },
                 modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentArchive(item.intentId)),
             ) { Text(item.archiveActionLabel) }
+            TextButton(
+                onClick = { onNotNow(item) },
+                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentNotNow(item.intentId)),
+            ) { Text("Not now") }
+            TextButton(
+                onClick = { onSnooze(item) },
+                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentSnooze(item.intentId)),
+            ) { Text("Tomorrow") }
             if (!item.needsEscalation) {
                 TextButton(
                     onClick = { onEscalate(item) },
@@ -1568,11 +1600,15 @@ internal object DiaryScreenTestTags {
     fun activeIntentAddContext(intentId: String): String = "diary-active-intent-add-context-$intentId"
     fun activeIntentResolve(intentId: String): String = "diary-active-intent-resolve-$intentId"
     fun activeIntentArchive(intentId: String): String = "diary-active-intent-archive-$intentId"
+    fun activeIntentNotNow(intentId: String): String = "diary-active-intent-not-now-$intentId"
+    fun activeIntentSnooze(intentId: String): String = "diary-active-intent-snooze-$intentId"
     fun activeIntentEscalate(intentId: String): String = "diary-active-intent-escalate-$intentId"
     fun activeIntentDecisionDialog(intentId: String): String = "diary-active-intent-decision-dialog-$intentId"
     fun activeIntentDecisionOpenCapture(intentId: String): String = "diary-active-intent-decision-open-capture-$intentId"
     fun activeIntentDecisionAddContext(intentId: String): String = "diary-active-intent-decision-add-context-$intentId"
     fun activeIntentDecisionReview(intentId: String): String = "diary-active-intent-decision-review-$intentId"
+    fun activeIntentDecisionNotNow(intentId: String): String = "diary-active-intent-decision-not-now-$intentId"
+    fun activeIntentDecisionSnooze(intentId: String): String = "diary-active-intent-decision-snooze-$intentId"
     fun activeIntentDecisionResolve(intentId: String): String = "diary-active-intent-decision-resolve-$intentId"
     fun activeIntentDecisionArchive(intentId: String): String = "diary-active-intent-decision-archive-$intentId"
 

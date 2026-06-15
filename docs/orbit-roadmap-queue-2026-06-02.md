@@ -55,7 +55,7 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Spec 011 artifacts were regenerated on 2026-06-13. The branch should first ship post-capture `Add context` into the existing note path, then manual text compose through the existing seal/Binder path. It must not create a parallel notes/context model unless the current `envelope_note` contract proves insufficient.
 - Spec 011 repo-side progress: post-capture `Add context`, manual compose repository seam, Diary manual compose dialog, Library `Context` citation mapping, and downstream note-context verification are implemented. Full non-phone gate passed on 2026-06-13. Physical phone validation is still pending.
 - Queue row 8 (`012-resolution-semantics`) is active on branch `feature/012-resolution-semantics-20260613`.
-- Spec 012 artifacts were regenerated on 2026-06-13. The branch should add local durable resolution receipts and surfacing rules before adding UI polish. Scope includes duplicate recapture, dismiss/not-now/snooze, aggregate done/reopened, stale/invalidated/source-deleted semantics, and no-raw-payload validation.
+- Spec 012 artifacts were regenerated on 2026-06-13. Repo-side progress now includes Room v11 local `resolution_receipt` storage, compact receipt validation, duplicate recapture receipts, Basic-understanding duplicate receipts, action dismiss/invalidation receipts, derived-list done/reopened receipts, Active Intent resolution receipts, verdict-based Follow-up filtering, and receipt-only Not now/Tomorrow snooze controls. Focused and full non-phone gates passed on 2026-06-14; connected/manual validation remains deferred until device availability.
 
 ## Deferred Until Approval Or Explicit Re-Scope
 

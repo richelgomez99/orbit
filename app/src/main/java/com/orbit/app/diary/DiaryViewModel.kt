@@ -393,6 +393,19 @@ class DiaryViewModel(
         }
     }
 
+    fun onActiveIntentNotNow(intentId: String) {
+        scope.launch {
+            runCatching { repository.markActiveIntentNotNow(intentId) }
+        }
+    }
+
+    fun onSnoozeActiveIntentTomorrow(intentId: String) {
+        val tomorrow = System.currentTimeMillis() + ONE_DAY_MILLIS
+        scope.launch {
+            runCatching { repository.snoozeActiveIntent(intentId, tomorrow) }
+        }
+    }
+
     private fun openUndoToast(state: UndoToastState) {
         undoExpiryJob?.cancel()
         _undoState.value = state
@@ -489,6 +502,8 @@ class DiaryViewModel(
         super.onCleared()
     }
 }
+
+private const val ONE_DAY_MILLIS = 24L * 60L * 60L * 1_000L
 
 internal fun actionFailureMessage(reason: String?): String = when (reason) {
     "ml_binder_unavailable" -> "Orbit could not reach local storage. Try again in a moment."

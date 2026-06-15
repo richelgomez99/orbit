@@ -130,6 +130,10 @@ interface DiaryRepository {
         userConfirmed: Boolean
     ): Boolean = false
 
+    suspend fun markActiveIntentNotNow(intentId: String): Boolean = false
+
+    suspend fun snoozeActiveIntent(intentId: String, untilMillis: Long): Boolean = false
+
     /** Audit-only Smart/Deep escalation request. Does not dispatch work. */
     suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean = false
 

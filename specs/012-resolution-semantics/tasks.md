@@ -40,16 +40,16 @@
 ## Phase 6: Follow-Up Surfacing
 
 - [x] **T012-019** Add Active Intent/Follow-up surfacing filter using resolution verdicts.
-- [ ] **T012-020** Add minimal user affordances for dismiss, not-now, and snooze if current UI cannot produce those receipts.
-- [ ] **T012-021** Add ViewModel/UI tests for dismiss/not-now/snooze surfacing behavior.
+- [x] **T012-020** Add minimal user affordances for dismiss, not-now, and snooze if current UI cannot produce those receipts.
+- [x] **T012-021** Add ViewModel/UI tests for dismiss/not-now/snooze surfacing behavior.
 
 ## Phase 7: Validation And Closeout
 
-- [ ] **T012-022** Run focused resolution/duplicate/action/todo tests.
+- [x] **T012-022** Run focused resolution/duplicate/action/todo tests.
 - [x] **T012-023** Run compile gates: `./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin`.
-- [ ] **T012-024** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
-- [ ] **T012-025** Run `git diff --check`.
-- [ ] **T012-026** Update `quickstart.md`, roadmap, and handoff with validation evidence.
+- [x] **T012-024** Run full non-phone gate: `./gradlew :app:compileDebugKotlin :app:testDebugUnitTest :build-logic:lint:test :app:lintDebug :app:assembleDebug :app:compileDebugAndroidTestKotlin`.
+- [x] **T012-025** Run `git diff --check`.
+- [x] **T012-026** Update `quickstart.md`, roadmap, and handoff with validation evidence.
 - [ ] **T012-027** Commit Spec 012 work without `dist/`, APK outputs, screenshots, `.gbrain-source`, or secrets.
 
 ## Deferred

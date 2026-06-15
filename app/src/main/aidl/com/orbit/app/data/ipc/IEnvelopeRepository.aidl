@@ -328,6 +328,11 @@ interface IEnvelopeRepository {
     // true iff a matching row was transitioned.
     boolean resolveActiveIntent(String intentId, String resolutionReason, boolean userConfirmed);
 
+    // Spec 012 — receipt-only cleanup semantics. These hide active follow-ups
+    // without claiming the real-world loop is done.
+    boolean markActiveIntentNotNow(String intentId);
+    boolean snoozeActiveIntent(String intentId, long untilMillis);
+
     // Audit-only escalation affordance. This records the user's request before
     // any future Smart/Deep queue can dispatch work.
     boolean requestActiveIntentEscalation(String intentId, String mode);
