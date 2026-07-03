@@ -53,7 +53,7 @@ class OrbitDatabaseMigrationV7toV8Test {
 
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val room = Room.databaseBuilder(context, OrbitDatabase::class.java, DB_NAME)
-            .addMigrations(MIGRATION_7_8)
+            .addMigrations(*ALL_MIGRATIONS)
             .allowMainThreadQueries()
             .build()
         try {

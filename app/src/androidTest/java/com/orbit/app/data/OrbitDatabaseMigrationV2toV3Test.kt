@@ -152,7 +152,7 @@ class OrbitDatabaseMigrationV2toV3Test {
         // ---- Assert v3 invariants via real Room builder.
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val room = Room.databaseBuilder(context, OrbitDatabase::class.java, DB_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(*ALL_MIGRATIONS)
             .allowMainThreadQueries()
             .build()
         try {

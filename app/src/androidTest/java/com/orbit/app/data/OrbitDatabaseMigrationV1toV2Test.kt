@@ -136,7 +136,7 @@ class OrbitDatabaseMigrationV1toV2Test {
         // ---- Assert via real Room builder (so DAOs/converters resolve too).
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val room = Room.databaseBuilder(context, OrbitDatabase::class.java, DB_NAME)
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(*ALL_MIGRATIONS)
             .allowMainThreadQueries()
             .build()
         try {

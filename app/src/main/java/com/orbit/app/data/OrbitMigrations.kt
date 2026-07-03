@@ -693,6 +693,25 @@ internal val MIGRATION_9_10: Migration = object : Migration(9, 10) {
  * FK constraints to preserve history even when the referenced target is later
  * invalidated or hard-deleted.
  */
+/**
+ * v12 — hotfix (2026-07-02): MIGRATION_8_9 (spec 007) created a partial-unique
+ * index `index_memory_candidate_active_fact_key` (`WHERE state IN ('PENDING',
+ * 'ASKED')`) that the [com.orbit.app.data.entity.MemoryCandidateEntity]
+ * annotation never declared, because Room's `@Index` does not support partial
+ * `WHERE` clauses. Room 2.7+ validates schema at build-time in production,
+ * detects the mismatch, and crashes the `:ml` process during app launch on
+ * every device that had a pre-v11 database. Uniqueness is now enforced in
+ * code (see `MemoryCandidateDao.findActiveDuplicate` + delegate insert path);
+ * this migration drops the orphan index so devices already carrying it come
+ * back into agreement with the entity. Idempotent on fresh installs — the
+ * index will never have existed there.
+ */
+internal val MIGRATION_11_12: Migration = object : Migration(11, 12) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP INDEX IF EXISTS index_memory_candidate_active_fact_key")
+    }
+}
+
 internal val MIGRATION_10_11: Migration = object : Migration(10, 11) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(
@@ -732,3 +751,26 @@ internal val MIGRATION_10_11: Migration = object : Migration(10, 11) {
         )
     }
 }
+
+/**
+ * All registered [OrbitDatabase] migrations, ordered by source version.
+ *
+ * Tests that reopen the DB via `Room.databaseBuilder(...)` after a
+ * [androidx.room.testing.MigrationTestHelper] step must pass this to
+ * `.addMigrations(*ALL_MIGRATIONS)` so Room can bring the DB up to the
+ * current entity version. Otherwise Room fails with
+ * `"A migration from X to Y was required but not found"`.
+ */
+internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(
+    MIGRATION_1_2,
+    MIGRATION_2_3,
+    MIGRATION_3_4,
+    MIGRATION_4_5,
+    MIGRATION_5_6,
+    MIGRATION_6_7,
+    MIGRATION_7_8,
+    MIGRATION_8_9,
+    MIGRATION_9_10,
+    MIGRATION_10_11,
+    MIGRATION_11_12,
+)

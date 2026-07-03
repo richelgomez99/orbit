@@ -50,7 +50,7 @@ class OrbitDatabaseMigrationV10toV11Test {
 
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val room = Room.databaseBuilder(context, OrbitDatabase::class.java, DB_NAME)
-            .addMigrations(MIGRATION_10_11)
+            .addMigrations(*ALL_MIGRATIONS)
             .allowMainThreadQueries()
             .build()
         try {

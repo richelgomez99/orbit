@@ -172,10 +172,15 @@ class MemoryRepositoryDelegateTest {
 
     @Test
     fun duplicateActiveFactKeyIsSuppressedUntilOriginalIsTerminal() = runTest {
+        // 2026-07-02 hotfix: the partial-unique DB index that used to enforce
+        // this constraint was dropped in MIGRATION_11_12 because Room's `@Index`
+        // does not support partial `WHERE` clauses and the schema mismatch
+        // crashed the :ml process on launch. Uniqueness is now enforced by
+        // callers via `findActiveDuplicate` before insert; this test proves
+        // the query returns/omits the active duplicate at the right moments.
         seedCandidate("candidate-1")
 
         val duplicate = candidateEntity("candidate-dup")
-        assertEquals(-1L, db.memoryCandidateDao().insert(duplicate))
         assertEquals(
             "candidate-1",
             db.memoryCandidateDao()
@@ -190,7 +195,12 @@ class MemoryRepositoryDelegateTest {
             db.memoryCandidateDao()
                 .findActiveDuplicate("INTEREST", "user", "interested_in", "startup events")
         )
-        assertEquals(1L, db.memoryCandidateDao().insert(duplicate.copy(id = "candidate-after-terminal")))
+        // After the original is terminal, a fresh candidate with the same
+        // fact key can be inserted safely.
+        assertEquals(
+            1L,
+            db.memoryCandidateDao().insert(duplicate.copy(id = "candidate-after-terminal"))
+        )
     }
 
     @Test
