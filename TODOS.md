@@ -76,22 +76,13 @@ Items deferred from /autoplan, /ship, /investigate, and other gstack flows. New 
 
 ### From spec 014 health check 2026-04-29
 
-- [ ] T9 [P2] [spec 003 datetime] **`DateTimeParser` ISO-UTC zone conversion broken** — `DateTimeParserTest.isoUtcConvertsToZone` fails: parsing `2026-05-04T20:00:00Z` against `America/New_York` returns hour=20 instead of hour=16 (expected EDT conversion).
-  - **Why**: ISO-UTC inputs aren't getting converted to the target zone before extracting `hour`. Likely a missing `.withZoneSameInstant(zone)` call in `DateTimeParser`. Surfaced when running full `:app:testDebugUnitTest` during T014-019b verification.
-  - **Context**: Last touched in commit `acbcb3d` (spec 003 Phases 1-4) — pre-existing, not regressed by cloud-pivot work. All other parser tests pass. Test anchor is correct (May 4, 2026 is EDT/UTC-4, so 20:00Z should be 16:00 local).
-  - **Effort**: S (CC ~30min — likely a one-line fix in `DateTimeParser.parse` for the `Z`-suffixed branch).
-  - **Depends on**: nothing.
-
-- [ ] T10 [P3, post-Demo-Day] [spec 014 hardening] **Migrate Edge Function JWT verification from legacy HS256 secret to Supabase asymmetric Signing Keys (JWKS)** — replace `SUPABASE_JWT_SECRET` (shared HMAC key) with JWKS-based verification fetching the project's public key from `${SUPABASE_URL}/auth/v1/.well-known/jwks.json`.
-  - **Why**: Supabase migrated new projects to asymmetric JWT signing keys (ES256/RS256). Legacy HS256 still works for verification but is the deprecated path. Asymmetric keys eliminate shared-secret distribution risk and enable zero-downtime key rotation.
-  - **Context**: Surfaced 2026-04-29 during T014-019b deploy walkthrough — Supabase dashboard shows "Legacy JWT secret has been migrated to new JWT Signing Keys" notice. Current `lib/auth.ts` uses `jwtVerify(token, secret, ...)` with `SUPABASE_JWT_SECRET`. New version: `jwtVerify(token, createRemoteJWKSet(new URL(jwksUrl)), { algorithms: ['ES256','RS256'] })` (jose 5.x supports both). Drop `SUPABASE_JWT_SECRET` from Vercel env vars after migration; add `SUPABASE_JWKS_URL` instead (or derive from `SUPABASE_URL`).
-  - **Effort**: S (CC ~2h — one file MODIFY in `lib/auth.ts`, update `lib/auth.test.ts` fixtures from HS256 to RS256, update README §1 secrets table, update `deploy.sh` REQUIRED_VARS).
-  - **Depends on**: nothing — can ship anytime.
-  - **Not blocking** — legacy HS256 path is officially supported.
+*(All three items in this section closed on 2026-07-02 — see Closed section below.)*
 
 
 ---
 
 ## Closed
 
-(none yet)
+- [x] T8 [P2, v1.1] [spec 003 hardening] **Prompt-injection guard for `ActionExtractor`** — landed 2026-07-02. `ActionExtractor.extract` now calls `PromptSanitizer.sanitizeInput` on envelope text before the LLM call and `PromptSanitizer.validateOutput` on each candidate's `previewTitle` / `previewSubtitle` in the filter loop; failing candidates are dropped before proposal/audit writes. Two instrumented test cases added in `ActionExtractorTest`. Non-device gate green.
+- [x] T9 [P2] [spec 003 datetime] **`DateTimeParser` ISO-UTC zone conversion broken** — closed on 2026-07-02: verified already fixed by commit `daf9a63` (2026-04-30, "DateTimeParser fix"). `DateTimeParser.parseIso` calls `withZoneSameInstant(zone)` / `atZoneSameInstant(zone)`; `DateTimeParserTest.isoUtcConvertsToZone` and all 18 parser tests pass. TODOS entry was stale.
+- [x] T10 [P3, post-Demo-Day] [spec 014 hardening] **Migrate Edge Function JWT verification to JWKS** — closed on 2026-07-02: verified already implemented per the "T10 update (2026-04-29)" comment in `supabase/functions/llm_gateway/lib/auth.ts`. `verifyJwt` uses `createRemoteJWKSet(new URL("${SUPABASE_URL}/auth/v1/.well-known/jwks.json"))` as the primary path (ES256/RS256) and retains HS256 with `SUPABASE_JWT_SECRET` only as a defensive fallback for legacy tokens. All 8 auth tests and full 59-test suite green (`npm run typecheck` + `npm run test:unit`).

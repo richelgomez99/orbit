@@ -2,6 +2,7 @@ package com.orbit.app.ai.extract
 
 import androidx.room.withTransaction
 import com.orbit.app.ai.LlmProvider
+import com.orbit.app.ai.PromptSanitizer
 import com.orbit.app.ai.model.ActionCandidate
 import com.orbit.app.ai.model.AppFunctionSummary
 import com.orbit.app.audit.AuditLogWriter
@@ -89,10 +90,14 @@ class ActionExtractor(
         }
 
         // Step 4 — Nano call with bounded timeout.
+        // TODOS T8 / spec 003 hardening: neutralise prompt-injection payloads
+        // in envelope text before it is interpolated into the model prompt.
+        // Mirrors ClusterSummariser (spec 002 FR-034).
+        val sanitizedText = PromptSanitizer.sanitizeInput(envelope.textContent!!)
         val result = try {
             withTimeout(llmTimeoutMillis) {
                 llmProvider.extractActions(
-                    text = envelope.textContent!!,
+                    text = sanitizedText,
                     contentType = envelope.contentType.name,
                     state = envelope.state,
                     registeredFunctions = summaries,
@@ -119,6 +124,11 @@ class ActionExtractor(
             if (cand.confidence < confidenceFloor) continue
             val skill = schemaByFunctionId[cand.functionId] ?: continue
             if (!isValidJsonObjectShape(cand.argsJson, skill.argsSchemaJson)) continue
+            // TODOS T8: drop candidates whose user-visible preview strings look
+            // like injection echoes or role breaks (see PromptSanitizer).
+            if (!PromptSanitizer.validateOutput(cand.previewTitle)) continue
+            val subtitle = cand.previewSubtitle
+            if (!subtitle.isNullOrBlank() && !PromptSanitizer.validateOutput(subtitle)) continue
             if (!sensitivityScopeMatches(envelope, skill.sensitivityScope)) {
                 droppedSensitivityIds += cand.functionId
                 continue
