@@ -67,6 +67,13 @@ Orbit captures what the user saved plus the intention behind why they saved it. 
 - Queue row 13 (`022-local-model-manager`) is active on branch `feature/022-local-model-manager-20260614`.
 - Spec 022 artifacts were regenerated on 2026-06-14. Scope is local model policy and router seam first: explicit Speed/Intelligence/legacy Nano/Cloud/Unavailable selection, tier capabilities, hardware profile checks, and JVM tests. The branch now adds `com.orbit.app.ai.local`, a deterministic selection policy, router seam support for a future BYOM local provider, fail-closed unavailable behavior when cloud is disabled, and comments clarifying Nano as current/legacy. Native LiteRT-LM/MLC binaries, downloads, JNI/Vulkan integration, model-store UI, and memory profiling automation remain deferred behind the provider seam. Focused and full non-phone gates passed on 2026-06-14.
 
+## Device Validation Milestone - 2026-07-06
+
+- The full `connectedDebugAndroidTest` suite (256 tests) ran green on the S24 (SM-S928U1, Android 16) for the first time — every deferred "connected/manual validation" note from queue rows 3-13 is now covered at the instrumented-test level.
+- The campaign (37 initial failures → 0) surfaced and fixed real defects: the `:ml` launch crash from the undeclared `memory_candidate` partial index (DB v12 hotfix), phantom proposal ids from idempotent ActionExtractor re-runs, an invisible touch-consuming overlay window desync, a retention test that wiped the on-device audit history, and worker tests writing fixtures into the real corpus.
+- Follow-ups tracked: tokenised agent evidence search (whole-phrase LIKE causes REFUSE on natural queries), legacy v1-era `intent_envelope` schema drift (rebuild migration if v1 DBs can still exist).
+- Operational note: Compose UI tests require the device screen on; `svc power stayon` only holds while charging — a dozing phone fails every UI test with "No compose hierarchies found".
+
 ## Deferred Until Approval Or Explicit Re-Scope
 
 - Platform-agent interop through AppFunctions/Spark/Gemini system agents.
