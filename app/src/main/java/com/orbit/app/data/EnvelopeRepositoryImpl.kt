@@ -1421,7 +1421,7 @@ class EnvelopeRepositoryImpl(
         val envelopes = if (attachedEnvelopeIds.isNotEmpty()) {
             attachedEnvelopeIds.mapNotNull { backend.getEnvelope(it) }
         } else if (query.isNotBlank()) {
-            backend.searchActiveEnvelopes(query, limit)
+            searchAgentEvidenceEnvelopes(query, limit)
         } else {
             emptyList()
         }
@@ -1439,6 +1439,45 @@ class EnvelopeRepositoryImpl(
                 )
             }
     }
+
+    /**
+     * FR-010-013 — tokenized evidence lookup. `searchActive` is a whole-
+     * phrase LIKE, so a natural-language request ("help me reschedule
+     * dentist") matched nothing and the coordinator refused nearly every
+     * real query. Tokenize the request, search per term, and rank merged
+     * hits by matched-term count then recency. Falls back to the raw
+     * phrase when tokenization leaves nothing (e.g. an all-stopword query).
+     */
+    private suspend fun searchAgentEvidenceEnvelopes(
+        query: String,
+        limit: Int
+    ): List<IntentEnvelopeEntity> {
+        val tokens = tokenizeAgentQuery(query)
+        if (tokens.isEmpty()) {
+            return backend.searchActiveEnvelopes(query, limit)
+        }
+        val matchCounts = LinkedHashMap<String, Pair<IntentEnvelopeEntity, Int>>()
+        for (token in tokens) {
+            for (envelope in backend.searchActiveEnvelopes(token, limit)) {
+                val current = matchCounts[envelope.id]
+                matchCounts[envelope.id] = envelope to ((current?.second ?: 0) + 1)
+            }
+        }
+        return matchCounts.values
+            .sortedWith(
+                compareByDescending<Pair<IntentEnvelopeEntity, Int>> { it.second }
+                    .thenByDescending { it.first.createdAt }
+            )
+            .map { it.first }
+            .take(limit)
+    }
+
+    private fun tokenizeAgentQuery(query: String): List<String> =
+        query.lowercase()
+            .split(AGENT_QUERY_SPLIT_REGEX)
+            .filter { it.length >= MIN_AGENT_QUERY_TOKEN_CHARS && it !in AGENT_QUERY_STOPWORDS }
+            .distinct()
+            .take(MAX_AGENT_QUERY_TOKENS)
     // ---- Helpers ----
 
     private fun IntentEnvelopeEntity.agentEvidenceLabel(): String {
@@ -1546,5 +1585,27 @@ class EnvelopeRepositoryImpl(
         private const val MAX_AGENT_ID_CHARS = 128
         private const val MAX_AGENT_EVIDENCE = 10
         private const val MAX_AGENT_LABEL_CHARS = 160
+
+        // FR-010-013 — tokenized agent evidence lookup.
+        private const val MAX_AGENT_QUERY_TOKENS = 8
+        private const val MIN_AGENT_QUERY_TOKEN_CHARS = 3
+        private val AGENT_QUERY_SPLIT_REGEX = Regex("[^a-z0-9]+")
+
+        /**
+         * Function words + app-name noise dropped before evidence search.
+         * Content words like "close"/"loop" are deliberately NOT here —
+         * they carry real signal in requests like "help me close the loop".
+         */
+        private val AGENT_QUERY_STOPWORDS = setOf(
+            "the", "and", "for", "with", "that", "this", "these", "those",
+            "from", "into", "onto", "over", "about", "after", "before",
+            "was", "were", "are", "been", "being", "have", "has", "had",
+            "does", "did", "will", "would", "can", "could", "should",
+            "shall", "may", "might", "must", "need", "want", "wants",
+            "please", "help", "how", "what", "when", "where", "which",
+            "who", "whom", "why", "you", "your", "yours", "our", "ours",
+            "its", "some", "any", "all", "let", "lets", "get", "got",
+            "orbit",
+        )
     }
 }

@@ -51,6 +51,7 @@ As a user, when model assistance is enabled, Orbit may improve wording and step 
 - **FR-010-010**: Any LLM output MUST be treated as untrusted suggestions and validated against local evidence/action schemas before display.
 - **FR-010-011**: Agent traces/audit rows MUST store only digests, ids, counts, model labels, outcomes, and refusal reasons unless a later explicit policy expands this.
 - **FR-010-012**: The UI MUST present action steps as review/approval affordances, not as completed work.
+- **FR-010-013** *(amendment 2026-07-06)*: Evidence lookup for a free-text request MUST tokenize the query (lowercase, non-alphanumeric split, stopwords dropped, bounded term count) and match envelopes on ANY term, ranking by matched-term count then recency, capped at the request's evidence limit. A whole-phrase match requirement is prohibited: it caused the coordinator to REFUSE nearly every natural-language request ("help me reschedule dentist" matched nothing) despite relevant captures existing. Ranking and merging happen locally; no schema change and no model involvement.
 
 ## Key Entities
 
