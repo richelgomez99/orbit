@@ -77,8 +77,21 @@ class OverlayDuplicateFeedbackTest {
         assertTrue(vm.postCaptureUi.value is PostCaptureUi.UndoPill)
         vm.onNewCaptureAddContext("env-new")
 
-        assertEquals("env-new", noteTarget)
+        // Spec 018: Add context now opens the focused ContextEntry surface
+        // (not an immediate note callback), keeping the undo pill parked as
+        // returnUi so cancel restores it un-dismissed.
+        val entry = vm.postCaptureUi.value as PostCaptureUi.ContextEntry
+        assertEquals("env-new", entry.targetEnvelopeId)
+        assertTrue(entry.returnUi is PostCaptureUi.UndoPill)
+
+        vm.onCaptureContextCancel()
         assertTrue(vm.postCaptureUi.value is PostCaptureUi.UndoPill)
+
+        // The full note surface remains reachable: open-detail fires the
+        // legacy note callback with the same target envelope.
+        vm.onNewCaptureAddContext("env-new")
+        vm.onCaptureContextOpenDetail()
+        assertEquals("env-new", noteTarget)
     }
 
     @Test
@@ -97,8 +110,17 @@ class OverlayDuplicateFeedbackTest {
         assertTrue(vm.postCaptureUi.value is PostCaptureUi.SilentWrapPill)
         vm.onNewCaptureAddContext("env-silent")
 
-        assertEquals("env-silent", noteTarget)
+        // Spec 018 contract — see newCaptureAddContext test above.
+        val entry = vm.postCaptureUi.value as PostCaptureUi.ContextEntry
+        assertEquals("env-silent", entry.targetEnvelopeId)
+        assertTrue(entry.returnUi is PostCaptureUi.SilentWrapPill)
+
+        vm.onCaptureContextCancel()
         assertTrue(vm.postCaptureUi.value is PostCaptureUi.SilentWrapPill)
+
+        vm.onNewCaptureAddContext("env-silent")
+        vm.onCaptureContextOpenDetail()
+        assertEquals("env-silent", noteTarget)
     }
 
     @Test

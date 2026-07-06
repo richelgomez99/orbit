@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
@@ -86,11 +87,11 @@ class OrbitCleanupMemoryReviewTest {
         composeRule.onNodeWithTag(DiaryScreenTestTags.memoryCandidateOpenCapture("candidate-1")).performClick()
         assertEquals(listOf("env-1"), opened)
 
-        composeRule.onNodeWithTag(DiaryScreenTestTags.memoryCandidateReject("candidate-1")).performClick()
+        composeRule.onNodeWithTag(DiaryScreenTestTags.memoryCandidateReject("candidate-1")).performScrollTo().performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) { repo.rejectedMemoryCalls.isNotEmpty() }
         assertEquals(listOf("candidate-1" to "user_rejected"), repo.rejectedMemoryCalls)
 
-        composeRule.onNodeWithTag(DiaryScreenTestTags.memoryCandidateAccept("candidate-1")).performClick()
+        composeRule.onNodeWithTag(DiaryScreenTestTags.memoryCandidateAccept("candidate-1")).performScrollTo().performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) { repo.acceptedMemoryCalls.isNotEmpty() }
         assertEquals(listOf(Triple("candidate-1", null, null)), repo.acceptedMemoryCalls)
     }

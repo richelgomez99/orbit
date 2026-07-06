@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.orbit.app.ui.theme.LocalRuntimeFlags
 import com.orbit.app.ui.theme.RuntimeFlagValues
 import org.junit.Rule
@@ -35,6 +36,7 @@ class SettingsScreenTest {
         }
 
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
+        // M3 variant is not scrollable — no performScrollTo here.
         composeRule.onNodeWithTag(SettingsScreenTestTags.PAUSE_TOGGLE).performClick()
         composeRule.waitForIdle()
 
@@ -73,24 +75,26 @@ class SettingsScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("// PRINCIPLE I · DEFAULT PRIVACY").assertIsDisplayed()
-        composeRule.onNodeWithText("WHERE YOUR CAPTURES THINK").assertIsDisplayed()
-        composeRule.onNodeWithText("Compact memory index").assertIsDisplayed()
-        composeRule.onNodeWithText("Cloud Ask synthesis").assertIsDisplayed()
-        composeRule.onNodeWithText("Cloud AI routing").assertIsDisplayed()
-        composeRule.onNodeWithText("Cloud activity").assertIsDisplayed()
-        composeRule.onNodeWithText("Floating bubble").assertIsDisplayed()
-        composeRule.onNodeWithTag(SettingsScreenTestTags.CAPTURE_SETUP_ROW).performClick()
+        // The quiet screen scrolls; on the S24 anything past the first few
+        // rows is below the fold, so every check scrolls its node into view.
+        composeRule.onNodeWithText("// PRINCIPLE I · DEFAULT PRIVACY").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("WHERE YOUR CAPTURES THINK").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Compact memory index").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cloud Ask synthesis").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cloud AI routing").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cloud activity").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Floating bubble").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.CAPTURE_SETUP_ROW).performScrollTo().performClick()
         composeRule.waitForIdle()
         assert(openedCaptureSetup) { "Quiet nested capture setup row must call onOpenCaptureSetup" }
-        composeRule.onNodeWithText("Forget everything from before").assertIsDisplayed()
-        composeRule.onNodeWithTag(SettingsScreenTestTags.PAUSE_TOGGLE).performClick()
+        composeRule.onNodeWithText("Forget everything from before").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.PAUSE_TOGGLE).performScrollTo().performClick()
         composeRule.waitForIdle()
 
         assert(lastPauseValue == true) { "Quiet pause toggle must call onPauseChange(true)" }
-        composeRule.onNodeWithTag(SettingsScreenTestTags.MEMORY_INDEX_TOGGLE).performClick()
-        composeRule.onNodeWithTag(SettingsScreenTestTags.CLOUD_ASK_TOGGLE).performClick()
-        composeRule.onNodeWithTag(SettingsScreenTestTags.CLOUD_AI_TOGGLE).performClick()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.MEMORY_INDEX_TOGGLE).performScrollTo().performClick()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.CLOUD_ASK_TOGGLE).performScrollTo().performClick()
+        composeRule.onNodeWithTag(SettingsScreenTestTags.CLOUD_AI_TOGGLE).performScrollTo().performClick()
         composeRule.waitForIdle()
 
         assert(lastMemoryIndexValue == true) { "Memory index toggle must call onMemoryIndexingChange(true)" }
@@ -127,7 +131,8 @@ class SettingsScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("// Orbit actions").assertIsDisplayed()
+        // MonoLabel uppercases its text at render time.
+        composeRule.onNodeWithText("// Orbit actions", ignoreCase = true).assertIsDisplayed()
         composeRule.onNodeWithTag(REMEMBERED_TARGET_TEST_TAG).assertIsDisplayed()
         composeRule.onNodeWithTag(skillToggleTestTag("todo")).performClick()
         composeRule.waitForIdle()
