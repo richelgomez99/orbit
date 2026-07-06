@@ -16,8 +16,17 @@ import java.util.Locale
  * - port is unset or the scheme's default
  *
  * Pure Kotlin + `java.net` only — safe to unit-test on the JVM.
+ *
+ * @param allowLoopback TEST-ONLY escape hatch: permits loopback hosts
+ *   (localhost / 127.0.0.0/8 / ::1) on any port so MockWebServer-backed
+ *   contract tests can exercise the real fetch pipeline. Production call
+ *   sites MUST leave this false — the SSRF posture of the `:net` process
+ *   depends on it.
  */
-class UrlValidator(private val requireHttps: Boolean = true) {
+class UrlValidator(
+    private val requireHttps: Boolean = true,
+    private val allowLoopback: Boolean = false,
+) {
 
     sealed class Validation {
         data class Valid(val uri: URI, val host: String) : Validation()
@@ -57,21 +66,26 @@ class UrlValidator(private val requireHttps: Boolean = true) {
         if (host.endsWith(".onion")) {
             return Validation.Invalid("blocked_host", "onion host")
         }
-        if (host == "localhost" || host.endsWith(".localhost")) {
+
+        val isLoopback = host == "localhost" || host.endsWith(".localhost") ||
+            (isIpLiteral(host) && isLoopbackIp(host))
+        if (isLoopback && !allowLoopback) {
             return Validation.Invalid("blocked_host", "localhost")
         }
 
         val port = uri.port
-        when (scheme) {
-            "https" -> if (port != -1 && port != 443) {
-                return Validation.Invalid("blocked_scheme", "port=$port")
-            }
-            "http" -> if (port != -1 && port != 80) {
-                return Validation.Invalid("blocked_scheme", "port=$port")
+        if (!(allowLoopback && isLoopback)) {
+            when (scheme) {
+                "https" -> if (port != -1 && port != 443) {
+                    return Validation.Invalid("blocked_scheme", "port=$port")
+                }
+                "http" -> if (port != -1 && port != 80) {
+                    return Validation.Invalid("blocked_scheme", "port=$port")
+                }
             }
         }
 
-        if (isIpLiteral(host) && isPrivateIp(host)) {
+        if (isIpLiteral(host) && isPrivateIp(host) && !(allowLoopback && isLoopback)) {
             return Validation.Invalid("blocked_host", "private/link-local/loopback ip")
         }
 
@@ -85,6 +99,15 @@ class UrlValidator(private val requireHttps: Boolean = true) {
             if (IPV4.matches(host)) return true
             // Bracketed IPv6 arrives stripped by URI.host; a bare `:` signals literal.
             return host.contains(':')
+        }
+
+        internal fun isLoopbackIp(host: String): Boolean {
+            val addr = try {
+                InetAddress.getByName(host)
+            } catch (_: Exception) {
+                return false
+            }
+            return addr.isLoopbackAddress
         }
 
         internal fun isPrivateIp(host: String): Boolean {

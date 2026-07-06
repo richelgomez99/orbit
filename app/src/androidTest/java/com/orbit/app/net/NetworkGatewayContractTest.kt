@@ -44,7 +44,7 @@ class NetworkGatewayContractTest {
 
     private fun laxGateway(): NetworkGatewayImpl = NetworkGatewayImpl(
         client = SafeOkHttpClient.build(),
-        validator = UrlValidator(requireHttps = false),
+        validator = UrlValidator(requireHttps = false, allowLoopback = true),
     )
 
     private fun youtubeGateway(): NetworkGatewayImpl = NetworkGatewayImpl(
