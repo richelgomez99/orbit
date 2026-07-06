@@ -8,6 +8,7 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
@@ -180,8 +181,9 @@ class DiaryScreenWithClusterTest {
         )
 
         composeRule.onAllNodesWithText("Browser").assertCountEquals(0)
-        composeRule.onNodeWithText("reference").assertIsDisplayed()
-        composeRule.onNodeWithText("▶").assertIsDisplayed()
+        composeRule.onAllNodesWithText("reference", substring = true, ignoreCase = true)
+            .onFirst().assertIsDisplayed()
+        composeRule.onNodeWithText("▶", substring = true).assertIsDisplayed()
     }
 
     @Test

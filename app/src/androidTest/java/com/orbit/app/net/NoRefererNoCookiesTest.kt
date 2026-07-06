@@ -38,7 +38,9 @@ class NoRefererNoCookiesTest {
 
         val gateway = NetworkGatewayImpl(
             client = SafeOkHttpClient.build(),
-            validator = UrlValidator(requireHttps = false),
+            // allowLoopback: MockWebServer binds 127.0.0.1:<random>, which the
+            // production SSRF blocklist (rightly) rejects.
+            validator = UrlValidator(requireHttps = false, allowLoopback = true),
         )
         // Simulate a caller that has (incorrectly) set a Referer — our interceptor
         // must strip it. We do this by directly driving the client under test: the
