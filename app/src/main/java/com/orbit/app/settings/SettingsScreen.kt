@@ -430,19 +430,9 @@ private fun QuietSettingsTopBar(onNavigateBack: (() -> Unit)?) {
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         if (onNavigateBack != null) {
-            Text(
-                text = "‹",
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onNavigateBack)
-                    .padding(horizontal = 8.dp, vertical = 2.dp),
+            com.orbit.app.ui.primitives.QuietBackButton(
+                onClick = onNavigateBack,
                 color = QuietSettingsColors.Cream,
-                style = TextStyle(
-                    fontFamily = OrbitType.QuietAlmanac.bodySans,
-                    fontSize = 28.sp,
-                    lineHeight = 28.sp,
-                    fontWeight = FontWeight.Normal,
-                ),
             )
         }
         Text(

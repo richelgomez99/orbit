@@ -151,18 +151,9 @@ private fun QuietAuditLogScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text(
-                text = "‹",
-                modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
-                    .clickable(onClick = onBack)
-                    .padding(horizontal = 8.dp, vertical = 2.dp),
+            com.orbit.app.ui.primitives.QuietBackButton(
+                onClick = onBack,
                 color = QuietSettingsColors.Cream,
-                style = TextStyle(
-                    fontFamily = OrbitType.QuietAlmanac.bodySans,
-                    fontSize = 28.sp,
-                    lineHeight = 28.sp,
-                ),
             )
             Text(
                 text = "What Orbit did today",
