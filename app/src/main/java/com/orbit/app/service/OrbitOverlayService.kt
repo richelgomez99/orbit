@@ -539,6 +539,23 @@ class OrbitOverlayService : LifecycleService() {
         }
         if (params.width != WindowManager.LayoutParams.WRAP_CONTENT ||
             params.height != WindowManager.LayoutParams.WRAP_CONTENT) {
+            // Fail-safe (2026-07-06): state says COLLAPSED but the window is
+            // still expanded-size. The Compose LaunchedEffect that normally
+            // shrinks the window can die with composition (e.g. lifecycle
+            // paused mid-transition), leaving an invisible near-fullscreen
+            // window that consumes every touch on the device. This collector
+            // runs on the service scope, independent of Compose, so repair
+            // the window here instead of returning.
+            Log.w(TAG, "Overlay window desync: state COLLAPSED but window expanded — force-collapsing")
+            params.width = WindowManager.LayoutParams.WRAP_CONTENT
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT
+            params.x = bubbleState.x
+            params.y = bubbleState.y
+            try {
+                windowManager.updateViewLayout(view, params)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to force-collapse desynced overlay window", e)
+            }
             return
         }
 
