@@ -33,6 +33,10 @@ class OrbitApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        // Spec 023 Phase A — every process journals uncaught exceptions to
+        // a sanitized local record before the platform crash flow runs.
+        com.orbit.app.audit.CrashJournal.install(this, currentProcessName())
+
         // T090a — schedule the soft-delete retention worker in the default
         // process only. Enqueuing once per boot here is safe: WorkManager
         // dedupes by unique-work-name, so subsequent launches KEEP the
@@ -43,6 +47,7 @@ class OrbitApplication : Application(), Configuration.Provider {
             scheduleWeeklyDigest()
             scheduleClusterDetection()
             registerDebugDumpReceiverIfDebug()
+            drainCrashJournal()
         }
         // T025 — :ml process owns the AppFunction registry. Register the
         // hand-curated built-in schemas at boot. Idempotent: schemas already
@@ -218,6 +223,35 @@ class OrbitApplication : Application(), Configuration.Provider {
         val candidate = now.with(targetLocalTime)
         val anchor = if (!candidate.isAfter(now)) candidate.plusDays(1) else candidate
         return java.time.Duration.between(now, anchor)
+    }
+
+    /**
+     * Spec 023 FR-023-004 — drain unreported crash records into
+     * CRASH_DETECTED audit rows. Default process only, off the main
+     * thread, best-effort: a drain failure never blocks startup.
+     * Uses the same direct-DB pattern as the retention workers.
+     */
+    private fun drainCrashJournal() {
+        val scope = kotlinx.coroutines.CoroutineScope(
+            kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO
+        )
+        scope.launch {
+            runCatching {
+                val db = com.orbit.app.data.OrbitDatabase.getInstance(this@OrbitApplication)
+                val drained = com.orbit.app.audit.CrashJournal.drainToAudit(
+                    context = this@OrbitApplication,
+                    auditLogDao = db.auditLogDao(),
+                    auditWriter = com.orbit.app.audit.AuditLogWriter(),
+                )
+                if (drained > 0) Log.w("OrbitApplication", "Drained $drained crash record(s) to audit log")
+            }.onFailure { Log.w("OrbitApplication", "crash journal drain failed", it) }
+        }
+    }
+
+    private fun currentProcessName(): String {
+        val pid = android.os.Process.myPid()
+        val am = getSystemService(ACTIVITY_SERVICE) as? android.app.ActivityManager ?: return packageName
+        return am.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName ?: packageName
     }
 
     private fun isDefaultProcess(): Boolean {

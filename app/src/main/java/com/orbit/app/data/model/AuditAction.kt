@@ -106,5 +106,15 @@ enum class AuditAction {
     /** User rejected a candidate memory. */
     MEMORY_CANDIDATE_REJECTED,
     /** Candidate/promoted memory was invalidated because provenance disappeared or became stale. */
-    MEMORY_INVALIDATED
+    MEMORY_INVALIDATED,
+
+    // Spec 023 — crash telemetry (Phase A):
+    /**
+     * A prior run of some Orbit process died on an uncaught exception.
+     * Written on the NEXT default-process launch while draining the
+     * local crash journal. Bounded metadata only: process name,
+     * exception class, frame count, record digest — never messages or
+     * stack content (FR-023-002/004).
+     */
+    CRASH_DETECTED
 }
