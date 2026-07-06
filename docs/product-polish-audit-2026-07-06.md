@@ -31,14 +31,19 @@ ClusterDetailScreen, SettingsScreen declare zero content descriptions
 across interactive rows/toggles. Toggles carry test tags but no
 spoken label. Audit each interactive element for a label.
 
-### P2 — Library has no error state
-`LibraryUiState` models `loading` + results but no error field. A failed
-search/index read surfaces as an empty result set indistinguishable from
-"no matches". Add an error branch + retry affordance.
+### P2 — Library has no error state — CORRECTED: false positive
+On inspection Library IS fully handled: `LibraryViewModel` wraps search
+in try/catch and maps failure to `unavailableTitle`/`unavailableDetail`
+(the grep missed these differently-named fields), and `LibraryScreen`
+renders an unavailable branch. Re-submitting the query is the retry.
+No work needed.
 
-### P2 — ClusterDetailScreen has no state handling
-No loading/error/empty branches detected; renders straight from data.
-Confirm it can't be reached with absent/failed data, or add the states.
+### P2 — ClusterDetailScreen has no state handling — CORRECTED: not wired
+`ClusterDetailScreen`'s only call site is its own `@Preview`. It is a
+design-complete surface with no production navigation entry point, so
+loading/error/empty branches would be premature. Revisit when the
+cluster-detail route is actually wired into the app; tracked as a
+build-but-unwired note, not a polish gap.
 
 ### P3 — Empty-state copy consistency
 Diary/Trash/AuditLog have empty handling; verify each reads as
