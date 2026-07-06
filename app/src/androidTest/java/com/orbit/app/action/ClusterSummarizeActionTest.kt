@@ -232,7 +232,10 @@ class ClusterSummarizeActionTest {
             cluster = ClusterEntity(
                 id = clusterId,
                 clusterType = ClusterType.RESEARCH_SESSION,
-                state = ClusterState.SURFACED,
+                // START_ACTING is legal only from TAPPED (or FAILED retry) —
+                // the real flow taps the card before summarize fires. Seeding
+                // SURFACED made transitionToActing return null → invalid_state.
+                state = ClusterState.TAPPED,
                 timeBucketStart = now,
                 timeBucketEnd = now + 60_000L,
                 similarityScore = 0.9f,
@@ -262,10 +265,11 @@ class ClusterSummarizeActionTest {
      */
     private class StubLlmProvider : LlmProvider {
         override suspend fun summarize(text: String, maxTokens: Int): SummaryResult {
-            // Find every `[env-id]` token in the prompt — those are the
-            // member envelope ids the summariser asked about. We emit
-            // one bullet per id citing it back.
-            val ids = Regex("""\[(env-[A-Za-z0-9_-]+)\]""")
+            // Find every member envelope id the summariser asked about.
+            // ClusterSummaryPrompt lists members as `- envelope_id: <id>`
+            // (the only [bracketed] id in the prompt is the instruction's
+            // example, which is NOT a member and would poison citations).
+            val ids = Regex("""envelope_id:\s*(env-[A-Za-z0-9_-]+)""")
                 .findAll(text)
                 .map { it.groupValues[1] }
                 .distinct()

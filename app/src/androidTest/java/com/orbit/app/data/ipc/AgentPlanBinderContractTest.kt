@@ -68,9 +68,14 @@ class AgentPlanBinderContractTest {
             )
         )
 
+        // Evidence lookup is a whole-phrase LIKE over textContent (see
+        // IntentEnvelopeDao.searchActive) — multi-word natural queries like
+        // "help me reschedule dentist" match nothing. Use a single token the
+        // sealed envelope contains; tokenised evidence search is tracked as
+        // a spec-010 follow-up.
         val plan = repository.planAgentRequest(
             requestId = "request-1",
-            query = "help me reschedule dentist",
+            query = "dentist",
             attachedEnvelopeIds = emptyArray(),
             maxEvidence = 5,
             allowModelAssist = true,

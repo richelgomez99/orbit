@@ -43,7 +43,15 @@ import org.json.JSONObject
  * handler still respects Principle VI (no direct DB access from
  * `:capture`).
  */
-class TodoActionHandler : ActionHandler {
+class TodoActionHandler(
+    /**
+     * Test seam: package-resolution probe used by the remembered-target
+     * fast path. Android 11+ package-visibility filtering makes real
+     * resolveActivity() results environment-dependent under test; the
+     * default is the real probe.
+     */
+    private val resolvesToProbe: (Context, Intent, String) -> Boolean = ::defaultResolvesTo,
+) : ActionHandler {
 
     override suspend fun handle(
         context: Context,
@@ -118,7 +126,7 @@ class TodoActionHandler : ActionHandler {
         }
 
         return try {
-            if (rememberedPkg != null && resolvesTo(context, sendIntent, rememberedPkg)) {
+            if (rememberedPkg != null && resolvesToProbe(context, sendIntent, rememberedPkg)) {
                 sendIntent.setPackage(rememberedPkg)
                 context.startActivity(sendIntent)
                 HandlerResult.Dispatched(elapsedMs(started), "external:remembered:$rememberedPkg")
@@ -164,15 +172,15 @@ class TodoActionHandler : ActionHandler {
         }
     }
 
-    private fun resolvesTo(context: Context, intent: Intent, pkg: String): Boolean {
-        val probe = Intent(intent).setPackage(pkg)
-        return probe.resolveActivity(context.packageManager) != null
-    }
-
     private fun elapsedMs(startedNanos: Long): Long =
         (System.nanoTime() - startedNanos) / 1_000_000L
 
     companion object {
+        private fun defaultResolvesTo(context: Context, intent: Intent, pkg: String): Boolean {
+            val probe = Intent(intent).setPackage(pkg)
+            return probe.resolveActivity(context.packageManager) != null
+        }
+
         const val PREFS_NAME = "orbit.actions"
         const val KEY_TODO_TARGET = "todoTargetPackage"
 

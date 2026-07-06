@@ -96,12 +96,15 @@ class TodoAddHandlerExternalTest {
             "android" // resolves on-device (Android system)
         )
 
-        // Use a context that always resolves the remembered package so
-        // the resolvesTo() guard inside the handler returns true.
+        // Package-visibility filtering (Android 11+) makes real
+        // resolveActivity() results environment-dependent, so inject an
+        // always-true resolution probe — the subject here is the remembered-
+        // target fast path, not PackageManager behaviour.
         val ctx = AlwaysResolvesContext(ApplicationProvider.getApplicationContext())
         val args = """{"target":"external","items":["Eat the frog"]}"""
 
-        val result = handler.handle(ctx, skill, args)
+        val alwaysResolves = TodoActionHandler(resolvesToProbe = { _, _, _ -> true })
+        val result = alwaysResolves.handle(ctx, skill, args)
 
         assertTrue(result is HandlerResult.Dispatched)
         assertEquals(

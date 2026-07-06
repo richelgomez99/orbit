@@ -46,6 +46,38 @@ class SkillUsageAggregationTest {
         db = Room.inMemoryDatabaseBuilder(ctx, OrbitDatabase::class.java)
             .allowMainThreadQueries()
             .build()
+        // skill_usage FKs appfunction_skill + action_execution (which FKs
+        // action_proposal → intent_envelope). Seed the shared roots once;
+        // seed() adds the per-row proposal/execution lineage.
+        val sql = db.openHelper.writableDatabase
+        sql.execSQL(
+            """
+            INSERT INTO intent_envelope(
+                id, contentType, textContent, imageUri, textContentSha256,
+                intent, intentConfidence, intentSource, intentHistoryJson,
+                createdAt, day_local, isArchived, isDeleted, deletedAt,
+                sharedContinuationResultId, appCategory, activityState,
+                tzId, hourLocal, dayOfWeekLocal,
+                kind, derivedFromEnvelopeIdsJson, todoMetaJson
+            ) VALUES('env-seed', 'TEXT', 'seed', NULL, NULL,
+                'REFERENCE', NULL, 'USER_CHIP', '[]',
+                $now, '2026-04-26', 0, 0, NULL, NULL,
+                'OTHER', 'UNKNOWN', 'UTC', 12, 5,
+                'REGULAR', NULL, NULL)
+            """.trimIndent()
+        )
+        listOf("calendar.createEvent", "tasks.createTodo", "share.send").forEach { fid ->
+            sql.execSQL(
+                """
+                INSERT INTO appfunction_skill(
+                    functionId, appPackage, displayName, description, schemaVersion,
+                    argsSchemaJson, sideEffects, reversibility, sensitivityScope,
+                    registeredAt, updatedAt
+                ) VALUES('$fid', 'com.orbit.app', '$fid', 'seed', 1,
+                    '{}', 'EXTERNAL_INTENT', 'NONE', 'PERSONAL', $now, $now)
+                """.trimIndent()
+            )
+        }
     }
 
     @After
@@ -136,12 +168,52 @@ class SkillUsageAggregationTest {
         latencyMs: Long,
         invokedAt: Long
     ) {
+        val proposalId = UUID.randomUUID().toString()
+        val executionId = UUID.randomUUID().toString()
+        val sql = db.openHelper.writableDatabase
+        // action_proposal has a unique (envelopeId, functionId) index, so
+        // every proposal needs its own envelope row.
+        sql.execSQL(
+            """
+            INSERT INTO intent_envelope(
+                id, contentType, textContent, imageUri, textContentSha256,
+                intent, intentConfidence, intentSource, intentHistoryJson,
+                createdAt, day_local, isArchived, isDeleted, deletedAt,
+                sharedContinuationResultId, appCategory, activityState,
+                tzId, hourLocal, dayOfWeekLocal,
+                kind, derivedFromEnvelopeIdsJson, todoMetaJson
+            ) VALUES('env-$proposalId', 'TEXT', 'seed', NULL, NULL,
+                'REFERENCE', NULL, 'USER_CHIP', '[]',
+                $invokedAt, '2026-04-26', 0, 0, NULL, NULL,
+                'OTHER', 'UNKNOWN', 'UTC', 12, 5,
+                'REGULAR', NULL, NULL)
+            """.trimIndent()
+        )
+        sql.execSQL(
+            """
+            INSERT INTO action_proposal(
+                id, envelopeId, functionId, schemaVersion, argsJson, previewTitle,
+                previewSubtitle, confidence, provenance, state, sensitivityScope,
+                createdAt, stateChangedAt
+            ) VALUES('$proposalId', 'env-$proposalId', '$skillId', 1, '{}', 'seed',
+                NULL, 0.9, 'LOCAL_NANO', 'CONFIRMED', 'PERSONAL', $invokedAt, $invokedAt)
+            """.trimIndent()
+        )
+        sql.execSQL(
+            """
+            INSERT INTO action_execution(
+                id, proposalId, functionId, outcome, outcomeReason,
+                dispatchedAt, completedAt, latencyMs, episodeId
+            ) VALUES('$executionId', '$proposalId', '$skillId', '${outcome.name}', NULL,
+                $invokedAt, $invokedAt, $latencyMs, NULL)
+            """.trimIndent()
+        )
         db.skillUsageDao().insert(
             SkillUsageEntity(
                 id = UUID.randomUUID().toString(),
                 skillId = skillId,
-                executionId = UUID.randomUUID().toString(),
-                proposalId = UUID.randomUUID().toString(),
+                executionId = executionId,
+                proposalId = proposalId,
                 episodeId = null,
                 outcome = outcome,
                 latencyMs = latencyMs,

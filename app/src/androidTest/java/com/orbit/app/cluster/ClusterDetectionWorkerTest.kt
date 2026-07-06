@@ -207,12 +207,39 @@ class ClusterDetectionWorkerTest {
         )
         envelopes.forEach { db.intentEnvelopeDao().insert(it) }
 
-        val sharedSummary = "transformer attention embedding encoder decoder vector neural language"
+        // Must clear ClusterDetector.DEFAULT_MIN_SUMMARY_LENGTH (256 chars) —
+        // shorter summaries are excluded by findClusterCandidates.
+        val sharedSummary = (
+            "transformer attention embedding encoder decoder vector neural language " +
+                "self-attention multi-head positional encoding layer norm residual " +
+                "connections tokenizer byte pair encoding pretraining fine-tuning " +
+                "inference latency quantization distillation context window scaling laws"
+            )
+        // Each summary embeds its envelope id so TestLlmProvider.matchByValue
+        // can route the summary text back to the right stubbed vector (the
+        // detector embeds row.summary, not the envelope id).
         val results = listOf(
-            buildResult("res-a", "env-a", ts, "site-one.example", sharedSummary),
-            buildResult("res-b", "env-b", ts + 30L * 60_000L, "site-two.example", sharedSummary),
-            buildResult("res-c", "env-c", ts + 90L * 60_000L, "site-one.example", sharedSummary)
+            buildResult("res-a", "env-a", ts, "site-one.example", "env-a $sharedSummary"),
+            buildResult("res-b", "env-b", ts + 30L * 60_000L, "site-two.example", "env-b $sharedSummary"),
+            buildResult("res-c", "env-c", ts + 90L * 60_000L, "site-one.example", "env-c $sharedSummary")
         )
+        // continuation_result FKs both intent_envelope AND continuation —
+        // seed the parent continuation rows the results reference.
+        results.forEach { r ->
+            db.continuationDao().insert(
+                com.orbit.app.data.entity.ContinuationEntity(
+                    id = "${r.id}-cont",
+                    envelopeId = r.envelopeId,
+                    type = com.orbit.app.data.model.ContinuationType.URL_HYDRATE,
+                    status = com.orbit.app.data.model.ContinuationStatus.SUCCEEDED,
+                    inputUrl = r.canonicalUrl,
+                    scheduledAt = r.producedAt,
+                    startedAt = r.producedAt,
+                    completedAt = r.producedAt,
+                    failureReason = null
+                )
+            )
+        }
         results.forEach { db.continuationResultDao().insert(it) }
     }
 
