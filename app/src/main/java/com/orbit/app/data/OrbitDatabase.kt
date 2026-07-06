@@ -88,7 +88,7 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
         // 012 — Durable resolution semantics
         ResolutionReceiptEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = true
 )
 abstract class OrbitDatabase : RoomDatabase() {

@@ -708,6 +708,25 @@ internal val MIGRATION_9_10: Migration = object : Migration(9, 10) {
  * back into agreement with the entity. Idempotent on fresh installs — the
  * index will never have existed there.
  */
+/**
+ * v13 — hotfix (2026-07-06): drop the legacy partial-unique index
+ * `index_digest_unique_per_day` (created by MIGRATION_1_2, `WHERE
+ * kind='DIGEST'`). Same disease as the v12 `active_fact_key` fix:
+ * Room's @Entity cannot declare partial indexes, so the index existed
+ * ONLY on v1-upgraded databases — where Room 2.7's strict schema
+ * validation rejects it and crashes the open — while fresh installs
+ * never had it, meaning the digest race-guard that leaned on it was
+ * silently absent everywhere it mattered. Enforcement now lives in
+ * code: `LocalRoomBackend.insertDigestTransaction` does an atomic
+ * check-then-insert via `IntentEnvelopeDao.countDigestsForDay`.
+ * Idempotent on fresh installs.
+ */
+internal val MIGRATION_12_13: Migration = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP INDEX IF EXISTS index_digest_unique_per_day")
+    }
+}
+
 internal val MIGRATION_11_12: Migration = object : Migration(11, 12) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("DROP INDEX IF EXISTS index_memory_candidate_active_fact_key")
@@ -775,4 +794,5 @@ internal val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_9_10,
     MIGRATION_10_11,
     MIGRATION_11_12,
+    MIGRATION_12_13,
 )

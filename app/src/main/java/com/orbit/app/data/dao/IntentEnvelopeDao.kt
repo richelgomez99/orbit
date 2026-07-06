@@ -295,6 +295,18 @@ interface IntentEnvelopeDao {
     ): List<IntentEnvelopeEntity>
 
     /**
+     * Spec 023-adjacent hotfix (2026-07-06) — code-level "one DIGEST per
+     * day" guard. The partial unique index `index_digest_unique_per_day`
+     * only ever existed on v1-upgraded databases (Room's @Entity cannot
+     * declare partial indexes, so fresh installs never create it — and
+     * where it DID exist, Room 2.7 schema validation rejected it). The
+     * dedupe therefore moves here: called inside the digest insert
+     * transaction. See MIGRATION_12_13.
+     */
+    @Query("SELECT COUNT(*) FROM intent_envelope WHERE day_local = :dayLocal AND kind = 'DIGEST'")
+    suspend fun countDigestsForDay(dayLocal: String): Int
+
+    /**
      * T075 — find non-deleted DIGEST envelopes whose
      * `derivedFromEnvelopeIdsJson` array contains the given source id.
      *

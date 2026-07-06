@@ -105,14 +105,23 @@ class LocalRoomBackend(
         auditEntry: com.orbit.app.data.entity.AuditLogEntryEntity
     ): Boolean = try {
         database.withTransaction {
+            // 2026-07-06: "one DIGEST per day" is enforced HERE, inside the
+            // transaction. The partial unique index this guard used to lean
+            // on only existed on v1-upgraded DBs (fresh installs never got
+            // it — Room's @Entity can't declare partial indexes — and where
+            // it did exist it crashed Room 2.7 schema validation; dropped by
+            // MIGRATION_12_13). The transaction makes check-then-insert
+            // atomic against the racing-worker case.
+            if (envelopeDao.countDigestsForDay(envelope.dayLocal) > 0) {
+                return@withTransaction false
+            }
             envelopeDao.insert(envelope)
             auditDao.insert(auditEntry)
+            true
         }
-        true
     } catch (_: android.database.sqlite.SQLiteConstraintException) {
-        // Partial UNIQUE index on (day_local) WHERE kind='DIGEST'
-        // fired — another worker raced us. Caller will write a
-        // DIGEST_SKIPPED audit row out-of-band.
+        // Belt-and-braces: on a v1-era DB that hasn't run MIGRATION_12_13
+        // yet, the legacy partial index can still fire. Same outcome.
         false
     }
 
