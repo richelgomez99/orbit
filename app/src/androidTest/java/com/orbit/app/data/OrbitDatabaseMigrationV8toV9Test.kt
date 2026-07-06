@@ -1,7 +1,6 @@
 package com.orbit.app.data
 
 import android.content.ContentValues
-import android.database.sqlite.SQLiteConstraintException
 import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -91,27 +90,30 @@ class OrbitDatabaseMigrationV8toV9Test {
             )
             assertInt(writable, 1, "SELECT COUNT(*) FROM memory_candidate_support WHERE candidateId = 'candidate-1'")
 
-            try {
-                writable.execSQL(
-                    """
-                    INSERT INTO memory_candidate(
-                        id, candidateKind, state, displayLabel, subject, predicate, objectValue,
-                        confidence, sensitivity, supportingEnvelopeIdsJson, supportingEvidenceIdsJson,
-                        supportingFeedbackIdsJson, askUserCopy, createdAt, updatedAt, expiresAt,
-                        decidedAt, decisionReason, modelLabel, promptVersion, source
-                    ) VALUES(
-                        'candidate-dup', 'INTEREST', 'PENDING', 'Duplicate interest',
-                        'user', 'interested_in', 'pre-seed fundraising',
-                        0.80, 'NORMAL', '["env-2"]', NULL,
-                        NULL, NULL, 1001, 1001, NULL,
-                        NULL, NULL, 'debug_seed', NULL, 'DEBUG_SEED'
-                    )
-                    """.trimIndent()
+            // 2026-07-06 hotfix: active-fact-key uniqueness is no longer a
+            // DB-level partial-unique index (Room's @Index can't declare it,
+            // and the undeclared index crashed schema validation — see
+            // MIGRATION_11_12). Duplicates are now allowed at the SQL layer;
+            // callers enforce uniqueness via MemoryCandidateDao
+            // .findActiveDuplicate (covered by MemoryRepositoryDelegateTest).
+            writable.execSQL(
+                """
+                INSERT INTO memory_candidate(
+                    id, candidateKind, state, displayLabel, subject, predicate, objectValue,
+                    confidence, sensitivity, supportingEnvelopeIdsJson, supportingEvidenceIdsJson,
+                    supportingFeedbackIdsJson, askUserCopy, createdAt, updatedAt, expiresAt,
+                    decidedAt, decisionReason, modelLabel, promptVersion, source
+                ) VALUES(
+                    'candidate-dup', 'INTEREST', 'PENDING', 'Duplicate interest',
+                    'user', 'interested_in', 'pre-seed fundraising',
+                    0.80, 'NORMAL', '["env-2"]', NULL,
+                    NULL, NULL, 1001, 1001, NULL,
+                    NULL, NULL, 'debug_seed', NULL, 'DEBUG_SEED'
                 )
-                fail("Expected duplicate active candidate fact key to be rejected")
-            } catch (_: SQLiteConstraintException) {
-                // expected
-            }
+                """.trimIndent()
+            )
+            assertInt(writable, 2, "SELECT COUNT(*) FROM memory_candidate WHERE predicate = 'interested_in'")
+            writable.execSQL("DELETE FROM memory_candidate WHERE id = 'candidate-dup'")
 
             writable.execSQL(
                 """

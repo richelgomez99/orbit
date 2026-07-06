@@ -461,13 +461,15 @@ internal val MIGRATION_8_9: Migration = object : Migration(8, 9) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_sensitivity ON memory_candidate(sensitivity)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_createdAt ON memory_candidate(createdAt)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_memory_candidate_expiresAt ON memory_candidate(expiresAt)")
-        db.execSQL(
-            """
-            CREATE UNIQUE INDEX IF NOT EXISTS index_memory_candidate_active_fact_key
-            ON memory_candidate(candidateKind, subject, predicate, objectValue)
-            WHERE state IN ('PENDING', 'ASKED')
-            """.trimIndent()
-        )
+        // NOTE (2026-07-06 hotfix): this migration originally also created a
+        // partial-unique index `index_memory_candidate_active_fact_key`
+        // (`WHERE state IN ('PENDING','ASKED')`) that MemoryCandidateEntity
+        // never declared — Room's @Index cannot express partial indexes, so
+        // schema validation failed and crashed :ml on launch. The creation is
+        // removed here (fresh upgrades never get the index) and
+        // MIGRATION_11_12 drops it from devices that already ran the old
+        // version of this migration. Active-duplicate uniqueness is enforced
+        // in code via MemoryCandidateDao.findActiveDuplicate.
 
         db.execSQL(
             """
