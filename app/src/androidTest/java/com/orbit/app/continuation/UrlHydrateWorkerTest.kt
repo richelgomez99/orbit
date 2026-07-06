@@ -67,6 +67,11 @@ class UrlHydrateWorkerTest {
             .build()
         WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
         workManager = WorkManager.getInstance(context)
+        // Never bind the real :ml repository from tests: the write-back path
+        // (completeUrlHydration) persists hydration results + audit rows into
+        // the REAL on-device encrypted DB, polluting the user's data with
+        // env-test fixtures. Returning null makes the worker skip write-back.
+        UrlHydrateWorker.repositoryBinder = { null }
     }
 
     @After
@@ -75,6 +80,7 @@ class UrlHydrateWorkerTest {
         UrlHydrateWorker.gatewayBinder = DefaultBinderHolder.ORIGINAL_BINDER
         UrlHydrateWorker.summariserFactory = DefaultBinderHolder.ORIGINAL_FACTORY
         UrlHydrateWorker.hydrationContextProvider = DefaultBinderHolder.ORIGINAL_CONTEXT_PROVIDER
+        UrlHydrateWorker.repositoryBinder = DefaultBinderHolder.ORIGINAL_REPOSITORY_BINDER
     }
 
     // ---------------- ContinuationEngine enqueue surface ----------------
@@ -97,12 +103,16 @@ class UrlHydrateWorkerTest {
         assertTrue(info.tags.contains(ContinuationEngine.tagForEnvelope("env-1")))
         assertEquals(WorkInfo.State.ENQUEUED, info.state)
 
-        // Constraints (§2) live on the Constraints singleton shared with
-        // the engine, not on WorkInfo; assert by inspecting it directly.
+        // Constraints live on the Constraints singleton shared with the
+        // engine, not on WorkInfo; assert by inspecting it directly.
+        //
+        // v1 dev posture (see DEFAULT_CONSTRAINTS in ContinuationEngine):
+        // charger + unmetered are TEMPORARILY relaxed so hydration fires on
+        // any connected network. The GA contract (§2: charging + battery-not-
+        // low + UNMETERED) still stands — when DEFAULT_CONSTRAINTS flips
+        // back, restore the strict assertions here in the same commit.
         val c = ContinuationEngine.DEFAULT_CONSTRAINTS
-        assertTrue(c.requiresCharging())
-        assertTrue(c.requiresBatteryNotLow())
-        assertEquals(androidx.work.NetworkType.UNMETERED, c.requiredNetworkType)
+        assertEquals(androidx.work.NetworkType.CONNECTED, c.requiredNetworkType)
     }
 
     @Test
@@ -340,5 +350,7 @@ class UrlHydrateWorkerTest {
             UrlHydrateWorker.summariserFactory
         val ORIGINAL_CONTEXT_PROVIDER: suspend (Context, String) -> UrlHydrateWorker.HydrationPromptContext? =
             UrlHydrateWorker.hydrationContextProvider
+        val ORIGINAL_REPOSITORY_BINDER: suspend (Context) -> com.orbit.app.data.ipc.IEnvelopeRepository? =
+            UrlHydrateWorker.repositoryBinder
     }
 }

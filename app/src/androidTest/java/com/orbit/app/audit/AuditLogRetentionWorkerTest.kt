@@ -49,20 +49,28 @@ class AuditLogRetentionWorkerTest {
         context = ApplicationProvider.getApplicationContext()
         // Open the real singleton DB so the worker (which calls
         // `OrbitDatabase.getInstance`) sees the seeded rows.
+        //
+        // 2026-07-06: this test runs against the REAL user database on the
+        // test device. It must never wipe rows it did not seed — the previous
+        // version called deleteOlderThan(Long.MAX_VALUE) here and erased the
+        // user's entire audit history on every run. All seeding uses the
+        // TEST_ID_PREFIX and cleanup targets only that prefix; assertions are
+        // relative (before/after deltas), never absolute table counts.
         db = OrbitDatabase.getInstance(context)
-        // Make sure the table is empty before each run so prior tests can't
-        // leak rows into us.
-        kotlinx.coroutines.runBlocking {
-            db.auditLogDao().deleteOlderThan(Long.MAX_VALUE)
-        }
+        deleteSeededRows()
     }
 
     @After
     fun tearDown() {
-        kotlinx.coroutines.runBlocking {
-            db.auditLogDao().deleteOlderThan(Long.MAX_VALUE)
-        }
+        deleteSeededRows()
         AuditLogRetentionWorker.clockOverride = null
+    }
+
+    /** Remove only rows this suite seeded — never touch real user rows. */
+    private fun deleteSeededRows() {
+        db.openHelper.writableDatabase.execSQL(
+            "DELETE FROM audit_log WHERE id LIKE '$TEST_ID_PREFIX%'"
+        )
     }
 
     @Test
@@ -75,7 +83,7 @@ class AuditLogRetentionWorkerTest {
         repeat(100) { i ->
             dao.insert(
                 AuditLogEntryEntity(
-                    id = "old-$i-${UUID.randomUUID()}",
+                    id = "${TEST_ID_PREFIX}old-$i-${UUID.randomUUID()}",
                     at = now - ninetyOneDays - i.toLong(),
                     action = AuditAction.ENVELOPE_CREATED,
                     description = "old #$i",
@@ -88,7 +96,7 @@ class AuditLogRetentionWorkerTest {
         repeat(10) { i ->
             dao.insert(
                 AuditLogEntryEntity(
-                    id = "fresh-$i-${UUID.randomUUID()}",
+                    id = "${TEST_ID_PREFIX}fresh-$i-${UUID.randomUUID()}",
                     at = now - i.toLong() * 1_000L,
                     action = AuditAction.ENVELOPE_CREATED,
                     description = "fresh #$i",
@@ -97,7 +105,9 @@ class AuditLogRetentionWorkerTest {
                 )
             )
         }
-        assertEquals(110, dao.listAll().size)
+        val seeded = dao.listAll().filter { it.id.startsWith(TEST_ID_PREFIX) }
+        assertEquals(110, seeded.size)
+        val totalBeforeWorker = dao.listAll().size
 
         // Pin the worker's clock so the 91-day cutoff is stable.
         AuditLogRetentionWorker.clockOverride = { now }
@@ -106,17 +116,20 @@ class AuditLogRetentionWorkerTest {
         val result = worker.doWork()
         assertEquals(ListenableWorker.Result.success(), result)
 
-        val survivors = dao.listAll()
-        assertEquals(10, survivors.size)
-        assertTrue(survivors.all { it.id.startsWith("fresh-") })
+        val after = dao.listAll()
+        val seededSurvivors = after.filter { it.id.startsWith(TEST_ID_PREFIX) }
+        assertEquals(10, seededSurvivors.size)
+        assertTrue(seededSurvivors.all { it.id.startsWith("${TEST_ID_PREFIX}fresh-") })
 
         // Silent retention: the worker MUST NOT write any new row.
         // (No "audit of audit" — purge itself is invisible per the contract.)
-        // We seeded only ENVELOPE_CREATED rows, so any other action would
-        // betray a stray write.
+        // Relative check against the real table: the worker may legitimately
+        // purge pre-existing user rows older than 90 days, so the total may
+        // shrink by MORE than our 100 seeds, but it must never grow beyond
+        // (before - 100).
         assertTrue(
             "Retention worker must not write any new audit rows",
-            survivors.all { it.action == AuditAction.ENVELOPE_CREATED }
+            after.size <= totalBeforeWorker - 100
         )
     }
 
@@ -127,7 +140,7 @@ class AuditLogRetentionWorkerTest {
         repeat(3) { i ->
             dao.insert(
                 AuditLogEntryEntity(
-                    id = "fresh-$i-${UUID.randomUUID()}",
+                    id = "${TEST_ID_PREFIX}fresh-$i-${UUID.randomUUID()}",
                     at = now - i.toLong() * 1_000L,
                     action = AuditAction.ENVELOPE_CREATED,
                     description = "fresh #$i",
@@ -141,6 +154,11 @@ class AuditLogRetentionWorkerTest {
         val worker = TestListenableWorkerBuilder<AuditLogRetentionWorker>(context).build()
         val result = worker.doWork()
         assertEquals(ListenableWorker.Result.success(), result)
-        assertEquals(3, dao.listAll().size)
+        assertEquals(3, dao.listAll().count { it.id.startsWith(TEST_ID_PREFIX) })
+    }
+
+    private companion object {
+        /** Marks every row this suite seeds so cleanup can target them exactly. */
+        const val TEST_ID_PREFIX = "test-ret-"
     }
 }
