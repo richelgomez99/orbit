@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -359,7 +360,8 @@ private fun QuietEnvelopeDetailScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(QuietSettingsColors.BgDeep),
+            .background(QuietSettingsColors.BgDeep)
+            .statusBarsPadding(),
     ) {
         Row(
             modifier = Modifier
