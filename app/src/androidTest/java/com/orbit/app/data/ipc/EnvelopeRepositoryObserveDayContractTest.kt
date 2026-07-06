@@ -33,8 +33,15 @@ import org.junit.runner.RunWith
 class EnvelopeRepositoryObserveDayContractTest : RepositoryContractTestBase() {
 
     private fun today(): String {
+        // Must match the day_local that seal() computes from the pinned
+        // FakeClock epoch (2023-11-14) — using the wall-clock date means
+        // sealed fixtures land on a different day page than the one under
+        // observation, and the re-emission never contains them.
         val zone = ZoneId.of("UTC")
-        return LocalDate.now(zone).format(DateTimeFormatter.ISO_LOCAL_DATE)
+        return java.time.Instant.ofEpochMilli(clock.now)
+            .atZone(zone)
+            .toLocalDate()
+            .format(DateTimeFormatter.ISO_LOCAL_DATE)
     }
 
     private class RecordingObserver(capacity: Int = 8) : IEnvelopeObserver.Stub() {
