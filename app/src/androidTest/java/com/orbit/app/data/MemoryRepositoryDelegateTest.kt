@@ -25,6 +25,7 @@ import org.json.JSONArray
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -196,10 +197,10 @@ class MemoryRepositoryDelegateTest {
                 .findActiveDuplicate("INTEREST", "user", "interested_in", "startup events")
         )
         // After the original is terminal, a fresh candidate with the same
-        // fact key can be inserted safely.
-        assertEquals(
-            1L,
-            db.memoryCandidateDao().insert(duplicate.copy(id = "candidate-after-terminal"))
+        // fact key can be inserted safely (insert returns a real rowid, not
+        // the -1 conflict sentinel).
+        assertTrue(
+            db.memoryCandidateDao().insert(duplicate.copy(id = "candidate-after-terminal")) != -1L
         )
     }
 

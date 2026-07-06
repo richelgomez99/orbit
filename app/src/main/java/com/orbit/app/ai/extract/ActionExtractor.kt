@@ -154,6 +154,7 @@ class ActionExtractor(
             return ExtractOutcome.NoCandidates
         }
 
+        val insertedIds = mutableListOf<String>()
         database.withTransaction {
             var skippedDup = 0
             for (p in accepted) {
@@ -165,6 +166,7 @@ class ActionExtractor(
                     continue
                 }
                 proposalDao.insert(p)
+                insertedIds += p.id
                 auditLogDao.insert(
                     auditWriter.build(
                         action = AuditAction.ACTION_PROPOSED,
@@ -201,8 +203,11 @@ class ActionExtractor(
             }
         }
 
-        return if (accepted.isEmpty()) ExtractOutcome.NoCandidates
-               else ExtractOutcome.Proposed(accepted.map { it.id })
+        // T094 contract: an idempotent re-run (every accepted candidate skipped
+        // as an existing duplicate) surfaces NoCandidates — only genuinely
+        // inserted proposals may be reported as Proposed.
+        return if (insertedIds.isEmpty()) ExtractOutcome.NoCandidates
+               else ExtractOutcome.Proposed(insertedIds)
     }
 
     /**

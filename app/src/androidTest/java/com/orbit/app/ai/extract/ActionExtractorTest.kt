@@ -289,13 +289,30 @@ class ActionExtractorTest {
             "env-redacted-pii",
             text = "Order confirmed, ship to [REDACTED_ADDRESS] at noon Friday"
         )
-        // calendar.createEvent registers as PUBLIC scope. Envelope text
+        // No built-in skill registers as PUBLIC any more (calendar/tasks are
+        // PERSONAL, share is SHARE_DELEGATED), so register a synthetic PUBLIC
+        // skill to exercise the scope-mismatch drop path. Envelope text
         // contains [REDACTED_ — extractor's sensitivityScopeMatches PUBLIC
         // branch returns false → drop into droppedSensitivityIds.
+        registry.registerAll(
+            listOf(
+                com.orbit.app.action.AppFunctionSchema(
+                    functionId = "test.publicEcho",
+                    appPackage = "com.orbit.app",
+                    displayName = "Public echo (test)",
+                    description = "Synthetic PUBLIC-scope skill for scope-mismatch coverage.",
+                    schemaVersion = 1,
+                    argsSchemaJson = """{"type":"object","properties":{"title":{"type":"string"}}}""",
+                    sideEffects = com.orbit.app.data.model.AppFunctionSideEffect.EXTERNAL_INTENT,
+                    reversibility = com.orbit.app.data.model.Reversibility.NONE,
+                    sensitivityScope = SensitivityScope.PUBLIC
+                )
+            )
+        )
         val outcome = newExtractor(
             FakeLlm.singleCandidate(
-                functionId = "calendar.createEvent",
-                argsJson = """{"title":"Pickup","startEpochMillis":${clock + 86_400_000L}}""",
+                functionId = "test.publicEcho",
+                argsJson = """{"title":"Pickup"}""",
                 confidence = 0.90f,
                 candidateScope = SensitivityScope.PUBLIC
             )
@@ -419,9 +436,9 @@ class ActionExtractorTest {
                 tzId, hourLocal, dayOfWeekLocal,
                 kind, derivedFromEnvelopeIdsJson, todoMetaJson
             ) VALUES('$id', 'TEXT', $textLit, NULL, NULL,
-                'ARCHIVE', NULL, 'USER', '[]',
+                'REFERENCE', NULL, 'USER_CHIP', '[]',
                 $clock, '2026-04-26', 0, 0, NULL, NULL,
-                'OTHER', 'FOCUSED', 'UTC', 12, 5,
+                'OTHER', 'UNKNOWN', 'UTC', 12, 5,
                 '${kind.name}', NULL, NULL)
             """.trimIndent()
         )
