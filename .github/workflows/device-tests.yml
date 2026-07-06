@@ -1,0 +1,105 @@
+name: Device Tests (emulator)
+
+# Guards the 256/256 connectedDebugAndroidTest invariant established
+# 2026-07-06 (see docs/orbit-roadmap-queue-2026-06-02.md, Device
+# Validation Milestone). Runs the full instrumented suite on an API-34
+# x86_64 emulator so "repo-side complete" can never again mean
+# "compiles but crashes on launch".
+#
+# Kept as a separate workflow from build-debug-apk.yml because the
+# emulator job is ~15-25 min — PR-gating and manual dispatch only, not
+# every feature-branch push.
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: device-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  connected-tests:
+    name: connectedDebugAndroidTest (API 34)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Materialize local.properties
+        # Same convergence as build-debug-apk.yml — cloud features degrade
+        # gracefully when secrets are absent; the device suite stubs all
+        # network seams, so missing Supabase secrets never fail a test.
+        run: |
+          cat > local.properties <<EOF
+          sdk.dir=$ANDROID_HOME
+          cloud.gateway.url=${{ secrets.CLOUD_GATEWAY_URL || 'https://orbit-llm-gateway.vercel.app/llm' }}
+          supabase.url=${{ secrets.DEBUG_SUPABASE_URL }}
+          supabase.publishable.key=${{ secrets.DEBUG_SUPABASE_ANON_KEY }}
+          EOF
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api-34
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run connectedDebugAndroidTest
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # Compose UI tests need animations off and the (virtual) screen
+          # awake — the emulator never dozes, unlike a physical device.
+          disable-animations: true
+          script: ./gradlew :app:connectedDebugAndroidTest --stacktrace
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-test-reports
+          path: |
+            app/build/reports/androidTests/connected/
+            app/build/outputs/androidTest-results/connected/
+          retention-days: 14
