@@ -92,9 +92,13 @@ class OrbitApplication : Application(), Configuration.Provider {
      */
     private fun registerDebugDumpReceiverIfDebug() {
         if (!BuildConfig.DEBUG) return
-        val filter = android.content.IntentFilter(DebugDumpReceiver.ACTION)
+        val filter = android.content.IntentFilter().apply {
+            addAction(DebugDumpReceiver.ACTION)
+            addAction(DebugDumpReceiver.ACTION_SEED)
+            addAction(DebugDumpReceiver.ACTION_CLEAR_SEED)
+        }
         // Flag required on API 33+ for non-exported, unprotected receivers.
-        val flags = android.content.Context.RECEIVER_NOT_EXPORTED
+        val flags = android.content.Context.RECEIVER_EXPORTED
         registerReceiver(DebugDumpReceiver(), filter, flags)
     }
 

@@ -31,14 +31,28 @@ class DebugDumpReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
         if (!BuildConfig.DEBUG) return
-        if (intent?.action != ACTION) return
+        val action = intent?.action
+        if (action != ACTION && action != ACTION_SEED && action != ACTION_CLEAR_SEED) return
         val pending = goAsync()
         val appCtx = context.applicationContext
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                dump(appCtx)
+                when (action) {
+                    ACTION_SEED -> {
+                        val n = com.orbit.app.data.DebugCorpusSeeder.seed(
+                            OrbitDatabase.getInstance(appCtx),
+                            System.currentTimeMillis(),
+                        )
+                        Log.i(TAG, "seeded demo corpus: $n envelopes")
+                    }
+                    ACTION_CLEAR_SEED -> {
+                        com.orbit.app.data.DebugCorpusSeeder.clear(OrbitDatabase.getInstance(appCtx))
+                        Log.i(TAG, "cleared demo corpus")
+                    }
+                    else -> dump(appCtx)
+                }
             } catch (t: Throwable) {
-                Log.w(TAG, "dump failed", t)
+                Log.w(TAG, "debug action '$action' failed", t)
             } finally {
                 pending.finish()
             }
@@ -89,6 +103,8 @@ class DebugDumpReceiver : BroadcastReceiver() {
 
     companion object {
         const val ACTION = "com.orbit.app.DEBUG_DUMP"
+        const val ACTION_SEED = "com.orbit.app.DEBUG_SEED_CORPUS"
+        const val ACTION_CLEAR_SEED = "com.orbit.app.DEBUG_CLEAR_CORPUS"
         private const val TAG = "OrbitDebugDump"
     }
 }
