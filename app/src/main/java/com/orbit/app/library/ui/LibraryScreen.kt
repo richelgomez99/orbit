@@ -32,6 +32,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import com.orbit.app.library.IntentTypeLabel
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.KeyboardActions
@@ -212,6 +214,10 @@ private fun LibraryResultRow(
     val meta = listOfNotNull(result.dayLocal, result.sourceAppLabel, result.domain)
         .filter { it.isNotBlank() }
         .joinToString("  ·  ")
+    // Spec 020 (S3) — surface the classifier's type (Recipe, Event, …) so a
+    // saved recipe reads as a recipe rather than a generic note. Null for
+    // uninformative categories → no badge.
+    val typeLabel = IntentTypeLabel.forIntent(result.intent)
 
     Column(
         modifier = Modifier
@@ -221,6 +227,22 @@ private fun LibraryResultRow(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        if (typeLabel != null) {
+            Text(
+                text = typeLabel.uppercase(),
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    letterSpacing = 1.2.sp,
+                    color = c.brandAccent,
+                ),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(c.brandAccent.copy(alpha = 0.12f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .testTag("library-type-badge-${result.envelopeId}"),
+            )
+        }
         Text(
             text = heading,
             style = TextStyle(

@@ -418,7 +418,10 @@ internal object LocalEnvelopeMemoryResultMapper {
                 ?: excerpt,
             dayLocal = dayLocal,
             createdAtMillis = createdAtMillis,
-            intent = intent,
+            // Mirror the cloud index path (CompactMemoryIndexBuilder): prefer the
+            // rich IntentCategory the classifier persisted (RECIPE, …) over the
+            // always-AMBIGUOUS product intent, so the Library can badge the type.
+            intent = categoryName ?: intent,
             sourceAppLabel = sourceAppLabel,
             domain = domain,
             matchedEvidence = if (excerpt.isNotBlank()) {

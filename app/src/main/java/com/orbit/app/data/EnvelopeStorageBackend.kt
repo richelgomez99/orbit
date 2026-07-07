@@ -144,6 +144,16 @@ interface EnvelopeStorageBackend {
 
     suspend fun searchActiveEnvelopes(query: String, limit: Int): List<IntentEnvelopeEntity> = emptyList()
 
+    /**
+     * Spec 020 (S3) — the persisted [IntentCategory] name for a capture, or
+     * `null` when there is no understanding row or the category is
+     * uninformative (`UNKNOWN`). Lets the display layer surface the rich
+     * taxonomy (RECIPE, EVENT_TICKET_RESERVATION, …) the classifier already
+     * computes, instead of the always-`AMBIGUOUS` product intent. Default
+     * `null` keeps JVM test fakes working.
+     */
+    suspend fun getUnderstandingCategoryName(captureId: String): String? = null
+
     suspend fun getLatestNoteForEnvelope(envelopeId: String): EnvelopeNoteEntity? = null
 
     suspend fun createOrUpdateLatestNote(note: EnvelopeNoteEntity) {

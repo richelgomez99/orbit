@@ -42,7 +42,15 @@ data class EnvelopeViewParcel(
     /** T064 (003 US2) — derived to-do JSON: `{items:[…], derivedFromProposalId}`. Null for non-todo envelopes. */
     val todoMetaJson: String? = null,
     /** User-facing foreground app label captured from Usage Access, e.g. "YouTube". */
-    val sourceAppLabel: String? = null
+    val sourceAppLabel: String? = null,
+    /**
+     * Spec 020 (S3) — persisted [com.orbit.app.understanding.domain.IntentCategory]
+     * name (RECIPE, EVENT_TICKET_RESERVATION, …) when the classifier assigned an
+     * informative category; null otherwise. Drives the Library type badge so a
+     * recipe reads as a recipe, not a generic note. Appended last for Parcelable
+     * back-compat.
+     */
+    val categoryName: String? = null
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -67,7 +75,8 @@ data class EnvelopeViewParcel(
         canonicalUrl = parcel.readString(),
         deletedAtMillis = parcel.readLong().takeIf { it != 0L },
         todoMetaJson = parcel.readString(),
-        sourceAppLabel = parcel.readString()
+        sourceAppLabel = parcel.readString(),
+        categoryName = parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -93,6 +102,7 @@ data class EnvelopeViewParcel(
         parcel.writeLong(deletedAtMillis ?: 0L)
         parcel.writeString(todoMetaJson)
         parcel.writeString(sourceAppLabel)
+        parcel.writeString(categoryName)
     }
 
     override fun describeContents(): Int = 0

@@ -25,6 +25,7 @@ class LocalRoomBackend(
     private val continuationResultDao = database.continuationResultDao()
     private val noteDao = database.envelopeNoteDao()
     private val auditDao = database.auditLogDao()
+    private val captureUnderstandingDao = database.captureUnderstandingDao()
 
     override suspend fun sealTransaction(
         envelope: IntentEnvelopeEntity,
@@ -219,6 +220,12 @@ class LocalRoomBackend(
 
     override suspend fun searchActiveEnvelopes(query: String, limit: Int): List<IntentEnvelopeEntity> =
         envelopeDao.searchActive(query.trim(), limit.coerceIn(1, 50))
+
+    override suspend fun getUnderstandingCategoryName(captureId: String): String? =
+        captureUnderstandingDao.getByCaptureId(captureId)
+            ?.category
+            ?.takeIf { it != com.orbit.app.understanding.domain.IntentCategory.UNKNOWN }
+            ?.name
 
     override suspend fun getLatestNoteForEnvelope(envelopeId: String): EnvelopeNoteEntity? =
         noteDao.latestForEnvelope(envelopeId)

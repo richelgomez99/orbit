@@ -39,16 +39,50 @@ class LocalEnvelopeMemoryResultMapperTest {
         assertEquals("envelope", result.matchedEvidence.single().source)
     }
 
+    @Test
+    fun categoryNamePreferredOverProductIntent() {
+        // Spec 020 (S3) — a classified recipe must carry RECIPE, not the
+        // always-AMBIGUOUS product intent, so the Library can badge it.
+        val result = LocalEnvelopeMemoryResultMapper.toMemorySearchResult(
+            envelope = envelope(
+                textContent = "Preheat oven, 2 tablespoons butter",
+                intent = "AMBIGUOUS",
+                categoryName = "RECIPE",
+            ),
+            query = "butter",
+            note = null,
+        )
+
+        assertEquals("RECIPE", result.intent)
+    }
+
+    @Test
+    fun productIntentUsedWhenNoCategory() {
+        val result = LocalEnvelopeMemoryResultMapper.toMemorySearchResult(
+            envelope = envelope(
+                textContent = "Dentist appointment was rescheduled.",
+                intent = "REFERENCE",
+                categoryName = null,
+            ),
+            query = "rescheduled",
+            note = null,
+        )
+
+        assertEquals("REFERENCE", result.intent)
+    }
+
     private fun envelope(
         title: String? = null,
         summary: String? = null,
         textContent: String? = null,
+        intent: String = "REFERENCE",
+        categoryName: String? = null,
     ) = EnvelopeViewParcel(
         id = "env-1",
         contentType = "TEXT",
         textContent = textContent,
         imageUri = null,
-        intent = "REFERENCE",
+        intent = intent,
         intentSource = "USER_CHIP",
         createdAtMillis = 1_780_000_000_000L,
         dayLocal = "2026-06-13",
@@ -65,5 +99,6 @@ class LocalEnvelopeMemoryResultMapperTest {
         deletedAtMillis = null,
         todoMetaJson = null,
         sourceAppLabel = "Orbit",
+        categoryName = categoryName,
     )
 }

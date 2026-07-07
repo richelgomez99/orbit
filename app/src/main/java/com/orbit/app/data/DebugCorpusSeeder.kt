@@ -12,6 +12,11 @@ import com.orbit.app.data.model.ContinuationType
 import com.orbit.app.data.model.EnvelopeKind
 import com.orbit.app.data.model.Intent
 import com.orbit.app.data.model.IntentSource
+import com.orbit.app.data.entity.CaptureUnderstandingEntity
+import com.orbit.app.understanding.domain.CompletionKeyStatus
+import com.orbit.app.understanding.domain.IntentCategory
+import com.orbit.app.understanding.domain.UnderstandingMode
+import com.orbit.app.understanding.domain.UnderstandingStatus
 import java.time.Instant
 import java.time.ZoneId
 
@@ -44,6 +49,12 @@ object DebugCorpusSeeder {
         val title: String? = null,
         val domain: String? = null,
         val summary: String? = null,
+        /**
+         * When set, a [CaptureUnderstandingEntity] is seeded so the Library type
+         * badge (spec 020 S3) has a real classification to surface — mirroring
+         * what the understanding pipeline produces for genuine captures.
+         */
+        val category: IntentCategory? = null,
     )
 
     /** The believable corpus. Ordered oldest → newest by (daysAgo desc). */
@@ -69,6 +80,7 @@ object DebugCorpusSeeder {
             title = "Founder Office Hours — weekly",
             domain = "example.com",
             summary = "Weekly founder office hours, Thursdays 4pm PT. Bring one specific blocker. RSVP required; capped at 20 seats.",
+            category = IntentCategory.EVENT_TICKET_RESERVATION,
         ),
         Capture(
             key = "dentist",
@@ -87,6 +99,7 @@ object DebugCorpusSeeder {
             title = "Miso-glazed salmon in 20 minutes",
             domain = "example.com",
             summary = "Whisk white miso with mirin and grated ginger, coat salmon fillets, roast at 400F for 12 minutes. Serve over rice with a squeeze of lemon.",
+            category = IntentCategory.RECIPE,
         ),
         Capture(
             key = "attention-essay",
@@ -98,6 +111,7 @@ object DebugCorpusSeeder {
             title = "The attention economy is strip-mining you",
             domain = "example.com",
             summary = "The essay argues attention is a non-renewable personal resource being extracted by engagement-optimized feeds, and proposes treating it like a budget you spend deliberately.",
+            category = IntentCategory.READ_OR_WATCH_LATER,
         ),
         Capture(
             key = "concert",
@@ -105,6 +119,7 @@ object DebugCorpusSeeder {
             intent = Intent.WANT_IT,
             appCategory = AppCategory.OTHER,
             daysAgo = 2, hourLocal = 13,
+            category = IntentCategory.EVENT_TICKET_RESERVATION,
         ),
         Capture(
             key = "transformer-paper",
@@ -116,6 +131,7 @@ object DebugCorpusSeeder {
             title = "Attention Is All You Need",
             domain = "example.com",
             summary = "Introduces the transformer: self-attention replaces recurrence, multi-head attention lets the model attend to multiple positions, positional encodings inject order. Basis for modern LLMs.",
+            category = IntentCategory.READ_OR_WATCH_LATER,
         ),
         Capture(
             key = "solutions-engineer",
@@ -130,6 +146,7 @@ object DebugCorpusSeeder {
             intent = Intent.WANT_IT,
             appCategory = AppCategory.MESSAGING,
             daysAgo = 1, hourLocal = 20,
+            category = IntentCategory.GIFT_IDEA,
         ),
         Capture(
             key = "today-note",
@@ -145,6 +162,7 @@ object DebugCorpusSeeder {
         val envelopeDao = db.intentEnvelopeDao()
         val continuationDao = db.continuationDao()
         val continuationResultDao = db.continuationResultDao()
+        val captureUnderstandingDao = db.captureUnderstandingDao()
         val zone = ZoneId.systemDefault()
         var seeded = 0
 
@@ -211,6 +229,29 @@ object DebugCorpusSeeder {
                         excerpt = c.summary?.take(120),
                         summary = c.summary,
                         summaryModel = "demo-seed",
+                    )
+                )
+            }
+
+            if (c.category != null) {
+                captureUnderstandingDao.upsert(
+                    CaptureUnderstandingEntity(
+                        captureId = id,
+                        mode = UnderstandingMode.BASIC,
+                        status = UnderstandingStatus.READY,
+                        category = c.category,
+                        categoryConfidence = 0.9f,
+                        title = c.title,
+                        summaryText = c.summary,
+                        completionKeyJson = null,
+                        completionKeyStatus = CompletionKeyStatus.NOT_ACTIONABLE,
+                        sourceIdentityJson = null,
+                        contentHashHex = null,
+                        canonicalUrl = c.url,
+                        groundingConstraintsJson = "{}",
+                        createdAt = created,
+                        updatedAt = created,
+                        invalidatedAt = null,
                     )
                 )
             }

@@ -477,7 +477,7 @@ class EnvelopeRepositoryImpl(
         // Detail screen needs hydrated title/summary too — prefer the
         // dedupe-shared result if set, otherwise the envelope's own latest.
         val latest = backend.getLatestResultForEnvelope(envelopeId, entity.sharedContinuationResultId)
-        entity.toViewParcel(latest)
+        entity.toViewParcel(latest, backend.getUnderstandingCategoryName(entity.id))
     }
 
     override fun searchLocalEnvelopes(query: String, limit: Int): List<EnvelopeViewParcel> = runBlocking {
@@ -485,7 +485,7 @@ class EnvelopeRepositoryImpl(
         if (trimmed.isBlank()) return@runBlocking emptyList()
         backend.searchActiveEnvelopes(trimmed, limit.coerceIn(1, 50)).map { entity ->
             val latest = backend.getLatestResultForEnvelope(entity.id, entity.sharedContinuationResultId)
-            entity.toViewParcel(latest)
+            entity.toViewParcel(latest, backend.getUnderstandingCategoryName(entity.id))
         }
     }
 
@@ -1540,7 +1540,8 @@ class EnvelopeRepositoryImpl(
     }
 
     private fun IntentEnvelopeEntity.toViewParcel(
-        latestResult: com.orbit.app.data.entity.ContinuationResultEntity? = null
+        latestResult: com.orbit.app.data.entity.ContinuationResultEntity? = null,
+        categoryName: String? = null
     ): EnvelopeViewParcel = EnvelopeViewParcel(
         id = id,
         contentType = contentType.name,
@@ -1563,7 +1564,8 @@ class EnvelopeRepositoryImpl(
         intentHistoryJson = intentHistoryJson,
         canonicalUrl = latestResult?.canonicalUrl,
         deletedAtMillis = deletedAt,
-        todoMetaJson = todoMetaJson
+        todoMetaJson = todoMetaJson,
+        categoryName = categoryName
     )
 
     /** Equality by the underlying IBinder identity so observer lifecycles cancel cleanly. */
