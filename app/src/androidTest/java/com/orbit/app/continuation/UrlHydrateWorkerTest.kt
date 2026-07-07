@@ -311,6 +311,8 @@ class UrlHydrateWorkerTest {
         override fun callMemoryGateway(
             request: com.orbit.app.net.ipc.MemoryGatewayRequestParcel?
         ): com.orbit.app.net.ipc.MemoryGatewayResponseParcel? = null
+
+        override fun startModelDownload(modelId: String?, url: String?, expectedBytes: Long) = Unit
     }
 
     private class FakeLlm(

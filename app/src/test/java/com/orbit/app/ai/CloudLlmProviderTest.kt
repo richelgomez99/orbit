@@ -59,6 +59,8 @@ class CloudLlmProviderTest {
         override fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel =
             error("callMemoryGateway is not used in CloudLlmProviderTest")
 
+        override fun startModelDownload(modelId: String?, url: String?, expectedBytes: Long) = Unit
+
         override fun asBinder(): IBinder =
             throw UnsupportedOperationException("test fake — asBinder unused")
     }

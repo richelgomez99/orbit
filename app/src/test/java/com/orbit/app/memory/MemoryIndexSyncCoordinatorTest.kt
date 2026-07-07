@@ -181,6 +181,8 @@ class MemoryIndexSyncCoordinatorTest {
             )
         }
 
+        override fun startModelDownload(modelId: String?, url: String?, expectedBytes: Long) = Unit
+
         override fun asBinder(): IBinder =
             throw UnsupportedOperationException("test fake")
     }
