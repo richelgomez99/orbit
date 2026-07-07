@@ -1,7 +1,14 @@
 package com.orbit.app.diary.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.AgentEvidenceParcel
 import com.orbit.app.data.ipc.AgentPlanParcel
@@ -216,17 +224,19 @@ private fun AgentPlanPanel(
     modifier: Modifier = Modifier,
 ) {
     var query by remember { mutableStateOf("") }
+    val c = com.orbit.app.ui.tokens.OrbitPalette.current(dark = isSystemInDarkTheme())
+    val isLoading = state is DiaryViewModel.AgentPlanUiState.Loading
+    val canPlan = !isLoading && query.isNotBlank()
     Column(
         modifier = modifier
             .fillMaxWidth()
             .testTag("agent-plan-panel"),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = "Agent plan",
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
+        com.orbit.app.ui.primitives.MonoLabel(
+            text = "// Agent plan",
+            color = c.inkFaint,
+            size = 9.5.sp,
         )
         OutlinedTextField(
             value = query,
@@ -234,17 +244,50 @@ private fun AgentPlanPanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("agent-plan-query"),
-            label = { Text("What loop should Orbit help close?") },
+            placeholder = {
+                Text(
+                    "What loop should Orbit help close?",
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontFamily = com.orbit.app.ui.tokens.OrbitType.QuietAlmanac.bodySans,
+                        fontSize = 14.sp,
+                    ),
+                )
+            },
             singleLine = false,
             minLines = 2,
+            textStyle = androidx.compose.ui.text.TextStyle(
+                fontFamily = com.orbit.app.ui.tokens.OrbitType.QuietAlmanac.bodySans,
+                fontSize = 14.sp,
+                color = c.ink,
+            ),
+            keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Send),
+            keyboardActions = KeyboardActions(onSend = { if (canPlan) onPlan(query) }),
+            colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = c.brandAccent,
+                unfocusedBorderColor = c.rule,
+                focusedContainerColor = c.paper,
+                unfocusedContainerColor = c.paper,
+                cursorColor = c.brandAccent,
+                focusedPlaceholderColor = c.inkFaint,
+                unfocusedPlaceholderColor = c.inkFaint,
+            ),
         )
-        Button(
-            onClick = { onPlan(query) },
-            modifier = Modifier.testTag("agent-plan-submit"),
-            enabled = state !is DiaryViewModel.AgentPlanUiState.Loading,
-        ) {
-            Text(if (state is DiaryViewModel.AgentPlanUiState.Loading) "Planning" else "Plan")
-        }
+        // Typographic submit affordance (design.md §2 #3 — no Material button).
+        Text(
+            text = if (isLoading) "Planning…" else "Plan",
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .then(if (canPlan) Modifier.clickable { onPlan(query) } else Modifier)
+                .background(if (canPlan) c.brandAccentDim else c.rule.copy(alpha = 0.4f))
+                .padding(horizontal = 22.dp, vertical = 12.dp)
+                .testTag("agent-plan-submit"),
+            style = androidx.compose.ui.text.TextStyle(
+                fontFamily = com.orbit.app.ui.tokens.OrbitType.QuietAlmanac.bodySans,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (canPlan) c.brandAccent else c.inkFaint,
+            ),
+        )
         when (state) {
             DiaryViewModel.AgentPlanUiState.Idle -> Unit
             DiaryViewModel.AgentPlanUiState.Loading -> Text(

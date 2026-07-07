@@ -1,39 +1,44 @@
 package com.orbit.app.orbit.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.orbit.app.memory.AskOrbitAnswer
 import com.orbit.app.memory.AskOrbitCitation
 import com.orbit.app.memory.MemorySearchResult
 import com.orbit.app.orbit.AskOrbitViewModel
+import com.orbit.app.ui.primitives.MonoLabel
+import com.orbit.app.ui.tokens.OrbitPalette
+import com.orbit.app.ui.tokens.OrbitType
 
 object AskOrbitPanelTestTags {
     const val QUESTION = "ask-orbit-question"
@@ -43,6 +48,12 @@ object AskOrbitPanelTestTags {
     fun citation(envelopeId: String) = "ask-orbit-citation-$envelopeId"
 }
 
+/**
+ * Ask Orbit — the agent surface. Quiet Almanac styling per design.md
+ * (§2 tone: not Material): mono section label, serif answers, hairline
+ * rules, amber affordances. The question field submits on the keyboard
+ * Search key, not only the button.
+ */
 @Composable
 fun AskOrbitPanel(
     viewModel: AskOrbitViewModel,
@@ -50,119 +61,132 @@ fun AskOrbitPanel(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
+    val c = OrbitPalette.current(dark = isSystemInDarkTheme())
     LaunchedEffect(state.openEnvelopeId) {
         val envelopeId = state.openEnvelopeId ?: return@LaunchedEffect
         onOpenCapture(envelopeId)
         viewModel.onOpenCaptureHandled()
     }
 
-    Surface(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        tonalElevation = 1.dp,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+        MonoLabel(text = "// Ask saved memory", color = c.inkFaint, size = 9.5.sp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = "Ask Orbit",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+            OutlinedTextField(
+                value = state.question,
+                onValueChange = viewModel::onQuestionChanged,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp)
+                    .testTag(AskOrbitPanelTestTags.QUESTION),
+                singleLine = true,
+                placeholder = {
+                    Text(
+                        "What do you want to recall?",
+                        style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 14.sp),
+                    )
+                },
+                shape = RoundedCornerShape(8.dp),
+                textStyle = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.bodySans,
+                    fontSize = 14.sp,
+                    color = c.ink,
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(
+                    onSearch = { if (state.canAsk) viewModel.onAskSubmitted() },
+                ),
+                colors = quietFieldColors(c),
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedTextField(
-                    value = state.question,
-                    onValueChange = viewModel::onQuestionChanged,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(52.dp)
-                        .testTag(AskOrbitPanelTestTags.QUESTION),
-                    singleLine = true,
-                    placeholder = { Text("Ask saved memory") },
-                    shape = RoundedCornerShape(8.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium,
-                    colors = quietSearchFieldColors(),
-                )
-                Button(
-                    onClick = viewModel::onAskSubmitted,
-                    enabled = state.canAsk,
-                    modifier = Modifier
-                        .height(52.dp)
-                        .testTag(AskOrbitPanelTestTags.SUBMIT),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = ButtonDefaults.ContentPadding,
-                    colors = quietSearchButtonColors(),
-                ) {
-                    Icon(Icons.Filled.Search, contentDescription = "Ask")
-                }
-            }
-            when {
-                state.loading -> CircularProgressIndicator()
-                state.error != null -> StatusText(state.error)
-                state.answer != null -> AskAnswerView(
-                    answer = state.answer!!,
-                    onOpenCapture = viewModel::onOpenCapture,
-                )
-            }
+            // Typographic submit affordance — no Material icon (design.md §2 #3).
+            Text(
+                text = "Ask",
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .then(
+                        if (state.canAsk) {
+                            Modifier.clickable(onClick = viewModel::onAskSubmitted)
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .background(if (state.canAsk) c.brandAccentDim else c.rule.copy(alpha = 0.4f))
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .testTag(AskOrbitPanelTestTags.SUBMIT),
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.bodySans,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (state.canAsk) c.brandAccent else c.inkFaint,
+                ),
+            )
+        }
+        when {
+            state.loading -> CircularProgressIndicator(
+                color = c.brandAccent,
+                modifier = Modifier.height(24.dp).padding(top = 2.dp),
+            )
+            state.error != null -> StatusText(state.error, c)
+            state.answer != null -> AskAnswerView(
+                answer = state.answer!!,
+                onOpenCapture = viewModel::onOpenCapture,
+                c = c,
+            )
         }
     }
 }
 
 @Composable
-private fun quietSearchFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-    focusedContainerColor = MaterialTheme.colorScheme.surface,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-    cursorColor = MaterialTheme.colorScheme.onSurface,
-    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-)
-
-@Composable
-private fun quietSearchButtonColors() = ButtonDefaults.buttonColors(
-    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+private fun quietFieldColors(c: OrbitPalette.Tokens) = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = c.brandAccent,
+    unfocusedBorderColor = c.rule,
+    focusedContainerColor = c.paper,
+    unfocusedContainerColor = c.paper,
+    cursorColor = c.brandAccent,
+    focusedPlaceholderColor = c.inkFaint,
+    unfocusedPlaceholderColor = c.inkFaint,
 )
 
 @Composable
 private fun AskAnswerView(
     answer: AskOrbitAnswer,
     onOpenCapture: (String) -> Unit,
+    c: OrbitPalette.Tokens,
 ) {
     val hasCitations = answer.citations.isNotEmpty()
     Column(
         modifier = Modifier.testTag(
             if (hasCitations) AskOrbitPanelTestTags.ANSWER else AskOrbitPanelTestTags.REFUSAL
         ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         if (hasCitations) {
+            // Preserve exact copy + casing (contract in AskOrbitPanelTest);
+            // mono font, not MonoLabel (which uppercases).
             Text(
                 text = "Found ${answer.citations.size.coerceAtMost(3)} related capture${if (answer.citations.size == 1) "" else "s"}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.6.sp,
+                    color = c.inkFaint,
+                ),
             )
             answer.citations.take(3).forEach { citation ->
-                CitationRow(citation = citation, onOpenCapture = onOpenCapture)
+                CitationRow(citation = citation, onOpenCapture = onOpenCapture, c = c)
             }
         } else {
-            RefusalBlock(answer)
+            RefusalBlock(answer, c)
             if (answer.candidates.isNotEmpty()) {
-                Text(
-                    text = "Closest saved matches",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                MonoLabel(text = "Closest saved matches", color = c.inkFaint, size = 9.sp)
                 answer.candidates.take(3).forEach { candidate ->
-                    CandidateRow(candidate = candidate, onOpenCapture = onOpenCapture)
+                    CandidateRow(candidate = candidate, onOpenCapture = onOpenCapture, c = c)
                 }
             }
         }
@@ -170,39 +194,44 @@ private fun AskAnswerView(
 }
 
 @Composable
-private fun RefusalBlock(answer: AskOrbitAnswer) {
+private fun RefusalBlock(answer: AskOrbitAnswer, c: OrbitPalette.Tokens) {
     val title = when (answer.status) {
         "sensitive_refusal" -> "Not enough saved evidence"
         "provider_unavailable" -> "Could not check the memory index"
         else -> "No grounded answer yet"
     }
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = title,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.bodySans,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = c.ink,
+            ),
+        )
+        Text(
+            text = answer.answer,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontStyle = FontStyle.Italic,
+                color = c.inkFaint,
+            ),
+        )
+        answer.limitations.firstOrNull()?.takeIf { it.isNotBlank() }?.let { limitation ->
+            // Original casing preserved (asserted as substring in tests).
             Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.SemiBold,
+                text = limitation,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    lineHeight = 15.sp,
+                    letterSpacing = 0.4.sp,
+                    color = c.inkFaint,
+                ),
             )
-            Text(
-                text = answer.answer,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            answer.limitations.firstOrNull()?.takeIf { it.isNotBlank() }?.let { limitation ->
-                Text(
-                    text = limitation,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }
@@ -211,47 +240,64 @@ private fun RefusalBlock(answer: AskOrbitAnswer) {
 private fun CitationRow(
     citation: AskOrbitCitation,
     onOpenCapture: (String) -> Unit,
+    c: OrbitPalette.Tokens,
 ) {
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpenCapture(citation.envelopeId) }
-            .testTag(AskOrbitPanelTestTags.citation(citation.envelopeId)),
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+            .testTag(AskOrbitPanelTestTags.citation(citation.envelopeId))
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+        Text(
+            text = citation.excerpt?.takeIf { it.isNotBlank() }
+                ?: citation.title
+                ?: "Saved memory",
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                fontSize = 14.sp,
+                lineHeight = 19.sp,
+                color = c.ink,
+            ),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column(
+            Text(
+                text = listOfNotNull(citation.dayLocal, citation.sourceAppLabel)
+                    .filter { it.isNotBlank() }
+                    .joinToString("  ·  "),
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.8.sp,
+                    color = c.inkFaint,
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = citation.excerpt?.takeIf { it.isNotBlank() }
-                        ?: citation.title
-                        ?: "Saved memory",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = listOfNotNull(citation.dayLocal, citation.sourceAppLabel)
-                        .filter { it.isNotBlank() }
-                        .joinToString(" · "),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            TextButton(onClick = { onOpenCapture(citation.envelopeId) }) {
-                Text("Open")
-            }
+            )
+            Text(
+                text = "Open ›",
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.8.sp,
+                    color = c.brandAccent,
+                ),
+            )
         }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp)
+                .height(1.dp)
+                .background(c.rule),
+        )
     }
 }
 
@@ -259,6 +305,7 @@ private fun CitationRow(
 private fun CandidateRow(
     candidate: MemorySearchResult,
     onOpenCapture: (String) -> Unit,
+    c: OrbitPalette.Tokens,
 ) {
     Text(
         text = candidate.title ?: candidate.summary ?: "Saved memory",
@@ -266,19 +313,26 @@ private fun CandidateRow(
             .fillMaxWidth()
             .clickable { onOpenCapture(candidate.envelopeId) }
             .padding(vertical = 4.dp),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = TextStyle(
+            fontFamily = OrbitType.QuietAlmanac.displaySerif,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            color = c.inkFaint,
+        ),
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
     )
 }
 
 @Composable
-private fun StatusText(text: String?) {
+private fun StatusText(text: String?, c: OrbitPalette.Tokens) {
     if (text.isNullOrBlank()) return
     Text(
         text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = TextStyle(
+            fontFamily = OrbitType.QuietAlmanac.bodySans,
+            fontSize = 13.sp,
+            color = c.inkFaint,
+        ),
     )
 }
