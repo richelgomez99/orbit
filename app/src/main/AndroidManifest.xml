@@ -56,6 +56,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Orbit">
 
+        <!-- spec-022 Slice 3 — LiteRT-LM GPU acceleration. On API 31+ apps must
+             declare vendor native libs to dlopen them; without these the GPU
+             backend can't load OpenCL and silently falls back to CPU. All
+             required="false" so devices lacking a given lib still install and
+             run on CPU. Variants cover Qualcomm/Pixel/Mali GPUs. -->
+        <uses-native-library android:name="libOpenCL.so" android:required="false" />
+        <uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
+        <uses-native-library android:name="libGLES_mali.so" android:required="false" />
+        <uses-native-library android:name="libvndksupport.so" android:required="false" />
+
         <!--
           Remove the auto-installed AndroidX WorkManager initializer.
           OrbitApplication implements Configuration.Provider so
