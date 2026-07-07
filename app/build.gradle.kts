@@ -241,6 +241,10 @@ dependencies {
     // ML Kit text recognition — T075 OcrEngine (on-device, Latin script bundled model)
     implementation(libs.mlkit.text.recognition)
 
+    // MediaPipe LLM Inference (LiteRT-LM) — spec 022 BYOM on-device Gemma engine.
+    // Runs in :ml; loads the downloaded .task via mmap. No network egress.
+    implementation(libs.mediapipe.tasks.genai)
+
     // Coil Compose — T078 screenshot thumbnails in EnvelopeCard
     implementation(libs.coil.compose)
 

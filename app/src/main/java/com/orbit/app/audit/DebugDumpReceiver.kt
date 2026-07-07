@@ -32,7 +32,12 @@ class DebugDumpReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (!BuildConfig.DEBUG) return
         val action = intent?.action
-        if (action !in setOf(ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL)) return
+        if (action !in setOf(
+                ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL, ACTION_TEST_INFERENCE,
+            )
+        ) {
+            return
+        }
         val pending = goAsync()
         val appCtx = context.applicationContext
         CoroutineScope(Dispatchers.IO).launch {
@@ -63,6 +68,34 @@ class DebugDumpReceiver : BroadcastReceiver() {
                         } else {
                             com.orbit.app.net.ModelDownloadTrigger.start(appCtx, id, url, authToken = token)
                             Log.i(TAG, "requested model download id=$id url=$url auth=${token != null}")
+                        }
+                    }
+                    ACTION_TEST_INFERENCE -> {
+                        // Debug: prove BYOM on-device generation end to end.
+                        // Loads the downloaded .task and runs one real prompt.
+                        // --es id <modelId> (default gemma-3-1b-it-int4)
+                        // --es prompt "<text>" (default sample)
+                        val id = intent.getStringExtra("id") ?: "gemma-3-1b-it-int4"
+                        val prompt = intent.getStringExtra("prompt")
+                            ?: "In one sentence, what is a good reason to keep a personal journal?"
+                        val modelFile = com.orbit.app.net.ModelDownloadStore.modelFile(appCtx, id)
+                        if (!modelFile.exists()) {
+                            Log.w(TAG, "inference: model not installed at ${modelFile.absolutePath}")
+                        } else {
+                            val provider = com.orbit.app.ai.local.MediaPipeLlmProvider(
+                                appContext = appCtx,
+                                modelPath = modelFile.absolutePath,
+                                modelLabel = id,
+                            )
+                            val startedAt = System.currentTimeMillis()
+                            Log.i(TAG, "inference: loading $id and generating…")
+                            try {
+                                val result = provider.summarize(prompt, maxTokens = 64)
+                                val ms = System.currentTimeMillis() - startedAt
+                                Log.i(TAG, "inference OK (${ms}ms): ${result.text}")
+                            } finally {
+                                provider.close()
+                            }
                         }
                     }
                     else -> dump(appCtx)
@@ -122,6 +155,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION_SEED = "com.orbit.app.DEBUG_SEED_CORPUS"
         const val ACTION_CLEAR_SEED = "com.orbit.app.DEBUG_CLEAR_CORPUS"
         const val ACTION_DOWNLOAD_MODEL = "com.orbit.app.DEBUG_DOWNLOAD_MODEL"
+        const val ACTION_TEST_INFERENCE = "com.orbit.app.DEBUG_TEST_INFERENCE"
         private const val TAG = "OrbitDebugDump"
     }
 }

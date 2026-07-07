@@ -21,6 +21,10 @@ enum class LlmProvenance {
  */
 fun com.orbit.app.ai.model.LlmProvenance.toEntityEnum(): LlmProvenance = when (this) {
     is com.orbit.app.ai.model.LlmProvenance.LocalNano -> LlmProvenance.LOCAL_NANO
+    // Persistence granularity: both on-device sources map to LOCAL_NANO at the
+    // entity layer (no schema migration). The richer BYOM model label survives
+    // in-memory via LlmProvenance.LocalByom.model for audit/model-label paths.
+    is com.orbit.app.ai.model.LlmProvenance.LocalByom -> LlmProvenance.LOCAL_NANO
     is com.orbit.app.ai.model.LlmProvenance.OrbitManaged -> LlmProvenance.ORBIT_MANAGED
     is com.orbit.app.ai.model.LlmProvenance.Byok -> LlmProvenance.BYOK
 }

@@ -28,6 +28,7 @@ playServicesLocation = "21.3.0"
 appfunctions = "1.0.0-alpha01"
 supabaseKt = "3.6.0"
 ktor = "3.3.0"
+mediapipeTasksGenai = "0.10.35"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -85,6 +86,9 @@ supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version
 supabase-auth-kt = { group = "io.github.jan-tennert.supabase", name = "auth-kt" }
 # Ktor client engine for supabase-kt (3.x requires Ktor 3.x)
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+# MediaPipe LLM Inference (LiteRT-LM) — spec 022 BYOM on-device engine (:ml process).
+# Loads Gemma .task bundles via mmap; no network (Principle II/VI: inference in :ml).
+mediapipe-tasks-genai = { group = "com.google.mediapipe", name = "tasks-genai", version.ref = "mediapipeTasksGenai" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

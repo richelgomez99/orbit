@@ -97,6 +97,7 @@ class OrbitApplication : Application(), Configuration.Provider {
             addAction(DebugDumpReceiver.ACTION_SEED)
             addAction(DebugDumpReceiver.ACTION_CLEAR_SEED)
             addAction(DebugDumpReceiver.ACTION_DOWNLOAD_MODEL)
+            addAction(DebugDumpReceiver.ACTION_TEST_INFERENCE)
         }
         // Flag required on API 33+ for non-exported, unprotected receivers.
         val flags = android.content.Context.RECEIVER_EXPORTED

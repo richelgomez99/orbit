@@ -71,6 +71,7 @@ class NanoSummariser(
 
     private fun LlmProvenance.summaryModelLabel(): String = when (this) {
         LlmProvenance.LocalNano -> modelLabel
+        is LlmProvenance.LocalByom -> model
         is LlmProvenance.OrbitManaged -> model
         is LlmProvenance.Byok -> "$provider:$model"
     }

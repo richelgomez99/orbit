@@ -170,6 +170,7 @@ class AgentModelAssistPlanner(
 
     private fun LlmProvenance.toModelLabel(): String = when (this) {
         LlmProvenance.LocalNano -> "local:nano"
+        is LlmProvenance.LocalByom -> "local:$model"
         is LlmProvenance.OrbitManaged -> model
         is LlmProvenance.Byok -> "$provider:$model"
     }
