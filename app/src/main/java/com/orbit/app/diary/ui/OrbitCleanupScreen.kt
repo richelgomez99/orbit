@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -44,6 +45,15 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.orbit.app.ui.primitives.AgentActionRow
+import com.orbit.app.ui.primitives.AgentCardBody
+import com.orbit.app.ui.primitives.AgentCardMeta
+import com.orbit.app.ui.primitives.AgentCardTitle
+import com.orbit.app.ui.primitives.AgentPrimaryAction
+import com.orbit.app.ui.primitives.AgentSecondaryAction
+import com.orbit.app.ui.primitives.AgentSectionHeader
+import com.orbit.app.ui.primitives.AgentSurface
+import com.orbit.app.ui.primitives.SurfacedCard
 import com.orbit.app.ui.primitives.MonoLabel
 import com.orbit.app.ui.tokens.OrbitType
 import com.orbit.app.data.ipc.ActionDraftParcel
@@ -373,28 +383,29 @@ private fun ActionNoticePanel(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            contentColor = MaterialTheme.colorScheme.onErrorContainer,
-        ),
+    // Quiet confirmation, not an error-red alarm — a benign "saved" notice.
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(999.dp))
+            .background(AgentSurface.Accent.copy(alpha = 0.14f))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = message,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            TextButton(onClick = onDismiss) {
-                Text("Dismiss")
-            }
-        }
+                .size(6.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(AgentSurface.Accent),
+        )
+        Text(
+            text = message,
+            modifier = Modifier.weight(1f),
+            color = AgentSurface.Cream,
+            style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 13.sp),
+        )
+        AgentSecondaryAction("Dismiss", onDismiss)
     }
 }
 
@@ -441,9 +452,9 @@ private fun ActionDraftCard(
         draft.sourceTitle.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
         if (sourceLine.isNotBlank()) AgentCardMeta(sourceLine)
         AgentActionRow {
-            SecondaryAction("Open", onOpenCapture)
-            SecondaryAction("Dismiss", onDismiss)
-            PrimaryAction("Review", onReview)
+            AgentSecondaryAction("Open", onOpenCapture)
+            AgentSecondaryAction("Dismiss", onDismiss)
+            AgentPrimaryAction("Review", onReview)
         }
     }
 }
@@ -512,20 +523,20 @@ private fun MemoryCandidateCard(
         AgentCardMeta(sourceLine)
         AgentActionRow {
             if (candidate.primarySourceEnvelopeId != null) {
-                SecondaryAction(
+                AgentSecondaryAction(
                     "Open", onOpenCapture,
                     testTag = DiaryScreenTestTags.memoryCandidateOpenCapture(candidate.candidateId),
                 )
             }
-            SecondaryAction(
+            AgentSecondaryAction(
                 "Reject", onReject,
                 testTag = DiaryScreenTestTags.memoryCandidateReject(candidate.candidateId),
             )
-            SecondaryAction(
+            AgentSecondaryAction(
                 "Edit", onEdit,
                 testTag = DiaryScreenTestTags.memoryCandidateEdit(candidate.candidateId),
             )
-            PrimaryAction(
+            AgentPrimaryAction(
                 "Accept", onAccept,
                 testTag = DiaryScreenTestTags.memoryCandidateAccept(candidate.candidateId),
             )
@@ -533,124 +544,6 @@ private fun MemoryCandidateCard(
     }
 }
 
-// ---- Shared Quiet agent-feed primitives (S1) ----------------------------
-
-private object AgentColors {
-    val Panel = Color(0x14F3EAD8)      // faint cream fill (hairline card)
-    val Cream = Color(0xFFF3EAD8)
-    val CreamDim = Color(0xB3F3EAD8)
-    val CreamFaint = Color(0x66F3EAD8)
-    val Accent = Color(0xFFE8B06A)
-    val AccentInk = Color(0xFF211607)
-    val Rule = Color(0x29F3EAD8)
-}
-
-@Composable
-private fun AgentSectionHeader(kicker: String, title: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-        MonoLabel(text = kicker, color = AgentColors.Accent, size = 9.5.sp)
-        Text(
-            text = title,
-            color = AgentColors.Cream,
-            style = TextStyle(
-                fontFamily = OrbitType.QuietAlmanac.displaySerif,
-                fontSize = 19.sp,
-                lineHeight = 24.sp,
-            ),
-        )
-    }
-}
-
-@Composable
-private fun SurfacedCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(AgentColors.Panel)
-            .border(BorderStroke(1.dp, AgentColors.Rule), RoundedCornerShape(12.dp))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        content = content,
-    )
-}
-
-@Composable
-private fun AgentCardTitle(text: String) {
-    Text(
-        text = text,
-        color = AgentColors.Cream,
-        style = TextStyle(
-            fontFamily = OrbitType.QuietAlmanac.displaySerif,
-            fontSize = 17.sp,
-            lineHeight = 22.sp,
-        ),
-    )
-}
-
-@Composable
-private fun AgentCardBody(text: String, dim: Boolean = false) {
-    Text(
-        text = text,
-        color = if (dim) AgentColors.CreamDim else AgentColors.Cream,
-        style = TextStyle(
-            fontFamily = OrbitType.QuietAlmanac.bodySans,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-        ),
-    )
-}
-
-@Composable
-private fun AgentCardMeta(text: String) {
-    MonoLabel(text = text.uppercase(), color = AgentColors.CreamFaint, size = 8.5.sp)
-}
-
-@Composable
-private fun AgentActionRow(content: @Composable RowScope.() -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp, androidx.compose.ui.Alignment.End),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        content = content,
-    )
-}
-
-@Composable
-private fun SecondaryAction(label: String, onClick: () -> Unit, testTag: String? = null) {
-    Text(
-        text = label,
-        modifier = Modifier
-            .let { if (testTag != null) it.testTag(testTag) else it }
-            .clip(RoundedCornerShape(999.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        color = AgentColors.CreamDim,
-        style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 13.sp),
-    )
-}
-
-@Composable
-private fun PrimaryAction(label: String, onClick: () -> Unit, testTag: String? = null) {
-    Box(
-        modifier = Modifier
-            .let { if (testTag != null) it.testTag(testTag) else it }
-            .clip(RoundedCornerShape(999.dp))
-            .background(AgentColors.Accent)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 18.dp, vertical = 9.dp),
-    ) {
-        Text(
-            text = label,
-            color = AgentColors.AccentInk,
-            style = TextStyle(
-                fontFamily = OrbitType.QuietAlmanac.displaySerif,
-                fontSize = 15.sp,
-                fontStyle = FontStyle.Italic,
-            ),
-        )
-    }
-}
 
 @Composable
 private fun MemoryCandidateEditDialog(

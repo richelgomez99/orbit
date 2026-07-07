@@ -82,6 +82,12 @@ import com.orbit.app.diary.DiaryViewModel
 import com.orbit.app.diary.EnvelopeDetailActivity
 import com.orbit.app.memory.MemoryDisplayText
 import com.orbit.app.ui.IntentChipPicker
+import com.orbit.app.ui.primitives.AgentCardBody
+import com.orbit.app.ui.primitives.AgentCardMeta
+import com.orbit.app.ui.primitives.AgentCardTitle
+import com.orbit.app.ui.primitives.AgentPrimaryAction
+import com.orbit.app.ui.primitives.AgentSecondaryAction
+import com.orbit.app.ui.primitives.SurfacedCard
 import com.orbit.app.ui.primitives.MonoLabel
 import com.orbit.app.ui.primitives.OrbitWordmark
 import com.orbit.app.ui.primitives.SourceGlyph
@@ -753,14 +759,27 @@ internal fun ActiveIntentCleanupPanel(
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
             ) {
-                Text(
-                    text = "Follow-ups",
-                    color = ink,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                if (useNewVisualLanguage) {
+                    MonoLabel(text = "// FOLLOW-UPS", color = QuietDiaryColors.Accent, size = 9.5.sp)
+                    Text(
+                        text = "Loops to close",
+                        color = ink,
+                        style = TextStyle(
+                            fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                            fontSize = 19.sp,
+                            lineHeight = 24.sp,
+                        ),
+                    )
+                } else {
+                    Text(
+                        text = "Follow-ups",
+                        color = ink,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
                 Text(
                     text = ready.followUpSummary(),
                     color = dim,
@@ -1047,103 +1066,55 @@ private fun ActiveIntentRow(
     onSnooze: (ActiveIntentItem) -> Unit,
     onEscalate: (ActiveIntentItem) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, rule, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-            .testTag(DiaryScreenTestTags.activeIntentItem(item.intentId)),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    SurfacedCard(
+        modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentItem(item.intentId)),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top,
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(3.dp),
-            ) {
-                Text(
-                    text = item.evidenceLabel,
-                    color = ink,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                )
-                Text(
-                    text = item.sourceLabel,
-                    color = dim,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1,
-                )
-                item.clueLabel?.let { clue ->
-                    Text(
-                        text = clue,
-                        color = dim,
-                        style = MaterialTheme.typography.labelSmall,
-                        maxLines = 2,
-                    )
-                }
-                Text(
-                    text = item.reasonLabel,
-                    color = dim,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 3,
-                )
-                Text(
-                    text = item.guidanceLabel,
-                    color = dim,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 3,
-                )
-            }
-        }
+        AgentCardTitle(item.evidenceLabel)
+        item.clueLabel?.takeIf { it.isNotBlank() }?.let { AgentCardBody(it) }
+        item.reasonLabel.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
+        item.guidanceLabel.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
+        item.sourceLabel.takeIf { it.isNotBlank() }?.let { AgentCardMeta(it) }
         FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Button(
-                onClick = { onOpenCapture(item) },
-                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentOpenCapture(item.intentId)),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = QuietDiaryColors.Accent,
-                    contentColor = QuietDiaryColors.BgDeep,
-                ),
-            ) { Text(item.openCaptureActionLabel) }
+            AgentPrimaryAction(
+                item.openCaptureActionLabel,
+                { onOpenCapture(item) },
+                testTag = DiaryScreenTestTags.activeIntentOpenCapture(item.intentId),
+            )
             if (item.needsEscalation) {
-                TextButton(
-                    onClick = { onAddContext(item) },
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentAddContext(item.intentId)),
-                ) { Text(item.addContextActionLabel) }
-                TextButton(
-                    onClick = { onEscalate(item) },
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentEscalate(item.intentId)),
-                ) { Text(item.askOrbitActionLabel) }
+                AgentSecondaryAction(
+                    item.addContextActionLabel, { onAddContext(item) },
+                    testTag = DiaryScreenTestTags.activeIntentAddContext(item.intentId),
+                )
+                AgentSecondaryAction(
+                    item.askOrbitActionLabel, { onEscalate(item) },
+                    testTag = DiaryScreenTestTags.activeIntentEscalate(item.intentId),
+                )
             }
-            TextButton(
-                onClick = { onResolve(item) },
-                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentResolve(item.intentId)),
-            ) { Text(item.resolveActionLabel) }
-            TextButton(
-                onClick = { onArchive(item) },
-                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentArchive(item.intentId)),
-            ) { Text(item.archiveActionLabel) }
-            TextButton(
-                onClick = { onNotNow(item) },
-                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentNotNow(item.intentId)),
-            ) { Text("Not now") }
-            TextButton(
-                onClick = { onSnooze(item) },
-                modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentSnooze(item.intentId)),
-            ) { Text("Tomorrow") }
+            AgentSecondaryAction(
+                item.resolveActionLabel, { onResolve(item) },
+                testTag = DiaryScreenTestTags.activeIntentResolve(item.intentId),
+            )
+            AgentSecondaryAction(
+                item.archiveActionLabel, { onArchive(item) },
+                testTag = DiaryScreenTestTags.activeIntentArchive(item.intentId),
+            )
+            AgentSecondaryAction(
+                "Not now", { onNotNow(item) },
+                testTag = DiaryScreenTestTags.activeIntentNotNow(item.intentId),
+            )
+            AgentSecondaryAction(
+                "Tomorrow", { onSnooze(item) },
+                testTag = DiaryScreenTestTags.activeIntentSnooze(item.intentId),
+            )
             if (!item.needsEscalation) {
-                TextButton(
-                    onClick = { onEscalate(item) },
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentEscalate(item.intentId)),
-                ) { Text(item.askOrbitActionLabel) }
+                AgentSecondaryAction(
+                    item.askOrbitActionLabel, { onEscalate(item) },
+                    testTag = DiaryScreenTestTags.activeIntentEscalate(item.intentId),
+                )
             }
         }
     }
