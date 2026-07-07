@@ -2,9 +2,13 @@ package com.orbit.app.ai
 
 import android.content.Context
 import com.orbit.app.RuntimeFlags
+import com.orbit.app.ai.local.DeviceAiHardware
 import com.orbit.app.ai.local.LocalModelRoute
 import com.orbit.app.ai.local.LocalModelSelection
+import com.orbit.app.ai.local.LocalModelSelectionPolicy
 import com.orbit.app.ai.local.LocalModelTier
+import com.orbit.app.ai.local.byomProviderForSelection
+import com.orbit.app.ai.local.installedLocalModels
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.settings.PrivacyPreferences
 
@@ -43,12 +47,30 @@ object LlmProviderRouter {
     fun create(
         context: Context,
         networkGateway: INetworkGateway?,
-    ): LlmProvider = resolve(
-        useLocalAi = RuntimeFlags.useLocalAi,
-        hasNanoCapableHardware = hasNanoCapableHardware(),
-        cloudAiRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
-        networkGateway = networkGateway,
-    )
+    ): LlmProvider {
+        val selection = productionSelection(context)
+        return resolve(
+            useLocalAi = RuntimeFlags.useLocalAi,
+            hasNanoCapableHardware = hasNanoCapableHardware(),
+            cloudAiRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
+            networkGateway = networkGateway,
+            localModelSelection = selection,
+            byomLocalProvider = byomProviderForSelection(context, selection),
+        )
+    }
+
+    /**
+     * Spec 022 — run the pure [LocalModelSelectionPolicy] against real
+     * device hardware and on-disk install state. This is the single place
+     * the router learns "is a local model actually usable right now".
+     */
+    private fun productionSelection(context: Context): LocalModelSelection =
+        LocalModelSelectionPolicy.select(
+            localFirstEnabled = RuntimeFlags.useLocalAi,
+            cloudRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
+            hardware = DeviceAiHardware.probe(context),
+            installedModels = installedLocalModels(context),
+        )
 
     /**
      * Day-1 sugar for call sites whose cloud migration is deferred.
@@ -62,8 +84,15 @@ object LlmProviderRouter {
      * [INetworkGateway] through its constructor today.
      */
     fun createPreferLocal(
-        @Suppress("UNUSED_PARAMETER") context: Context,
-    ): LlmProvider = NanoLlmProvider()
+        context: Context,
+    ): LlmProvider {
+        // Spec 022 — prefer a real BYOM local model when one is installed and
+        // selected; otherwise preserve the Day-1 behaviour (Nano stub) so the
+        // FR-013-016 grep invariant (no direct NanoLlmProvider() outside the
+        // carve-outs) still holds and cloud-migration of these sites can defer.
+        byomProviderForSelection(context, productionSelection(context))?.let { return it }
+        return NanoLlmProvider()
+    }
 
     /**
      * Pure resolution function for unit testing — no Android types.

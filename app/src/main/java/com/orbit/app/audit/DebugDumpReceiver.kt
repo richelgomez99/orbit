@@ -33,7 +33,8 @@ class DebugDumpReceiver : BroadcastReceiver() {
         if (!BuildConfig.DEBUG) return
         val action = intent?.action
         if (action !in setOf(
-                ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL, ACTION_TEST_INFERENCE,
+                ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL,
+                ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED,
             )
         ) {
             return
@@ -98,6 +99,26 @@ class DebugDumpReceiver : BroadcastReceiver() {
                             }
                         }
                     }
+                    ACTION_TEST_ROUTED -> {
+                        // Debug: prove the PRODUCTION router picks BYOM local.
+                        // Flips useLocalAi in this process, then resolves via
+                        // the same LlmProviderRouter.createPreferLocal path real
+                        // consumers use, logs the concrete provider class, and
+                        // runs one generation to confirm it's the local engine.
+                        com.orbit.app.RuntimeFlags.useLocalAi = true
+                        val prompt = intent.getStringExtra("prompt")
+                            ?: "In one sentence, why keep a personal journal?"
+                        val provider = com.orbit.app.ai.LlmProviderRouter.createPreferLocal(appCtx)
+                        Log.i(TAG, "routed provider = ${provider.javaClass.simpleName}")
+                        try {
+                            val startedAt = System.currentTimeMillis()
+                            val result = provider.summarize(prompt, maxTokens = 64)
+                            val ms = System.currentTimeMillis() - startedAt
+                            Log.i(TAG, "routed inference OK (${ms}ms): ${result.text}")
+                        } catch (t: Throwable) {
+                            Log.w(TAG, "routed inference failed: ${t.javaClass.simpleName}: ${t.message}")
+                        }
+                    }
                     else -> dump(appCtx)
                 }
             } catch (t: Throwable) {
@@ -156,6 +177,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION_CLEAR_SEED = "com.orbit.app.DEBUG_CLEAR_CORPUS"
         const val ACTION_DOWNLOAD_MODEL = "com.orbit.app.DEBUG_DOWNLOAD_MODEL"
         const val ACTION_TEST_INFERENCE = "com.orbit.app.DEBUG_TEST_INFERENCE"
+        const val ACTION_TEST_ROUTED = "com.orbit.app.DEBUG_TEST_ROUTED"
         private const val TAG = "OrbitDebugDump"
     }
 }
