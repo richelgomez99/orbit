@@ -1,9 +1,12 @@
 package com.orbit.app.diary.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,10 +37,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.orbit.app.ui.primitives.MonoLabel
+import com.orbit.app.ui.tokens.OrbitType
 import com.orbit.app.data.ipc.ActionDraftParcel
 import com.orbit.app.data.ipc.AgentEvidenceParcel
 import com.orbit.app.data.ipc.AgentPlanParcel
@@ -400,14 +410,9 @@ private fun ActionDraftsPanel(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = "Action drafts",
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
+        AgentSectionHeader(kicker = "// ACTION DRAFTS", title = "Ready to act")
         drafts.forEach { draft ->
             ActionDraftCard(
                 draft = draft,
@@ -428,51 +433,17 @@ private fun ActionDraftCard(
     modifier: Modifier = Modifier,
 ) {
     val sourceApp = SourceAppLabelDisplay.userFacingOrNull(draft.sourceAppLabel)
-    val sourceLine = listOfNotNull(sourceApp?.let { "from $it" }, draft.sourceDayLocal)
-        .joinToString(" • ")
-        .ifBlank { "Saved capture" }
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = draft.previewTitle,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            draft.previewSubtitle?.takeIf { it.isNotBlank() }?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            Text(
-                text = "${draft.displayName} - $sourceLine",
-                style = MaterialTheme.typography.labelSmall,
-            )
-            Text(
-                text = draft.sourceTitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(onClick = onOpenCapture) { Text("Open") }
-                TextButton(onClick = onDismiss) { Text("Dismiss") }
-                Button(onClick = onReview) { Text("Review") }
-            }
+    val sourceLine = listOfNotNull(draft.displayName, sourceApp?.let { "from $it" }, draft.sourceDayLocal)
+        .joinToString("  ·  ")
+    SurfacedCard(modifier = modifier) {
+        AgentCardTitle(draft.previewTitle)
+        draft.previewSubtitle?.takeIf { it.isNotBlank() }?.let { AgentCardBody(it) }
+        draft.sourceTitle.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
+        if (sourceLine.isNotBlank()) AgentCardMeta(sourceLine)
+        AgentActionRow {
+            SecondaryAction("Open", onOpenCapture)
+            SecondaryAction("Dismiss", onDismiss)
+            PrimaryAction("Review", onReview)
         }
     }
 }
@@ -492,14 +463,9 @@ private fun MemoryReviewPanel(
         modifier = modifier
             .fillMaxWidth()
             .testTag(DiaryScreenTestTags.MEMORY_REVIEW_PANEL),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = "Memory review",
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
+        AgentSectionHeader(kicker = "// MEMORY REVIEW", title = "What Orbit is learning")
         candidates.forEach { candidate ->
             MemoryCandidateCard(
                 candidate = candidate,
@@ -527,84 +493,162 @@ private fun MemoryCandidateCard(
         else -> candidate.confidenceLabel.replaceFirstChar { it.uppercaseChar() }
     }
     val sourceLine = buildString {
-        append("${candidate.sourceCount.coerceAtLeast(0)} source")
+        append(candidate.candidateKind.lowercase().replace('_', ' '))
+        append("  ·  ").append(sensitivityCopy)
+        append("  ·  ${candidate.sourceCount.coerceAtLeast(0)} source")
         if (candidate.sourceCount != 1) append("s")
-        candidate.primarySourceDayLocal?.let { append(" • ").append(it) }
+        candidate.primarySourceDayLocal?.let { append("  ·  ").append(it) }
     }
-    Card(
+    SurfacedCard(
+        modifier = modifier.testTag(DiaryScreenTestTags.memoryCandidateCard(candidate.candidateId)),
+    ) {
+        AgentCardTitle(candidate.displayLabel)
+        // Lead with the ask (the question), then the fact it's proposing.
+        candidate.askUserCopy?.takeIf { it.isNotBlank() && it != candidate.factText }?.let {
+            AgentCardBody(it)
+        }
+        AgentCardBody(candidate.factText, dim = true)
+        candidate.primarySourceTitle?.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
+        AgentCardMeta(sourceLine)
+        AgentActionRow {
+            if (candidate.primarySourceEnvelopeId != null) {
+                SecondaryAction(
+                    "Open", onOpenCapture,
+                    testTag = DiaryScreenTestTags.memoryCandidateOpenCapture(candidate.candidateId),
+                )
+            }
+            SecondaryAction(
+                "Reject", onReject,
+                testTag = DiaryScreenTestTags.memoryCandidateReject(candidate.candidateId),
+            )
+            SecondaryAction(
+                "Edit", onEdit,
+                testTag = DiaryScreenTestTags.memoryCandidateEdit(candidate.candidateId),
+            )
+            PrimaryAction(
+                "Accept", onAccept,
+                testTag = DiaryScreenTestTags.memoryCandidateAccept(candidate.candidateId),
+            )
+        }
+    }
+}
+
+// ---- Shared Quiet agent-feed primitives (S1) ----------------------------
+
+private object AgentColors {
+    val Panel = Color(0x14F3EAD8)      // faint cream fill (hairline card)
+    val Cream = Color(0xFFF3EAD8)
+    val CreamDim = Color(0xB3F3EAD8)
+    val CreamFaint = Color(0x66F3EAD8)
+    val Accent = Color(0xFFE8B06A)
+    val AccentInk = Color(0xFF211607)
+    val Rule = Color(0x29F3EAD8)
+}
+
+@Composable
+private fun AgentSectionHeader(kicker: String, title: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        MonoLabel(text = kicker, color = AgentColors.Accent, size = 9.5.sp)
+        Text(
+            text = title,
+            color = AgentColors.Cream,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                fontSize = 19.sp,
+                lineHeight = 24.sp,
+            ),
+        )
+    }
+}
+
+@Composable
+private fun SurfacedCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .testTag(DiaryScreenTestTags.memoryCandidateCard(candidate.candidateId)),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            .clip(RoundedCornerShape(12.dp))
+            .background(AgentColors.Panel)
+            .border(BorderStroke(1.dp, AgentColors.Rule), RoundedCornerShape(12.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        content = content,
+    )
+}
+
+@Composable
+private fun AgentCardTitle(text: String) {
+    Text(
+        text = text,
+        color = AgentColors.Cream,
+        style = TextStyle(
+            fontFamily = OrbitType.QuietAlmanac.displaySerif,
+            fontSize = 17.sp,
+            lineHeight = 22.sp,
         ),
+    )
+}
+
+@Composable
+private fun AgentCardBody(text: String, dim: Boolean = false) {
+    Text(
+        text = text,
+        color = if (dim) AgentColors.CreamDim else AgentColors.Cream,
+        style = TextStyle(
+            fontFamily = OrbitType.QuietAlmanac.bodySans,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+        ),
+    )
+}
+
+@Composable
+private fun AgentCardMeta(text: String) {
+    MonoLabel(text = text.uppercase(), color = AgentColors.CreamFaint, size = 8.5.sp)
+}
+
+@Composable
+private fun AgentActionRow(content: @Composable RowScope.() -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, androidx.compose.ui.Alignment.End),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        content = content,
+    )
+}
+
+@Composable
+private fun SecondaryAction(label: String, onClick: () -> Unit, testTag: String? = null) {
+    Text(
+        text = label,
+        modifier = Modifier
+            .let { if (testTag != null) it.testTag(testTag) else it }
+            .clip(RoundedCornerShape(999.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        color = AgentColors.CreamDim,
+        style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 13.sp),
+    )
+}
+
+@Composable
+private fun PrimaryAction(label: String, onClick: () -> Unit, testTag: String? = null) {
+    Box(
+        modifier = Modifier
+            .let { if (testTag != null) it.testTag(testTag) else it }
+            .clip(RoundedCornerShape(999.dp))
+            .background(AgentColors.Accent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 9.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = candidate.displayLabel,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = candidate.factText,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            candidate.askUserCopy?.takeIf { it.isNotBlank() }?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Text(
-                text = "${candidate.candidateKind.lowercase().replace('_', ' ')} - $sensitivityCopy - $sourceLine",
-                style = MaterialTheme.typography.labelSmall,
-            )
-            candidate.primarySourceTitle?.takeIf { it.isNotBlank() }?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(
-                    onClick = onOpenCapture,
-                    enabled = candidate.primarySourceEnvelopeId != null,
-                    modifier = Modifier.testTag(
-                        DiaryScreenTestTags.memoryCandidateOpenCapture(candidate.candidateId)
-                    ),
-                ) { Text("Open") }
-                TextButton(
-                    onClick = onReject,
-                    modifier = Modifier.testTag(
-                        DiaryScreenTestTags.memoryCandidateReject(candidate.candidateId)
-                    ),
-                ) { Text("Reject") }
-                TextButton(
-                    onClick = onEdit,
-                    modifier = Modifier.testTag(
-                        DiaryScreenTestTags.memoryCandidateEdit(candidate.candidateId)
-                    ),
-                ) { Text("Edit") }
-                Button(
-                    onClick = onAccept,
-                    modifier = Modifier.testTag(
-                        DiaryScreenTestTags.memoryCandidateAccept(candidate.candidateId)
-                    ),
-                ) { Text("Accept") }
-            }
-        }
+        Text(
+            text = label,
+            color = AgentColors.AccentInk,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                fontSize = 15.sp,
+                fontStyle = FontStyle.Italic,
+            ),
+        )
     }
 }
 
