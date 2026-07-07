@@ -34,7 +34,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         val action = intent?.action
         if (action !in setOf(
                 ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL,
-                ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED,
+                ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED, ACTION_TEST_CLASSIFY,
             )
         ) {
             return
@@ -119,6 +119,26 @@ class DebugDumpReceiver : BroadcastReceiver() {
                             Log.w(TAG, "routed inference failed: ${t.javaClass.simpleName}: ${t.message}")
                         }
                     }
+                    ACTION_TEST_CLASSIFY -> {
+                        // Debug: exercise the prompt-and-parse paths on the
+                        // installed local model via the PRODUCTION router
+                        // singleton (ByomLocalProviderHolder) — NOT a fresh
+                        // engine: a second LlmInference on the same model in one
+                        // process deadlocks. --es text "<capture text>".
+                        com.orbit.app.RuntimeFlags.useLocalAi = true
+                        val text = intent.getStringExtra("text")
+                            ?: "Order the new noise-cancelling headphones before the sale ends Friday"
+                        val provider = com.orbit.app.ai.LlmProviderRouter.createPreferLocal(appCtx)
+                        if (provider !is com.orbit.app.ai.local.MediaPipeLlmProvider) {
+                            Log.w(TAG, "classify: not local (${provider.javaClass.simpleName}); install a model first")
+                        } else {
+                            // Shared singleton — must NOT be closed here.
+                            val intentResult = provider.classifyIntent(text, appCategory = "OTHER")
+                            Log.i(TAG, "classify intent=${intentResult.intent} conf=${intentResult.confidence}")
+                            val sens = provider.scanSensitivity(text)
+                            Log.i(TAG, "classify sensitivity=${sens.flagsJson}")
+                        }
+                    }
                     else -> dump(appCtx)
                 }
             } catch (t: Throwable) {
@@ -178,6 +198,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION_DOWNLOAD_MODEL = "com.orbit.app.DEBUG_DOWNLOAD_MODEL"
         const val ACTION_TEST_INFERENCE = "com.orbit.app.DEBUG_TEST_INFERENCE"
         const val ACTION_TEST_ROUTED = "com.orbit.app.DEBUG_TEST_ROUTED"
+        const val ACTION_TEST_CLASSIFY = "com.orbit.app.DEBUG_TEST_CLASSIFY"
         private const val TAG = "OrbitDebugDump"
     }
 }
