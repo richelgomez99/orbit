@@ -5,27 +5,43 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.orbit.app.ui.primitives.MonoLabel
+import com.orbit.app.ui.tokens.OrbitType
 import androidx.lifecycle.lifecycleScope
 import com.orbit.app.ai.LlmProviderRouter
 import com.orbit.app.audit.DebugCounters
@@ -153,8 +169,9 @@ class DiaryActivity : ComponentActivity() {
                             bottomBar = bottomBar,
                         )
                         OrbitHomeTab.LIBRARY -> Scaffold(
-                            topBar = { TopAppBar(title = { Text("Library") }) },
+                            topBar = { QuietTabHeader(kicker = "// SAVED MEMORY", title = "Library") },
                             bottomBar = bottomBar,
+                            containerColor = OrbitHomeColors.BgDeep,
                         ) { padding ->
                             LibraryScreen(
                                 viewModel = libraryViewModel,
@@ -171,8 +188,9 @@ class DiaryActivity : ComponentActivity() {
                             )
                         }
                         OrbitHomeTab.ORBIT -> Scaffold(
-                            topBar = { TopAppBar(title = { Text("Orbit") }) },
+                            topBar = { QuietTabHeader(kicker = "// AGENT WORKSPACE", title = "Orbit") },
                             bottomBar = bottomBar,
+                            containerColor = OrbitHomeColors.BgDeep,
                         ) { padding ->
                             OrbitCleanupScreen(
                                 viewModel = viewModel,
@@ -257,32 +275,128 @@ internal object OrbitHomeTestTags {
     const val ORBIT_TAB = "orbit-tab-orbit"
 }
 
+/**
+ * Quiet Almanac palette for the home chrome (nav bar + tab headers). Mirrors
+ * the diary/settings surfaces; kept local because those objects are private to
+ * their files. Zero Material icons — editorial typography only (design bible).
+ */
+private object OrbitHomeColors {
+    val BgDeep = Color(0xFF080B14)
+    val Cream = Color(0xFFF3EAD8)
+    val CreamDim = Color(0x8CF3EAD8)
+    val Rule = Color(0x1AF3EAD8)
+    val Accent = Color(0xFFE8B06A)
+}
+
+/**
+ * Quiet Almanac header for the Library / Orbit tabs — a mono kicker + serif
+ * title + hairline rule, matching the Diary's wordmark treatment instead of a
+ * bare Material [androidx.compose.material3.TopAppBar].
+ */
+@androidx.compose.runtime.Composable
+internal fun QuietTabHeader(kicker: String, title: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(OrbitHomeColors.BgDeep)
+            .statusBarsPadding()
+            .padding(start = 24.dp, end = 18.dp, top = 20.dp),
+    ) {
+        MonoLabel(
+            text = kicker,
+            color = OrbitHomeColors.CreamDim,
+            size = 9.sp,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        Text(
+            text = title,
+            color = OrbitHomeColors.Cream,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                fontSize = 26.sp,
+                lineHeight = 30.sp,
+                fontWeight = FontWeight.Medium,
+            ),
+            modifier = Modifier.padding(bottom = 14.dp),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(OrbitHomeColors.Rule),
+        )
+    }
+}
+
 @androidx.compose.runtime.Composable
 internal fun OrbitBottomBar(
     selected: OrbitHomeTab,
     onSelected: (OrbitHomeTab) -> Unit,
 ) {
-    NavigationBar(modifier = Modifier.testTag(OrbitHomeTestTags.BOTTOM_BAR)) {
-        NavigationBarItem(
-            selected = selected == OrbitHomeTab.DIARY,
-            onClick = { onSelected(OrbitHomeTab.DIARY) },
-            modifier = Modifier.testTag(OrbitHomeTestTags.DIARY_TAB),
-            icon = { Icon(Icons.Filled.ChevronRight, contentDescription = null) },
-            label = { Text(OrbitHomeTab.DIARY.label) },
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(OrbitHomeColors.BgDeep)
+            .testTag(OrbitHomeTestTags.BOTTOM_BAR),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(OrbitHomeColors.Rule),
         )
-        NavigationBarItem(
-            selected = selected == OrbitHomeTab.LIBRARY,
-            onClick = { onSelected(OrbitHomeTab.LIBRARY) },
-            modifier = Modifier.testTag(OrbitHomeTestTags.LIBRARY_TAB),
-            icon = { Icon(Icons.Filled.Search, contentDescription = null) },
-            label = { Text(OrbitHomeTab.LIBRARY.label) },
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            QuietTab(OrbitHomeTab.DIARY.label, selected == OrbitHomeTab.DIARY, OrbitHomeTestTags.DIARY_TAB) {
+                onSelected(OrbitHomeTab.DIARY)
+            }
+            QuietTab(OrbitHomeTab.LIBRARY.label, selected == OrbitHomeTab.LIBRARY, OrbitHomeTestTags.LIBRARY_TAB) {
+                onSelected(OrbitHomeTab.LIBRARY)
+            }
+            QuietTab(OrbitHomeTab.ORBIT.label, selected == OrbitHomeTab.ORBIT, OrbitHomeTestTags.ORBIT_TAB) {
+                onSelected(OrbitHomeTab.ORBIT)
+            }
+        }
+    }
+}
+
+@androidx.compose.runtime.Composable
+private fun QuietTab(
+    label: String,
+    isSelected: Boolean,
+    testTag: String,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .clickable(onClick = onClick)
+            .testTag(testTag)
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+    ) {
+        // Selected marker — a small wax-seal dot, not a Material icon.
+        Box(
+            modifier = Modifier
+                .size(4.dp)
+                .clip(CircleShape)
+                .background(if (isSelected) OrbitHomeColors.Accent else Color.Transparent),
         )
-        NavigationBarItem(
-            selected = selected == OrbitHomeTab.ORBIT,
-            onClick = { onSelected(OrbitHomeTab.ORBIT) },
-            modifier = Modifier.testTag(OrbitHomeTestTags.ORBIT_TAB),
-            icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-            label = { Text(OrbitHomeTab.ORBIT.label) },
+        Text(
+            text = label,
+            color = if (isSelected) OrbitHomeColors.Cream else OrbitHomeColors.CreamDim,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
+                fontStyle = if (isSelected) FontStyle.Italic else FontStyle.Normal,
+            ),
         )
     }
 }

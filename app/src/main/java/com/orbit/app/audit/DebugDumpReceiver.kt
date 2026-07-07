@@ -32,6 +32,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (!BuildConfig.DEBUG) return
         val action = intent?.action
+        Log.i(TAG, "onReceive action=$action")
         if (action !in setOf(
                 ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL,
                 ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED, ACTION_TEST_CLASSIFY,
@@ -43,6 +44,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         val appCtx = context.applicationContext
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                Log.i(TAG, "coroutine entered for $action")
                 when (action) {
                     ACTION_SEED -> {
                         val n = com.orbit.app.data.DebugCorpusSeeder.seed(
