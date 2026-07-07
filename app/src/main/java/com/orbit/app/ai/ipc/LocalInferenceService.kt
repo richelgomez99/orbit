@@ -52,7 +52,7 @@ class LocalInferenceService : Service() {
             val label = selection.modelLabel ?: "local"
 
             val response: LocalInferenceResponse = try {
-                runBlocking { dispatch(decoded, provider, label) }
+                runBlocking { LocalInferenceDispatcher.dispatch(decoded, provider, label) }
             } catch (t: Throwable) {
                 Log.w(TAG, "infer failed: ${t.javaClass.simpleName}: ${t.message}")
                 LocalInferenceResponse.Error(
@@ -62,29 +62,6 @@ class LocalInferenceService : Service() {
             return LocalInferenceResponseParcel(
                 LocalInferenceJson.encodeToString(LocalInferenceResponse.serializer(), response),
             )
-        }
-    }
-
-    private suspend fun dispatch(
-        request: LocalInferenceRequest,
-        provider: LlmProvider,
-        label: String,
-    ): LocalInferenceResponse = when (request) {
-        is LocalInferenceRequest.Summarize -> {
-            val r = provider.summarize(request.text, request.maxTokens)
-            LocalInferenceResponse.Summary(request.requestId, r.text, r.generationLocale, label)
-        }
-        is LocalInferenceRequest.GenerateDayHeader -> {
-            val r = provider.generateDayHeader(request.dayIsoDate, request.envelopeSummaries)
-            LocalInferenceResponse.DayHeader(request.requestId, r.text, r.generationLocale, label)
-        }
-        is LocalInferenceRequest.ClassifyIntent -> {
-            val r = provider.classifyIntent(request.text, request.appCategory)
-            LocalInferenceResponse.Intent(request.requestId, r.intent.name, r.confidence, label)
-        }
-        is LocalInferenceRequest.ScanSensitivity -> {
-            val r = provider.scanSensitivity(request.text)
-            LocalInferenceResponse.Sensitivity(request.requestId, r.flagsJson, label)
         }
     }
 
