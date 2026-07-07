@@ -183,7 +183,13 @@ class DebugDumpReceiver : BroadcastReceiver() {
                         val id = intent.getStringExtra("id") ?: "gemma-1b-litertlm"
                         val prompt = intent.getStringExtra("prompt")
                             ?: "In one sentence, why keep a personal journal?"
-                        val modelFile = com.orbit.app.net.ModelDownloadStore.modelFile(appCtx, id)
+                        // LiteRT-LM dispatches its loader by extension, so the
+                        // file MUST end in .litertlm (a .task-named copy fails
+                        // with "Unable to open zip archive").
+                        val modelFile = java.io.File(
+                            com.orbit.app.net.ModelDownloadStore.modelsDir(appCtx),
+                            "$id.litertlm",
+                        )
                         if (!modelFile.exists()) {
                             Log.w(TAG, "litertlm: model not installed: ${modelFile.absolutePath}")
                         } else {

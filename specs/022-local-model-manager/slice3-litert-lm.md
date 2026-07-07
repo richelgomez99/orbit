@@ -68,6 +68,34 @@ converter, hosting, or license gate.
 - **Two engines in the tree** — transitional weight until tasks-genai is removed.
 - **API maturity** — LiteRT-LM is pre-1.0 (0.13.1); API may shift.
 
+## Validation log (2026-07-07)
+
+- **Gate 1 (dependency)**: ✅ `litertlm-android:0.13.1` resolves + builds, no
+  duplicate-class conflict with tasks-genai. APK +49.3 MB (arm64-only ≈23 MB).
+- **Engine runs in Orbit**: ✅ downloaded the 1B `.litertlm` (584 MB byte-exact,
+  magic bytes `LITERTLM`) and ran a prompt via `LiteRtLmProvider` →
+  `litertlm OK (8223ms)`, coherent output. Findings:
+  - **Extension matters**: LiteRT-LM dispatches its loader by file extension.
+    A `.task`-named `.litertlm` fails with "Unable to open zip archive" — the
+    file MUST end in `.litertlm`. → `ModelDownloadStore` needs a per-model
+    extension (currently hardcodes `.task`); wire in the catalog stage.
+  - **GPU init failed → CPU fallback worked** (`LiteRtLmJniException` on
+    `Backend.GPU()`). CPU is solid; GPU acceleration (the perf win) needs
+    follow-up — likely a missing OpenCL/dispatch `.so` or backend config.
+  - 8.2 s includes cold load + the failed GPU attempt; steady-state CPU will
+    be faster, GPU faster still once fixed.
+
+## Remaining (next stages)
+
+- `ModelDownloadStore` per-model file extension (`.litertlm` vs `.task`).
+- Catalog: add `LocalModelEngine.LITERT_LM`; entries for the 1B `.litertlm`
+  and **E2B** `.litertlm` (INTELLIGENCE). `ByomLocalProviderHolder` builds
+  `LiteRtLmProvider` vs `MediaPipeLlmProvider` per the model's engine.
+- Download + device-validate E2B (memory-risky: ~2 GB on a pressured device).
+- Investigate GPU backend (`libLiteRtDispatch_*` / OpenCL) for acceleration.
+- Once LiteRT-LM proven across models, plan tasks-genai removal (reclaims its
+  APK share).
+
 ## Acceptance
 
 - Dependency resolves + `assembleDebug` green + APK-size delta recorded (gate 1).
