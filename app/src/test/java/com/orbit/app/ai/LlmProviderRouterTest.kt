@@ -49,7 +49,7 @@ class LlmProviderRouterTest {
         override fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel =
             error("not used")
 
-        override fun startModelDownload(modelId: String?, url: String?, expectedBytes: Long) = Unit
+        override fun startModelDownload(modelId: String?, url: String?, expectedBytes: Long, authToken: String?) = Unit
 
         override fun asBinder(): IBinder = throw UnsupportedOperationException("test fake")
     }

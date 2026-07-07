@@ -50,9 +50,9 @@ class NetworkGatewayService : Service() {
 
         // Spec 022 — oneway; returns immediately and the multi-minute
         // download runs on the service IO scope, streaming to disk.
-        override fun startModelDownload(modelId: String, url: String, expectedBytes: Long) {
+        override fun startModelDownload(modelId: String, url: String, expectedBytes: Long, authToken: String?) {
             serviceScope.launch {
-                impl.downloadModelFile(modelId, url, expectedBytes)
+                impl.downloadModelFile(modelId, url, expectedBytes, authToken)
             }
         }
     }

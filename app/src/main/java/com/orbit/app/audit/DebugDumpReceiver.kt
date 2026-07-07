@@ -55,11 +55,14 @@ class DebugDumpReceiver : BroadcastReceiver() {
                         // testing the pipe) and optional --es id <modelId>.
                         val url = intent.getStringExtra("url")
                         val id = intent.getStringExtra("id") ?: "gemma-3-1b-it-int4"
+                        // Optional bearer token for gated hosts (e.g. HF). Never
+                        // logged — only its presence is noted.
+                        val token = intent.getStringExtra("token")?.takeIf { it.isNotBlank() }
                         if (url.isNullOrBlank()) {
                             Log.w(TAG, "download: missing --es url")
                         } else {
-                            com.orbit.app.net.ModelDownloadTrigger.start(appCtx, id, url)
-                            Log.i(TAG, "requested model download id=$id url=$url")
+                            com.orbit.app.net.ModelDownloadTrigger.start(appCtx, id, url, authToken = token)
+                            Log.i(TAG, "requested model download id=$id url=$url auth=${token != null}")
                         }
                     }
                     else -> dump(appCtx)

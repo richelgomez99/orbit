@@ -27,6 +27,7 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLHandshakeException
 
@@ -418,7 +419,7 @@ class NetworkGatewayImpl(
      * to `<id>.task` on success. No bytes cross Binder. Resumable download
      * is a later refinement; this is a clean full fetch.
      */
-    fun downloadModelFile(modelId: String, url: String, expectedBytes: Long) {
+    fun downloadModelFile(modelId: String, url: String, expectedBytes: Long, authToken: String? = null) {
         val context = appContext ?: return
         val store = ModelDownloadStore
         val part = store.partFile(context, modelId)
@@ -446,9 +447,30 @@ class NetworkGatewayImpl(
             ModelDownloadStore.Progress(modelId, ModelDownloadStore.State.DOWNLOADING, 0, expectedBytes),
         )
 
-        val request = Request.Builder().url(url).build()
+        val request = Request.Builder()
+            .url(url)
+            .apply {
+                // Bearer credential for gated hosts (e.g. Hugging Face). OkHttp
+                // strips the Authorization header on cross-host redirects, which
+                // is exactly what we want: HF's CDN redirect carries a signed
+                // URL and must not receive the raw token.
+                if (!authToken.isNullOrBlank()) header("Authorization", "Bearer $authToken")
+            }
+            .build()
+
+        // The shared client is tuned for small HTML fetches: redirects off
+        // (fetchPublicUrl follows them manually) and a 15s overall call cap.
+        // A multi-hundred-MB model bundle needs neither. Derive a client that
+        // auto-follows the host's CDN redirect (OkHttp strips Authorization on
+        // cross-host hops) and lifts the overall/read caps for a long transfer.
+        val downloadClient = client.newBuilder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .callTimeout(0, TimeUnit.MILLISECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .build()
         try {
-            client.newCall(request).execute().use { response ->
+            downloadClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
                     fail("http_${response.code}")
                     return

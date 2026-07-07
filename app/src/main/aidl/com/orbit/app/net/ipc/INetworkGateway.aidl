@@ -32,6 +32,12 @@ interface INetworkGateway {
      * finished bundle land on disk via ModelDownloadStore, which :ml mmaps
      * and the UI polls. `oneway` so the caller never blocks on the
      * multi-minute transfer.
+     *
+     * `authToken` (nullable) is an optional bearer credential for gated
+     * hosts (e.g. a Hugging Face token for license-gated Gemma weights).
+     * It is sent only as an `Authorization: Bearer` header on the initial
+     * request and never persisted. Credentials belong in :net (sole egress);
+     * :ml never sees it.
      */
-    oneway void startModelDownload(String modelId, String url, long expectedBytes);
+    oneway void startModelDownload(String modelId, String url, long expectedBytes, String authToken);
 }

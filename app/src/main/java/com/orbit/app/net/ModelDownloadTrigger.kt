@@ -21,13 +21,19 @@ object ModelDownloadTrigger {
 
     private const val TAG = "ModelDownloadTrigger"
 
-    fun start(context: Context, modelId: String, url: String, expectedBytes: Long = 0L) {
+    fun start(
+        context: Context,
+        modelId: String,
+        url: String,
+        expectedBytes: Long = 0L,
+        authToken: String? = null,
+    ) {
         val appCtx = context.applicationContext
         val conn = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
                 runCatching {
                     INetworkGateway.Stub.asInterface(service)
-                        .startModelDownload(modelId, url, expectedBytes)
+                        .startModelDownload(modelId, url, expectedBytes, authToken)
                     Log.i(TAG, "startModelDownload dispatched id=$modelId")
                 }.onFailure { Log.w(TAG, "startModelDownload dispatch failed", it) }
                 // Intentionally hold the binding: unbinding now would let :net
