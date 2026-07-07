@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import com.orbit.app.RuntimeFlags
 import com.orbit.app.ai.LlmProvider
 import com.orbit.app.net.ModelDownloadStore
+import com.orbit.app.settings.PrivacyPreferences
 
 /**
  * Spec 022 — production glue between the (pure) [LocalModelSelectionPolicy]
@@ -35,6 +37,27 @@ object DeviceAiHardware {
         )
     }
 }
+
+/**
+ * Spec 022 — "prefer on-device AI" is active when EITHER the persistent user
+ * setting OR the in-memory debug flag is on. Single source of truth shared by
+ * the router and [com.orbit.app.ai.ipc.LocalInferenceService].
+ */
+fun localAiActive(context: Context): Boolean =
+    RuntimeFlags.useLocalAi || PrivacyPreferences(context).localAiEnabled
+
+/**
+ * Spec 022 — run the pure [LocalModelSelectionPolicy] against real device
+ * hardware and on-disk install state. The one place the app learns "is a
+ * local model usable right now".
+ */
+fun resolveLocalSelection(context: Context): LocalModelSelection =
+    LocalModelSelectionPolicy.select(
+        localFirstEnabled = localAiActive(context),
+        cloudRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
+        hardware = DeviceAiHardware.probe(context),
+        installedModels = installedLocalModels(context),
+    )
 
 /** Map the catalog to install state on disk (via [ModelDownloadStore]). */
 fun installedLocalModels(context: Context): List<InstalledLocalModel> =

@@ -169,6 +169,16 @@
             </intent-filter>
         </service>
 
+        <!-- spec-022 M1: LocalInferenceService — single BYOM engine, :ml only. -->
+        <service
+            android:name=".ai.ipc.LocalInferenceService"
+            android:process=":ml"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.orbit.app.action.BIND_LOCAL_INFERENCE" />
+            </intent-filter>
+        </service>
+
         <!-- :net process — sole network egress -->
         <service
             android:name=".net.NetworkGatewayService"

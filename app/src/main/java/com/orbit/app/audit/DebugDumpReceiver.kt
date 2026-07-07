@@ -129,9 +129,13 @@ class DebugDumpReceiver : BroadcastReceiver() {
                         val text = intent.getStringExtra("text")
                             ?: "Order the new noise-cancelling headphones before the sale ends Friday"
                         val provider = com.orbit.app.ai.LlmProviderRouter.createPreferLocal(appCtx)
-                        if (provider !is com.orbit.app.ai.local.MediaPipeLlmProvider) {
-                            Log.w(TAG, "classify: not local (${provider.javaClass.simpleName}); install a model first")
+                        // Off-:ml this is a RemoteLocalLlmProvider proxying to the
+                        // single :ml engine; the NanoLlmProvider fallback means no
+                        // local model is installed/selected.
+                        if (provider is com.orbit.app.ai.NanoLlmProvider) {
+                            Log.w(TAG, "classify: not local (NanoLlmProvider); install a model first")
                         } else {
+                            Log.i(TAG, "classify via ${provider.javaClass.simpleName}")
                             // Shared singleton — must NOT be closed here.
                             val intentResult = provider.classifyIntent(text, appCategory = "OTHER")
                             Log.i(TAG, "classify intent=${intentResult.intent} conf=${intentResult.confidence}")

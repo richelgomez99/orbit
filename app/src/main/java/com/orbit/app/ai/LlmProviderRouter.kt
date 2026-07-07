@@ -2,13 +2,14 @@ package com.orbit.app.ai
 
 import android.content.Context
 import com.orbit.app.RuntimeFlags
-import com.orbit.app.ai.local.DeviceAiHardware
+import com.orbit.app.ai.ipc.OrbitProcess
+import com.orbit.app.ai.ipc.RemoteLocalLlmProvider
 import com.orbit.app.ai.local.LocalModelRoute
 import com.orbit.app.ai.local.LocalModelSelection
-import com.orbit.app.ai.local.LocalModelSelectionPolicy
 import com.orbit.app.ai.local.LocalModelTier
 import com.orbit.app.ai.local.byomProviderForSelection
-import com.orbit.app.ai.local.installedLocalModels
+import com.orbit.app.ai.local.localAiActive
+import com.orbit.app.ai.local.resolveLocalSelection
 import com.orbit.app.net.ipc.INetworkGateway
 import com.orbit.app.settings.PrivacyPreferences
 
@@ -48,39 +49,37 @@ object LlmProviderRouter {
         context: Context,
         networkGateway: INetworkGateway?,
     ): LlmProvider {
-        val selection = productionSelection(context)
+        val selection = resolveLocalSelection(context)
         return resolve(
             useLocalAi = localAiActive(context),
             hasNanoCapableHardware = hasNanoCapableHardware(),
             cloudAiRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
             networkGateway = networkGateway,
             localModelSelection = selection,
-            byomLocalProvider = byomProviderForSelection(context, selection),
+            byomLocalProvider = byomProvider(context, selection),
         )
     }
 
     /**
-     * Spec 022 — "prefer on-device AI" is true when EITHER the persistent
-     * user setting ([PrivacyPreferences.localAiEnabled], multi-process,
-     * survives process death) OR the in-memory debug flag
-     * ([RuntimeFlags.useLocalAi], set by the DEBUG_TEST_ROUTED broadcast)
-     * is on.
+     * Spec 022 M1 — resolve the BYOM provider for [selection]:
+     *  - in the `:ml` process → the in-process engine singleton directly.
+     *  - anywhere else → [RemoteLocalLlmProvider], which proxies to the ONE
+     *    engine hosted by `LocalInferenceService` in `:ml` (no per-process
+     *    engine; honours "inference in :ml").
+     * Returns `null` when no local model is selected/installed (caller falls
+     * back to cloud / Nano).
      */
-    private fun localAiActive(context: Context): Boolean =
-        RuntimeFlags.useLocalAi || PrivacyPreferences(context).localAiEnabled
-
-    /**
-     * Spec 022 — run the pure [LocalModelSelectionPolicy] against real
-     * device hardware and on-disk install state. This is the single place
-     * the router learns "is a local model actually usable right now".
-     */
-    private fun productionSelection(context: Context): LocalModelSelection =
-        LocalModelSelectionPolicy.select(
-            localFirstEnabled = localAiActive(context),
-            cloudRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
-            hardware = DeviceAiHardware.probe(context),
-            installedModels = installedLocalModels(context),
-        )
+    private fun byomProvider(context: Context, selection: LocalModelSelection): LlmProvider? {
+        if (selection.route != LocalModelRoute.LOCAL) return null
+        if (selection.tier != LocalModelTier.SPEED && selection.tier != LocalModelTier.INTELLIGENCE) {
+            return null
+        }
+        return if (OrbitProcess.isMl(context)) {
+            byomProviderForSelection(context, selection)
+        } else {
+            RemoteLocalLlmProvider(context)
+        }
+    }
 
     /**
      * Day-1 sugar for call sites whose cloud migration is deferred.
@@ -100,7 +99,7 @@ object LlmProviderRouter {
         // selected; otherwise preserve the Day-1 behaviour (Nano stub) so the
         // FR-013-016 grep invariant (no direct NanoLlmProvider() outside the
         // carve-outs) still holds and cloud-migration of these sites can defer.
-        byomProviderForSelection(context, productionSelection(context))?.let { return it }
+        byomProvider(context, resolveLocalSelection(context))?.let { return it }
         return NanoLlmProvider()
     }
 
