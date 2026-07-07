@@ -34,6 +34,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -84,6 +86,7 @@ import com.orbit.app.memory.MemoryDisplayText
 import com.orbit.app.ui.IntentChipPicker
 import com.orbit.app.ui.primitives.AgentCardBody
 import com.orbit.app.ui.primitives.AgentCardMeta
+import com.orbit.app.ui.primitives.AgentSurface
 import com.orbit.app.ui.primitives.AgentCardTitle
 import com.orbit.app.ui.primitives.AgentPrimaryAction
 import com.orbit.app.ui.primitives.AgentSecondaryAction
@@ -962,7 +965,7 @@ private fun List<ActiveIntentGroup>.preview(maxItems: Int): List<ActiveIntentGro
 
 private const val ACTIVE_INTENT_PREVIEW_LIMIT = 6
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun ActiveIntentDecisionDialog(
     item: ActiveIntentItem,
@@ -975,80 +978,79 @@ private fun ActiveIntentDecisionDialog(
     onResolve: () -> Unit,
     onArchive: () -> Unit,
 ) {
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionDialog(item.intentId)),
-        title = {
-            Text(
-                text = item.evidenceLabel,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Color(0xFF080B14),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .size(width = 34.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(AgentSurface.CreamFaint),
             )
         },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = item.sourceLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                item.clueLabel?.let { clue ->
-                    Text(
-                        text = clue,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                Text(
-                    text = item.reasonLabel,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Text(
-                    text = "Start with the saved capture if the clue is not enough. ${item.guidanceLabel}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        },
-        confirmButton = {
+        modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionDialog(item.intentId)),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 8.dp, bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            MonoLabel(text = "// FOLLOW-UP", color = AgentSurface.Accent, size = 9.5.sp)
+            Text(
+                text = item.evidenceLabel,
+                color = AgentSurface.Cream,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                    fontSize = 20.sp,
+                    lineHeight = 25.sp,
+                ),
+            )
+            item.clueLabel?.takeIf { it.isNotBlank() }?.let { AgentCardBody(it) }
+            item.reasonLabel.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
+            AgentCardBody("Start with the saved capture if the clue is not enough. ${item.guidanceLabel}", dim = true)
+            item.sourceLabel.takeIf { it.isNotBlank() }?.let { AgentCardMeta(it) }
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Button(
-                    onClick = onOpenCapture,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionOpenCapture(item.intentId)),
-                    shape = RoundedCornerShape(8.dp),
-                ) { Text(item.openCaptureActionLabel) }
-                TextButton(
-                    onClick = onAddContext,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionAddContext(item.intentId)),
-                ) { Text(item.addContextActionLabel) }
-                TextButton(
-                    onClick = onReview,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionReview(item.intentId)),
-                ) { Text(item.askOrbitActionLabel) }
-                TextButton(
-                    onClick = onNotNow,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionNotNow(item.intentId)),
-                ) { Text("Not now") }
-                TextButton(
-                    onClick = onSnooze,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionSnooze(item.intentId)),
-                ) { Text("Tomorrow") }
-                TextButton(
-                    onClick = onResolve,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionResolve(item.intentId)),
-                ) { Text(item.resolveActionLabel) }
-                TextButton(
-                    onClick = onArchive,
-                    modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentDecisionArchive(item.intentId)),
-                ) { Text(item.archiveActionLabel) }
+                AgentPrimaryAction(
+                    item.openCaptureActionLabel, onOpenCapture,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionOpenCapture(item.intentId),
+                )
+                AgentSecondaryAction(
+                    item.addContextActionLabel, onAddContext,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionAddContext(item.intentId),
+                )
+                AgentSecondaryAction(
+                    item.askOrbitActionLabel, onReview,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionReview(item.intentId),
+                )
+                AgentSecondaryAction(
+                    "Not now", onNotNow,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionNotNow(item.intentId),
+                )
+                AgentSecondaryAction(
+                    "Tomorrow", onSnooze,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionSnooze(item.intentId),
+                )
+                AgentSecondaryAction(
+                    item.resolveActionLabel, onResolve,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionResolve(item.intentId),
+                )
+                AgentSecondaryAction(
+                    item.archiveActionLabel, onArchive,
+                    testTag = DiaryScreenTestTags.activeIntentDecisionArchive(item.intentId),
+                )
+                AgentSecondaryAction("Cancel", onDismiss)
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
