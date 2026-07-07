@@ -2,8 +2,24 @@
 
 **Feature Branch**: `feature/022-local-model-manager-20260614`  
 **Created**: 2026-06-14  
-**Status**: Draft  
+**Status**: Slice 1 (seam) done; Slice 2 (native engine + download + UI) delivered 2026-07-07  
 **Input**: Roadmap row 13, `VISION-2026-05-22.md`, and current `LlmProviderRouter`/`NanoLlmProvider` implementation.
+
+## Status Update (2026-07-07)
+
+The original spec below scoped **Slice 1** — a pure, JVM-testable selection
+policy + router seam — and deferred the native runtime, download, and UI to
+Non-Goals. A user-directed **Slice 2** has since landed all of that on device
+(see `tasks.md` Phase 5): MediaPipe LLM Inference (`tasks-genai`) running Gemma
+3 1B in `:ml`, a `:net` download pipe for gated Hugging Face weights, a
+model-manager settings UI with a persistent "prefer on-device AI" toggle, and a
+single `:ml` inference engine fronted by the `ILocalInference` AIDL. Constitution
+boundaries held throughout (download in `:net`, inference in `:ml`, no network at
+inference). The Non-Goals "No model download UI" and "No native LiteRT-LM/MLC
+dependency" are therefore **superseded**; the rest still hold. Known limitation:
+on-device 1B classification (`classifyIntent`/`scanSensitivity`) is not
+production-quality (M2 finding), so those return safe defaults — reliable local
+classification (4B / constrained decoding) is deferred (T022-023/024).
 
 ## User Stories
 
