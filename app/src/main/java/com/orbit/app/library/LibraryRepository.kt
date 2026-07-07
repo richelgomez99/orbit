@@ -329,24 +329,34 @@ class BinderLocalEnvelopeLookup(
         return runCatching {
             withContext(Dispatchers.IO) {
                 val repository = connect()
-                LibrarySearchText.queryVariants(trimmed)
+                val raw = LibrarySearchText.queryVariants(trimmed)
                     .flatMap { variant -> repository.searchLocalEnvelopes(variant, limit.coerceIn(1, 50)) }
                     .distinctBy { it.id }
-                    .mapNotNull { envelope ->
-                        val note = runCatching { repository.getLatestNote(envelope.id) }.getOrNull()
-                        LocalEnvelopeMemoryResultMapper.toMemorySearchResult(
-                            envelope = envelope,
-                            query = trimmed,
-                            note = note,
-                        )
-                    }
-                    .filter { LibrarySearchText.resultMatchesQuery(it, trimmed) }
-                    .mapIndexed { index, result ->
-                        result.copy(rank = index + 1)
-                    }
+                val mapped = raw.mapNotNull { envelope ->
+                    val note = runCatching { repository.getLatestNote(envelope.id) }.getOrNull()
+                    LocalEnvelopeMemoryResultMapper.toMemorySearchResult(
+                        envelope = envelope,
+                        query = trimmed,
+                        note = note,
+                    )
+                }
+                val filtered = mapped.filter { LibrarySearchText.resultMatchesQuery(it, trimmed) }
+                // Diagnostic: local search silently returned empty in the field
+                // despite matching captures. Log the funnel so a device repro
+                // shows exactly where rows drop (raw LIKE hits → mapped →
+                // post-filter). Bounded, no user content beyond ids/counts.
+                android.util.Log.i(
+                    "OrbitLibrarySearch",
+                    "local search q='$trimmed' variants=${LibrarySearchText.queryVariants(trimmed).size} " +
+                        "rawHits=${raw.size} mapped=${mapped.size} afterFilter=${filtered.size}",
+                )
+                filtered
+                    .mapIndexed { index, result -> result.copy(rank = index + 1) }
                     .dedupeForDisplay()
                     .take(limit.coerceIn(1, 50))
             }
+        }.onFailure {
+            android.util.Log.w("OrbitLibrarySearch", "local search threw for q='$trimmed'", it)
         }.getOrDefault(emptyList())
     }
 
