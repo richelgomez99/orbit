@@ -130,6 +130,14 @@
             android:parentActivityName=".settings.SettingsActivity"
             android:theme="@style/Theme.Orbit" />
 
+        <!-- spec-022: LocalModelsActivity — on-device AI / model manager. -->
+        <activity
+            android:name=".settings.LocalModelsActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:parentActivityName=".settings.SettingsActivity"
+            android:theme="@style/Theme.Orbit" />
+
         <!-- T055b: EnvelopeDetailActivity — launched from EnvelopeCard tap.
              Not exported; internal explicit-intent only. -->
         <activity

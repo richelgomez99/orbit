@@ -50,7 +50,7 @@ object LlmProviderRouter {
     ): LlmProvider {
         val selection = productionSelection(context)
         return resolve(
-            useLocalAi = RuntimeFlags.useLocalAi,
+            useLocalAi = localAiActive(context),
             hasNanoCapableHardware = hasNanoCapableHardware(),
             cloudAiRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
             networkGateway = networkGateway,
@@ -60,13 +60,23 @@ object LlmProviderRouter {
     }
 
     /**
+     * Spec 022 — "prefer on-device AI" is true when EITHER the persistent
+     * user setting ([PrivacyPreferences.localAiEnabled], multi-process,
+     * survives process death) OR the in-memory debug flag
+     * ([RuntimeFlags.useLocalAi], set by the DEBUG_TEST_ROUTED broadcast)
+     * is on.
+     */
+    private fun localAiActive(context: Context): Boolean =
+        RuntimeFlags.useLocalAi || PrivacyPreferences(context).localAiEnabled
+
+    /**
      * Spec 022 — run the pure [LocalModelSelectionPolicy] against real
      * device hardware and on-disk install state. This is the single place
      * the router learns "is a local model actually usable right now".
      */
     private fun productionSelection(context: Context): LocalModelSelection =
         LocalModelSelectionPolicy.select(
-            localFirstEnabled = RuntimeFlags.useLocalAi,
+            localFirstEnabled = localAiActive(context),
             cloudRoutingEnabled = PrivacyPreferences(context).cloudAiRoutingEnabled,
             hardware = DeviceAiHardware.probe(context),
             installedModels = installedLocalModels(context),

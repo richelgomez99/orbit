@@ -74,6 +74,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)? = null,
     onOpenCaptureSetup: (() -> Unit)? = null,
+    onOpenLocalModels: (() -> Unit)? = null,
     trashCount: Int = 0,
     onOpenTrash: (() -> Unit)? = null,
     onOpenAuditLog: (() -> Unit)? = null,
@@ -119,6 +120,7 @@ fun SettingsScreen(
             modifier = modifier,
             onNavigateBack = onNavigateBack,
             onOpenCaptureSetup = onOpenCaptureSetup,
+            onOpenLocalModels = onOpenLocalModels,
             trashCount = trashCount,
             onOpenTrash = onOpenTrash,
             onOpenAuditLog = onOpenAuditLog,
@@ -186,6 +188,17 @@ fun SettingsScreen(
                     onCloudAiRoutingChange(next)
                 }
             )
+
+            if (onOpenLocalModels != null) {
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(4.dp))
+                SettingsNavRow(
+                    title = "On-device AI",
+                    description = "Download a Gemma model and run summaries and headers on your phone, fully offline.",
+                    onClick = onOpenLocalModels
+                )
+            }
 
             if (onOpenCaptureSetup != null) {
                 Spacer(Modifier.height(8.dp))
@@ -292,6 +305,7 @@ private fun QuietSettingsScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)?,
     onOpenCaptureSetup: (() -> Unit)?,
+    onOpenLocalModels: (() -> Unit)?,
     trashCount: Int,
     onOpenTrash: (() -> Unit)?,
     onOpenAuditLog: (() -> Unit)?,
@@ -351,6 +365,15 @@ private fun QuietSettingsScreen(
                     testTag = SettingsScreenTestTags.CLOUD_AI_TOGGLE,
                     onCheckedChange = onCloudAiRoutingChange,
                 )
+                if (onOpenLocalModels != null) {
+                    QuietNavRow(
+                        title = "On-device AI",
+                        description = "Download a Gemma model and run summaries and headers on your phone, fully offline.",
+                        value = "MODELS",
+                        onClick = onOpenLocalModels,
+                        modifier = Modifier.testTag(SettingsScreenTestTags.LOCAL_MODELS_ROW),
+                    )
+                }
             }
 
             if (onOpenCaptureSetup != null) {
@@ -496,7 +519,7 @@ internal fun QuietSettingSection(
 }
 
 @Composable
-private fun QuietToggleRow(
+internal fun QuietToggleRow(
     title: String,
     description: String,
     tag: String? = null,
@@ -686,7 +709,7 @@ internal fun QuietTag(text: String) {
 }
 
 @Composable
-private fun QuietToggle(checked: Boolean) {
+internal fun QuietToggle(checked: Boolean) {
     Box(
         modifier = Modifier
             .size(width = 44.dp, height = 26.dp)
@@ -805,4 +828,5 @@ internal object SettingsScreenTestTags {
     const val CLOUD_ASK_TOGGLE = "settings-cloud-ask-toggle"
     const val CLOUD_AI_TOGGLE = "settings-cloud-ai-toggle"
     const val CAPTURE_SETUP_ROW = "settings-capture-setup-row"
+    const val LOCAL_MODELS_ROW = "settings-local-models-row"
 }

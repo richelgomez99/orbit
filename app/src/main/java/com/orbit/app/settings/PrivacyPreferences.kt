@@ -48,6 +48,20 @@ class PrivacyPreferences(context: Context) {
             prefs.edit().putBoolean(KEY_CLOUD_AI_ROUTING_ENABLED, value).apply()
         }
 
+    /**
+     * Spec 022 — persistent, multi-process "prefer on-device AI" switch.
+     * When true (and a local model is installed + hardware-eligible),
+     * [com.orbit.app.ai.LlmProviderRouter] routes inference to the BYOM
+     * provider instead of the cloud. Read from every process via this
+     * SharedPreferences file, so the toggle survives process death — unlike
+     * the in-memory [com.orbit.app.RuntimeFlags.useLocalAi] debug flag.
+     */
+    var localAiEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LOCAL_AI_ENABLED, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_LOCAL_AI_ENABLED, value).apply()
+        }
+
     var dailyCloudBudgetCents: Long?
         get() = prefs.getLong(KEY_DAILY_CLOUD_BUDGET_CENTS, NO_BUDGET_CAP)
             .takeUnless { it == NO_BUDGET_CAP }
@@ -61,6 +75,7 @@ class PrivacyPreferences(context: Context) {
         const val KEY_MEMORY_INDEXING_ENABLED = "memory_indexing_enabled"
         const val KEY_CLOUD_ASK_SYNTHESIS_ENABLED = "cloud_ask_synthesis_enabled"
         const val KEY_CLOUD_AI_ROUTING_ENABLED = "cloud_ai_routing_enabled"
+        const val KEY_LOCAL_AI_ENABLED = "local_ai_enabled"
         const val KEY_DAILY_CLOUD_BUDGET_CENTS = "daily_cloud_budget_cents"
         private const val NO_BUDGET_CAP = Long.MIN_VALUE
     }

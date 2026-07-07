@@ -34,6 +34,12 @@ data class DownloadableModel(
     val engine: LocalModelEngine,
     /** MediaPipe `.task` bundle filename once downloaded to app storage. */
     val assetFileName: String,
+    /**
+     * Resolvable https source for the `.task` weights. Gemma repos are
+     * license-gated on Hugging Face — the download needs a Read token
+     * (the model manager supplies one). The download runs in :net.
+     */
+    val sourceUrl: String,
 ) {
     /** Human size, e.g. "529 MB". */
     val approxDownloadLabel: String
@@ -63,22 +69,26 @@ object LocalModelCatalog {
         capabilities = LocalModelCapabilities.SPEED,
         engine = LocalModelEngine.MEDIAPIPE_LLM,
         assetFileName = "gemma-3-1b-it-int4.task",
+        sourceUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
     )
 
     /**
-     * Intelligence tier — Gemma 3 4B, INT4. ~1.3 GB, for offline deep
-     * Ask + generative-UI generation on higher-memory devices.
+     * Intelligence tier — Gemma 3 4B, INT4 (QAT). ~2.6 GB, for offline deep
+     * Ask + generative-UI generation on higher-memory devices. litert-community
+     * ships only `-web`-suffixed `.task` bundles for 4B; the MediaPipe `.task`
+     * format is portable, so the web bundle loads on Android too.
      */
     val GEMMA_3_4B_INT4 = DownloadableModel(
         id = "gemma-3-4b-it-int4",
         tier = LocalModelTier.INTELLIGENCE,
         displayName = "Gemma 3 4B (Intelligence)",
-        blurb = "Offline deep Ask and generative UI. ~1.3 GB, needs 6GB+ RAM.",
-        approxDownloadBytes = 1_300L * 1024 * 1024,
+        blurb = "Offline deep Ask and generative UI. ~2.6 GB, needs 6GB+ RAM.",
+        approxDownloadBytes = 2_560L * 1024 * 1024,
         minTotalRamMb = 6_144,
         capabilities = LocalModelCapabilities.INTELLIGENCE,
         engine = LocalModelEngine.MEDIAPIPE_LLM,
         assetFileName = "gemma-3-4b-it-int4.task",
+        sourceUrl = "https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int4-web.task",
     )
 
     val ALL: List<DownloadableModel> = listOf(GEMMA_3_1B_INT4, GEMMA_3_4B_INT4)

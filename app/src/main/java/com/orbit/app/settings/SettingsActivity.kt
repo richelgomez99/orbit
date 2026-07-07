@@ -84,6 +84,9 @@ class SettingsActivity : ComponentActivity() {
                         onOpenCaptureSetup = {
                             startActivity(Intent(this, MainActivity::class.java))
                         },
+                        onOpenLocalModels = {
+                            startActivity(Intent(this, LocalModelsActivity::class.java))
+                        },
                         trashCount = count.value,
                         onOpenTrash = {
                             startActivity(Intent(this, TrashActivity::class.java))
