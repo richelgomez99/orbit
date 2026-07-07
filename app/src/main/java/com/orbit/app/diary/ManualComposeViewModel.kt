@@ -27,6 +27,12 @@ class ManualComposeViewModel(
         _state.value = _state.value.copy(contextText = value, error = null)
     }
 
+    /** Tapping the selected intent again clears it (defer to auto-classify). */
+    fun onIntentSelected(intent: com.orbit.app.data.model.Intent) {
+        val next = if (_state.value.selectedIntent == intent) null else intent
+        _state.value = _state.value.copy(selectedIntent = next, error = null)
+    }
+
     fun save() {
         val current = _state.value
         if (current.bodyText.isBlank()) {
@@ -42,6 +48,9 @@ class ManualComposeViewModel(
                     bodyText = current.bodyText,
                     contextText = current.contextText,
                     dayLocal = dayLocal,
+                    // User-picked intent → USER_CHIP downstream; null defers to
+                    // auto-classification (unchanged fallback path).
+                    intentName = current.selectedIntent?.name,
                 )
             }.getOrElse { error ->
                 ManualComposeResult.Blocked(error.message ?: "manual_compose_failed")
@@ -73,6 +82,7 @@ data class ManualComposeUiState(
     val dayLocal: String,
     val bodyText: String = "",
     val contextText: String = "",
+    val selectedIntent: com.orbit.app.data.model.Intent? = null,
     val saving: Boolean = false,
     val result: ManualComposeResult? = null,
     val error: String? = null,
