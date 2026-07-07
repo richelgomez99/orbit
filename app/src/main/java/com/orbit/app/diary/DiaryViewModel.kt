@@ -3,9 +3,16 @@ package com.orbit.app.diary
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.orbit.app.action.ipc.ActionExecuteRequestParcel
+import com.orbit.app.curious.CuriousEvidenceRef
+import com.orbit.app.curious.CuriousEvidenceSourceType
+import com.orbit.app.curious.CuriousQuestionCandidate
+import com.orbit.app.curious.CuriousQuestionChoice
+import com.orbit.app.curious.CuriousQuestionGenerator
+import com.orbit.app.curious.CuriousSignal
 import com.orbit.app.data.ClusterCardModel
 import com.orbit.app.data.ipc.AgentPlanParcel
 import com.orbit.app.data.ipc.ActionProposalParcel
+import com.orbit.app.data.ipc.MemoryCandidateParcel
 import com.orbit.app.data.ipc.MemoryDecisionResultParcel
 import com.orbit.app.understanding.domain.ResolutionReason
 import com.orbit.app.understanding.domain.UnderstandingMode
@@ -16,9 +23,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -66,6 +76,66 @@ class DiaryViewModel(
                     _activeIntentState.value = ActiveIntentUiState.from(intents)
                 }
         }
+    }
+
+    // ---- Curious Agent (spec-020) --------------------------------------
+    // The pure, deterministic generator asks a sparse, cited, dismissible
+    // question when >= minSupportingSources of the same topic accumulate.
+    // Signals are derived locally from evidence already flowing to this VM
+    // (active intents + memory candidates) — no cloud, no model, no new IPC.
+    private val curiousGenerator = CuriousQuestionGenerator()
+    private val _curiousHandled = MutableStateFlow<Set<String>>(emptySet())
+
+    val curiousQuestions: StateFlow<List<CuriousQuestionCandidate>> = combine(
+        activeIntentState,
+        observeMemoryCandidates().catch { emit(emptyList()) },
+        _curiousHandled,
+    ) { intents, memory, handled ->
+        curiousGenerator.generate(buildCuriousSignals(intents, memory), suppressedQuestionIds = handled)
+    }.stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    private fun buildCuriousSignals(
+        intents: ActiveIntentUiState,
+        memory: List<MemoryCandidateParcel>,
+    ): List<CuriousSignal> {
+        val fromIntents = (intents as? ActiveIntentUiState.Ready)?.groups
+            ?.flatMap { it.items }
+            ?.map { item ->
+                CuriousSignal(
+                    topicKey = item.categoryLabel,
+                    evidence = CuriousEvidenceRef(
+                        sourceType = CuriousEvidenceSourceType.ENVELOPE,
+                        sourceId = item.captureId,
+                        label = item.clueLabel ?: item.evidenceLabel,
+                    ),
+                )
+            }.orEmpty()
+        val fromMemory = memory.map { c ->
+            CuriousSignal(
+                topicKey = c.candidateKind.lowercase().replace('_', ' '),
+                evidence = CuriousEvidenceRef(
+                    sourceType = CuriousEvidenceSourceType.PROMOTED_MEMORY,
+                    sourceId = c.candidateId,
+                    label = c.displayLabel,
+                ),
+            )
+        }
+        return fromIntents + fromMemory
+    }
+
+    /** Dismiss a curious question — it won't resurface this session. */
+    fun onDismissCuriousQuestion(questionId: String) {
+        _curiousHandled.update { it + questionId }
+    }
+
+    /**
+     * Answer a curious question. First slice: records the choice + retires the
+     * question. S2b wires the answer into a provenance-backed profile memory
+     * candidate via the existing approval path (spec-020 FR-020-003).
+     */
+    fun onAnswerCuriousQuestion(questionId: String, choice: CuriousQuestionChoice) {
+        _curiousHandled.update { it + questionId }
+        scope.launch { runCatching { repository.recordCuriousAnswer(questionId, choice.id) } }
     }
 
     /**

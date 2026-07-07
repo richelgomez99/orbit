@@ -57,6 +57,10 @@ import com.orbit.app.ui.primitives.SurfacedCard
 import com.orbit.app.ui.primitives.MonoLabel
 import com.orbit.app.ui.tokens.OrbitType
 import com.orbit.app.data.ipc.ActionDraftParcel
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import com.orbit.app.curious.CuriousQuestionCandidate
+import com.orbit.app.curious.CuriousQuestionChoice
 import com.orbit.app.data.ipc.AgentEvidenceParcel
 import com.orbit.app.data.ipc.AgentPlanParcel
 import com.orbit.app.data.ipc.MemoryCandidateParcel
@@ -82,6 +86,7 @@ fun OrbitCleanupScreen(
     val state by viewModel.activeIntentState.collectAsState()
     val actionDrafts by viewModel.observeActionDrafts().collectAsState(initial = emptyList())
     val memoryCandidates by viewModel.observeMemoryCandidates().collectAsState(initial = emptyList())
+    val curiousQuestions by viewModel.curiousQuestions.collectAsState()
     val actionNotice by viewModel.actionNotice.collectAsState()
     val agentPlanState by viewModel.agentPlanState.collectAsState()
     val context = LocalContext.current
@@ -126,6 +131,11 @@ fun OrbitCleanupScreen(
                         )
                 }
             },
+        )
+        CuriousQuestionsPanel(
+            questions = curiousQuestions,
+            onAnswer = { q, choice -> viewModel.onAnswerCuriousQuestion(q.id, choice) },
+            onDismiss = { q -> viewModel.onDismissCuriousQuestion(q.id) },
         )
         ActionDraftsPanel(
             drafts = actionDrafts,
@@ -459,6 +469,64 @@ private fun ActionDraftCard(
             AgentSecondaryAction("Dismiss", onDismiss)
             AgentPrimaryAction("Review", onReview)
         }
+    }
+}
+
+/**
+ * Spec 020 — the Curious Agent surfacing. When Orbit has repeated evidence
+ * around a topic, it asks one sparse, cited, dismissible question to fill a
+ * knowledge gap. Answers/dismissals retire the question; a choice records a
+ * user-authored signal (provenance-backed KG write is S2b).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CuriousQuestionsPanel(
+    questions: List<CuriousQuestionCandidate>,
+    onAnswer: (CuriousQuestionCandidate, CuriousQuestionChoice) -> Unit,
+    onDismiss: (CuriousQuestionCandidate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (questions.isEmpty()) return
+    Column(
+        modifier = modifier.fillMaxWidth().testTag("curious-questions-panel"),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        AgentSectionHeader(kicker = "// ORBIT IS CURIOUS", title = "A quick question")
+        questions.forEach { q ->
+            SurfacedCard {
+                AgentCardTitle(q.questionText)
+                AgentCardMeta("Based on ${q.sourceRefs.size} related saves")
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    q.choices.forEach { choice ->
+                        CuriousChoiceChip(label = choice.label, onClick = { onAnswer(q, choice) })
+                    }
+                }
+                AgentActionRow {
+                    AgentSecondaryAction("Not sure", { onDismiss(q) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CuriousChoiceChip(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(AgentSurface.Accent.copy(alpha = 0.12f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 9.dp),
+    ) {
+        Text(
+            text = label,
+            color = AgentSurface.Accent,
+            style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 13.sp),
+        )
     }
 }
 

@@ -137,6 +137,13 @@ interface DiaryRepository {
     /** Audit-only Smart/Deep escalation request. Does not dispatch work. */
     suspend fun requestActiveIntentEscalation(intentId: String, mode: String): Boolean = false
 
+    /**
+     * Spec 020 — record a Curious Agent answer. First slice: default no-op
+     * (the question retires client-side). S2b writes a provenance-backed
+     * profile memory candidate via the existing approval path.
+     */
+    suspend fun recordCuriousAnswer(questionId: String, choiceId: String): Boolean = false
+
     // ---- Spec 006 — Orbit action draft workspace -------------------------
 
     /** Compact pending action drafts for the Orbit tab. */
