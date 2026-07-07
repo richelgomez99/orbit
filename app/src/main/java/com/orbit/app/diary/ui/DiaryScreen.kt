@@ -1319,6 +1319,7 @@ private fun QuietDiaryEnvelopeRow(
                     )
                 }
                 QuietMiniIntent(
+                    glyph = envelope.intent.toQuietIntentGlyph(),
                     label = envelope.intent.toQuietIntentLabel(),
                     color = envelope.intent.toQuietIntentColor(),
                     onClick = { pickerOpen = !pickerOpen },
@@ -1400,6 +1401,7 @@ private fun QuietDiaryEnvelopeRow(
 
 @Composable
 private fun QuietMiniIntent(
+    glyph: String,
     label: String,
     color: Color,
     onClick: () -> Unit,
@@ -1412,11 +1414,17 @@ private fun QuietMiniIntent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .size(5.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(color),
+        // design.md §2 diff #2 — intents are wax-seal SHAPE glyphs, not
+        // color-only dots, so meaning survives colorblindness / grayscale.
+        // The glyph is the ink-colored mark; the label spells it out.
+        Text(
+            text = glyph,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.bodySans,
+                fontSize = 9.sp,
+                lineHeight = 9.sp,
+                color = color,
+            ),
         )
         MonoLabel(text = label, color = QuietDiaryColors.CreamDim, size = 9.sp)
     }
@@ -1542,6 +1550,21 @@ private fun String.toQuietIntentColor(): Color = when (this) {
     "READ_LATER" -> Color(0xFFDCC384)
     "FOR_SOMEONE" -> Color(0xFF84B8D6)
     else -> QuietDiaryColors.Cream
+}
+
+/**
+ * design.md §2 diff #2 — one wax-seal SHAPE per intent. Distinct glyphs
+ * (not just distinct inks) so intent reads in grayscale and for
+ * colorblind users. Five assignable intents each get a unique geometric
+ * mark; unassigned is the faint hollow dot.
+ */
+private fun String.toQuietIntentGlyph(): String = when (this) {
+    "WANT_IT" -> "▲"       // priority — the peak
+    "REFERENCE" -> "◆"     // solid diamond — a fact to keep
+    "READ_LATER" -> "●"    // filled circle — queued
+    "INTERESTING" -> "○"   // hollow circle — noted, open
+    "FOR_SOMEONE" -> "◇"   // hollow diamond — points outward
+    else -> "·"            // unassigned
 }
 
 private fun String.toIntentOrAmbiguous(): Intent =
