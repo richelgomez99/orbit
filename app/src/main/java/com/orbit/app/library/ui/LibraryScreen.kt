@@ -31,12 +31,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.orbit.app.library.LibraryViewModel
 import com.orbit.app.memory.MemorySearchResult
+import com.orbit.app.ui.tokens.OrbitPalette
+import com.orbit.app.ui.tokens.OrbitType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,62 +186,97 @@ private fun LibraryResultRow(
     result: MemorySearchResult,
     onOpen: () -> Unit,
 ) {
-    Surface(
+    val c = OrbitPalette.current(dark = isSystemInDarkTheme())
+
+    // De-duplicate: for a short capture the title, summary, and matched
+    // excerpt are often the same sentence. Show ONE heading and, only if it
+    // adds information, ONE distinct snippet.
+    val heading = (result.title ?: result.summary ?: "Saved memory").trim()
+    // One snippet, and only if it adds information beyond the heading. Prefer
+    // the human summary; fall back to the matched excerpt. Picking the first
+    // NON-redundant candidate avoids the triplication where title ≈ summary ≈
+    // excerpt for short captures.
+    val snippet = listOfNotNull(result.summary, result.matchedEvidence.firstOrNull()?.excerpt)
+        .map { it.trim() }
+        .firstOrNull { it.isNotBlank() && !it.normalizedEquals(heading) }
+    val meta = listOfNotNull(result.dayLocal, result.sourceAppLabel, result.domain)
+        .filter { it.isNotBlank() }
+        .joinToString("  ·  ")
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen)
-            .testTag("library-result-${result.envelopeId}"),
-        shape = RoundedCornerShape(8.dp),
-        tonalElevation = 1.dp,
+            .testTag("library-result-${result.envelopeId}")
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
+        Text(
+            text = heading,
+            style = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.bodySans,
+                fontSize = 15.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = c.ink,
+            ),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (snippet != null) {
             Text(
-                text = result.title ?: result.summary ?: "Saved memory",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
+                text = snippet,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.displaySerif,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    color = c.inkFaint,
+                ),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            result.summary?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = listOfNotNull(result.dayLocal, result.sourceAppLabel, result.domain)
-                        .filter { it.isNotBlank() }
-                        .joinToString(" · "),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(onClick = onOpen) {
-                    Text("View Capture")
-                }
-            }
-            if (result.matchedEvidence.isNotEmpty()) {
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = result.matchedEvidence.first().excerpt.orEmpty(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
         }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = meta,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.8.sp,
+                    color = c.inkFaint,
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "View capture ›",
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.8.sp,
+                    color = c.brandAccent,
+                ),
+            )
+        }
+        Spacer(Modifier.height(2.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(c.rule),
+        )
     }
+}
+
+/** Loose equality for dedupe: ignore case, whitespace runs, trailing punctuation. */
+private fun String.normalizedEquals(other: String): Boolean {
+    fun norm(s: String) = s.lowercase().replace(Regex("\\s+"), " ").trim().trimEnd('.', '…')
+    val a = norm(this)
+    val b = norm(other)
+    return a == b || a.startsWith(b) || b.startsWith(a)
 }
