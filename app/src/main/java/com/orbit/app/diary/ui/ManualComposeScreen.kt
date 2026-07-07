@@ -5,8 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,8 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.orbit.app.data.model.Intent
 import com.orbit.app.diary.ManualComposeResult
 import com.orbit.app.diary.ManualComposeViewModel
-import com.orbit.app.ui.primitives.IntentChip
-import com.orbit.app.ui.primitives.IntentChipKind
+import com.orbit.app.ui.primitives.IntentChipRow
 import com.orbit.app.ui.primitives.MonoLabel
 import com.orbit.app.ui.tokens.OrbitType
 
@@ -257,21 +254,11 @@ private fun QuietComposeField(
     }
 }
 
-/** Intent ↔ chip mapping — the five actionable seals (AMBIGUOUS = unselected). */
-private val INTENT_CHIPS: List<Pair<Intent, IntentChipKind>> = listOf(
-    Intent.WANT_IT to IntentChipKind.wantIt,
-    Intent.REFERENCE to IntentChipKind.reference,
-    Intent.READ_LATER to IntentChipKind.readLater,
-    Intent.FOR_SOMEONE to IntentChipKind.forSomeone,
-    Intent.INTERESTING to IntentChipKind.interesting,
-)
-
 /**
- * Optional intent picker — the same shared [IntentChip]s the overlay capture
- * flow uses, so a manually-saved envelope gets a user-picked intent
+ * Optional intent picker — the shared [IntentChipRow] the overlay capture flow
+ * also uses, so a manually-saved envelope gets a user-picked intent
  * (IntentSource.USER_CHIP). Leaving it unselected defers to auto-classification.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun IntentChooser(
     selected: Intent?,
@@ -283,18 +270,10 @@ private fun IntentChooser(
             color = McColors.CreamFaint,
             size = 9.sp,
         )
-        FlowRow(
+        IntentChipRow(
+            onSelect = onSelect,
+            selected = selected,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            INTENT_CHIPS.forEach { (intent, kind) ->
-                IntentChip(
-                    intent = kind,
-                    active = selected == intent,
-                    onClick = { onSelect(intent) },
-                )
-            }
-        }
+        )
     }
 }

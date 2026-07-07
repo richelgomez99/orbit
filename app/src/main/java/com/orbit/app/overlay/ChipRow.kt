@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,8 +50,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.orbit.app.data.model.Intent
-import com.orbit.app.ui.primitives.IntentChipKind
-import com.orbit.app.ui.primitives.IntentChip as QuietIntentChip
 import com.orbit.app.ui.theme.LocalRuntimeFlags
 import com.orbit.app.ui.tokens.OrbitType
 import kotlinx.coroutines.delay
@@ -283,37 +280,15 @@ private fun QuietChipRow(
                 maxLines = 2,
             )
 
-            FlowRow(
+            // Shared with the manual "Save to Orbit" sheet (single source of
+            // truth). Overlay pass = no persistent selection + haptics on tap.
+            com.orbit.app.ui.primitives.IntentChipRow(
+                onSelect = onChipTap,
+                haptics = true,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                QuietIntentButton(Intent.WANT_IT, IntentChipKind.wantIt, onChipTap)
-                QuietIntentButton(Intent.REFERENCE, IntentChipKind.reference, onChipTap)
-                QuietIntentButton(Intent.READ_LATER, IntentChipKind.readLater, onChipTap)
-                QuietIntentButton(Intent.FOR_SOMEONE, IntentChipKind.forSomeone, onChipTap)
-                QuietIntentButton(Intent.INTERESTING, IntentChipKind.interesting, onChipTap)
-            }
+            )
         }
     }
-}
-
-@Composable
-private fun QuietIntentButton(
-    intent: Intent,
-    kind: IntentChipKind,
-    onChipTap: (Intent) -> Unit,
-) {
-    val haptics = LocalHapticFeedback.current
-    QuietIntentChip(
-        intent = kind,
-        onClick = {
-            haptics.performHapticFeedback(
-                androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress
-            )
-            onChipTap(intent)
-        },
-    )
 }
 
 @Composable
