@@ -8,6 +8,8 @@ import com.orbit.app.ai.model.LlmProvenance
 import com.orbit.app.ai.model.SensitivityResult
 import com.orbit.app.ai.model.SummaryResult
 import com.orbit.app.data.entity.StateSnapshot
+import com.orbit.app.data.model.Intent
+import java.util.Locale
 
 /**
  * Current/legacy local LlmProvider — delegates to on-device Gemini Nano
@@ -27,27 +29,42 @@ import com.orbit.app.data.entity.StateSnapshot
  */
 class NanoLlmProvider : LlmProvider {
 
-    override suspend fun classifyIntent(text: String, appCategory: String): IntentClassification {
-        TODO("AICore integration — US2")
-    }
+    // AICore/Gemini Nano is not integrated in v1. Rather than `TODO()`
+    // (a NotImplementedError landmine if any path reaches this provider),
+    // fail SAFE exactly like UnavailableLlmProvider: best-effort methods
+    // return deterministic degraded results, and summarize throws the typed
+    // NanoUnavailableException that callers (NanoSummariser, DigestComposer,
+    // ClusterSummariser) already catch and degrade on.
+
+    override suspend fun classifyIntent(text: String, appCategory: String): IntentClassification =
+        IntentClassification(
+            intent = Intent.AMBIGUOUS,
+            confidence = 0f,
+            provenance = LlmProvenance.LocalNano,
+        )
 
     override suspend fun summarize(text: String, maxTokens: Int): SummaryResult {
-        if (LlmProviderDiagnostics.forceNanoUnavailable) {
-            throw NanoUnavailableException("forced via LlmProviderDiagnostics (debug seam)")
-        }
-        TODO("AICore integration — US2")
+        throw NanoUnavailableException(
+            if (LlmProviderDiagnostics.forceNanoUnavailable) {
+                "forced via LlmProviderDiagnostics (debug seam)"
+            } else {
+                "Gemini Nano (AICore) not integrated"
+            },
+        )
     }
 
-    override suspend fun scanSensitivity(text: String): SensitivityResult {
-        TODO("AICore integration — US2")
-    }
+    override suspend fun scanSensitivity(text: String): SensitivityResult =
+        SensitivityResult(flagsJson = "[]", provenance = LlmProvenance.LocalNano)
 
     override suspend fun generateDayHeader(
         dayIsoDate: String,
-        envelopeSummaries: List<String>
-    ): DayHeaderResult {
-        TODO("AICore integration — US2")
-    }
+        envelopeSummaries: List<String>,
+    ): DayHeaderResult =
+        DayHeaderResult(
+            text = "",
+            generationLocale = Locale.getDefault().toLanguageTag(),
+            provenance = LlmProvenance.LocalNano,
+        )
 
     override suspend fun extractActions(
         text: String,
