@@ -36,7 +36,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         if (action !in setOf(
                 ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL,
                 ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED, ACTION_TEST_CLASSIFY,
-                ACTION_TEST_CLASSIFY_RAW,
+                ACTION_TEST_CLASSIFY_RAW, ACTION_TEST_LITERTLM,
             )
         ) {
             return
@@ -176,6 +176,34 @@ class DebugDumpReceiver : BroadcastReceiver() {
                             }
                         }
                     }
+                    ACTION_TEST_LITERTLM -> {
+                        // Slice 3 validation: load a .litertlm via the LiteRT-LM
+                        // engine and run one prompt. --es id <modelId> (file at
+                        // files/models/<id>.task), --es prompt "<text>".
+                        val id = intent.getStringExtra("id") ?: "gemma-1b-litertlm"
+                        val prompt = intent.getStringExtra("prompt")
+                            ?: "In one sentence, why keep a personal journal?"
+                        val modelFile = com.orbit.app.net.ModelDownloadStore.modelFile(appCtx, id)
+                        if (!modelFile.exists()) {
+                            Log.w(TAG, "litertlm: model not installed: ${modelFile.absolutePath}")
+                        } else {
+                            val provider = com.orbit.app.ai.local.LiteRtLmProvider(
+                                appContext = appCtx,
+                                modelPath = modelFile.absolutePath,
+                                modelLabel = id,
+                            )
+                            val startedAt = System.currentTimeMillis()
+                            Log.i(TAG, "litertlm: loading $id and generating…")
+                            try {
+                                val out = provider.debugGenerate(prompt)
+                                Log.i(TAG, "litertlm OK (${System.currentTimeMillis() - startedAt}ms): $out")
+                            } catch (t: Throwable) {
+                                Log.w(TAG, "litertlm failed: ${t.javaClass.simpleName}: ${t.message}")
+                            } finally {
+                                provider.close()
+                            }
+                        }
+                    }
                     else -> dump(appCtx)
                 }
             } catch (t: Throwable) {
@@ -237,6 +265,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION_TEST_ROUTED = "com.orbit.app.DEBUG_TEST_ROUTED"
         const val ACTION_TEST_CLASSIFY = "com.orbit.app.DEBUG_TEST_CLASSIFY"
         const val ACTION_TEST_CLASSIFY_RAW = "com.orbit.app.DEBUG_TEST_CLASSIFY_RAW"
+        const val ACTION_TEST_LITERTLM = "com.orbit.app.DEBUG_TEST_LITERTLM"
         private const val TAG = "OrbitDebugDump"
     }
 }

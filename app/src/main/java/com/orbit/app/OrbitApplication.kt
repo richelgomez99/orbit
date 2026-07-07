@@ -101,6 +101,7 @@ class OrbitApplication : Application(), Configuration.Provider {
             addAction(DebugDumpReceiver.ACTION_TEST_ROUTED)
             addAction(DebugDumpReceiver.ACTION_TEST_CLASSIFY)
             addAction(DebugDumpReceiver.ACTION_TEST_CLASSIFY_RAW)
+            addAction(DebugDumpReceiver.ACTION_TEST_LITERTLM)
         }
         // Flag required on API 33+ for non-exported, unprotected receivers.
         val flags = android.content.Context.RECEIVER_EXPORTED
