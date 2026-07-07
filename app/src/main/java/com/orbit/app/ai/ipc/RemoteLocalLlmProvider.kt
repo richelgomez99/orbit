@@ -61,7 +61,11 @@ class RemoteLocalLlmProvider(context: Context) : LlmProvider {
                 val bound = appContext.bindService(
                     Intent(appContext, LocalInferenceService::class.java),
                     conn,
-                    Context.BIND_AUTO_CREATE,
+                    // BIND_IMPORTANT elevates :ml to the binding (foreground)
+                    // client's LMK priority so the low-memory killer spares it
+                    // while it holds a multi-GB model — the key anti-OOM lever
+                    // for loading larger models (e.g. the E2B .litertlm).
+                    Context.BIND_AUTO_CREATE or Context.BIND_IMPORTANT,
                 )
                 if (!bound && cont.isActive) {
                     cont.resumeWithException(IOException("bind LocalInferenceService failed"))

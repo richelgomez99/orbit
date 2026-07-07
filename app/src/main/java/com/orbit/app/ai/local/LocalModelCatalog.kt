@@ -55,8 +55,11 @@ data class DownloadableModel(
 }
 
 enum class LocalModelEngine {
-    /** Google MediaPipe LLM Inference / LiteRT-LM (`tasks-genai`). */
+    /** Google MediaPipe LLM Inference (`tasks-genai`) — loads zip `.task`. Maintenance-only. */
     MEDIAPIPE_LLM,
+
+    /** Google LiteRT-LM (`litertlm-android`) — loads `.litertlm`. Strategic (Slice 3). */
+    LITERT_LM,
 }
 
 object LocalModelCatalog {
@@ -106,7 +109,32 @@ object LocalModelCatalog {
         androidTaskAvailable = false,
     )
 
-    val ALL: List<DownloadableModel> = listOf(GEMMA_3_1B_INT4, GEMMA_3_4B_INT4)
+    /**
+     * Intelligence tier via **LiteRT-LM** (Slice 3) — Gemma 4 E2B, `.litertlm`.
+     * ~2.6 GB, Apache-2.0 (ungated, no token). Loads on the LiteRT-LM engine
+     * (the 4B `.task` path is a dead end — T022-026). On-demand deep Ask /
+     * generative UI on higher-memory devices; loaded in `:ml` (BIND_IMPORTANT
+     * + largeHeap keep the low-memory killer off it).
+     */
+    val GEMMA_4_E2B_LITERTLM = DownloadableModel(
+        id = "gemma-4-e2b-it",
+        tier = LocalModelTier.INTELLIGENCE,
+        displayName = "Gemma 4 E2B (Intelligence)",
+        blurb = "Offline deep Ask and generative UI. ~2.6 GB, needs 6GB+ RAM.",
+        approxDownloadBytes = 2_590L * 1024 * 1024,
+        minTotalRamMb = 6_144,
+        capabilities = LocalModelCapabilities.INTELLIGENCE,
+        engine = LocalModelEngine.LITERT_LM,
+        assetFileName = "gemma-4-e2b-it.litertlm",
+        sourceUrl = "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm",
+        androidTaskAvailable = true,
+    )
+
+    val ALL: List<DownloadableModel> = listOf(
+        GEMMA_3_1B_INT4,
+        GEMMA_4_E2B_LITERTLM,
+        GEMMA_3_4B_INT4,
+    )
 
     /**
      * Models this device can actually download AND load: enough RAM for the

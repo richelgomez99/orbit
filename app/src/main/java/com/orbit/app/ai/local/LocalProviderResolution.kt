@@ -91,21 +91,30 @@ object ByomLocalProviderHolder {
     private const val TAG = "ByomLocalProvider"
 
     @Volatile
-    private var cached: Pair<String, MediaPipeLlmProvider>? = null
+    private var cached: Pair<String, LlmProvider>? = null
 
     @Synchronized
-    fun get(context: Context, modelId: String): MediaPipeLlmProvider {
+    fun get(context: Context, modelId: String): LlmProvider {
         val path = ModelDownloadStore.modelFile(context, modelId).absolutePath
         cached?.let { (cachedPath, provider) ->
             if (cachedPath == path) return provider
-            runCatching { provider.close() } // model switched — release the old engine
+            (provider as? java.io.Closeable)?.let { runCatching { it.close() } } // model switched
         }
-        Log.i(TAG, "creating BYOM engine for $modelId")
-        val provider = MediaPipeLlmProvider(
-            appContext = context.applicationContext,
-            modelPath = path,
-            modelLabel = modelId,
-        )
+        // Pick the engine from the catalog (default MediaPipe for unknown ids).
+        val engine = LocalModelCatalog.byId(modelId)?.engine ?: LocalModelEngine.MEDIAPIPE_LLM
+        Log.i(TAG, "creating BYOM engine for $modelId ($engine)")
+        val provider: LlmProvider = when (engine) {
+            LocalModelEngine.LITERT_LM -> LiteRtLmProvider(
+                appContext = context.applicationContext,
+                modelPath = path,
+                modelLabel = modelId,
+            )
+            LocalModelEngine.MEDIAPIPE_LLM -> MediaPipeLlmProvider(
+                appContext = context.applicationContext,
+                modelPath = path,
+                modelLabel = modelId,
+            )
+        }
         cached = path to provider
         return provider
     }

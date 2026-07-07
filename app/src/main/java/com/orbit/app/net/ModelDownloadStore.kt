@@ -35,11 +35,20 @@ object ModelDownloadStore {
     fun modelsDir(context: Context): File =
         File(context.filesDir, "models").apply { mkdirs() }
 
+    /**
+     * On-disk filename for a model, from the catalog's `assetFileName` so the
+     * extension is right per engine (`.task` for MediaPipe, `.litertlm` for
+     * LiteRT-LM — which dispatches its loader by extension). Falls back to
+     * `<id>.task` for ids not in the catalog (e.g. the pipe-test).
+     */
+    private fun fileName(modelId: String): String =
+        com.orbit.app.ai.local.LocalModelCatalog.byId(modelId)?.assetFileName ?: "$modelId.task"
+
     fun modelFile(context: Context, modelId: String): File =
-        File(modelsDir(context), "$modelId.task")
+        File(modelsDir(context), fileName(modelId))
 
     fun partFile(context: Context, modelId: String): File =
-        File(modelsDir(context), "$modelId.task.part")
+        File(modelsDir(context), "${fileName(modelId)}.part")
 
     private fun progressFile(context: Context, modelId: String): File =
         File(modelsDir(context), "$modelId.download.json")
