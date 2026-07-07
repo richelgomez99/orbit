@@ -34,7 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -82,6 +85,13 @@ fun LibraryScreen(
                 shape = RoundedCornerShape(8.dp),
                 textStyle = MaterialTheme.typography.bodyMedium,
                 colors = quietSearchFieldColors(),
+                // The IME action is Search so the keyboard's enter/search key
+                // submits — otherwise the only way to run a query is the
+                // adjacent button, which reads as "typed but nothing happened".
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(
+                    onSearch = { if (state.canSearch) viewModel.onSearchSubmitted() },
+                ),
             )
             Button(
                 onClick = viewModel::onSearchSubmitted,
