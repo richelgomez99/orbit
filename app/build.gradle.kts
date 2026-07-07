@@ -243,7 +243,11 @@ dependencies {
 
     // MediaPipe LLM Inference (LiteRT-LM) — spec 022 BYOM on-device Gemma engine.
     // Runs in :ml; loads the downloaded .task via mmap. No network egress.
+    // NOTE: maintenance-only mode — migrating to LiteRT-LM (Slice 3, below).
     implementation(libs.mediapipe.tasks.genai)
+
+    // LiteRT-LM (spec-022 Slice 3) — strategic on-device LLM engine. :ml only.
+    implementation(libs.litertlm.android)
 
     // Coil Compose — T078 screenshot thumbnails in EnvelopeCard
     implementation(libs.coil.compose)

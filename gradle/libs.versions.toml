@@ -29,6 +29,7 @@ appfunctions = "1.0.0-alpha01"
 supabaseKt = "3.6.0"
 ktor = "3.3.0"
 mediapipeTasksGenai = "0.10.35"
+litertLm = "0.13.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -89,6 +90,10 @@ ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version
 # MediaPipe LLM Inference (LiteRT-LM) — spec 022 BYOM on-device engine (:ml process).
 # Loads Gemma .task bundles via mmap; no network (Principle II/VI: inference in :ml).
 mediapipe-tasks-genai = { group = "com.google.mediapipe", name = "tasks-genai", version.ref = "mediapipeTasksGenai" }
+# LiteRT-LM (spec-022 Slice 3) — Google's strategic on-device LLM runtime,
+# successor to the maintenance-mode tasks-genai. GPU/NPU, multimodal, loads
+# .litertlm. Runs in :ml only.
+litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertLm" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
