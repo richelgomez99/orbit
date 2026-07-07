@@ -36,6 +36,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         if (action !in setOf(
                 ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL,
                 ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED, ACTION_TEST_CLASSIFY,
+                ACTION_TEST_CLASSIFY_RAW,
             )
         ) {
             return
@@ -145,6 +146,36 @@ class DebugDumpReceiver : BroadcastReceiver() {
                             Log.i(TAG, "classify sensitivity=${sens.flagsJson}")
                         }
                     }
+                    ACTION_TEST_CLASSIFY_RAW -> {
+                        // M5 measurement: run the raw classification prompts
+                        // against a chosen installed model (e.g. the 4B) and
+                        // log the model's raw output, to judge quality vs the
+                        // 1B (M2). Standalone provider in this process — fire
+                        // only ONE engine-creating action per process.
+                        // --es id <modelId> (default gemma-3-4b-it-int4), --es text "<capture>"
+                        val id = intent.getStringExtra("id") ?: "gemma-3-4b-it-int4"
+                        val text = intent.getStringExtra("text")
+                            ?: "Order the new noise-cancelling headphones before the sale ends Friday"
+                        val modelFile = com.orbit.app.net.ModelDownloadStore.modelFile(appCtx, id)
+                        if (!modelFile.exists()) {
+                            Log.w(TAG, "classify-raw: model not installed: $id")
+                        } else {
+                            val provider = com.orbit.app.ai.local.MediaPipeLlmProvider(
+                                appContext = appCtx,
+                                modelPath = modelFile.absolutePath,
+                                modelLabel = id,
+                            )
+                            try {
+                                Log.i(TAG, "classify-raw[$id] IN: $text")
+                                val intentRaw = provider.debugClassifyRaw(text)
+                                Log.i(TAG, "classify-raw intent => ${intentRaw.replace("\n", " ⏎ ")}")
+                                val sensRaw = provider.debugSensitivityRaw(text)
+                                Log.i(TAG, "classify-raw sensitivity => ${sensRaw.replace("\n", " ⏎ ")}")
+                            } finally {
+                                provider.close()
+                            }
+                        }
+                    }
                     else -> dump(appCtx)
                 }
             } catch (t: Throwable) {
@@ -205,6 +236,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION_TEST_INFERENCE = "com.orbit.app.DEBUG_TEST_INFERENCE"
         const val ACTION_TEST_ROUTED = "com.orbit.app.DEBUG_TEST_ROUTED"
         const val ACTION_TEST_CLASSIFY = "com.orbit.app.DEBUG_TEST_CLASSIFY"
+        const val ACTION_TEST_CLASSIFY_RAW = "com.orbit.app.DEBUG_TEST_CLASSIFY_RAW"
         private const val TAG = "OrbitDebugDump"
     }
 }

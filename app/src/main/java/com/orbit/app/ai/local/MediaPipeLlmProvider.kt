@@ -151,6 +151,35 @@ class MediaPipeLlmProvider(
     override suspend fun scanSensitivity(text: String): SensitivityResult =
         SensitivityResult(flagsJson = "[]", provenance = provenance)
 
+    /**
+     * Debug-only (spec-022 M5 measurement): raw model output for the
+     * intent-classification prompt, so a bigger model (4B) can be judged
+     * against the M2 finding without changing production behavior. Not part
+     * of the [LlmProvider] contract; called only from DebugDumpReceiver.
+     */
+    internal suspend fun debugClassifyRaw(text: String): String = generate(
+        buildString {
+            append("Classify the saved text into exactly one label.\n")
+            append("WANT_IT: wants to buy, acquire, or own this.\n")
+            append("READ_LATER: an article or content to read later.\n")
+            append("REFERENCE: factual info to keep for reference.\n")
+            append("FOR_SOMEONE: relevant to another person or to share.\n")
+            append("INTERESTING: interesting but with no clear action.\n")
+            append("Reply with ONLY the label word.\n\nText: ")
+            append(text.take(2_000))
+        },
+    )
+
+    /** Debug-only (M5 measurement): raw model output for the sensitivity prompt. */
+    internal suspend fun debugSensitivityRaw(text: String): String = generate(
+        buildString {
+            append("List which sensitive categories the text contains, comma-separated, ")
+            append("from: financial, medical, credentials, contact, location. ")
+            append("Reply NONE if none apply.\n\nText: ")
+            append(text.take(2_000))
+        },
+    )
+
     // extractActions stays a safe default: schema-constrained proposal
     // generation (never invent a functionId, argsJson must validate) is
     // unreliable from a 1B without constrained decoding, and the contract
