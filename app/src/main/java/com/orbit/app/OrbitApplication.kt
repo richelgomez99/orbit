@@ -48,6 +48,7 @@ class OrbitApplication : Application(), Configuration.Provider {
             scheduleClusterDetection()
             registerDebugDumpReceiverIfDebug()
             drainCrashJournal()
+            trackAppVisibilityForOverlay()
         }
         // T025 — :ml process owns the AppFunction registry. Register the
         // hand-curated built-in schemas at boot. Idempotent: schemas already
@@ -90,6 +91,43 @@ class OrbitApplication : Application(), Configuration.Provider {
      * in a release build: the whole `if (BuildConfig.DEBUG)` block is dead
      * code in release and R8 strips it.
      */
+    /**
+     * D1 (spec-001) — hide the capture bubble while an Orbit activity is in the
+     * foreground (the bubble is redundant and covers our own UI). Counts
+     * started activities in the default (:ui) process and broadcasts a
+     * visibility signal to the :capture overlay service on 0↔1 transitions.
+     */
+    private fun trackAppVisibilityForOverlay() {
+        registerActivityLifecycleCallbacks(object : android.app.Application.ActivityLifecycleCallbacks {
+            private var startedCount = 0
+
+            override fun onActivityStarted(activity: android.app.Activity) {
+                if (startedCount++ == 0) broadcastVisibility(foreground = true)
+            }
+
+            override fun onActivityStopped(activity: android.app.Activity) {
+                if (--startedCount <= 0) {
+                    startedCount = 0
+                    broadcastVisibility(foreground = false)
+                }
+            }
+
+            override fun onActivityCreated(a: android.app.Activity, b: android.os.Bundle?) = Unit
+            override fun onActivityResumed(a: android.app.Activity) = Unit
+            override fun onActivityPaused(a: android.app.Activity) = Unit
+            override fun onActivitySaveInstanceState(a: android.app.Activity, b: android.os.Bundle) = Unit
+            override fun onActivityDestroyed(a: android.app.Activity) = Unit
+        })
+    }
+
+    private fun broadcastVisibility(foreground: Boolean) {
+        sendBroadcast(
+            android.content.Intent("com.orbit.app.action.ORBIT_VISIBILITY")
+                .setPackage(packageName)
+                .putExtra("foreground", foreground),
+        )
+    }
+
     private fun registerDebugDumpReceiverIfDebug() {
         if (!BuildConfig.DEBUG) return
         val filter = android.content.IntentFilter().apply {

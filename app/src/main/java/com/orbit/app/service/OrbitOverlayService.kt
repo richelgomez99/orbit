@@ -70,6 +70,10 @@ class OrbitOverlayService : LifecycleService() {
         const val ACTION_START_OVERLAY = "com.orbit.app.action.START_OVERLAY"
         const val ACTION_STOP_OVERLAY = "com.orbit.app.action.STOP_OVERLAY"
         const val ACTION_RESTART_OVERLAY = "com.orbit.app.action.RESTART_OVERLAY"
+        // D1 — :ui broadcasts this when an Orbit activity enters/leaves the
+        // foreground so we can hide the redundant bubble behind our own UI.
+        const val ACTION_ORBIT_VISIBILITY = "com.orbit.app.action.ORBIT_VISIBILITY"
+        private const val EXTRA_FOREGROUND = "foreground"
         private const val TAG = "OrbitOverlay"
         private const val PREFS_NAME = "orbit_overlay_prefs"
         private const val DISMISS_TARGET_SIZE_DP = 72
@@ -86,6 +90,16 @@ class OrbitOverlayService : LifecycleService() {
     private lateinit var prefs: SharedPreferences
     private var composeView: ComposeView? = null
     private var overlayParams: WindowManager.LayoutParams? = null
+
+    // D1 — true while an Orbit activity is foreground; the idle bubble hides then.
+    @Volatile private var orbitForeground: Boolean = false
+    private val visibilityReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
+            if (intent?.action != ACTION_ORBIT_VISIBILITY) return
+            orbitForeground = intent.getBooleanExtra(EXTRA_FOREGROUND, false)
+            composeView?.visibility = if (orbitForeground) android.view.View.GONE else android.view.View.VISIBLE
+        }
+    }
     private var clipboardStateMachine: ClipboardFocusStateMachine? = null
     private var viewModel: OverlayViewModel? = null
     private var dismissTargetView: ComposeView? = null
@@ -134,6 +148,14 @@ class OrbitOverlayService : LifecycleService() {
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+
+        // D1 — internal, same-package only (RECEIVER_NOT_EXPORTED).
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            visibilityReceiver,
+            android.content.IntentFilter(ACTION_ORBIT_VISIBILITY),
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
         notificationManager = ForegroundNotificationManager(this)
         healthMonitor = ServiceHealthMonitor(this)
 
@@ -203,6 +225,7 @@ class OrbitOverlayService : LifecycleService() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
+        runCatching { unregisterReceiver(visibilityReceiver) }
         cancelIdleUnbind()
         unregisterScreenshotObserver()
         unbindFromRepo()
@@ -500,6 +523,9 @@ class OrbitOverlayService : LifecycleService() {
             }
         }
 
+        // D1 — if Orbit is already foreground when the bubble is (re)added,
+        // start hidden so it doesn't flash over our own UI.
+        view.visibility = if (orbitForeground) android.view.View.GONE else android.view.View.VISIBLE
         try {
             windowManager.addView(view, params)
             overlayLifecycleOwner.onStart()
