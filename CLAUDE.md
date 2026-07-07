@@ -104,12 +104,14 @@ Spec folders that are *named* in the vision but exist as placeholders or are sti
 On-device Gemma runs end-to-end as of `9a43872`. The path:
 - **Download** (`:net`): `INetworkGateway.startModelDownload(id, url, expectedBytes, authToken?)` → `NetworkGatewayImpl.downloadModelFile` streams to `filesDir/models/<id>.task` (see `ModelDownloadStore`). Uses a download-tuned OkHttp client (redirects on, no 15s cap) — the *shared* client disables redirects and caps calls at 15s, wrong for large files. `authToken` is sent only as `Authorization: Bearer` on the first request; OkHttp strips it on the cross-host CDN redirect. Gated Gemma weights live at HF `litert-community/Gemma3-1B-IT` / `Gemma3-4B-IT` (accept the license per-repo, then a Read token works).
 - **Inference** (`:ml`): `MediaPipeLlmProvider` (`com.google.mediapipe:tasks-genai`) mmaps the `.task` and runs `LlmInference.generateResponse` one-shot (no session for single turn). Engine builder takes only `setModelPath`/`setMaxTokens`; topK/temperature are session-level. `LlmInferenceOptions` is the nested `LlmInference.LlmInferenceOptions`. First slice: `summarize`/`generateDayHeader` generate for real; `classifyIntent`/`scanSensitivity`/`extractActions` return safe defaults; `embed` returns null.
-- **Next**: wire `MediaPipeLlmProvider` into `LlmProviderRouter`'s existing `byomLocalProvider` seam for the production `:ml` path (currently only reached via the debug broadcast below).
+- **Router** (done, `531c789`): both `LlmProviderRouter.create()` and `createPreferLocal()` run the pure `LocalModelSelectionPolicy` against `DeviceAiHardware.probe()` + `installedLocalModels()` and return a `MediaPipeLlmProvider` (via the per-process `ByomLocalProviderHolder` singleton) when a local model is selected. Gated on `RuntimeFlags.useLocalAi` (default false; in-memory volatile, per-process, until the Block 10 SharedPreferences surface). So real consumers (DiaryActivity day headers, `:ml` `EnvelopeRepositoryService` enrichment/digest) use local Gemma once the flag is on.
+- **Next**: model-manager settings UI; route all local inference through a single `:ml` engine over AIDL (today each process that selects local builds its own engine — mmap shares the weights but not the working set); `classifyIntent`/`extractActions` prompt-and-parse; session-level sampling.
 
 Debug broadcasts (debug build, registered in `OrbitApplication`; package is `com.orbit.app`, no `.debug` suffix):
 ```
 adb shell am broadcast -a com.orbit.app.DEBUG_DOWNLOAD_MODEL --es url <URL> --es id <id> [--es token <hf_...>] -p com.orbit.app
 adb shell am broadcast -a com.orbit.app.DEBUG_TEST_INFERENCE --es id <id> [--es prompt "<text>"] -p com.orbit.app
+adb shell am broadcast -a com.orbit.app.DEBUG_TEST_ROUTED [--es prompt "<text>"] -p com.orbit.app   # flips useLocalAi, proves router → MediaPipeLlmProvider
 ```
 Results log under tag `OrbitDebugDump`. Downloaded models survive `adb install -r`. Progress/state: `filesDir/models/<id>.download.json`. S24 Ultra ran the 1B INT4 in ~5s.
 
