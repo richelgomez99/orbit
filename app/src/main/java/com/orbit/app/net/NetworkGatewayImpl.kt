@@ -411,6 +411,87 @@ class NetworkGatewayImpl(
         )
     }
 
+    /**
+     * Spec 022 — stream a BYOM model bundle to the app's shared files dir.
+     * Runs in :net (sole network egress). Writes to `<id>.task.part`,
+     * publishes progress to [ModelDownloadStore] every ~2MB, and renames
+     * to `<id>.task` on success. No bytes cross Binder. Resumable download
+     * is a later refinement; this is a clean full fetch.
+     */
+    fun downloadModelFile(modelId: String, url: String, expectedBytes: Long) {
+        val context = appContext ?: return
+        val store = ModelDownloadStore
+        val part = store.partFile(context, modelId)
+        val dest = store.modelFile(context, modelId)
+
+        fun fail(reason: String) {
+            runCatching { part.delete() }
+            store.writeProgress(
+                context,
+                ModelDownloadStore.Progress(modelId, ModelDownloadStore.State.FAILED, 0, expectedBytes, reason),
+            )
+            Log.w(TAG, "model download failed [$modelId]: $reason")
+        }
+
+        // Only https model hosts; reuse the strict validator (blocks
+        // loopback/private/onion). Model CDNs are public https.
+        val validation = UrlValidator(requireHttps = true).validate(url)
+        if (validation is UrlValidator.Validation.Invalid) {
+            fail("blocked_url:${validation.errorKind}")
+            return
+        }
+
+        store.writeProgress(
+            context,
+            ModelDownloadStore.Progress(modelId, ModelDownloadStore.State.DOWNLOADING, 0, expectedBytes),
+        )
+
+        val request = Request.Builder().url(url).build()
+        try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    fail("http_${response.code}")
+                    return
+                }
+                val body = response.body ?: run { fail("empty_body"); return }
+                val total = body.contentLength().takeIf { it > 0 } ?: expectedBytes
+                part.parentFile?.mkdirs()
+                var written = 0L
+                var lastPublished = 0L
+                body.byteStream().use { input ->
+                    part.outputStream().use { output ->
+                        val buf = ByteArray(64 * 1024)
+                        while (true) {
+                            val n = input.read(buf)
+                            if (n < 0) break
+                            output.write(buf, 0, n)
+                            written += n
+                            if (written - lastPublished >= 2 * 1024 * 1024) {
+                                lastPublished = written
+                                store.writeProgress(
+                                    context,
+                                    ModelDownloadStore.Progress(
+                                        modelId, ModelDownloadStore.State.DOWNLOADING, written, total,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+                if (!part.renameTo(dest)) {
+                    part.copyTo(dest, overwrite = true); part.delete()
+                }
+                store.writeProgress(
+                    context,
+                    ModelDownloadStore.Progress(modelId, ModelDownloadStore.State.COMPLETE, dest.length(), dest.length()),
+                )
+                Log.i(TAG, "model download complete [$modelId]: ${dest.length()} bytes")
+            }
+        } catch (e: Throwable) {
+            fail(e.javaClass.simpleName)
+        }
+    }
+
     companion object {
         internal const val MAX_REDIRECTS: Int = 5
         internal const val MAX_BODY_BYTES: Int = 2 * 1024 * 1024

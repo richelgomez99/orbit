@@ -24,4 +24,14 @@ interface INetworkGateway {
      * Android; this only calls Orbit's authenticated backend gateway.
      */
     MemoryGatewayResponseParcel callMemoryGateway(in MemoryGatewayRequestParcel request);
+
+    /**
+     * Spec 022 — BYOM model download. :net is the sole network egress, so
+     * the ~500MB+ model fetch runs here and streams to the app's shared
+     * files dir (no bytes cross Binder). Fire-and-forget: progress + the
+     * finished bundle land on disk via ModelDownloadStore, which :ml mmaps
+     * and the UI polls. `oneway` so the caller never blocks on the
+     * multi-minute transfer.
+     */
+    oneway void startModelDownload(String modelId, String url, long expectedBytes);
 }

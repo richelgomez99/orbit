@@ -47,6 +47,14 @@ class NetworkGatewayService : Service() {
 
         override fun callMemoryGateway(request: MemoryGatewayRequestParcel): MemoryGatewayResponseParcel =
             impl.callMemoryGateway(request)
+
+        // Spec 022 — oneway; returns immediately and the multi-minute
+        // download runs on the service IO scope, streaming to disk.
+        override fun startModelDownload(modelId: String, url: String, expectedBytes: Long) {
+            serviceScope.launch {
+                impl.downloadModelFile(modelId, url, expectedBytes)
+            }
+        }
     }
 
     override fun onCreate() {

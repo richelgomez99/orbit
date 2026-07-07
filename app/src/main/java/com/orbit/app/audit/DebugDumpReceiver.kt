@@ -32,7 +32,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (!BuildConfig.DEBUG) return
         val action = intent?.action
-        if (action != ACTION && action != ACTION_SEED && action != ACTION_CLEAR_SEED) return
+        if (action !in setOf(ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL)) return
         val pending = goAsync()
         val appCtx = context.applicationContext
         CoroutineScope(Dispatchers.IO).launch {
@@ -48,6 +48,19 @@ class DebugDumpReceiver : BroadcastReceiver() {
                     ACTION_CLEAR_SEED -> {
                         com.orbit.app.data.DebugCorpusSeeder.clear(OrbitDatabase.getInstance(appCtx))
                         Log.i(TAG, "cleared demo corpus")
+                    }
+                    ACTION_DOWNLOAD_MODEL -> {
+                        // Debug: exercise the :net model-download pipe end to
+                        // end. Pass --es url <URL> (any https file works for
+                        // testing the pipe) and optional --es id <modelId>.
+                        val url = intent.getStringExtra("url")
+                        val id = intent.getStringExtra("id") ?: "gemma-3-1b-it-int4"
+                        if (url.isNullOrBlank()) {
+                            Log.w(TAG, "download: missing --es url")
+                        } else {
+                            com.orbit.app.net.ModelDownloadTrigger.start(appCtx, id, url)
+                            Log.i(TAG, "requested model download id=$id url=$url")
+                        }
                     }
                     else -> dump(appCtx)
                 }
@@ -105,6 +118,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION = "com.orbit.app.DEBUG_DUMP"
         const val ACTION_SEED = "com.orbit.app.DEBUG_SEED_CORPUS"
         const val ACTION_CLEAR_SEED = "com.orbit.app.DEBUG_CLEAR_CORPUS"
+        const val ACTION_DOWNLOAD_MODEL = "com.orbit.app.DEBUG_DOWNLOAD_MODEL"
         private const val TAG = "OrbitDebugDump"
     }
 }
