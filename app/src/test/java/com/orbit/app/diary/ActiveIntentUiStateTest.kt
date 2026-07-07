@@ -70,7 +70,7 @@ class ActiveIntentUiStateTest {
         val item = state.groups.single().items.single()
         assertEquals("Event or reservation", item.evidenceLabel)
         assertEquals("Local text", item.evidenceSource)
-        assertEquals("Why it appears: this looks like event, ticket, reservation, or booking information.", item.reasonLabel)
+        assertEquals("This looks like event, ticket, reservation, or booking information.", item.reasonLabel)
         assertEquals("Orbit found event or reservation details in this capture.", item.whyLabel)
         assertEquals("Save the details, attend it, or clear it if you do not need it.", item.guidanceLabel)
         assertEquals("Saved or attended", item.resolveActionLabel)
@@ -95,7 +95,7 @@ class ActiveIntentUiStateTest {
         assertEquals("Event or reservation", state.groups.single().title)
         assertEquals("Event or reservation", state.groups.single().items.single().evidenceLabel)
         assertEquals("Local signals", state.groups.single().items.single().evidenceSource)
-        assertEquals(true, state.groups.single().items.single().sourceLabel.startsWith("From: Local signals"))
+        assertEquals(true, state.groups.single().items.single().sourceLabel.startsWith("Local signals"))
     }
 
     @Test
@@ -114,8 +114,8 @@ class ActiveIntentUiStateTest {
         assertEquals("Message follow-up", item.evidenceLabel)
         assertEquals("Messages", item.evidenceSource)
         assertEquals("Category clue", item.evidenceKind)
-        assertEquals("Capture clue: Chelsea has a scheduled appointment at 2pm", item.clueLabel)
-        assertEquals("Why it appears: this came from a message-like source and may need a reply.", item.reasonLabel)
+        assertEquals("Chelsea has a scheduled appointment at 2pm", item.clueLabel)
+        assertEquals("This came from a message-like source and may need a reply.", item.reasonLabel)
     }
 
     @Test
@@ -133,8 +133,8 @@ class ActiveIntentUiStateTest {
         val item = state.groups.single().items.single()
         assertEquals("Message follow-up", item.evidenceLabel)
         assertEquals("Found date", item.evidenceKind)
-        assertEquals("From: Local text", item.sourceLabel.substringBefore(" · Found date"))
-        assertEquals("Why it appears: this looks like a message and Orbit found a date or time in the text.", item.reasonLabel)
+        assertEquals("Local text", item.sourceLabel.substringBefore(" · "))
+        assertEquals("This looks like a message and Orbit found a date or time in the text.", item.reasonLabel)
     }
 
     @Test
@@ -154,9 +154,9 @@ class ActiveIntentUiStateTest {
         assertEquals("Orbit review", item.evidenceSource)
         assertEquals("Decision brief", item.evidenceKind)
         assertEquals("Refresh review", item.askOrbitActionLabel)
-        assertEquals("Capture clue: Chelsea has a scheduled appointment at 2pm", item.clueLabel)
+        assertEquals("Chelsea has a scheduled appointment at 2pm", item.clueLabel)
         assertEquals(
-            "Why it appears: Orbit thinks this is a message follow-up. Decide whether you replied, still need to reply, or can clear it.",
+            "Orbit thinks this is a message follow-up. Decide whether you replied, still need to reply, or can clear it.",
             item.reasonLabel
         )
     }

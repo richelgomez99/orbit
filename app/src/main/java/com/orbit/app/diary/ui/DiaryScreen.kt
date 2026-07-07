@@ -1000,9 +1000,9 @@ private fun ActiveIntentDecisionDialog(
                 .padding(top = 8.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            MonoLabel(text = "// FOLLOW-UP", color = AgentSurface.Accent, size = 9.5.sp)
+            MonoLabel(text = "// FOLLOW-UP · ${item.evidenceLabel}", color = AgentSurface.Accent, size = 9.5.sp)
             Text(
-                text = item.evidenceLabel,
+                text = item.clueLabel?.takeIf { it.isNotBlank() } ?: item.evidenceLabel,
                 color = AgentSurface.Cream,
                 style = TextStyle(
                     fontFamily = OrbitType.QuietAlmanac.displaySerif,
@@ -1010,7 +1010,6 @@ private fun ActiveIntentDecisionDialog(
                     lineHeight = 25.sp,
                 ),
             )
-            item.clueLabel?.takeIf { it.isNotBlank() }?.let { AgentCardBody(it) }
             item.reasonLabel.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
             AgentCardBody("Start with the saved capture if the clue is not enough. ${item.guidanceLabel}", dim = true)
             item.sourceLabel.takeIf { it.isNotBlank() }?.let { AgentCardMeta(it) }
@@ -1071,8 +1070,9 @@ private fun ActiveIntentRow(
     SurfacedCard(
         modifier = Modifier.testTag(DiaryScreenTestTags.activeIntentItem(item.intentId)),
     ) {
-        AgentCardTitle(item.evidenceLabel)
-        item.clueLabel?.takeIf { it.isNotBlank() }?.let { AgentCardBody(it) }
+        // Lead with the actual captured content; the category is the group
+        // header above, so the title need not repeat it.
+        AgentCardTitle(item.clueLabel?.takeIf { it.isNotBlank() } ?: item.evidenceLabel)
         item.reasonLabel.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
         item.guidanceLabel.takeIf { it.isNotBlank() }?.let { AgentCardBody(it, dim = true) }
         item.sourceLabel.takeIf { it.isNotBlank() }?.let { AgentCardMeta(it) }

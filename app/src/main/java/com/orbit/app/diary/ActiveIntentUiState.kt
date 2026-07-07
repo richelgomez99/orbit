@@ -138,7 +138,7 @@ private fun ActiveIntentParcel.toItem(): ActiveIntentItem {
         evidenceConfidence = evidence.confidence,
         evidenceExcerpt = evidence.excerpt,
         sourceLabel = evidence.sourceLabel(createdAtMillis),
-        reasonLabel = categoryEnum.reasonLabel(evidence),
+        reasonLabel = categoryEnum.reasonLabel(evidence).replaceFirstChar { it.uppercaseChar() },
         clueLabel = evidence.clueLabel(),
         askOrbitActionLabel = if (evidence.kindRaw == "ORBIT_REVIEW") "Refresh review" else "Ask Orbit",
         openCaptureActionLabel = "View capture",
@@ -297,12 +297,16 @@ private fun String.toEvidenceSourceLabel(): String = when (this.trim().lowercase
 }
 
 private fun EvidenceDisplay.sourceLabel(createdAtMillis: Long): String =
-    "From: $source · $kind · ${createdAtMillis.toShortTimeLabel()}"
+    // Concise meta: source + time. Dropped the internal `kind` term, which
+    // leaked labels like "Found date" into the middle of the line.
+    listOf(source, createdAtMillis.toShortTimeLabel())
+        .filter { it.isNotBlank() }
+        .joinToString(" · ")
 
+/** Raw capture excerpt (no "Capture clue:" prefix — it becomes the card title). */
 private fun EvidenceDisplay.clueLabel(): String? = excerpt
     ?.trim()
     ?.takeIf { it.isNotBlank() }
-    ?.let { "Capture clue: $it" }
 
 private fun Long.toShortTimeLabel(): String = java.time.Instant.ofEpochMilli(this)
     .atZone(java.time.ZoneId.systemDefault())
@@ -374,25 +378,25 @@ private fun IntentCategory.guidanceLabel(completion: CompletionKeyStatus): Strin
 }
 
 private fun IntentCategory.reasonLabel(evidence: EvidenceDisplay): String =
-    evidence.reason?.let { "Why it appears: $it" } ?: defaultReasonLabel(evidence)
+    evidence.reason?.let { "$it" } ?: defaultReasonLabel(evidence)
 
 private fun IntentCategory.defaultReasonLabel(evidence: EvidenceDisplay): String = when (this) {
-    IntentCategory.BUY_LATER_PRODUCT -> "Why it appears: this looks like a product or price you may want to buy, save, or skip."
-    IntentCategory.RECIPE -> "Why it appears: this looks like recipe text worth cooking, saving, or clearing."
-    IntentCategory.QR_OR_BARCODE -> "Why it appears: this looks like a code that may still need to be opened or used."
-    IntentCategory.RECEIPT_OR_ORDER -> "Why it appears: this looks like order or receipt information that may need checking."
-    IntentCategory.EVENT_TICKET_RESERVATION -> "Why it appears: this looks like event, ticket, reservation, or booking information."
-    IntentCategory.COUPON_OR_PROMO -> "Why it appears: this looks like a promo or discount that may expire."
-    IntentCategory.READ_OR_WATCH_LATER -> "Why it appears: this looks like something saved to read or watch later."
-    IntentCategory.PLACE_OR_TRAVEL_IDEA -> "Why it appears: this looks like a place or trip idea worth planning or clearing."
-    IntentCategory.GIFT_IDEA -> "Why it appears: this looks like a gift idea that may need a buy-or-skip decision."
+    IntentCategory.BUY_LATER_PRODUCT -> "this looks like a product or price you may want to buy, save, or skip."
+    IntentCategory.RECIPE -> "this looks like recipe text worth cooking, saving, or clearing."
+    IntentCategory.QR_OR_BARCODE -> "this looks like a code that may still need to be opened or used."
+    IntentCategory.RECEIPT_OR_ORDER -> "this looks like order or receipt information that may need checking."
+    IntentCategory.EVENT_TICKET_RESERVATION -> "this looks like event, ticket, reservation, or booking information."
+    IntentCategory.COUPON_OR_PROMO -> "this looks like a promo or discount that may expire."
+    IntentCategory.READ_OR_WATCH_LATER -> "this looks like something saved to read or watch later."
+    IntentCategory.PLACE_OR_TRAVEL_IDEA -> "this looks like a place or trip idea worth planning or clearing."
+    IntentCategory.GIFT_IDEA -> "this looks like a gift idea that may need a buy-or-skip decision."
     IntentCategory.CHAT_ACTION -> when {
-        evidence.kindRaw == "COMPLETION_KEY" -> "Why it appears: this looks like a message and Orbit found a date or time in the text."
-        evidence.source == "Messages" -> "Why it appears: this came from a message-like source and may need a reply."
-        else -> "Why it appears: this looks like a message that may need a reply or follow-up."
+        evidence.kindRaw == "COMPLETION_KEY" -> "this looks like a message and Orbit found a date or time in the text."
+        evidence.source == "Messages" -> "this came from a message-like source and may need a reply."
+        else -> "this looks like a message that may need a reply or follow-up."
     }
-    IntentCategory.MAYBE_OLD_OR_INACTIVE -> "Why it appears: this looks old enough that it may be safe to clear from follow-up."
-    IntentCategory.UNKNOWN -> "Why it appears: Orbit has local clues, but not enough context to know the next action yet."
+    IntentCategory.MAYBE_OLD_OR_INACTIVE -> "this looks old enough that it may be safe to clear from follow-up."
+    IntentCategory.UNKNOWN -> "Orbit has local clues, but not enough context to know the next action yet."
 }
 
 private fun IntentCategory.whyLabel(): String = when (this) {

@@ -192,7 +192,10 @@ fun OrbitCleanupScreen(
                 },
                 onEscalate = { item ->
                     viewModel.onRequestActiveIntentEscalation(item.intentId)
-                    Toast.makeText(context, "Orbit added a decision brief", Toast.LENGTH_SHORT).show()
+                    // "Ask Orbit" currently just flags the item for a closer
+                    // look (audit-only; the deep-reasoning agent that answers a
+                    // brief isn't wired yet). Say what actually happens.
+                    Toast.makeText(context, "Flagged for Orbit to review", Toast.LENGTH_SHORT).show()
                 },
             )
         } else {
