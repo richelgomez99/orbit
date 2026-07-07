@@ -48,8 +48,8 @@
 
 ## Deferred / Follow-up
 
-- [ ] **T022-023** Reliable local classification (`classifyIntent`/`scanSensitivity`) via the 4B tier or grammar-constrained decoding.
+- [x] **T022-026** Verify the 4B bundle loads on device — **FINDING (2026-07-07): it does NOT.** The download works (2.56 GB byte-exact) but litert-community's 4B repo ships only `-web` variants, and that file is a raw `TFL3` LiteRT flatbuffer, not a zip-based MediaPipe `.task` — `LlmInference` rejects it ("Unable to open zip archive"). Encoded as `androidTaskAvailable=false` so the 4B is not offered for download or selected. `96ff037`+
+- [ ] **T022-023** Reliable local classification — needs EITHER a genuinely loadable 4B on Android (proper `.task` via Google's converter, or the LiteRT-LM engine instead of tasks-genai — see T022-026) OR grammar-constrained decoding on the 1B. Note: even if a 4B loaded, per-capture classification on a 2.6 GB model is impractical (memory/latency); 4B is the on-demand INTELLIGENCE tier, not a per-capture classifier.
 - [ ] **T022-024** On-device `extractActions` via constrained decoding (empty default until then).
 - [ ] **T022-025** Session-level sampling (topK/temperature) — `LlmInferenceSession` hung with tasks-genai 0.10.35 + Gemma 1B; revisit on a version bump.
-- [ ] **T022-026** Verify the 4B (`-web` int4) bundle loads/runs on device (only the 1B has been exercised).
 - [ ] Crash-telemetry Phase B (consent-gated upload) is tracked separately in spec-023.

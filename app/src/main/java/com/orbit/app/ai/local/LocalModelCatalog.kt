@@ -40,6 +40,14 @@ data class DownloadableModel(
      * (the model manager supplies one). The download runs in :net.
      */
     val sourceUrl: String,
+    /**
+     * Whether [sourceUrl] is an Android-loadable MediaPipe `.task` (a zip
+     * bundling model + tokenizer + metadata). false when the only available
+     * source is an incompatible format (e.g. a raw `TFL3` LiteRT flatbuffer),
+     * which `tasks-genai`'s LlmInference rejects with "Unable to open zip
+     * archive". Non-loadable models are NOT offered for download.
+     */
+    val androidTaskAvailable: Boolean = true,
 ) {
     /** Human size, e.g. "529 MB". */
     val approxDownloadLabel: String
@@ -73,10 +81,16 @@ object LocalModelCatalog {
     )
 
     /**
-     * Intelligence tier — Gemma 3 4B, INT4 (QAT). ~2.6 GB, for offline deep
-     * Ask + generative-UI generation on higher-memory devices. litert-community
-     * ships only `-web`-suffixed `.task` bundles for 4B; the MediaPipe `.task`
-     * format is portable, so the web bundle loads on Android too.
+     * Intelligence tier — Gemma 3 4B, INT4. ~2.6 GB, for offline deep Ask +
+     * generative-UI on higher-memory devices.
+     *
+     * NOT currently offerable on Android: litert-community's 4B repo ships
+     * only `-web` bundles, and that file is a raw `TFL3` LiteRT flatbuffer,
+     * not a zip-based MediaPipe `.task` — `tasks-genai`'s LlmInference rejects
+     * it ("Unable to open zip archive"; verified on device 2026-07-07). A
+     * usable 4B needs a proper Android `.task` (Google's converter) or the
+     * LiteRT-LM engine. Kept for the tier record; `androidTaskAvailable=false`
+     * keeps it out of the download UI until a loadable source exists.
      */
     val GEMMA_3_4B_INT4 = DownloadableModel(
         id = "gemma-3-4b-it-int4",
@@ -89,13 +103,18 @@ object LocalModelCatalog {
         engine = LocalModelEngine.MEDIAPIPE_LLM,
         assetFileName = "gemma-3-4b-it-int4.task",
         sourceUrl = "https://huggingface.co/litert-community/Gemma3-4B-IT/resolve/main/gemma3-4b-it-int4-web.task",
+        androidTaskAvailable = false,
     )
 
     val ALL: List<DownloadableModel> = listOf(GEMMA_3_1B_INT4, GEMMA_3_4B_INT4)
 
-    /** Models this device has enough RAM to run, given a hardware profile. */
+    /**
+     * Models this device can actually download AND load: enough RAM for the
+     * tier, and an Android-loadable `.task` source. Excludes models whose only
+     * source is an incompatible format (see [DownloadableModel.androidTaskAvailable]).
+     */
     fun offerableFor(hardware: DeviceAiHardwareProfile): List<DownloadableModel> =
-        ALL.filter { hardware.totalRamMb >= it.minTotalRamMb }
+        ALL.filter { it.androidTaskAvailable && hardware.totalRamMb >= it.minTotalRamMb }
 
     fun byId(id: String): DownloadableModel? = ALL.firstOrNull { it.id == id }
 }

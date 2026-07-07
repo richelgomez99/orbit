@@ -15,14 +15,22 @@ class LocalModelCatalogTest {
     )
 
     @Test
-    fun speedTierOfferedOn4gb_intelligenceRequires6gb() {
+    fun speedTierOffered_intelligenceNotOfferedUntilLoadableSource() {
         val fourGb = LocalModelCatalog.offerableFor(hardware(4_096)).map { it.id }
         assertTrue("Speed tier must be offered on 4GB", fourGb.contains("gemma-3-1b-it-int4"))
         assertFalse("Intelligence tier must NOT be offered on 4GB", fourGb.contains("gemma-3-4b-it-int4"))
 
+        // Even with ample RAM, the 4B is NOT offered: its only source is a raw
+        // TFL3 flatbuffer, not an Android MediaPipe .task (T022-026 finding,
+        // androidTaskAvailable=false). RAM threshold + capabilities still hold
+        // for the tier record — see the capability tests below.
         val eightGb = LocalModelCatalog.offerableFor(hardware(8_192)).map { it.id }
         assertTrue(eightGb.contains("gemma-3-1b-it-int4"))
-        assertTrue("Intelligence tier available on 8GB", eightGb.contains("gemma-3-4b-it-int4"))
+        assertFalse(
+            "4B must not be offered until a loadable Android .task source exists",
+            eightGb.contains("gemma-3-4b-it-int4"),
+        )
+        assertFalse("4B is flagged not-Android-loadable", LocalModelCatalog.GEMMA_3_4B_INT4.androidTaskAvailable)
     }
 
     @Test

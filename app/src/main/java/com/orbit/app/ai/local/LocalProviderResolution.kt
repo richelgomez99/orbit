@@ -59,9 +59,14 @@ fun resolveLocalSelection(context: Context): LocalModelSelection =
         installedModels = installedLocalModels(context),
     )
 
-/** Map the catalog to install state on disk (via [ModelDownloadStore]). */
+/**
+ * Map the catalog to install state on disk (via [ModelDownloadStore]). Only
+ * Android-loadable models are considered — a stray on-disk file whose source
+ * format the engine can't open (e.g. the 4B `-web` TFL3 flatbuffer) must never
+ * be selected, or the router would route to an engine that fails to init.
+ */
 fun installedLocalModels(context: Context): List<InstalledLocalModel> =
-    LocalModelCatalog.ALL.map { model ->
+    LocalModelCatalog.ALL.filter { it.androidTaskAvailable }.map { model ->
         InstalledLocalModel(
             tier = model.tier,
             modelLabel = model.id,
