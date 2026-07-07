@@ -99,6 +99,22 @@ Spec folders that are *named* in the vision but exist as placeholders or are sti
 - **Action Proposal / Execution** — spec-003 AI-extracted actionables that require user confirmation before dispatch.
 - **AppFunction** — internal agent-callable registry (`AppFunctionRegistry` + `BuiltInAppFunctionSchemas`). Not yet on Jetpack `@AppFunction`.
 
+## BYOM local inference (spec-022) — proven working
+
+On-device Gemma runs end-to-end as of `9a43872`. The path:
+- **Download** (`:net`): `INetworkGateway.startModelDownload(id, url, expectedBytes, authToken?)` → `NetworkGatewayImpl.downloadModelFile` streams to `filesDir/models/<id>.task` (see `ModelDownloadStore`). Uses a download-tuned OkHttp client (redirects on, no 15s cap) — the *shared* client disables redirects and caps calls at 15s, wrong for large files. `authToken` is sent only as `Authorization: Bearer` on the first request; OkHttp strips it on the cross-host CDN redirect. Gated Gemma weights live at HF `litert-community/Gemma3-1B-IT` / `Gemma3-4B-IT` (accept the license per-repo, then a Read token works).
+- **Inference** (`:ml`): `MediaPipeLlmProvider` (`com.google.mediapipe:tasks-genai`) mmaps the `.task` and runs `LlmInference.generateResponse` one-shot (no session for single turn). Engine builder takes only `setModelPath`/`setMaxTokens`; topK/temperature are session-level. `LlmInferenceOptions` is the nested `LlmInference.LlmInferenceOptions`. First slice: `summarize`/`generateDayHeader` generate for real; `classifyIntent`/`scanSensitivity`/`extractActions` return safe defaults; `embed` returns null.
+- **Next**: wire `MediaPipeLlmProvider` into `LlmProviderRouter`'s existing `byomLocalProvider` seam for the production `:ml` path (currently only reached via the debug broadcast below).
+
+Debug broadcasts (debug build, registered in `OrbitApplication`; package is `com.orbit.app`, no `.debug` suffix):
+```
+adb shell am broadcast -a com.orbit.app.DEBUG_DOWNLOAD_MODEL --es url <URL> --es id <id> [--es token <hf_...>] -p com.orbit.app
+adb shell am broadcast -a com.orbit.app.DEBUG_TEST_INFERENCE --es id <id> [--es prompt "<text>"] -p com.orbit.app
+```
+Results log under tag `OrbitDebugDump`. Downloaded models survive `adb install -r`. Progress/state: `filesDir/models/<id>.download.json`. S24 Ultra ran the 1B INT4 in ~5s.
+
+**Device note:** the test S24 Ultra has a **user 150 = "Secure Folder"** (Samsung always assigns Secure Folder user id 150). Orbit installs in **user 0** (`u0_a929`), NOT Secure Folder. `run-as com.orbit.app` works; `pm list packages` may throw `SecurityException` trying to enumerate user 150 — harmless. The sideloaded debug build occasionally gets culled (Play Protect / auto-remove-unused), unrelated to Secure Folder.
+
 ## Spec Kit workflow
 
 Feature work follows Spec Kit: `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → implementation. Read the spec folder in this order: `spec.md` → `plan.md` → `data-model.md` + `contracts/` → `tasks.md` → `quickstart.md`. Reconcile task checkboxes against code, tests, and git history — several specs have drift.
