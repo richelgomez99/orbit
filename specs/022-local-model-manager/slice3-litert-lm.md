@@ -85,6 +85,15 @@ converter, hosting, or license gate.
   - 8.2 s includes cold load + the failed GPU attempt; steady-state CPU will
     be faster, GPU faster still once fixed.
 
+- **E2B (bigger model) VALIDATED on device (2026-07-07)**: ✅ downloaded Gemma 4
+  E2B `.litertlm` (2.59 GB byte-exact, ungated Apache-2.0), routed via `:ml`,
+  ran on **GPU** (no CPU fallback), `routed inference OK (10534ms)` incl. cold
+  load, coherent answer. **Anti-OOM held**: `:ml` at ~2.26 GB PSS with ~2 GB
+  free — no LMK kill (vs the earlier 2.56 GB OOM in `:ui`). Levers that worked:
+  load in lean `:ml` (not `:ui`) + `BIND_IMPORTANT` + `largeHeap` + mmap.
+  Catalog/extension/engine-selection all wired; download wrote the `.litertlm`
+  path directly (no manual rename).
+
 ## Remaining (next stages)
 
 - `ModelDownloadStore` per-model file extension (`.litertlm` vs `.task`).
