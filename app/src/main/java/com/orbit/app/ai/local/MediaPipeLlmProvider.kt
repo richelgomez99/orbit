@@ -15,7 +15,6 @@ import com.orbit.app.data.entity.StateSnapshot
 import com.orbit.app.data.model.Intent
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInference.LlmInferenceOptions
-import org.json.JSONArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -135,53 +134,22 @@ class MediaPipeLlmProvider(
         )
     }
 
-    /**
-     * Constrained single-label classification. generateResponse does not
-     * expose token probabilities, so [IntentClassification.confidence] is a
-     * heuristic: a matched label reports [LOCAL_MATCH_CONFIDENCE]; no match
-     * falls back to AMBIGUOUS at 0. Deterministic (temperature 0, topK 1).
-     */
-    override suspend fun classifyIntent(text: String, appCategory: String): IntentClassification {
-        if (text.isBlank()) {
-            return IntentClassification(Intent.AMBIGUOUS, 0f, provenance)
-        }
-        val prompt = buildString {
-            append("Classify the saved text into exactly one label.\n")
-            append("WANT_IT: wants to buy, acquire, or own this.\n")
-            append("READ_LATER: an article or content to read later.\n")
-            append("REFERENCE: factual info to keep for reference.\n")
-            append("FOR_SOMEONE: relevant to another person or to share.\n")
-            append("INTERESTING: interesting but with no clear action.\n")
-            append("Reply with ONLY the label word.\n\nText: ")
-            append(text.take(2_000))
-        }
-        val raw = generate(prompt).uppercase()
-        val matched = INTENT_LABELS.firstOrNull { raw.contains(it.name) }
-        return IntentClassification(
-            intent = matched ?: Intent.AMBIGUOUS,
-            confidence = if (matched != null) LOCAL_MATCH_CONFIDENCE else 0f,
-            provenance = provenance,
-        )
-    }
+    // classifyIntent / scanSensitivity return SAFE defaults on the BYOM path.
+    //
+    // M2 (spec-022) measured naive-prompt classification on Gemma 3 1B on
+    // device and it is not production-quality: intent was 0/3 on clear cases
+    // (defaulting to FOR_SOMEONE/AMBIGUOUS), and the sensitivity scan grossly
+    // over-triggered (benign text returned all five tags — the model echoes
+    // the category list). A wrong-but-confident label is worse than no label:
+    // it would mislabel captures and mis-flag sensitivity. So the local model
+    // powers the tasks a 1B is genuinely good at (summarize, generateDayHeader)
+    // and defers classification. Reliable local classification needs a larger
+    // model (4B) or grammar-constrained decoding — tracked as follow-up.
+    override suspend fun classifyIntent(text: String, appCategory: String): IntentClassification =
+        IntentClassification(Intent.AMBIGUOUS, confidence = 0f, provenance = provenance)
 
-    /**
-     * Constrained multi-label sensitivity tag scan. Returns a JSON array of
-     * matched tags (empty on "NONE"/no match), mirroring the cloud provider's
-     * `flagsJson` shape.
-     */
-    override suspend fun scanSensitivity(text: String): SensitivityResult {
-        if (text.isBlank()) return SensitivityResult("[]", provenance)
-        val prompt = buildString {
-            append("List which sensitive categories the text contains, comma-separated, ")
-            append("from: financial, medical, credentials, contact, location. ")
-            append("Reply NONE if none apply.\n\nText: ")
-            append(text.take(2_000))
-        }
-        val raw = generate(prompt).lowercase()
-        val tags = SENSITIVITY_TAGS.filter { raw.contains(it) }
-        val json = JSONArray().apply { tags.forEach { put(it) } }.toString()
-        return SensitivityResult(flagsJson = json, provenance = provenance)
-    }
+    override suspend fun scanSensitivity(text: String): SensitivityResult =
+        SensitivityResult(flagsJson = "[]", provenance = provenance)
 
     // extractActions stays a safe default: schema-constrained proposal
     // generation (never invent a functionId, argsJson must validate) is
@@ -208,26 +176,5 @@ class MediaPipeLlmProvider(
 
     companion object {
         private const val TAG = "MediaPipeLlmProvider"
-
-        /**
-         * Heuristic confidence for a local single-label match. generateResponse
-         * gives no token probabilities, so this is a fixed moderate value — it
-         * clears the 0.55 action floor but signals lower trust than the cloud
-         * provider's real logits.
-         */
-        private const val LOCAL_MATCH_CONFIDENCE = 0.6f
-
-        // Only the actionable labels are offered to the model; AMBIGUOUS is the
-        // fallback when nothing matches, never a label the model can emit.
-        private val INTENT_LABELS = listOf(
-            Intent.WANT_IT,
-            Intent.READ_LATER,
-            Intent.REFERENCE,
-            Intent.FOR_SOMEONE,
-            Intent.INTERESTING,
-        )
-
-        private val SENSITIVITY_TAGS =
-            listOf("financial", "medical", "credentials", "contact", "location")
     }
 }
