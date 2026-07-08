@@ -8,9 +8,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Before any non-trivial work, also read (in order):
 1. `VISION-2026-05-22.md` — strategic destination, not shipped state.
-2. `docs/spec-branch-reorganization-plan-2026-05-13.md` — branch/spec ordering and stale spec disposition.
-3. The active spec folder (see current branch).
-4. The code and tests you're about to touch.
+2. `docs/agentic-memory-roadmap-2026-07-07.md` — **the authoritative brief for the "agent that knows you" work** (triage-gated memory agent, knowledge-graph ingestion, semantic recall, curiosity, proactivity, multimodal, calendar). Cross-cuts spec-007/009/020/022. Read this before touching memory, the knowledge graph, the Curious Agent, recall, or on-device model selection. It carries the July-2026 model/runtime decisions and an honest privacy framing. Treat its code anchors as `⚠ VERIFY` — re-check against current code, then update the doc.
+3. `docs/spec-branch-reorganization-plan-2026-05-13.md` — branch/spec ordering and stale spec disposition.
+4. The active spec folder (see current branch).
+5. The code and tests you're about to touch.
 
 Repo name is `capsule-app`; the product is **Orbit** (`com.orbit.app`). Do not treat AGENTS.md's vision as shipped — reconcile it against actual code, tests, and the active spec before making architectural claims.
 
