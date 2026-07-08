@@ -30,6 +30,8 @@ supabaseKt = "3.6.0"
 ktor = "3.3.0"
 mediapipeTasksGenai = "0.10.35"
 litertLm = "0.13.1"
+# LiteRT Interpreter (raw TFLite) for EmbeddingGemma on-device embeddings (:ml).
+litert = "1.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -94,6 +96,9 @@ mediapipe-tasks-genai = { group = "com.google.mediapipe", name = "tasks-genai", 
 # successor to the maintenance-mode tasks-genai. GPU/NPU, multimodal, loads
 # .litertlm. Runs in :ml only.
 litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-android", version.ref = "litertLm" }
+# LiteRT Interpreter — EmbeddingGemma-300m on-device embeddings (:ml).
+# No single-engine-per-process constraint (unlike MediaPipe LlmInference).
+litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

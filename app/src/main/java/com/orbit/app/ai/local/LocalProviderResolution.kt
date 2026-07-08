@@ -114,6 +114,10 @@ object ByomLocalProviderHolder {
                 modelPath = path,
                 modelLabel = modelId,
             )
+            // Embedders are never LLMs and are excluded from the LLM selection
+            // list; reaching here means a caller passed an embedder id by mistake.
+            LocalModelEngine.LITERT_EMBEDDER ->
+                throw IllegalStateException("$modelId is an embedder, not an LLM provider")
         }
         cached = path to provider
         return provider

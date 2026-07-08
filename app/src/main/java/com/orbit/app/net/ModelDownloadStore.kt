@@ -50,6 +50,19 @@ object ModelDownloadStore {
     fun partFile(context: Context, modelId: String): File =
         File(modelsDir(context), "${fileName(modelId)}.part")
 
+    /**
+     * Companion tokenizer file for embedders that ship weights + vocab
+     * separately (spec-020 Phase B EmbeddingGemma). Null for single-file models.
+     */
+    fun tokenizerFile(context: Context, modelId: String): File? =
+        com.orbit.app.ai.local.LocalModelCatalog.byId(modelId)?.tokenizerFileName
+            ?.let { File(modelsDir(context), it) }
+
+    /** True once every required file for [modelId] is on disk (model + tokenizer). */
+    fun isFullyInstalled(context: Context, modelId: String): Boolean =
+        modelFile(context, modelId).exists() &&
+            (tokenizerFile(context, modelId)?.exists() ?: true)
+
     private fun progressFile(context: Context, modelId: String): File =
         File(modelsDir(context), "$modelId.download.json")
 

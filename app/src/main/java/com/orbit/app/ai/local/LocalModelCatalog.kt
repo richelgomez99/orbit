@@ -48,6 +48,13 @@ data class DownloadableModel(
      * archive". Non-loadable models are NOT offered for download.
      */
     val androidTaskAvailable: Boolean = true,
+    /**
+     * Companion tokenizer for embedders (LITERT_EMBEDDER) that ship weights and
+     * vocab as separate files — null for single-file LLM `.task`/`.litertlm`.
+     * The download manager fetches both before the model is usable.
+     */
+    val tokenizerFileName: String? = null,
+    val tokenizerUrl: String? = null,
 ) {
     /** Human size, e.g. "529 MB". */
     val approxDownloadLabel: String
@@ -60,6 +67,14 @@ enum class LocalModelEngine {
 
     /** Google LiteRT-LM (`litertlm-android`) — loads `.litertlm`. Strategic (Slice 3). */
     LITERT_LM,
+
+    /**
+     * LiteRT `Interpreter` (raw TFLite) embedder — EmbeddingGemma `.tflite` +
+     * companion tokenizer (spec-020 Phase B). Produces vectors, not text. No
+     * single-engine-per-process constraint. Never an LLM: kept out of the LLM
+     * selection list so [LocalModelSelectionPolicy] can't mis-route to it.
+     */
+    LITERT_EMBEDDER,
 }
 
 object LocalModelCatalog {
@@ -130,10 +145,40 @@ object LocalModelCatalog {
         androidTaskAvailable = true,
     )
 
+    /**
+     * Embedding tier (spec-020 Phase B) — EmbeddingGemma-300m, LiteRT
+     * `Interpreter`. Powers semantic grouping + hybrid recall. seq-256
+     * mixed-precision `.tflite` (~180 MB) + `tokenizer.json`, both HF-gated
+     * (same license-accept flow as the Gemma weights). Runs in `:ml`; coexists
+     * with the BYOM LLM engine (no single-engine constraint). Kept OUT of [ALL]
+     * so the LLM selection policy never routes to it — see [EMBEDDERS].
+     */
+    val EMBEDDING_GEMMA_300M = DownloadableModel(
+        id = "embeddinggemma-300m",
+        tier = LocalModelTier.SPEED,
+        displayName = "EmbeddingGemma 300M (Memory)",
+        blurb = "On-device semantic memory — smarter grouping and recall. ~180 MB.",
+        approxDownloadBytes = 180L * 1024 * 1024,
+        minTotalRamMb = 4_096,
+        capabilities = emptySet(),
+        engine = LocalModelEngine.LITERT_EMBEDDER,
+        assetFileName = "embeddinggemma-300M_seq256_mixed-precision.tflite",
+        sourceUrl = "https://huggingface.co/litert-community/embeddinggemma-300m/resolve/main/embeddinggemma-300M_seq256_mixed-precision.tflite",
+        androidTaskAvailable = true,
+        tokenizerFileName = "embeddinggemma-tokenizer.json",
+        tokenizerUrl = "https://huggingface.co/litert-community/embeddinggemma-300m/resolve/main/tokenizer.json",
+    )
+
+    /** LLM models for the generation/understanding selection policy. */
     val ALL: List<DownloadableModel> = listOf(
         GEMMA_3_1B_INT4,
         GEMMA_4_E2B_LITERTLM,
         GEMMA_3_4B_INT4,
+    )
+
+    /** Embedders — separate from [ALL] so they're never selected as an LLM. */
+    val EMBEDDERS: List<DownloadableModel> = listOf(
+        EMBEDDING_GEMMA_300M,
     )
 
     /**
@@ -144,5 +189,6 @@ object LocalModelCatalog {
     fun offerableFor(hardware: DeviceAiHardwareProfile): List<DownloadableModel> =
         ALL.filter { it.androidTaskAvailable && hardware.totalRamMb >= it.minTotalRamMb }
 
-    fun byId(id: String): DownloadableModel? = ALL.firstOrNull { it.id == id }
+    fun byId(id: String): DownloadableModel? =
+        (ALL + EMBEDDERS).firstOrNull { it.id == id }
 }

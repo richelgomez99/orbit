@@ -249,6 +249,14 @@ dependencies {
     // LiteRT-LM (spec-022 Slice 3) — strategic on-device LLM engine. :ml only.
     implementation(libs.litertlm.android)
 
+    // LiteRT Interpreter (spec-020 Phase B) — EmbeddingGemma-300m on-device text
+    // embeddings for semantic grouping + recall. :ml only, no network.
+    // Interpreter has no single-engine-per-process hazard.
+    // NOTE: the tokenizer is behind the GemmaTokenizer seam — the DJL
+    // `tokenizers` artifact ships desktop (.dylib/.dll) natives only, no Android
+    // arm64 .so, so it is NOT used. Android tokenizer impl is a pending slice.
+    implementation(libs.litert)
+
     // Coil Compose — T078 screenshot thumbnails in EnvelopeCard
     implementation(libs.coil.compose)
 
