@@ -224,13 +224,17 @@ on all local providers today). Verified path:
   `litert-community/embeddinggemma-300m` `embeddinggemma-300M_seq256_mixed-precision.tflite`
   (~180MB, HF-gated). Dep `com.google.ai.edge.litert:litert:1.4.0` — DONE, arm64
   `libLiteRt.so` verified in the APK, no single-engine constraint.
-  **TOKENIZER TRAP (verified 2026-07-08):** `ai.djl.huggingface:tokenizers` ships
-  ONLY desktop natives (`libtokenizers.dylib`/`tokenizers.dll`) and **no Android
-  arm64 `.so`** — it bloats the APK and fails on-device. DO NOT use it. The
-  tokenizer is behind the `GemmaTokenizer` seam (`EmbeddingGemmaProvider.kt`);
-  the Android impl is PENDING — options: SentencePiece JNI over the model's
-  `sentencepiece.model`, or a verified DJL-Android native build. Confirm the
-  token id space matches EmbeddingGemma's vocab on-device.
+  **TOKENIZER (RESOLVED 2026-07-08):** the plain `ai.djl.huggingface:tokenizers`
+  JVM jar ships ONLY desktop natives (`.dylib`/`.dll`) — no Android `.so`. The
+  Android natives are in a SEPARATE, undocumented AAR. Use BOTH, pinned to the
+  same version: `ai.djl.huggingface:tokenizers:0.33.0` (Java API, loads
+  `tokenizer.json`) + `ai.djl.android:tokenizer-native:0.33.0` (AAR with
+  `jni/arm64-v8a/libdjl_tokenizer.so`). Strip the JVM jar's desktop natives with
+  `packaging { resources { excludes += "native/lib/**" } }`. Impl: `DjlGemmaTokenizer`
+  → `GemmaTokenizer`. **Vocab file:** the `.tflite` repo (`litert-community`) ships
+  only `sentencepiece.model`; the `tokenizer.json` DJL needs comes from the base
+  `google/embeddinggemma-300m` repo. VERIFY on-device: token parity vs desktop HF
+  (encode a known string, assert identical ids) before trusting embeddings.
   **No single-engine-per-process constraint** — coexists with the MediaPipe engine
   in `:ml` (unlike `LlmInference`). New `EmbeddingGemmaProvider` in `:ml`.
 - **Pipeline:** prefix (`task: search result | query: {text}` for queries;
