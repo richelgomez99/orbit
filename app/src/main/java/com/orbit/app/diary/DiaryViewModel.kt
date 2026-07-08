@@ -139,6 +139,18 @@ class DiaryViewModel(
     }
 
     /**
+     * Answer in the user's own words when the offered choices don't fit the
+     * question. The free text is captured as the choice id (`custom:<text>`) so
+     * the S2b provenance-backed write preserves what the user actually said.
+     */
+    fun onAnswerCuriousQuestionCustom(questionId: String, freeText: String) {
+        val text = freeText.trim()
+        if (text.isEmpty()) return
+        _curiousHandled.update { it + questionId }
+        scope.launch { runCatching { repository.recordCuriousAnswer(questionId, "custom:$text") } }
+    }
+
+    /**
      * Subscribe to [isoDate]. Cancels any in-flight subscription and emits
      * [DayUiState.Loading] before the first upstream page arrives.
      *

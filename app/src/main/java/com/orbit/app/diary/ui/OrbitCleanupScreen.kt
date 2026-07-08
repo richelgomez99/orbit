@@ -59,6 +59,13 @@ import com.orbit.app.ui.tokens.OrbitType
 import com.orbit.app.data.ipc.ActionDraftParcel
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import com.orbit.app.curious.CuriousEvidenceRef
+import com.orbit.app.curious.CuriousEvidenceSourceType
 import com.orbit.app.curious.CuriousQuestionCandidate
 import com.orbit.app.curious.CuriousQuestionChoice
 import com.orbit.app.data.ipc.AgentEvidenceParcel
@@ -135,7 +142,14 @@ fun OrbitCleanupScreen(
         CuriousQuestionsPanel(
             questions = curiousQuestions,
             onAnswer = { q, choice -> viewModel.onAnswerCuriousQuestion(q.id, choice) },
+            onAnswerCustom = { q, text -> viewModel.onAnswerCuriousQuestionCustom(q.id, text) },
             onDismiss = { q -> viewModel.onDismissCuriousQuestion(q.id) },
+            onOpenCapture = { envelopeId ->
+                onOpenCapture?.invoke(envelopeId)
+                    ?: context.startActivity(
+                        EnvelopeDetailActivity.newIntent(context, envelopeId, dayLocal = null)
+                    )
+            },
         )
         ActionDraftsPanel(
             drafts = actionDrafts,
@@ -483,7 +497,9 @@ private fun ActionDraftCard(
 private fun CuriousQuestionsPanel(
     questions: List<CuriousQuestionCandidate>,
     onAnswer: (CuriousQuestionCandidate, CuriousQuestionChoice) -> Unit,
+    onAnswerCustom: (CuriousQuestionCandidate, String) -> Unit,
     onDismiss: (CuriousQuestionCandidate) -> Unit,
+    onOpenCapture: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     if (questions.isEmpty()) return
@@ -495,7 +511,10 @@ private fun CuriousQuestionsPanel(
         questions.forEach { q ->
             SurfacedCard {
                 AgentCardTitle(q.questionText)
-                AgentCardMeta("Based on ${q.sourceRefs.size} related saves")
+                // The saves that made up this pattern — browseable, not just a count.
+                CuriousSourcesDisclosure(sources = q.sourceRefs, onOpenCapture = onOpenCapture)
+
+                var writingOwn by remember(q.id) { mutableStateOf(false) }
                 FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -504,11 +523,163 @@ private fun CuriousQuestionsPanel(
                     q.choices.forEach { choice ->
                         CuriousChoiceChip(label = choice.label, onClick = { onAnswer(q, choice) })
                     }
+                    // Not every question fits the offered labels — let the user say it their way.
+                    CuriousChoiceChip(
+                        label = if (writingOwn) "In my words…" else "Something else",
+                        onClick = { writingOwn = !writingOwn },
+                    )
+                }
+                if (writingOwn) {
+                    CuriousCustomAnswer(
+                        onSubmit = { text -> onAnswerCustom(q, text) },
+                    )
                 }
                 AgentActionRow {
                     AgentSecondaryAction("Not sure", { onDismiss(q) })
                 }
             }
+        }
+    }
+}
+
+/**
+ * Reveals the specific saves that triggered a curious question, so the user can
+ * see (and open) what Orbit is asking about before answering. Envelope-backed
+ * refs deep-link to the capture; other refs show their label.
+ */
+@Composable
+private fun CuriousSourcesDisclosure(
+    sources: List<CuriousEvidenceRef>,
+    onOpenCapture: ((String) -> Unit)?,
+) {
+    if (sources.isEmpty()) return
+    var expanded by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .clickable { expanded = !expanded }
+                .padding(vertical = 2.dp)
+                .testTag("curious-sources-toggle"),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Based on ${sources.size} related saves",
+                color = AgentSurface.CreamFaint,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 11.sp,
+                    letterSpacing = 0.8.sp,
+                ),
+            )
+            Text(
+                text = if (expanded) "Hide ▴" else "Show ▾",
+                color = AgentSurface.Accent,
+                style = TextStyle(
+                    fontFamily = OrbitType.QuietAlmanac.captionMono,
+                    fontSize = 11.sp,
+                    letterSpacing = 0.8.sp,
+                ),
+            )
+        }
+        if (expanded) {
+            sources.forEach { ref ->
+                val openable = ref.sourceType == CuriousEvidenceSourceType.ENVELOPE && onOpenCapture != null
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .then(
+                            if (openable) Modifier.clickable { onOpenCapture?.invoke(ref.sourceId) }
+                            else Modifier
+                        )
+                        .background(AgentSurface.Panel)
+                        .padding(horizontal = 12.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = ref.label,
+                        color = AgentSurface.CreamDim,
+                        style = TextStyle(
+                            fontFamily = OrbitType.QuietAlmanac.bodySans,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                        ),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (openable) {
+                        Text(
+                            text = "Open ›",
+                            color = AgentSurface.Accent,
+                            style = TextStyle(
+                                fontFamily = OrbitType.QuietAlmanac.captionMono,
+                                fontSize = 10.sp,
+                                letterSpacing = 0.6.sp,
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CuriousCustomAnswer(onSubmit: (String) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(AgentSurface.Panel)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        BasicTextField(
+            value = text,
+            onValueChange = { text = it },
+            singleLine = true,
+            textStyle = TextStyle(
+                fontFamily = OrbitType.QuietAlmanac.bodySans,
+                fontSize = 14.sp,
+                color = AgentSurface.Cream,
+            ),
+            cursorBrush = SolidColor(AgentSurface.Accent),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {
+                if (text.isNotBlank()) onSubmit(text.trim())
+            }),
+            decorationBox = { inner ->
+                if (text.isEmpty()) {
+                    Text(
+                        text = "Tell Orbit how you'd describe these…",
+                        color = AgentSurface.CreamFaint,
+                        style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 14.sp),
+                    )
+                }
+                inner()
+            },
+            modifier = Modifier.weight(1f).testTag("curious-custom-input"),
+        )
+        val enabled = text.isNotBlank()
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(if (enabled) AgentSurface.Accent else AgentSurface.Accent.copy(alpha = 0.25f))
+                .clickable(enabled = enabled) { onSubmit(text.trim()) }
+                .padding(horizontal = 14.dp, vertical = 7.dp),
+        ) {
+            Text(
+                text = "Save",
+                color = AgentSurface.AccentInk,
+                style = TextStyle(fontFamily = OrbitType.QuietAlmanac.bodySans, fontSize = 13.sp, fontWeight = FontWeight.Medium),
+            )
         }
     }
 }
