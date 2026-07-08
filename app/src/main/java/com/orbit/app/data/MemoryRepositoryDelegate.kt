@@ -24,6 +24,7 @@ import com.orbit.app.data.model.PromotedMemoryKind
 import com.orbit.app.data.model.PromotedMemorySource
 import com.orbit.app.data.model.PromotedMemoryState
 import com.orbit.app.graph.GraphRepositoryDelegate
+import com.orbit.app.understanding.triage.CandidateFact
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,6 +34,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+
+private const val PREDICATE_UPCOMING_EVENT = "has_upcoming_event"
 
 class MemoryRepositoryDelegate(
     private val database: OrbitDatabase,
@@ -95,7 +98,10 @@ class MemoryRepositoryDelegate(
     suspend fun acceptCandidate(
         candidateId: String,
         editedLabel: String?,
-        editedFactText: String?
+        editedFactText: String?,
+        promotedSource: PromotedMemorySource = PromotedMemorySource.USER_CONFIRMED,
+        promotedConfidence: PromotedMemoryConfidence = PromotedMemoryConfidence.CONFIRMED,
+        promotionReason: String = "user_accepted",
     ): MemoryDecisionResultParcel {
         val now = clock()
         var result = MemoryDecisionResultParcel(
@@ -169,9 +175,9 @@ class MemoryRepositoryDelegate(
                 subject = candidate.subject,
                 predicate = candidate.predicate,
                 objectValue = factObject,
-                confidenceLabel = PromotedMemoryConfidence.CONFIRMED,
+                confidenceLabel = promotedConfidence,
                 sensitivity = candidate.sensitivity,
-                source = PromotedMemorySource.USER_CONFIRMED,
+                source = promotedSource,
                 supportingEnvelopeIdsJson = support.envelopeIdsJson(),
                 supportingEvidenceIdsJson = candidate.supportingEvidenceIdsJson,
                 supportingFeedbackIdsJson = candidate.supportingFeedbackIdsJson,
@@ -197,7 +203,7 @@ class MemoryRepositoryDelegate(
                     )
                 }
             )
-            candidateDao.markTerminal(candidateId, MemoryCandidateState.PROMOTED, "user_accepted", now)
+            candidateDao.markTerminal(candidateId, MemoryCandidateState.PROMOTED, promotionReason, now)
             auditDao.insert(
                 auditWriter.build(
                     action = AuditAction.MEMORY_CANDIDATE_ACCEPTED,
@@ -344,6 +350,109 @@ class MemoryRepositoryDelegate(
         }
         return inserted
     }
+
+    /**
+     * Phase A — ingest a fact extracted by the capture-agent (spec-020). Creates
+     * a [MemoryCandidateEntity] with the seal capture as provenance and, when
+     * [autoPromote] and the quality gate already cleared it upstream, promotes it
+     * immediately via [autoAcceptCandidate] (reusing the exact confirmed path so
+     * the graph projection + provenance guarantees are identical).
+     *
+     * Idempotent. General profile facts (e.g. `interested_in cooking`) dedupe on
+     * predicate+object so many captures **accumulate as support** on one candidate
+     * ("based on N saves"); per-capture facts (an upcoming event) key on the
+     * capture. Candidate + support inserts are both `IGNORE`, so a re-seal is a
+     * no-op and a new capture only adds its support row.
+     */
+    suspend fun ingestExtractedFact(
+        fact: CandidateFact,
+        captureId: String,
+        autoPromote: Boolean,
+    ): String? {
+        val now = clock()
+        val perCapture = fact.predicate == PREDICATE_UPCOMING_EVENT
+        val candidateId = buildString {
+            append("fact:")
+            if (perCapture) append("$captureId:")
+            append(fact.predicate).append(':').append(normalizeFactKey(fact.objectValue))
+        }
+        var newlyInserted = false
+        database.withTransaction {
+            val candidate = MemoryCandidateEntity(
+                id = candidateId,
+                candidateKind = fact.kind,
+                state = MemoryCandidateState.PENDING,
+                displayLabel = fact.displayLabel,
+                subject = fact.subject,
+                predicate = fact.predicate,
+                objectValue = fact.objectValue,
+                confidence = fact.confidence,
+                sensitivity = fact.sensitivity,
+                supportingEnvelopeIdsJson = JSONArray().put(captureId).toString(),
+                supportingEvidenceIdsJson = null,
+                supportingFeedbackIdsJson = null,
+                askUserCopy = null,
+                createdAt = now,
+                updatedAt = now,
+                expiresAt = null,
+                decidedAt = null,
+                decisionReason = null,
+                modelLabel = "capture_agent",
+                promptVersion = null,
+                source = fact.source,
+            )
+            newlyInserted = candidateDao.insert(candidate) != -1L
+            // Record this capture as support regardless (IGNORE dedupes) so a
+            // cross-capture interest fact accumulates evidence.
+            candidateSupportDao.insertAll(
+                listOf(
+                    MemoryCandidateSupportEntity(
+                        candidateId = candidateId,
+                        envelopeId = captureId,
+                        supportType = MemorySupportType.CAPTURE,
+                        evidenceId = null,
+                        createdAt = now,
+                    )
+                )
+            )
+            if (newlyInserted) {
+                auditDao.insert(
+                    auditWriter.build(
+                        action = AuditAction.MEMORY_CANDIDATE_PROPOSED,
+                        description = "Capture-agent memory candidate proposed",
+                        envelopeId = captureId,
+                        extraJson = JSONObject()
+                            .put("candidateId", candidateId)
+                            .put("source", fact.source.name)
+                            .put("autoPromote", autoPromote)
+                            .toString()
+                    )
+                )
+            }
+        }
+        if (autoPromote && newlyInserted) {
+            autoAcceptCandidate(candidateId)
+        }
+        return candidateId.takeIf { newlyInserted }
+    }
+
+    /**
+     * Auto-promote a capture-agent candidate that already cleared the quality
+     * gate (high-confidence, non-sensitive, allowlisted). Same transaction as
+     * [acceptCandidate] but attributed as machine-derived, not user-confirmed.
+     */
+    private suspend fun autoAcceptCandidate(candidateId: String): MemoryDecisionResultParcel =
+        acceptCandidate(
+            candidateId = candidateId,
+            editedLabel = null,
+            editedFactText = null,
+            promotedSource = PromotedMemorySource.REPEATED_BEHAVIOR,
+            promotedConfidence = PromotedMemoryConfidence.HIGH,
+            promotionReason = "auto_promoted",
+        )
+
+    private fun normalizeFactKey(value: String): String =
+        value.trim().lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_').take(64)
 
     private fun MemoryCandidateProjection.toParcel(): MemoryCandidateParcel =
         MemoryCandidateParcel(

@@ -153,6 +153,10 @@ class EnvelopeRepositoryService : Service() {
         serviceScope.launch(Dispatchers.IO) {
             basicUnderstandingWriter.refreshActiveFromSidecars()
         }
+        // Spec 020 (Phase A) — the capture-agent that ingests facts at seal.
+        val captureMemoryAgent = com.orbit.app.understanding.triage.CaptureMemoryAgent(
+            memory = memoryRepositoryDelegate,
+        )
         repository = EnvelopeRepositoryImpl(
             backend = backend,
             auditWriter = auditWriter,
@@ -168,6 +172,7 @@ class EnvelopeRepositoryService : Service() {
             clusterSummarizeDelegate = clusterSummarizeDelegate,
             activeIntentRepository = activeIntentRepository,
             basicUnderstandingWriter = basicUnderstandingWriter,
+            captureMemoryAgent = captureMemoryAgent,
             memoryIndexSyncScheduler = memoryIndexSyncScheduler,
             memoryIndexSyncDelegate = memoryIndexSyncDelegate,
             memoryRepositoryDelegate = memoryRepositoryDelegate,

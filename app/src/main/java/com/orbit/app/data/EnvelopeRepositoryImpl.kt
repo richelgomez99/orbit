@@ -139,6 +139,11 @@ class EnvelopeRepositoryImpl(
      */
     private val basicUnderstandingWriter: BasicUnderstandingWriter? = null,
     /**
+     * Spec 020 (Phase A) — optional capture-agent that runs at seal to ingest
+     * facts into memory/graph. Null on the pre-agent path / JVM test fakes.
+     */
+    private val captureMemoryAgent: com.orbit.app.understanding.triage.CaptureMemoryAgent? = null,
+    /**
      * Spec 005 — optional compact cloud-index scheduler. Enqueues only after
      * local Room transactions commit; the worker owns the opt-in gate.
      */
@@ -392,7 +397,8 @@ class EnvelopeRepositoryImpl(
             appCategory = state.appCategory,
             canonicalUrl = urls.firstOrNull(),
             capturedAtMillis = now,
-            nowMillis = now
+            nowMillis = now,
+            intentSource = runCatching { IntentSource.valueOf(draft.intentSource) }.getOrDefault(IntentSource.AUTO_AMBIGUOUS)
         )
         syncMemoryIndexAfterCommit(id, MemoryIndexSyncWorker.MODE_UPSERT, null)
 
@@ -1391,12 +1397,13 @@ class EnvelopeRepositoryImpl(
         appCategory: String?,
         canonicalUrl: String?,
         capturedAtMillis: Long,
-        nowMillis: Long
+        nowMillis: Long,
+        intentSource: IntentSource = IntentSource.AUTO_AMBIGUOUS
     ) {
         val writer = basicUnderstandingWriter ?: return
         runCatching {
             runBlocking {
-                writer.persist(
+                val result = writer.persist(
                     BasicUnderstandingInput(
                         captureId = captureId,
                         textContent = textContent,
@@ -1407,6 +1414,12 @@ class EnvelopeRepositoryImpl(
                         nowMillis = nowMillis
                     )
                 )
+                // Spec 020 (Phase A) — hand the just-computed understanding to the
+                // capture-agent. Isolated so triage can never break the seal.
+                captureMemoryAgent?.let { agent ->
+                    runCatching { agent.onSealed(result, textContent, intentSource) }
+                        .onFailure { android.util.Log.w("EnvelopeRepo", "capture triage failed for $captureId", it) }
+                }
             }
         }.onFailure { error ->
             android.util.Log.w("EnvelopeRepo", "basic understanding write failed for $captureId", error)
