@@ -33,8 +33,10 @@ class LocalModelsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val prefs = PrivacyPreferences(applicationContext)
-        // Models this device has the RAM to run.
-        val offerable = LocalModelCatalog.offerableFor(DeviceAiHardware.probe(applicationContext))
+        // Models this device has the RAM to run — LLMs plus the memory embedder.
+        val hardware = DeviceAiHardware.probe(applicationContext)
+        val offerable = LocalModelCatalog.offerableFor(hardware) +
+            LocalModelCatalog.EMBEDDERS.filter { hardware.totalRamMb >= it.minTotalRamMb }
 
         setContent {
             OrbitTheme {
@@ -109,13 +111,25 @@ class LocalModelsActivity : ComponentActivity() {
     }
 
     private fun startDownload(model: DownloadableModel, token: String) {
+        val auth = token.trim().takeIf { it.isNotBlank() }
         ModelDownloadTrigger.start(
             context = applicationContext,
             modelId = model.id,
             url = model.sourceUrl,
             expectedBytes = model.approxDownloadBytes,
-            authToken = token.trim().takeIf { it.isNotBlank() },
+            authToken = auth,
         )
+        // Embedders ship weights + tokenizer separately — fetch the companion
+        // tokenizer.json under a `::tokenizer` id so both land in models/.
+        model.tokenizerUrl?.let { tokenizerUrl ->
+            ModelDownloadTrigger.start(
+                context = applicationContext,
+                modelId = "${model.id}${ModelDownloadStore.TOKENIZER_SUFFIX}",
+                url = tokenizerUrl,
+                expectedBytes = 0L,
+                authToken = auth,
+            )
+        }
     }
 
     private fun readAllProgress(

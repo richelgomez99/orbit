@@ -36,7 +36,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         if (action !in setOf(
                 ACTION, ACTION_SEED, ACTION_CLEAR_SEED, ACTION_DOWNLOAD_MODEL,
                 ACTION_TEST_INFERENCE, ACTION_TEST_ROUTED, ACTION_TEST_CLASSIFY,
-                ACTION_TEST_CLASSIFY_RAW, ACTION_TEST_LITERTLM,
+                ACTION_TEST_CLASSIFY_RAW, ACTION_TEST_LITERTLM, ACTION_TEST_EMBED,
             )
         ) {
             return
@@ -99,6 +99,37 @@ class DebugDumpReceiver : BroadcastReceiver() {
                                 Log.i(TAG, "inference OK (${ms}ms): ${result.text}")
                             } finally {
                                 provider.close()
+                            }
+                        }
+                    }
+                    ACTION_TEST_EMBED -> {
+                        // Debug: prove EmbeddingGemma produces real vectors on
+                        // device. Loads the .tflite + tokenizer via the holder,
+                        // embeds two related + one unrelated text, logs dims +
+                        // cosine so token/tensor parity can be eyeballed.
+                        // --es text "<a>" --es text2 "<b>" --es text3 "<c>"
+                        val a = intent.getStringExtra("text") ?: "founder office hours on Thursday"
+                        val b = intent.getStringExtra("text2") ?: "startup networking event next week"
+                        val c = intent.getStringExtra("text3") ?: "miso glazed salmon recipe"
+                        if (!com.orbit.app.ai.local.EmbeddingGemmaHolder.isInstalled(appCtx)) {
+                            Log.w(TAG, "embed: EmbeddingGemma not installed (need .tflite + tokenizer.json)")
+                        } else {
+                            val t0 = System.currentTimeMillis()
+                            val ea = com.orbit.app.ai.local.EmbeddingGemmaHolder.embedDocument(appCtx, a)
+                            val eb = com.orbit.app.ai.local.EmbeddingGemmaHolder.embedDocument(appCtx, b)
+                            val ec = com.orbit.app.ai.local.EmbeddingGemmaHolder.embedDocument(appCtx, c)
+                            val ms = System.currentTimeMillis() - t0
+                            if (ea == null || eb == null || ec == null) {
+                                Log.w(TAG, "embed: null result (ea=${ea != null} eb=${eb != null} ec=${ec != null})")
+                            } else {
+                                val simAB = com.orbit.app.cluster.SimilarityEngine.cosine(ea.vector, eb.vector)
+                                val simAC = com.orbit.app.cluster.SimilarityEngine.cosine(ea.vector, ec.vector)
+                                Log.i(
+                                    TAG,
+                                    "embed OK (${ms}ms) dim=${ea.dimensionality} model=${ea.modelLabel} " +
+                                        "cos(related)=$simAB cos(unrelated)=$simAC " +
+                                        "(expect related > unrelated)",
+                                )
                             }
                         }
                     }
@@ -271,6 +302,7 @@ class DebugDumpReceiver : BroadcastReceiver() {
         const val ACTION_TEST_ROUTED = "com.orbit.app.DEBUG_TEST_ROUTED"
         const val ACTION_TEST_CLASSIFY = "com.orbit.app.DEBUG_TEST_CLASSIFY"
         const val ACTION_TEST_CLASSIFY_RAW = "com.orbit.app.DEBUG_TEST_CLASSIFY_RAW"
+        const val ACTION_TEST_EMBED = "com.orbit.app.DEBUG_TEST_EMBED"
         const val ACTION_TEST_LITERTLM = "com.orbit.app.DEBUG_TEST_LITERTLM"
         private const val TAG = "OrbitDebugDump"
     }

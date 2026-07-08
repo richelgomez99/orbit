@@ -41,8 +41,17 @@ object ModelDownloadStore {
      * LiteRT-LM — which dispatches its loader by extension). Falls back to
      * `<id>.task` for ids not in the catalog (e.g. the pipe-test).
      */
-    private fun fileName(modelId: String): String =
-        com.orbit.app.ai.local.LocalModelCatalog.byId(modelId)?.assetFileName ?: "$modelId.task"
+    /** Companion-tokenizer download id, e.g. `embeddinggemma-300m::tokenizer`. */
+    const val TOKENIZER_SUFFIX = "::tokenizer"
+
+    private fun fileName(modelId: String): String {
+        if (modelId.endsWith(TOKENIZER_SUFFIX)) {
+            val baseId = modelId.removeSuffix(TOKENIZER_SUFFIX)
+            return com.orbit.app.ai.local.LocalModelCatalog.byId(baseId)?.tokenizerFileName
+                ?: "$baseId.tokenizer.json"
+        }
+        return com.orbit.app.ai.local.LocalModelCatalog.byId(modelId)?.assetFileName ?: "$modelId.task"
+    }
 
     fun modelFile(context: Context, modelId: String): File =
         File(modelsDir(context), fileName(modelId))

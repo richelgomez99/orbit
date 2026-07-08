@@ -194,7 +194,10 @@ class MediaPipeLlmProvider(
     ): ActionExtractionResult =
         ActionExtractionResult(provenance = provenance, candidates = emptyList())
 
-    override suspend fun embed(text: String): EmbeddingResult? = null
+    // Embeddings come from the dedicated EmbeddingGemma model (LiteRT Interpreter),
+    // not this LLM engine — routed through the shared holder so it's loaded once.
+    override suspend fun embed(text: String): EmbeddingResult? =
+        EmbeddingGemmaHolder.embedDocument(appContext, text)
 
     override fun close() {
         synchronized(this) {

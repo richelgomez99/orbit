@@ -144,7 +144,10 @@ class LiteRtLmProvider(
     ): ActionExtractionResult =
         ActionExtractionResult(provenance = provenance, candidates = emptyList())
 
-    override suspend fun embed(text: String): EmbeddingResult? = null
+    // Embeddings come from the dedicated EmbeddingGemma model (LiteRT Interpreter),
+    // routed through the shared holder so it's loaded once per process.
+    override suspend fun embed(text: String): EmbeddingResult? =
+        EmbeddingGemmaHolder.embedDocument(appContext, text)
 
     /** Debug-only (Slice 3 validation): raw one-shot generation. */
     internal suspend fun debugGenerate(prompt: String): String = generate(prompt)
