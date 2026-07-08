@@ -32,6 +32,8 @@ mediapipeTasksGenai = "0.10.35"
 litertLm = "0.13.1"
 # LiteRT Interpreter (raw TFLite) for EmbeddingGemma on-device embeddings (:ml).
 litert = "1.4.0"
+# HuggingFace (Rust) tokenizer — Java API + the DJL Android AAR with the arm64 .so.
+djlTokenizers = "0.33.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -99,6 +101,11 @@ litertlm-android = { group = "com.google.ai.edge.litertlm", name = "litertlm-and
 # LiteRT Interpreter — EmbeddingGemma-300m on-device embeddings (:ml).
 # No single-engine-per-process constraint (unlike MediaPipe LlmInference).
 litert = { group = "com.google.ai.edge.litert", name = "litert", version.ref = "litert" }
+# EmbeddingGemma tokenizer: pure-Java API (loads tokenizer.json) + the Android AAR
+# that ships jni/arm64-v8a/libdjl_tokenizer.so (verified on Maven Central). The
+# plain JVM jar's desktop natives are excluded in app packaging.
+djl-tokenizers = { group = "ai.djl.huggingface", name = "tokenizers", version.ref = "djlTokenizers" }
+djl-tokenizer-native-android = { group = "ai.djl.android", name = "tokenizer-native", version.ref = "djlTokenizers" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

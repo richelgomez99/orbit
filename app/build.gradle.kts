@@ -187,6 +187,19 @@ android {
     lint {
         abortOnError = true
     }
+
+    // The DJL `tokenizers` JVM jar bundles desktop tokenizer natives
+    // (osx/win/linux-x86_64 .dylib/.dll/.so) under `native/lib/**`; Android uses
+    // the arm64 `.so` from the `ai.djl.android:tokenizer-native` AAR instead, so
+    // strip the useless desktop libs (~22 MB) from the APK.
+    packaging {
+        resources {
+            excludes += setOf(
+                "native/lib/**",
+                "META-INF/native-image/**",
+            )
+        }
+    }
 }
 
 dependencies {
@@ -252,10 +265,12 @@ dependencies {
     // LiteRT Interpreter (spec-020 Phase B) — EmbeddingGemma-300m on-device text
     // embeddings for semantic grouping + recall. :ml only, no network.
     // Interpreter has no single-engine-per-process hazard.
-    // NOTE: the tokenizer is behind the GemmaTokenizer seam — the DJL
-    // `tokenizers` artifact ships desktop (.dylib/.dll) natives only, no Android
-    // arm64 .so, so it is NOT used. Android tokenizer impl is a pending slice.
     implementation(libs.litert)
+    // EmbeddingGemma tokenizer (GemmaTokenizer seam). The pure-Java `tokenizers`
+    // gives the API; the DJL Android AAR supplies jni/arm64-v8a/libdjl_tokenizer.so.
+    // The JVM jar's desktop .dylib/.dll natives are stripped in packaging{} below.
+    implementation(libs.djl.tokenizers)
+    runtimeOnly(libs.djl.tokenizer.native.android)
 
     // Coil Compose — T078 screenshot thumbnails in EnvelopeCard
     implementation(libs.coil.compose)
