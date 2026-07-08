@@ -220,10 +220,17 @@ on all local providers today). Verified path:
 - **NOT MediaPipe `tasks-text` `TextEmbedder`**: real API but cannot load
   EmbeddingGemma (metadata/tokenizer format mismatch; EmbeddingGemma support is an
   open MediaPipe issue). Only loads weak USE-class models.
-- **USE the LiteRT `Interpreter`** (raw TFLite) + `litert-community/embeddinggemma-300m`
-  `embeddinggemma-300M_seq256_mixed-precision.tflite` (~180MB, HF-gated) + a
-  SentencePiece/DJL (`ai.djl.huggingface:tokenizers`, native `.so`) tokenizer.
-  Deps: `com.google.ai.edge.litert:litert:1.4.0` (+ `litert-gpu` optional).
+- **USE the LiteRT `Interpreter`** (raw TFLite, `org.tensorflow.lite.Interpreter`) +
+  `litert-community/embeddinggemma-300m` `embeddinggemma-300M_seq256_mixed-precision.tflite`
+  (~180MB, HF-gated). Dep `com.google.ai.edge.litert:litert:1.4.0` — DONE, arm64
+  `libLiteRt.so` verified in the APK, no single-engine constraint.
+  **TOKENIZER TRAP (verified 2026-07-08):** `ai.djl.huggingface:tokenizers` ships
+  ONLY desktop natives (`libtokenizers.dylib`/`tokenizers.dll`) and **no Android
+  arm64 `.so`** — it bloats the APK and fails on-device. DO NOT use it. The
+  tokenizer is behind the `GemmaTokenizer` seam (`EmbeddingGemmaProvider.kt`);
+  the Android impl is PENDING — options: SentencePiece JNI over the model's
+  `sentencepiece.model`, or a verified DJL-Android native build. Confirm the
+  token id space matches EmbeddingGemma's vocab on-device.
   **No single-engine-per-process constraint** — coexists with the MediaPipe engine
   in `:ml` (unlike `LlmInference`). New `EmbeddingGemmaProvider` in `:ml`.
 - **Pipeline:** prefix (`task: search result | query: {text}` for queries;
