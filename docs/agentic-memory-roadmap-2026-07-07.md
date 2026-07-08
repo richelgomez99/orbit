@@ -209,6 +209,38 @@ recall (Phase B), and graph-relevance triage together. Or start Phase A determin
 (fills the graph now, no model dependency). Both are defensible; A gives data to grow, the
 embedding seam gives intelligence to use it.
 
+## 10b. `embed()` implementation — definitive path (researched 2026-07-08)
+
+The retrieval math is now in-repo (`memory/retrieval/ReciprocalRankFusion`,
+`VectorSearch.cosineTopK`; clustering already exists in `cluster/SimilarityEngine`
++ `ClusterDetector`). The one remaining crux is a working `embed()` (returns null
+on all local providers today). Verified path:
+
+- **NOT LiteRT-LM** (`litertlm-android`): generation-only, no Kotlin embed/encode API.
+- **NOT MediaPipe `tasks-text` `TextEmbedder`**: real API but cannot load
+  EmbeddingGemma (metadata/tokenizer format mismatch; EmbeddingGemma support is an
+  open MediaPipe issue). Only loads weak USE-class models.
+- **USE the LiteRT `Interpreter`** (raw TFLite) + `litert-community/embeddinggemma-300m`
+  `embeddinggemma-300M_seq256_mixed-precision.tflite` (~180MB, HF-gated) + a
+  SentencePiece/DJL (`ai.djl.huggingface:tokenizers`, native `.so`) tokenizer.
+  Deps: `com.google.ai.edge.litert:litert:1.4.0` (+ `litert-gpu` optional).
+  **No single-engine-per-process constraint** — coexists with the MediaPipe engine
+  in `:ml` (unlike `LlmInference`). New `EmbeddingGemmaProvider` in `:ml`.
+- **Pipeline:** prefix (`task: search result | query: {text}` for queries;
+  `title: none | text: {text}` for documents — **prefixes are load-bearing**) →
+  tokenize → `Interpreter.run` → likely `[1,768]` pooled + L2-normalized in-graph →
+  Matryoshka-truncate to 256 → **re-normalize**.
+- **Must verify on-device (S24 Ultra):** (1) input signature (`[1,256]` int vs
+  `{input_ids, attention_mask}`), (2) output rank (`[1,768]` pooled vs `[1,256,768]`
+  → mean-pool yourself), (3) whether L2-norm already applied, (4) DJL tokenizer `.so`
+  loads in `:ml` + APK-size delta, (5) GPU-delegate coexistence with MediaPipe (CPU
+  is the safe default for a 300M embedder), (6) prompt prefixes present.
+- **Fallback if the Interpreter path stalls:** `com.google.ai.edge.localagents:localagents-rag`
+  ships `GeckoEmbeddingModel(modelPath, tokenizerPath, useGpu)` — but that's **Gecko**,
+  not EmbeddingGemma (different quality/dims); use only to get *something* working.
+- Model download reuses the existing `ModelDownloadStore` / `LocalModelsActivity`
+  manager (same per-repo license-accept flow as the Gemma weights).
+
 ## 11. `⚠ VERIFY` before relying (drift-prone / lower-confidence)
 
 - Constrained-decoding availability on the *current* on-device stack (verdict: NO as of
