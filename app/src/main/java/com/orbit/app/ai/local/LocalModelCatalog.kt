@@ -166,7 +166,9 @@ object LocalModelCatalog {
         sourceUrl = "https://huggingface.co/litert-community/embeddinggemma-300m/resolve/main/embeddinggemma-300M_seq256_mixed-precision.tflite",
         androidTaskAvailable = true,
         tokenizerFileName = "embeddinggemma-tokenizer.json",
-        tokenizerUrl = "https://huggingface.co/litert-community/embeddinggemma-300m/resolve/main/tokenizer.json",
+        // tokenizer.json lives in the BASE repo (litert-community ships only
+        // sentencepiece.model). Both are license-gated — the download needs auth.
+        tokenizerUrl = "https://huggingface.co/google/embeddinggemma-300m/resolve/main/tokenizer.json",
     )
 
     /** LLM models for the generation/understanding selection policy. */
