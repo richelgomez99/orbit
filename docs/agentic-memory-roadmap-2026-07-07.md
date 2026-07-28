@@ -231,7 +231,15 @@ on all local providers today). Verified path:
   `tokenizer.json`) + `ai.djl.android:tokenizer-native:0.33.0` (AAR with
   `jni/arm64-v8a/libdjl_tokenizer.so`). Strip the JVM jar's desktop natives with
   `packaging { resources { excludes += "native/lib/**" } }`. Impl: `DjlGemmaTokenizer`
-  → `GemmaTokenizer`. **Vocab file:** the `.tflite` repo (`litert-community`) ships
+  → `GemmaTokenizer`. **C++ RUNTIME TRAP (RESOLVED 2026-07-28):** `libdjl_tokenizer.so`
+  is dynamically linked against `libc++_shared.so`, which the DJL AAR does NOT bundle
+  and no other Orbit native dep (TFLite/MediaPipe/SQLCipher) exports — so `dlopen`
+  fails at runtime with `UnsatisfiedLinkError: library "libc++_shared.so" not found`
+  and the tokenizer silently degrades to null (whole embed path returns null). Fix:
+  commit the NDK's `libc++_shared.so` (r27c) for all 4 ABIs into
+  `app/src/main/jniLibs/<abi>/` (~6MB total). No NDK on the build box → partial-extract
+  the single file from the remote NDK zip via HTTP range requests (see
+  `tools/fetch_libcxx_shared.py`; ~3MB transfer, not 633MB). **Vocab file:** the `.tflite` repo (`litert-community`) ships
   only `sentencepiece.model`; the `tokenizer.json` DJL needs comes from the base
   `google/embeddinggemma-300m` repo. VERIFY on-device: token parity vs desktop HF
   (encode a known string, assert identical ids) before trusting embeddings.
@@ -241,11 +249,13 @@ on all local providers today). Verified path:
   `title: none | text: {text}` for documents — **prefixes are load-bearing**) →
   tokenize → `Interpreter.run` → likely `[1,768]` pooled + L2-normalized in-graph →
   Matryoshka-truncate to 256 → **re-normalize**.
-- **Must verify on-device (S24 Ultra):** (1) input signature (`[1,256]` int vs
-  `{input_ids, attention_mask}`), (2) output rank (`[1,768]` pooled vs `[1,256,768]`
-  → mean-pool yourself), (3) whether L2-norm already applied, (4) DJL tokenizer `.so`
-  loads in `:ml` + APK-size delta, (5) GPU-delegate coexistence with MediaPipe (CPU
-  is the safe default for a 300M embedder), (6) prompt prefixes present.
+- **VALIDATED on-device (S24 Ultra, 2026-07-28):** loaded `inShape=[1,256] INT32`,
+  `outShape=[1,768]` rank-2 (already pooled) → truncate to 256 → L2-norm. `embed OK`
+  in ~2.5s for 3 texts; `cos(related)=0.77` vs `cos(unrelated)=0.35` — real semantic
+  separation. `model=embeddinggemma-300m-256`. Ran in the default `:ui` process via
+  the debug harness (`DEBUG_TEST_EMBED`); the LiteRT `Interpreter` has no single-engine
+  hazard so it also coexists in `:ml`. STILL TO VERIFY: token parity vs desktop HF,
+  GPU-delegate coexistence with MediaPipe (CPU used here), cross-process embed over AIDL.
 - **Fallback if the Interpreter path stalls:** `com.google.ai.edge.localagents:localagents-rag`
   ships `GeckoEmbeddingModel(modelPath, tokenizerPath, useGpu)` — but that's **Gecko**,
   not EmbeddingGemma (different quality/dims); use only to get *something* working.

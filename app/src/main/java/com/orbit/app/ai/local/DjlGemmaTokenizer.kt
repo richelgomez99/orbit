@@ -35,6 +35,14 @@ class DjlGemmaTokenizer private constructor(
         fun createOrNull(tokenizerJson: File): DjlGemmaTokenizer? = runCatching {
             require(tokenizerJson.exists()) { "tokenizer.json missing: ${tokenizerJson.absolutePath}" }
             DjlGemmaTokenizer(HuggingFaceTokenizer.newInstance(tokenizerJson.toPath()))
+        }.onFailure { t ->
+            // Diagnostic: surface WHY the tokenizer won't construct (native lib
+            // load, JSON parse, DJL cache/download). Degrades to null either way.
+            android.util.Log.w(
+                "DjlGemmaTokenizer",
+                "createOrNull failed: ${t.javaClass.name}: ${t.message}",
+                t,
+            )
         }.getOrNull()
 
         private fun LongArray.toIntArray(): IntArray = IntArray(size) { this[it].toInt() }
