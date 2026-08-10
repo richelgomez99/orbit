@@ -11,10 +11,10 @@ JetBrains Mono captions). Bundle checked into
 ## Summary
 
 Adopt a new visual language across the Android Compose codebase as a presentation-only
-refit. The refit is feature-flagged (`RuntimeFlags.useNewVisualLanguage`, default
-OFF), shipped behind 5 phases with a Claude review gate after every commit, and
+refit. The refit is feature-flagged (`RuntimeFlags.useNewVisualLanguage`, now
+default ON for alpha after T015-904), shipped behind 5 phases with a Claude review gate after every commit, and
 **builds on** the Phase 11 Block 7 primitives (`AgentVoiceMark`,
-`ClusterActionRow`, `CapsulePalette`) — it does not replace them.
+`ClusterActionRow`, `OrbitPalette`) — it does not replace them.
 
 No data model changes. No ViewModel signature changes. Every refit composable
 calls the same upstream methods its predecessor calls.
@@ -147,13 +147,15 @@ flag = true vs the design bundle reference renders.
 ### Functional Requirements
 
 - **FR-015-001**: System MUST add a `RuntimeFlags.useNewVisualLanguage: Boolean`
-  flag, default `false`, in `app/src/main/java/com/capsule/app/RuntimeFlags.kt`.
+  flag in `app/src/main/java/com/orbit/app/RuntimeFlags.kt`. It was initially
+  default `false` for incremental rollout; the alpha branch now defaults it
+  `true` after T015-904.
   All refit composables MUST read this flag (or accept it as a parameter from
   a flag-aware host) before adopting new tokens.
 - **FR-015-002**: System MUST add a `BrandAccent` token (`#e8b06a`),
   `BrandAccentDim` (16% alpha amber), and `BrandAccentInk` (`#1a1206`) to
-  `app/src/main/java/com/capsule/app/ui/tokens/Colors.kt` as part of
-  `CapsulePalette.Tokens`. (Per LD-001.)
+  `app/src/main/java/com/orbit/app/ui/tokens/Colors.kt` as part of
+  `OrbitPalette.Tokens`. (Per LD-001.)
 - **FR-015-003**: System MUST consolidate `AgentVoiceMark`'s rendering color
   from `inkAccentCluster` to `brandAccent`. The lint detector
   `NoAgentVoiceMarkOutsideAgentSurfaces` and its test MUST be updated to
@@ -163,11 +165,11 @@ flag = true vs the design bundle reference renders.
   `specs/010-visual-polish-pass/spec.md` (NOTE: tasks.md does not exist for
   spec 010 — see Dependencies for the contradiction surface) recording the
   consolidation: `inkAccentCluster` retired, `brandAccent` adopted.
-- **FR-015-005**: System MUST add `app/src/main/java/com/capsule/app/ui/tokens/Type.kt`
+- **FR-015-005**: System MUST add `app/src/main/java/com/orbit/app/ui/tokens/Type.kt`
   exposing typography stacks: display (`Cormorant Garamond`), body (`Inter`),
   caption (`JetBrains Mono`). Fonts MUST be wired via `app/src/main/res/font/`.
 - **FR-015-006**: System MUST add the following Compose primitives to
-  `app/src/main/java/com/capsule/app/ui/primitives/`:
+  `app/src/main/java/com/orbit/app/ui/primitives/`:
   - `OrbitMark` — `Canvas` + `Path`, no font dependency. Mechanism mirrors
     `AgentVoiceMark`. Renders self-dot + tilted ellipse + accent dot.
   - `OrbitWordmark` — `OrbitMark` + serif "Orbit." text.
@@ -201,7 +203,7 @@ flag = true vs the design bundle reference renders.
   YouTube URL MUST render the same YouTube glyph regardless of foreground app.
 - **FR-015-015**: Settings refit MUST include nested settings routes, not only
   the top-level Settings screen. User-facing product copy in settings routes
-  MUST say `Orbit`; legacy `Capsule` copy is allowed only in package/process or
+  MUST say `Orbit`; legacy `Orbit` copy is allowed only in package/process or
   developer-facing technical names.
 - **FR-015-016**: Post-capture visual states (`ChipRow`, silent-save pill,
   undo pill, already-saved/confirmation pill) MUST have touch bounds that match
@@ -231,7 +233,7 @@ layer.
   `research.md`. (Diff measured by hand-reviewed screenshot for v1.)
 - **SC-006**: Zero changes to `IntentEnvelope` schema files / migrations on
   this branch.
-- **SC-007**: Zero changes under `app/src/main/java/com/capsule/app/bubble/`
+- **SC-007**: Zero changes under `app/src/main/java/com/orbit/app/bubble/`
   on this branch.
 - **SC-008**: Every commit on `015-visual-refit` records, in its commit body,
   the Claude review approval (or marker that approval was received).
@@ -254,7 +256,7 @@ layer.
 - Demo Day is 2026-05-22; phases land before that date for screens NOT named
   "bubble".
 - The phase-11-block-7 primitives (`AgentVoiceMark`, `ClusterActionRow`,
-  `CapsulePalette`) survive into the new language. Phase 11 Block 8
+  `OrbitPalette`) survive into the new language. Phase 11 Block 8
   (`ClusterSuggestionCard`) consumes them per the existing spec 002 plan.
 
 ## Dependencies
@@ -292,7 +294,7 @@ layer.
 - Launch video in app (press kit / website).
 - IntentEnvelope schema migration (DEP-001).
 - Material You / dynamic color adoption.
-- Any change under `app/src/main/java/com/capsule/app/bubble/`.
+- Any change under `app/src/main/java/com/orbit/app/bubble/`.
 - Any schema migration for duplicate keys, notes, or contact refs.
 - Cloud LLM gateway changes (spec 014).
 - Cluster engine / detector behavior (spec 002 territory).

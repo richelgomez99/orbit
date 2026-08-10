@@ -1,0 +1,1477 @@
+00:00 [MUSIC PLAYING]
+00:06 SANDHYA MOHAN: Let's begin
+with a quick show of hands.
+00:09 Who here has an amazing
+app idea that you just
+00:13 haven't built out yet?
+00:17 So we've all been there.
+00:19 The biggest roadblock is
+friction, the endless setup
+00:24 configurations, and
+the boilerplate.
+00:27 And that's what we're
+eliminating today with Agents.
+00:32 By the end of this talk,
+you'll know exactly how
+00:35 to bring your idea to life.
+00:37 My name is Sandhya.
+00:38 I'm a product manager
+at Android Studio,
+00:41 and I am here with Trevor
+Johns and Simona Milanovic.
+00:49 Gemini in Android
+Studio helps you
+00:51 at every stage of the app
+development lifecycle.
+00:55 Let's take a look at
+some practical examples
+00:57 through this agenda.
+00:59 Firstly, we'll look at
+how to prototype an app,
+01:02 how to make it adaptive, and
+how to add a new feature.
+01:07 Then let's look at maintaining
+and testing your app.
+01:11 And finally, let's look at
+how to intelligently integrate
+01:15 your existing workflow
+tools into Studio
+01:18 and how to extend
+Gemini with new skills.
+01:22 All of the features
+we'll be looking at today
+01:24 apply to both new
+projects as well as
+01:27 existing large codebases.
+01:32 Let's start by beginning
+a new app idea to life.
+01:36 Gemini in Android
+Studio is here to help
+01:39 you bring your idea to reality.
+01:42 It used to take
+months, if not weeks,
+01:46 and a whole team of
+engineers to get your app
+01:48 idea off the ground.
+01:51 Today, even a solo entrepreneur
+with just a little bit of time
+01:55 can build a working prototype.
+01:57 So you can use all of that time
+to continue to refine your app
+02:02 and build the best
+experience for your users.
+02:05 Let me show you.
+02:09 I've got a great new idea
+for a new fitness app.
+02:13 We don't need to go into
+all of the details here,
+02:16 but let's just say it will be a
+big hit when it finally launches
+02:20 as part of my new startup.
+02:23 We'll start with
+the basics, though.
+02:25 I need an app that can track
+my steps, my daily fitness
+02:29 goals, and my workout sessions.
+02:33 With Gemini in Android
+Studio's new project agent,
+02:36 I can build an entire
+complete Android application
+02:41 with just a single prompt.
+02:43 I can provide as much or
+as little detail as I want.
+02:46 And even if you're building
+a complex app manually,
+02:50 it can still set up all of
+the scaffolding for you.
+02:54 Behind the scenes, we take
+advantage of Agent mode
+02:58 to plan and build out your app.
+03:01 It takes into account all of
+the Android best practices
+03:04 and the official
+recommended tech stack
+03:06 to build out the app for you.
+03:10 Let's see it in
+action with a demo.
+03:13 Let's cut to the demo.
+03:19 Sweet, I'm in Android Studio.
+03:21 I'll kick off a new project.
+03:25 Click on Create with AI
+and put in my prompt.
+03:30 Build me a fitness tracker
+app with a step counter.
+03:41 We'll give it a name.
+03:48 And while that's loading, let me
+tell you about the Agent mode's
+03:56 build-fix-verify loop.
+03:59 Every time the
+agent writes code,
+04:02 it compiles and makes sure
+that there are no errors.
+04:05 If there are
+errors, it continues
+04:06 to iterate on it until
+the errors are fixed.
+04:09 Therefore, the feedback loop
+is built into the Agent mode.
+04:17 Sweet.
+04:19 OK, so the Agent mode is back.
+04:22 And here you can see it's
+come up with a project brief.
+04:26 So it's given the
+app a cool name.
+04:29 And it's come up with
+a list of features--
+04:32 real-time step tracking,
+a progress dashboard,
+04:36 and adaptive layout
+support as well.
+04:39 And if I scroll up, sorry,
+I can see the mocks.
+04:45 That looks really good.
+04:46 I'm going to go ahead
+and approve this.
+04:50 It also shows the
+technical stack.
+04:52 Here you can see it's using
+Jetpack Compose with Material 3
+04:57 and so on.
+04:58 All right.
+04:58 You can continue to iterate
+on this product brief,
+05:01 but I'm going to go
+ahead and approve it.
+05:04 All right.
+05:05 And when I approve
+it, it comes up
+05:07 with a detailed
+implementation plan.
+05:10 So it's listing out the
+features, the tech stack again,
+05:13 and then here are the
+implementation steps.
+05:15 And this is a checklist.
+05:17 And every time it
+completes a step,
+05:19 you'll see that it
+marks it as complete.
+05:24 So it's setting up the
+theme and the tracking
+05:27 logic, the adaptive UI.
+05:30 And eventually, it
+will also do a run
+05:32 and verify and make sure that
+it's working as intended.
+05:36 And you can see how it's
+loading all the information,
+05:40 making the tool
+calls, and so on.
+05:42 I'm going to go ahead
+and stop it right there.
+05:45 This can take up to 10 minutes.
+05:46 So in the interest
+of time, I'm just
+05:48 going to quickly switch
+to another project
+05:51 that I kicked off earlier
+today with the same prompt.
+05:55 Let's try to build and run that.
+05:58 And drum roll.
+06:04 There you have it.
+06:05 So there you have a
+fitness tracker app.
+06:08 And you can go
+ahead and continue
+06:11 to refine and iterate it.
+06:14 Let's get back to the slides.
+06:17 In addition, when you provide
+a paid Gemini app API key,
+06:21 the agent can come up with
+a beautiful design mock
+06:24 before starting implementation.
+06:26 It uses an image generation
+model like Nano Banana for this,
+06:30 and the result is a much
+more visually stunning app
+06:34 with much higher fidelity.
+06:38 In addition, Agent Mode
+also has first-class support
+06:42 for large-screen devices.
+06:44 It intelligently
+scaffolds your project
+06:47 with the components, the
+layouts, the navigation that
+06:50 are optimized for
+large-screen devices,
+06:53 devices like Chrome OS devices,
+tablets, and foldables,
+06:59 from the get-go.
+07:02 And behind the
+scenes, you can see
+07:04 that it refers to all of
+the adaptive guidelines
+07:06 to make this happen.
+07:10 And it has additional
+logic to test out your app
+07:14 on large-screen devices
+or other emulators you
+07:17 have available as well.
+07:19 Simply configure the
+devices that you need,
+07:22 and the new project
+agent can test it out
+07:24 on those devices for you.
+07:28 So now I've built the app, but
+I want to set up a database so
+07:33 that I can log my workouts.
+07:35 And I also want to set
+up an authentication so
+07:38 that I can add profiles
+for my family members.
+07:41 So how am I going to do that?
+07:44 Simply ask Agent Mode
+to connect to Firebase.
+07:47 It now includes all of the
+knowledge required to connect
+07:50 to Firebase services.
+07:53 And with that, you will have
+a full end-to-end working
+07:58 app and that's robust and has
+the full-stack experience as
+08:02 well.
+08:06 So with all these new
+Agent Mode capabilities,
+08:09 you will find yourself
+reaching for the AI more often.
+08:13 And we're really
+excited to tell you
+08:16 that the agent
+can now multitask.
+08:19 Until recently, you can only
+ask the agent for one task
+08:23 at a time.
+08:23 But we have completely
+redesigned the app
+08:26 from the ground
+up so that it can
+08:28 support multiple
+conversations in parallel.
+08:34 And while you're waiting for
+a really long-running task,
+08:37 you can simply click
+on the Plus icon
+08:39 and ask a quick
+sidebar question.
+08:42 And then you can switch back
+and forth with the History icon.
+08:48 As your codebase
+gets larger, you'll
+08:50 want to explore more
+and more complex tasks,
+08:53 and Planning Mode
+is a really good fit
+08:56 for those complex tasks.
+08:58 Planning Mode architects
+the entire solution
+09:01 and a detailed
+implementation plan before it
+09:03 writes a single line of code.
+09:06 So you can go ahead and refine
+that until you're satisfied
+09:09 before you let it proceed.
+09:14 So now I've built my app.
+09:16 It's adaptive now.
+09:17 And I've added the
+back-end capabilities.
+09:19 And I'm now ready to publish
+this app to the Play Store
+09:23 or to the Google Play
+internal test track.
+09:26 We're now making it easier
+for you to publish your apps
+09:29 to the internal test track.
+09:31 Simply create a new app and
+publish it to the test track
+09:36 directly from Android Studio.
+09:39 You can now upload
+your new releases
+09:41 to Play console test track site.
+09:44 We're making the whole process
+seamless and so much easier
+09:47 for you to directly
+go from app creation
+09:51 to publishing when you're ready.
+09:55 Now that we have
+built our app, we
+09:57 are now ready to extend it
+and add more features to it.
+10:01 For that, I'll pass the stage
+on to my colleague Trevor
+10:04 to walk us through an example.
+10:07 [APPLAUSE]
+10:11 TREVOR JOHNS:
+Thank you, Sandhya.
+10:13 So you just saw how
+Gemini in Android Studio
+10:15 can help you plan and
+build a new application.
+10:18 But we're also here to help
+you throughout your application
+10:20 lifecycle, including extending
+features, maintaining your app,
+10:24 ensuring test coverage, and
+optimizing your application
+10:28 for production.
+10:29 So let's take a look
+at some of that.
+10:31 Jumping back to our fitness
+app, let's jump forward
+10:34 a bit in time.
+10:35 We're further along
+in development,
+10:37 and we want to start adding new
+features to our application.
+10:40 So in this case, let's say
+that we want to add support
+10:42 for Health Connect.
+10:43 This would let us share our
+step count with other apps
+10:45 and retrieve workout
+data from other apps
+10:48 on the system the
+user might be using.
+10:50 Let me show you how you can
+implement this feature using
+10:53 Planning Mode.
+10:54 And I'm also going to
+add a second twist here.
+10:57 We jumped forward a bit in time.
+10:58 So we now have a
+development team,
+11:00 which means we have a
+bug tracker for everyone
+11:03 to collaborate on.
+11:04 So we can have Agent
+Mode autonomously
+11:06 work on this feature directly
+from our project's bug tracker.
+11:10 To accomplish this, we're
+going to turn to MCP, the Model
+11:13 Context Protocol.
+11:14 This is a standardized mechanism
+for extending AI agents
+11:17 with new tools and
+new capabilities.
+11:20 You can think of it just like
+a USB-C port for a wide range
+11:23 of AI integrations.
+11:25 MCP handles service discovery
+and provides a standardized way
+11:29 to package and send rich,
+structured context into Gemini.
+11:34 Android Studio's
+MCP support means
+11:36 there's a rich ecosystem of
+tools available today that
+11:40 can integrate with
+Gemini in Android Studio.
+11:43 You can directly connect
+to any MCP server,
+11:46 but to help you get
+started, we also now
+11:48 include a curated
+collection of MCP servers
+11:51 for common integrations,
+and you can find that
+11:54 under Studio settings
+in AI MCP server.
+11:58 You can also go and specify
+custom MCP servers using JSON.
+12:03 Once you've configured
+your MCP servers,
+12:06 Agent Mode will automatically
+invoke them as needed
+12:09 while executing your prompts.
+12:12 So here for this
+project, we're going
+12:14 to go and connect the GitHub
+MCP server to our project.
+12:17 And then with our
+bugtracker connected,
+12:19 we can directly delegate
+issues to Gemini.
+12:21 So for example, we could ask
+it to read, assess, or fix
+12:24 a particular bug, testing it
+before checking it back in.
+12:28 So in this case,
+we're going to give it
+12:29 a feature request that's stored
+in our projects bug tracker.
+12:34 And with Planning
+Mode, Gemini will
+12:37 be able to examine all
+of our project's files
+12:39 and come up with a concrete plan
+to address those requirements
+12:42 in the feature request for us.
+12:44 So just as before, you can
+always edit and refine it
+12:47 before you approve it.
+12:49 You're always in
+the driver's seat.
+12:51 So let's take a look at how
+Planning Mode and MCP work
+12:54 in action.
+12:55 And I have my new
+project set up here.
+12:57 Once again, we're going to
+go and try and connect it
+12:60 to Health Connect.
+13:01 So that way, we can
+share our step data.
+13:03 But first things first, we want
+to connect it to our, sorry,
+13:08 GitHub issue tracker.
+13:09 So we're going to
+go into Settings.
+13:11 We're going to go
+to MCP servers.
+13:13 And I already have the
+GitHub MCP server installed,
+13:16 but I'm just going to go
+ahead and enable it here.
+13:20 And very quickly here, I'm just
+going to jump over to Chrome.
+13:22 And you can see here that we
+have our feature request written
+13:27 up in GitHub issues
+as issue number one.
+13:30 It's a bit more lengthy
+than the short prompt
+13:32 that we used to create the
+project earlier, and that's OK.
+13:35 Gemini can adapt
+to work with tasks
+13:36 at any level of complexity.
+13:38 So we're going to go ahead
+and delegate this bug over
+13:40 to Gemini.
+13:41 So I'm going to jump back
+over to Android Studio.
+13:44 You can see here it's
+now connected to GitHub.
+13:46 And I'm going to say
+work on issue number one.
+13:50 I'm going to switch
+over to Planning Mode,
+13:52 and we're using
+Gemini 3 for this.
+13:56 All right.
+13:57 Now that I've sent
+that, you can see
+13:59 it's going to begin
+examining our project.
+14:01 We're going to allow that.
+14:03 And you'll see in
+just a moment here,
+14:05 it's now connecting to
+the GitHub issue tracker.
+14:07 And we're going to
+allow that as well too.
+14:09 And it's researching
+everything that's
+14:11 needed to go and
+work on this project.
+14:14 In just a moment here, it'll
+come back with an implementation
+14:18 plan that once again, we're able
+to edit and refine if we want.
+14:22 And while Gemini
+works on this, you
+14:25 can see it's starting
+to do the research here.
+14:26 But I'm going to jump
+ahead forward in time
+14:28 so you can see the result.
+14:31 All right.
+14:31 So here it's completed
+researching the issue.
+14:36 It's jumped forward a little
+bit more in our task list,
+14:38 identified what steps
+it needs to take,
+14:41 and written up that
+implementation plan for us,
+14:43 explaining exactly how it's
+going to go about implementing
+14:46 this feature.
+14:47 We can read through this.
+14:48 And if we want to
+change anything,
+14:50 we can, of course, go in
+here and have a conversation
+14:53 with the Gemini
+to go and iterate
+14:55 on this implementation plan.
+14:56 But I like this.
+14:57 So we'll just go
+ahead and say proceed.
+14:59 And it'll begin working
+on our feature for us.
+15:02 All right.
+15:03 While that works, let's go ahead
+and get back to the slides.
+15:10 All right.
+15:11 So now that we've added some
+more features to our app,
+15:13 let's talk about
+how Agent Mode is
+15:14 able to help with testing and
+maintaining our application
+15:17 so that we're able to
+ship with confidence.
+15:20 Ensuring test coverage
+is, of course,
+15:22 vital not only for your
+application's quality,
+15:24 but now to provide
+agents with information
+15:27 they need to determine
+whether or not
+15:29 their tasks are successful.
+15:31 We've been working on leveraging
+Gemini's multimodal capabilities
+15:34 to help write end-to-end
+tasks with Journeys.
+15:37 This is a new feature
+that we launched last year
+15:39 to allow you to write UI
+tests that dynamically
+15:42 adapt to your
+application's changing UI.
+15:45 We have some Journey tests that
+we've added to our application,
+15:48 and Journeys allows Gemini
+to intelligently interact
+15:51 with our app in real time,
+following these steps
+15:54 to give you tests
+that dynamically
+15:55 adapt as your app's UI changes
+across time or across devices.
+16:01 So I'm going to go
+ahead and run this,
+16:02 and you can see
+that one of my tasks
+16:04 has unfortunately failed there.
+16:06 But now with new Agent Mode
+integration for Journeys,
+16:10 it has the ability to
+interactively fix test failures
+16:14 as well.
+16:14 So you can see here that
+this offered to either modify
+16:17 my Journeys test, assuming that
+something in my UI has changed
+16:20 and we just need to change
+some of our test statements,
+16:24 or if we're confident
+that the test is correct
+16:25 and we found a bug, we can ask
+Journeys to go and use Agent
+16:29 Mode, sorry, to autonomously
+fix the underlying code that
+16:34 caused the fault.
+16:36 We've also added support for
+executing Journeys directly
+16:39 from the command line
+with Android CLI.
+16:43 So this includes
+bundled AI skills
+16:45 for creating and
+executing Journeys.
+16:47 We've also added
+support for invoking
+16:51 Journeys via Gemini CLI.
+16:55 This also allows
+us to use Journeys
+16:57 in headless environments
+like in a CI server.
+16:60 This means that you're able to
+run Journeys tests automatically
+17:03 on every pull request,
+highlighting when your app's
+17:05 behavior has diverged from your
+original test specification.
+17:08 So let's take a
+look at this here.
+17:10 We can see that we
+have Gemini CLI,
+17:12 or you could do this with
+Antigravity CLI as well now.
+17:15 Invoking a Journey test
+with the help of Android CLI
+17:18 in the background.
+17:19 And just like with Android
+Studio's Agent Mode,
+17:21 Gemini has visibility to
+the execution test results
+17:24 and can offer to
+heal a malformed test
+17:25 or directly fix any
+underlying bugs.
+17:30 All right.
+17:31 We also have integration
+with App Quality Insights.
+17:33 That's your direct view
+into production data,
+17:36 aggregating crash reports from
+production sources like Play
+17:39 Vitals or Firebase Crashlytics.
+17:42 Once the crash is
+identified, Gemini
+17:45 is able to analyze the
+user's stack traces
+17:47 and suggest
+potential code fixes.
+17:49 The power of Agent
+Mode means it now
+17:51 goes further than a suggestion.
+17:53 It's able to iterate
+on these proposed fixes
+17:56 and test them to confirm
+that the underlying
+17:58 bug has been resolved
+before you start coding.
+18:01 This automates the
+entire validation loop.
+18:05 All right, jumping forward
+a little bit more in time
+18:08 here as we get ready to release
+our app to users on Google Play,
+18:10 we also want to make
+sure that our app is
+18:12 up-to-date and performant.
+18:14 Modern apps rely on
+third-party libraries that
+18:17 implement critical features,
+and these libraries
+18:19 take advantage of other
+libraries themselves,
+18:21 which can quickly make
+dependency management
+18:23 a challenging task, especially
+for large codebases.
+18:28 Upgrading one
+dependency can often
+18:29 pull in a web of seemingly
+unrelated changes.
+18:32 We've heard from developers just
+how time-consuming these updates
+18:35 can be, and Gemini
+in Android Studio
+18:37 is able to help you
+with that as well.
+18:39 So we're able to automatically
+apply dependency updates for.
+18:43 If you just right-click in
+your version catalog file,
+18:46 you can ask Gemini to update
+all of your dependencies.
+18:50 Gemini will then analyze
+your version catalog,
+18:52 identify any stale
+library versions,
+18:55 and proceed to inspect
+the documentation
+18:58 for those libraries to identify
+any likely changes that
+18:60 need to be made to
+your source files.
+19:02 And now with Agent Mode,
+we're able to build and test
+19:04 your app to make sure
+everything works successfully
+19:06 after the migration.
+19:07 So let me show you that in
+action here with the demo.
+19:12 All right.
+19:13 So we now have our application
+that we're getting ready to--
+19:17 or that we'd like to update.
+19:18 And you can see here I have
+a whole range of dependencies
+19:21 that are out-of-date.
+19:22 So I can just right-click
+here, go to AI,
+19:25 and say update dependencies.
+19:27 It will then begin scanning
+through my version catalog,
+19:30 identifying which dependencies
+need to be updated.
+19:33 And in just a moment here, it
+will begin iterating on that.
+19:36 But for the sake of
+time, we'll jump forward
+19:39 to the completed
+version of that.
+19:41 And you can see here
+that it's gone through,
+19:43 analyzed my project, began
+reading through the release
+19:47 notes of all of the
+different libraries
+19:49 that we needed to
+update, and began
+19:52 changing the underlying
+Kotlin code to make sure
+19:54 that everything is able to
+be updated successfully.
+19:58 And at the end here, you'll
+see it deploying that
+19:60 to the emulator and testing
+to make sure everything
+20:02 works successfully.
+20:05 All right.
+20:05 We'll go ahead and jump
+back to slides here.
+20:07 So we talked about updating
+third-party library
+20:09 dependencies, but you also need
+to upgrade your AGP version
+20:12 over time.
+20:13 We now have the AGP
+Upgrade Assistant
+20:14 built into Studio, which can
+provide deeper assistance
+20:17 with AGP migrations, again
+using Agent Mode to help migrate
+20:23 to the new AGP DSL.
+20:24 To take advantage of this,
+we leverage a new feature
+20:28 called Android Skills.
+20:30 For supported workflows like
+this one, all we need to do
+20:32 is ask the Agent Mode for
+help updating our AGP version,
+20:35 and the skill is
+invoked automatically.
+20:39 We'll also enable
+Planning Mode here,
+20:40 and as before, Gemini
+in Android Studio
+20:42 takes some extra time to
+think about the project
+20:45 and comes up with its
+recommendations and next steps.
+20:49 Again, we're using
+Android Skills here
+20:51 to enable this, which is
+a powerful new capability
+20:53 that we've just added
+to Android Studio,
+20:55 bringing deeper knowledge
+of a wide range of Android
+20:57 best practices into
+the Gemini environment,
+20:60 even for topics outside
+the model training cutoff.
+21:03 To give you a deep dive
+on how Android skills work
+21:08 and how they augment Agent
+Mode, let me turn the stage
+21:10 over to my colleague, Simona.
+21:12 [APPLAUSE]
+21:18 SIMONA MILANOVIC: So
+delegating your AGP upgrade
+21:20 is one of many
+things that can now
+21:22 be handled for you using
+a powerful combination--
+21:25 Gemini in Android Studio with
+one of our own Android skills.
+21:28 And we have a lot more of
+those to share with you.
+21:31 But first, we have to understand
+what exactly are skills?
+21:35 How do they work,
+and how does Studio
+21:37 leverage this new capability?
+21:39 Let's use one as an example.
+21:42 Skills are the open-standard
+markdown files, SKILL.md,
+21:45 that represent modular
+instruction sets for AI agents
+21:49 and tools.
+21:50 They provide technical
+specifications for a task,
+21:53 grounding the LLMs with
+up-to-date and domain-specific
+21:56 information.
+21:58 They enable execution
+of specialized workflows
+22:00 and expertise through added
+knowledge and context.
+22:04 So how do you use them
+in your day-to-day work?
+22:08 Generally, you fetch skills
+from a trusted source,
+22:10 and you place them into
+a dedicated repository,
+22:12 like a local project
+or user home.
+22:15 Using Android Studio
+as an example,
+22:17 skills can go to a
+workspace-specific
+22:19 or a global directory.
+22:22 After that, agents are aware
+of all of the present skills
+22:25 by keeping a list of
+the skills metadata
+22:28 and sending it to the
+LLM on every prompt.
+22:31 When the user sends
+a prompt or you,
+22:33 the LLM tries to
+match the skills
+22:35 metadata and the description
+with an executed task
+22:38 and then find and activate
+the most suitable skills.
+22:42 Skills are designed to
+trigger automatically,
+22:45 so there's no need for
+you to manually download--
+22:48 sorry, to manually
+search and attach them
+22:50 and force their usage, but you
+can, of course, if you want to.
+22:54 So now that we
+understand the basics,
+22:57 how do we make the most
+out of this concept
+22:59 for Android development?
+23:01 You heard about it in the
+Developer Productivity Keynote,
+23:04 but to better support you
+and your Android development
+23:08 with AI, we launched the
+official Android skills,
+23:10 a dedicated repository of
+AI-optimized instructions
+23:13 to help models better
+understand and execute
+23:16 specific patterns that
+follow our best practices
+23:19 and guidance on
+Android development.
+23:22 To install skills easily
+and update them regularly,
+23:25 we recommend using Android CLI.
+23:27 So check out its
+documentation for more.
+23:30 You can also check
+out the GitHub repo
+23:31 for the latest updates.
+23:34 With Android skills,
+we kind of wanted
+23:36 to tackle a few
+challenges we realize
+23:39 happen when working with LLMs.
+23:41 LLMs often lack context
+on the newest Android
+23:44 frameworks and changes due to
+their training cutoff date.
+23:47 If you ask it to migrate
+a legacy navigation,
+23:50 they often won't know anything
+about the latest frameworks.
+23:53 Skills allow us to deliver these
+changes and updates to AI tools
+23:57 instantly.
+23:59 Similarly, you might ask LLMs
+to analyze a project setup,
+24:02 and it can often
+provide a result
+24:04 that's unstructured and not
+always really fully helpful.
+24:08 Android skills guide
+LLMs in executing
+24:10 the more complex, but really
+important, workflows while also
+24:15 following our best practices.
+24:18 Traditional documentation can
+be descriptive, conceptual,
+24:22 and high level, and while
+that's perfect for our learning,
+24:25 it can be less
+performant with LLMs
+24:27 that require precise and
+actionable instructions.
+24:30 Standard documentation
+teaches humans how to think
+24:33 and the whys, while
+skills tell AI
+24:36 how to execute something,
+what and how to do it.
+24:40 Knowing all that, our focus is
+on publishing Android skills,
+24:43 where our testing showed
+that the LLMs need more
+24:46 grounding and steering.
+24:48 So in workflows such as AGP-9
+and XML to Compose migrations,
+24:53 adding Navigation
+3 to your project,
+24:55 migrating from Nav2,
+analysis of your RA config,
+25:00 enabling edge-to-edge
+support, and a lot more.
+25:04 So Android skills can be
+roughly split in two--
+25:08 procedural and
+specialized workflows.
+25:10 So something that demonstrates
+a step-by-step custom
+25:13 process to complete a specific
+task, like the RA config
+25:17 analysis.
+25:19 They can also be referenced
+and knowledge-based--
+25:21 so serving as a collection
+of resources or pointers
+25:24 to other supporting files,
+granting the LLMs with more
+25:27 knowledge and
+expertise, like how
+25:29 the edge-to-edge skill teaches
+the LLM how to implement support
+25:32 for it.
+25:34 And they can be
+hybrid-- so integrating
+25:36 both procedural and
+knowledge-based elements.
+25:38 The XML-to-Compose migration
+skill does exactly that.
+25:43 Android skills are supported by
+Android Studio and Android CLI,
+25:46 but are also designed to
+be reusable across any AI
+25:49 tool of agent of
+your choice that
+25:51 have support for skills--
+so Google Antigravity, AI
+25:54 Studio, or any other.
+25:57 For Android Studio, a selected
+subset of Android skills
+26:00 are directly preloaded within
+by enabling them in settings.
+26:05 These are available
+at agent startup
+26:07 and get activated automatically,
+so no need for you
+26:10 to manually download
+and activate them.
+26:12 You can, of course, add
+more skills manually
+26:14 by checking out from our
+repository or Android CLI
+26:17 and placing them
+in the dedicated
+26:19 directories for Studio.
+26:21 You can check out
+the documentation
+26:23 for full information.
+26:26 Android CLI also offers full
+integration with Android skills.
+26:29 You can install them
+to your dedicated
+26:32 directory for specific agents.
+26:34 You can also specify
+which skills you want.
+26:36 You can remove them, list
+them, find them, and so on.
+26:39 You can even tweak
+or write your own.
+26:43 But if you're going
+to write your own,
+26:45 let me share a few tips that
+we have from our own experience
+26:48 of writing Android skills.
+26:51 Don't insist on skills
+for user journeys
+26:53 that the LLM is
+already pretty good at.
+26:55 Skills are meant to supplement
+the default knowledge of an LLM.
+26:59 So forcing skills for
+tasks it already knows,
+27:02 it adds unnecessary overhead.
+27:04 So rely on testing
+thoroughly to figure out
+27:07 which scenarios require skills.
+27:10 Don't use LLMs to
+generate skills
+27:12 from scratch without providing
+any additional sources
+27:14 or knowledge.
+27:15 If an LLM already knows a
+topic and can generate a skill
+27:19 for it using its
+default knowledge,
+27:21 it doesn't need a skill.
+27:23 Think about what
+to add to AGENTS.md
+27:26 and what to add to a SKILL.md.
+27:28 The entire content
+of an AGENT.md
+27:31 is sent as context
+for every user prompt,
+27:33 while skills are
+activated on demand,
+27:35 so only when they're needed.
+27:39 Good skill candidates
+are usually
+27:40 brand-new APIs or version
+behavior changes--
+27:43 so information that is so
+recent that the LLMs know
+27:46 very little about it.
+27:48 So things like custom domain
+and specific workflows
+27:52 are also good candidates,
+large procedural migrations,
+27:55 et cetera.
+27:57 Less is more.
+27:58 Find the minimum scope and
+the length of a skill that
+28:01 provides the maximum benefits.
+28:03 Generally, succinct
+skills perform better
+28:06 than the very, very
+lengthy ones because LLMs
+28:08 start forgetting if you throw
+too much context their way.
+28:12 And finally, always use
+skills from trusted sources
+28:15 and validate them
+before running--
+28:17 so sources like Android CLI.
+28:19 Let's look at one particularly
+handy Android skill
+28:22 for a larger task.
+28:24 So if we're talking
+about opportunities
+28:26 to modernize an app, the
+first thing that comes to mind
+28:28 is migrating from
+XML to Compose.
+28:34 As you might have already
+heard in What's New in Android,
+28:36 we are now Compose First.
+28:38 This means that we
+are now advising
+28:40 you to write new code
+and features in Compose,
+28:43 as well as migrate old XML
+views because views are
+28:46 moving into maintenance mode.
+28:48 Basically, we recommend you
+write all of your Android UI
+28:51 in Jetpack Compose
+across all form factors.
+28:55 To support you in
+this, we've published
+28:56 an XML-to-Compose
+migration skill
+28:58 to better guide any agents
+and tools of your choice
+29:01 in this migration effort.
+29:03 So now we're going to see one
+of these skills in action.
+29:09 We can cut to the demo.
+29:11 So here we have one
+of our older samples
+29:17 called Sunflower that's
+written entirely in views.
+29:20 So before we do anything,
+what I'm going to start
+29:24 is actually kick off
+the migration first
+29:27 because it takes a while.
+29:28 And I'm going to say migrate
+a layout from XML to Compose.
+29:33 I'm going to let it
+run in the background,
+29:35 and then we're going to come
+back to it at the very end.
+29:38 So as we see we have
+Sunflower here all in views.
+29:41 And we're going to use our
+skill to migrate it to Compose.
+29:45 So when we first started
+testing the migration with LLMs
+29:49 from XML to Compose, we realized
+that the LLMs were already
+29:53 pretty good at doing
+the basics-- so mapping
+29:56 the basic layouts
+for XML to Compose
+29:58 or doing RecyclerView
+to lazy mapping,
+30:01 et cetera-- so those
+basics that you
+30:05 encounter in every migration.
+30:07 But what it was
+struggling with was
+30:10 defining a very
+specific workflow
+30:12 that is consistent
+throughout many runs.
+30:15 And that is exactly
+what we decided
+30:17 to focus on with our skill.
+30:18 So we provide a
+recommended workflow
+30:21 that is divided into
+substeps that we think
+30:24 apply across all codebases.
+30:26 And we also define
+criteria for things
+30:29 like success or validation
+or analysis of your codebase.
+30:32 And we also ground
+it with supporting
+30:35 files which follow our best
+practices and the latest,
+30:38 for example, Compose
+versioning and changes
+30:41 that come from these new APIs.
+30:43 So aside from that, some of
+the most important things
+30:47 to notice in this skill are the
+open-standard specifications
+30:51 or requirements that are
+needed to make this a skill.
+30:54 At the very top, we
+see this YAML metadata
+30:57 that is always found
+on top that contains
+30:59 two most important
+fields, which are
+31:01 the name and the description.
+31:04 The main skill file needs to
+be named SKILL.md in uppercase.
+31:08 And aside from that, the
+only other requirement--
+31:12 well, it is kind
+of a requirement
+31:14 is to have at least some content
+in the body of the skill.
+31:17 Everything else is optional.
+31:19 You can write whatever is
+needed for this skill to succeed
+31:22 or the agent to do
+a good task with it.
+31:24 But most commonly in skills,
+you might find things like
+31:27 objectives or goals
+defined at the very top,
+31:30 constraints or restrictions
+or requirements for executing
+31:33 the skill, summaries or
+step-by-step processes
+31:37 and subtasks, things like code
+snippets, supporting files,
+31:41 dos and don'ts,
+and all of these.
+31:43 Those are the most common ones.
+31:45 OK, let me just check the agent
+to see if it's running still.
+31:49 That was a spoiler.
+31:54 OK, cool.
+31:54 So now that we went over
+the focus of our skill,
+31:60 I also want to say that breaking
+down any larger tasks, so
+32:03 things like big migrations
+or big refactors,
+32:06 breaking them down
+into smaller subtasks
+32:09 generally provides much
+better results with LLMs
+32:11 because they're able to follow
+a much more methodical way that
+32:15 is consistent across many runs.
+32:17 In that case, using
+that as our guidance,
+32:19 we realized that there
+are some steps that
+32:21 are applicable for
+more codebases--
+32:24 so things like identifying how
+to identify the optimal XML
+32:27 layout as a candidate,
+things like how to create
+32:31 a plan properly, or capture the
+initial XML view, setting up
+32:36 Compose and its theming, and
+many other steps that you
+32:40 can see from here.
+32:41 So this workflow is sturdy
+enough and generalized
+32:46 enough so that it works
+with a variety of codebases.
+32:50 But with this skill,
+as with any other,
+32:53 it's always a good
+practice for you
+32:55 to customize it and tweak
+it to your own production
+32:59 codebase-- so add pointers
+or details for the LLMs
+33:04 that are unique to
+your own code pattern.
+33:06 So, for example, if we
+wanted to tweak this,
+33:09 we could say use only
+layouts from feature module X
+33:15 and constrain it to
+just a specific module.
+33:18 We can say that we don't
+actually want to set up Compose
+33:21 because we've already done it.
+33:23 Or we can say that
+for migrating theming,
+33:25 we can provide our own
+references-- so references
+33:31 like design system
+markdown-- so something
+33:35 that comes from our own
+internal documentation
+33:37 that helps us point the
+LLMs in the right way.
+33:40 An important note
+though here is if you
+33:43 do decide to tweak an
+existing skill that you pulled
+33:46 from a source, do make sure
+that you always remember
+33:49 to extract it somewhere
+else, rename it, put it
+33:53 in a different location.
+33:55 Just make it different from
+the original source of truth.
+33:57 Because if you do a bulk
+update of your skills,
+34:01 your custom tweaks might
+get actually overwritten.
+34:05 OK, so you get the
+idea about this.
+34:12 You can see that we have
+this main SKILL.md here,
+34:17 and it provides all
+of the summaries
+34:19 for individual subtasks.
+34:20 But you can also see that
+our skill directory contains
+34:25 a lot more additional
+supporting files.
+34:28 And these are any
+files that supplement
+34:31 the original SKILL.md
+with additional context,
+34:35 additional knowledge, other
+supplemental markdowns, scripts,
+34:40 assets-- so anything that
+the model needs to perform
+34:42 this task more successfully.
+34:47 So one important note to say
+about this is, as you can see,
+34:52 we provide a lot of supporting
+files from our main SKILL.md,
+34:57 but we're always very
+explicit about when and how
+35:01 the LLM should use these files.
+35:03 The reason for
+that is because we
+35:05 want to ensure that
+the LLM is actually
+35:08 able to activate these
+supporting files on-demand
+35:11 as well-- so not load them
+all at the very start,
+35:13 but use them only
+for specific tasks.
+35:16 And not only that, but it's
+able to actually also skip
+35:19 specific steps when it realizes
+it doesn't need to perform them.
+35:23 So in that case,
+for example, the LLM
+35:25 would actually skip
+this step of setting up
+35:27 Compose dependencies and
+an activation of this file
+35:30 because it realizes it's
+already been set up.
+35:34 So let's look at one of
+these in more detail.
+35:40 So for example, we have the
+identify optimal XML candidate.
+35:45 So you can see that this
+subtask was extracted
+35:49 in a supporting file because
+we wanted the LLM to skip it
+35:52 if the user actually provides
+and points us to the layout
+35:55 that they want migrated.
+35:58 Aside from that, it
+also means that we
+35:60 shorten the main SKILL.md length
+and optimize for better context
+36:05 usage overall.
+36:06 You'll notice that the language
+in this supporting file,
+36:10 but also across any other skills
+that we have, is very concise.
+36:13 It's very procedural.
+36:15 It avoids usages of vague
+and subjective words.
+36:19 Or if we do decide to
+use a subjective word,
+36:22 which is the word "optimal,"
+we always ensure to provide
+36:25 the exact criteria on what
+makes this subjective word more
+36:29 measurable for the LLM.
+36:32 OK, I think that's
+all of the basics
+36:35 that I wanted to
+cover for this skill.
+36:37 I think the most important
+part now that's left
+36:40 is for you to check it out, try
+it out, provide feedback to us,
+36:44 and see how well it performs.
+36:45 And with that in mind, I'm going
+to jump into the actual results.
+36:50 So I can see here that
+the SKILL.md got activated
+36:54 immediately, and it
+went into the activation
+36:57 of the supporting
+file for it as well
+36:60 once it realized that that's
+the first step it requires.
+37:02 There's a lot more
+information here,
+37:06 but I want to see the results.
+37:08 So I decided to activate
+fragment plant detail,
+37:15 and it migrated it into a
+plant screen Composable.
+37:22 OK, let's get these
+to a quick comparison.
+37:29 And let's see how they look.
+37:31 OK, so it's done a
+pretty good job overall.
+37:36 There are some
+tweaks here and there
+37:38 that can be modified
+manually, but I'm
+37:41 pretty happy with this as it
+looks like now because it's
+37:43 meant to do exactly
+what it's done,
+37:45 which is to provide the
+scaffolding for you,
+37:48 take over the more repetitive
+parts of Android development,
+37:51 and let you take over the more
+fun ones and build on top of it.
+37:55 So this way, hopefully,
+layout by layout,
+37:58 it gets you closer
+to Compose first.
+38:01 And you can check out this
+skill as many other more
+38:04 that we have
+through Android CLI.
+38:06 It's integrated
+in Studio as well,
+38:08 so you can try it out already
+and let us know what you think.
+38:12 So with that in mind, I'll
+hand it over to Sandhya
+38:15 to do a recap for us.
+38:18 [APPLAUSE]
+38:23 SANDHYA MOHAN: All
+right, folks, we
+38:24 covered quite a bit
+of content today,
+38:26 and I am tasked with making sure
+that you remember all of it.
+38:30 Let's do a quick recap.
+38:34 As a reminder,
+everything you saw today
+38:37 works not only with
+the Gemini models,
+38:39 but you can bring your API key
+for other foundational models
+38:43 like the Anthropic and
+OpenAI models as well.
+38:46 You can also use a local
+model or an open-source model
+38:50 like Gemini as well.
+38:53 No matter what model you prefer,
+the AI tools in Android Studio
+38:57 are here for you, and
+they'll integrate seamlessly
+38:60 with the model of your choice.
+39:03 All right, so today, we saw
+how Gemini in Android Studio
+39:08 can help supercharge your
+developer productivity
+39:11 and help you at every step of
+the app development lifecycle.
+39:15 First, we looked at how
+to prototype a new app
+39:18 with the new project agent.
+39:20 Then we saw how to
+make it adaptive
+39:22 and to test it on
+large-screen emulators.
+39:24 We also saw how to add a
+new feature using features
+39:28 like planning mode, using MCP
+connections to maintain and test
+39:33 your app.
+39:34 We also looked at how to
+maintain your app with App
+39:39 Quality Insights and how to
+test it with Journeys testing.
+39:43 Let's see.
+39:44 And finally, we saw
+how to extend Gemini
+39:47 with-- sorry, how to extend
+Gemini with new skills as well.
+39:52 All right.
+39:53 Yes.
+39:54 So all the features
+you saw today
+39:55 are available in the
+latest Canary version
+39:58 of Android Studio, and they're
+coming soon to a stable version.
+40:02 To get started, download the
+latest version of Android Studio
+40:05 and start integrating
+Gemini into your workflow.
+40:10 To learn more, please head
+to d.android.com/studio.
+40:15 Thank you, everyone.
+40:17 [MUSIC PLAYING]

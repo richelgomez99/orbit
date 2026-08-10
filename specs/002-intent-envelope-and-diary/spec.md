@@ -12,7 +12,7 @@
 > clipboard focus state machine, and bubble drag/edge-snap behavior from 001
 > are KEPT AS-IS as foundational primitives. This PRD REPLACES 001's "Capture
 > Sheet + Save/Discard + Logcat" flow with the Intent Envelope and Diary
-> model. The rename from "Capsule" to "Orbit" is separate work tracked at the
+> model. The rename from "Orbit" to "Orbit" is separate work tracked at the
 > repository root.
 
 ---

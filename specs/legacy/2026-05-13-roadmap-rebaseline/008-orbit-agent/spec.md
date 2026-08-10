@@ -295,11 +295,11 @@ representation:
   agent_patterns view)
 - 007 Knowledge graph + profile subgraph
 - New process: `:agent` (manifest entry, AIDL boundaries)
-- New: `com.capsule.app.agent.Planner`
-- New: `com.capsule.app.agent.Executor`
-- New: `com.capsule.app.agent.ConsentFilter` (Principle XI
+- New: `com.orbit.app.agent.Planner`
+- New: `com.orbit.app.agent.Executor`
+- New: `com.orbit.app.agent.ConsentFilter` (Principle XI
   implementation)
-- New: `com.capsule.app.agent.PromptAssembler`
+- New: `com.orbit.app.agent.PromptAssembler`
 
 ---
 

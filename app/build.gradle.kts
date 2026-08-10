@@ -20,7 +20,7 @@ val cloudGatewayUrl: String = run {
     val configured = props.getProperty("cloud.gateway.url")?.trim().orEmpty()
     if (configured.isEmpty()) {
         logger.warn(
-            "[capsule-app] cloud.gateway.url not set in local.properties — " +
+            "[orbit-app] cloud.gateway.url not set in local.properties — " +
                 "falling back to Day-1 placeholder (FR-014-016).",
         )
         "https://gateway.example.invalid/llm"
@@ -46,7 +46,7 @@ val supabaseUrl: String = run {
     val v = localProp("supabase.url")
     if (v.isEmpty()) {
         logger.warn(
-            "[capsule-app] supabase.url not set in local.properties — " +
+            "[orbit-app] supabase.url not set in local.properties — " +
                 "SDK wiring will be skipped at runtime (T014-019b).",
         )
     }
@@ -56,7 +56,7 @@ val supabasePublishableKey: String = run {
     val v = localProp("supabase.publishable.key")
     if (v.isEmpty()) {
         logger.warn(
-            "[capsule-app] supabase.publishable.key not set in local.properties — " +
+            "[orbit-app] supabase.publishable.key not set in local.properties — " +
                 "SDK wiring will be skipped at runtime (T014-019b).",
         )
     }
@@ -66,7 +66,7 @@ val debugSupabaseEmail: String = localProp("supabase.debug.email")
 val debugSupabasePassword: String = localProp("supabase.debug.password")
 
 android {
-    namespace = "com.capsule.app"
+    namespace = "com.orbit.app"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -74,7 +74,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.capsule.app"
+        applicationId = "com.orbit.app"
         minSdk = 33
         targetSdk = 36
         versionCode = 1
@@ -185,7 +185,7 @@ dependencies {
 
     // AppFunctions (003 v1.1) — agent-callable function registry. KSP processor
     // generates argsSchemaJson constants from @AppFunction-annotated args data
-    // classes (see com.capsule.app.action.AppFunctionAnnotations).
+    // classes (see com.orbit.app.action.AppFunctionAnnotations).
     implementation(libs.androidx.appfunctions.runtime)
     ksp(libs.androidx.appfunctions.compiler)
 
@@ -207,7 +207,7 @@ dependencies {
 
     // Supabase Kotlin SDK (T014-019b — :net process only; package import gate
     // verified by `grep -r io.github.jan-tennert.supabase app/src` matching
-    // only app/src/{main,debug}/java/com/capsule/app/net/).
+    // only app/src/{main,debug}/java/com/orbit/app/net/).
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth.kt)
     implementation(libs.ktor.client.android)

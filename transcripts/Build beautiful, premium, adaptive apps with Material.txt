@@ -1,0 +1,461 @@
+00:00 [MUSIC PLAYING]
+00:05 KENDRICK UMSTATTD:
+Hello, everyone.
+00:07 It is so good to
+be here with you.
+00:09 Today, we're going to talk
+about all the exciting updates,
+00:13 the Material Android team
+has coming down the pipeline
+00:16 and how these updates can help
+you build beautiful, premium,
+00:19 and adaptive apps with Material.
+00:22 For years, we've
+been on a journey
+00:24 to redefine how we
+build UI on Android.
+00:27 We've seen Jetpack Compose
+grow from an ambitious idea
+00:31 into the engine behind the
+world's most beautiful apps.
+00:35 As Android's modern
+declarative toolkit,
+00:38 it's designed to
+simplify and accelerate
+00:40 UI development with less code
+and powerful native tools.
+00:45 I'm Kendrick, a software
+engineer on the Material Android
+00:48 team, and I've been lucky enough
+to see this evolution firsthand.
+00:53 Today, we're reaching
+a definitive milestone
+00:56 in that journey, one that
+marks a new chapter for Android
+01:00 developers.
+01:01 We've reached a major milestone
+with the stable release
+01:05 of Material Views 1.14.
+01:08 This release brings new
+expressive components
+01:10 to the Views system.
+01:12 But you may have noticed
+a change in momentum.
+01:15 While Compose continues
+to accelerate,
+01:17 our updates for Views
+have become more focused.
+01:20 That's because for
+the last few years,
+01:23 we've been preparing
+for a fundamental shift.
+01:26 To tell you more about
+where we're going next,
+01:28 I'll hand it over to Naomi.
+01:32 NAOMI KOO: Thanks, Kendrick.
+01:33 Hi, everyone.
+01:34 I'm Naomi, a software
+engineer on Material Android.
+01:38 To build effectively for the
+future, we have to focus.
+01:43 As of today, we are
+officially all in on Compose.
+01:47 Moving forward, our
+team is transitioning
+01:50 to exclusive support
+for Jetpack Compose
+01:52 and will be moving
+all of our efforts
+01:54 to the Material Compose library.
+01:57 This means that
+Material Views 1.14
+02:00 will be our final stable
+release for the Views Library.
+02:04 We know how much
+you've built on Views,
+02:06 but there has never
+been a better time
+02:08 to migrate to Jetpack Compose.
+02:11 If you've been waiting
+for the right moment
+02:13 to go Compose first, this is it.
+02:16 With the upcoming 1.5 release
+in the second half of 2026
+02:21 promoting M3 experimental
+APIs, Material 3 in Compose
+02:25 is officially going stable.
+02:28 In addition to Material
+3 going stable,
+02:31 we're also introducing
+our material 3 expressive
+02:34 components.
+02:35 M3 Expressive APIs form
+an expansion pack to M3.
+02:40 You can opt in to using
+them to deliver more premium
+02:43 experiences.
+02:45 KENDRICK UMSTATTD: We've
+taken your feedback to heart,
+02:47 and we're going to show you
+how we're making Material 3
+02:50 on Compose more expressive,
+performant, and adaptable.
+02:54 We'll be diving into new
+Material 3 expressive component
+02:58 features that bring
+more personality
+02:60 and motion to your
+UI, the Styles
+03:03 API, our new approach for
+performance-simplified,
+03:06 state-based styling, enhanced
+adaptive integration to help
+03:11 your apps feel at home
+on any screen size.
+03:16 NAOMI KOO: Last
+year, we showed tons
+03:18 of cool new
+expressive components
+03:19 such as the floating toolbar,
+new progress indicators, button
+03:23 groups, and more.
+03:25 Building on the success of last
+year's expressive components,
+03:29 we're expanding the kit to
+be more versatile than ever.
+03:33 Our lists have evolved into
+two variants, including
+03:36 a sophisticated
+segmented visual style,
+03:39 and introduce more interactivity
+by supporting clicks, toggles,
+03:43 and different selection
+states that automatically
+03:45 transform the container.
+03:48 The best part-- if you're
+already using the standard list
+03:51 item, moving to a segmented
+look is a seamless swap.
+03:56 Let's look at these two list
+variants, standard and segmented
+04:00 in code.
+04:02 First, we have
+our standard list.
+04:04 Individual items are separated
+with horizontal dividers,
+04:07 and each list item has
+parameters for selected state,
+04:11 content, and icons.
+04:14 Now the segmented list.
+04:16 By simply switching that list
+item out for a segmented list
+04:19 item and adding a
+touch of gap spacing
+04:22 with the vertical arrangement
+specification on the list
+04:25 column, the framework
+handles the rest.
+04:28 It automatically manages the
+adaptive corner shapes and color
+04:31 updates, giving you a
+completely different visual DNA.
+04:37 Search received a
+major visual refresh,
+04:40 combining with the
+app bar to introduce
+04:42 dedicated slots for
+navigation and actions
+04:44 that live outside
+the search container,
+04:47 with exciting animations
+that make the experience feel
+04:50 more interactive.
+04:52 Let's walk through some code
+for the search component.
+04:55 We've introduced a new appbar
+with search composable that
+04:58 introduces dedicated
+slots for content
+05:01 before or after the search bar.
+05:04 Navigation icon provides a slot
+for things like a back button,
+05:07 and the action content slot
+provides a slot for icons filter
+05:11 or voice search.
+05:13 We've also introduced
+new expanded search bars,
+05:16 like expanded dock
+search bar with gap,
+05:19 that you can use in conjunction
+with appbar with search
+05:21 to smoothly animate
+between the two.
+05:25 KENDRICK UMSTATTD: Building
+on the menu component,
+05:27 we're introducing refined
+submenu motion and a broader
+05:31 palette of shapes
+and color styles.
+05:33 We've also added
+gaps, a new layout
+05:36 feature that provides visual
+breathing room and flexibility.
+05:40 Now let's take a moment to walk
+through an example of using
+05:44 the updated menu component.
+05:47 We start with a flat list
+of dropdown menu items.
+05:51 While functional, a flat list
+quickly gets crowded and lacks
+05:55 hierarchy as an app grows.
+05:57 To add structure, use
+dropdown menu group.
+06:01 This visually separates
+items like modifications
+06:04 from navigation with
+MenuDefaults.GroupShape
+06:08 automatically handling
+the rounded containers.
+06:11 To make the menu
+expressive and stateful,
+06:15 use the check parameter
+and check leading icon.
+06:18 This swaps the
+icon from outlined
+06:20 to filled when an
+option is toggled,
+06:23 providing instant,
+clear visual feedback.
+06:27 You asked for more tactile
+inputs, so we're delivering.
+06:31 Meet the new, highly
+interactive time
+06:33 picker, soon to be updated for
+our expressive design system.
+06:38 We're debuting a dedicated
+scroll-based input component
+06:41 that powers a new tactile
+variant for time selection.
+06:45 Designed as a
+standalone primitive,
+06:47 it also gives you the power
+to bring that same precision
+06:51 scrolling to any number-based
+interface in your app.
+06:56 All of these
+expressive components
+06:58 are already available as
+experimental APIs in the 1.5
+07:02 alpha release.
+07:06 NAOMI KOO: What else
+is in the pipeline?
+07:08 Well, we know you want
+your apps to feel unique.
+07:11 That's why we're integrating
+material components
+07:13 with the new experimental
+Jetpack Compose Styles API
+07:17 to enable deeper customization
+than ever before.
+07:22 This update will help you
+break out of the grid,
+07:24 move past the
+defaults, and build
+07:26 premium, engaging
+experiences that reflect
+07:29 your brand-specific identity.
+07:31 Style is a new paradigm
+for customizing
+07:33 elements and
+components that evolves
+07:35 beyond traditional modifiers.
+07:38 It is designed to unlock deeper
+and easier customization.
+07:43 The Styles API offers
+significant benefits,
+07:46 improving overall
+app performance
+07:47 by skipping the composition
+phase during style updates
+07:51 and simplifying the creation of
+cohesive, branded experiences.
+07:55 You can check out the
+building custom design
+07:57 systems with the new Styles
+API talk to learn more.
+08:02 We're integrating the Styles
+API with Material components
+08:05 to offer an easier and wider
+degree of customizability
+08:09 than before.
+08:10 Here's a sneak peek.
+08:12 Let's say you want
+a button, and you
+08:14 want it to have a navy blue
+background that animates
+08:16 to a lighter blue when pressed.
+08:19 Right now, to
+achieve this, there's
+08:21 a lot of boilerplate you
+need, like manually keeping
+08:24 track of the pressed
+interaction state
+08:26 and creating a new
+button colors class.
+08:29 Now let's say you want the
+background to be gradient
+08:32 when pressed.
+08:34 Currently, there's no
+out-of-the-box way to do this
+08:37 with Material buttons.
+08:39 With Styles, it's easy.
+08:42 With the upcoming integration
+with the Styles API,
+08:45 this will all be possible
+simply by passing
+08:48 in a style that sets
+these properties as input
+08:50 to the button component.
+08:53 Styles makes
+customization easier
+08:55 and unlocks new customization
+that was previously not
+08:58 supported.
+08:59 These updates are coming
+soon to Material Components.
+09:05 KENDRICK UMSTATTD:
+Now, being premium
+09:06 isn't just about aesthetics.
+09:08 It's about how your app behaves
+across the entire ecosystem.
+09:13 We know that building for
+foldables, tablets, and desktops
+09:17 has historically
+been a challenge.
+09:20 The Material Adaptive
+Library is now
+09:22 integrated with
+Navigation 3, simplifying
+09:25 the development of
+layouts that scale
+09:27 across large-screen devices.
+09:30 For a long time,
+building adaptive layouts
+09:33 meant switching
+navigation frameworks,
+09:35 making it complex
+to manage navigation
+09:38 into and out of adaptive
+sections of your app.
+09:41 To solve this, we've deeply
+integrated the Material Adaptive
+09:45 Library with Navigation 3.
+09:48 This is a game changer.
+09:50 It means your navigation logic
+and your adaptive layouts
+09:53 are finally speaking
+the same language.
+09:56 Scaling your UI from a handheld
+phone to a large-screen foldable
+09:60 is now a seamless,
+simplified process
+10:03 within your Compose code.
+10:05 One core piece of
+this integration
+10:07 lies in Navigation
+3's scenes concept.
+10:10 Instead of navigating between
+isolated destinations,
+10:14 Adaptive can benefit by thinking
+in terms of visual scenes.
+10:18 With the Adaptive
+Navigation 3 artifact,
+10:21 we're making it easier to use
+the list details scene strategy.
+10:25 This is essentially
+the brain that
+10:28 sits between your navigation
+backstack and your UI.
+10:31 It looks at the entries
+in your backstack,
+10:34 and based on the available
+screen real estate,
+10:36 automatically decides
+whether to show
+10:38 a single pane or a
+side-by-side list detail view.
+10:42 To make this work,
+simply tag your entries
+10:45 using ListDetailScene.ListPane
+or ListDetailScene.DetailPane.
+10:51 Because the
+Navigation Library now
+10:53 understands the intent of these
+screens through that metadata,
+10:57 it handles the heavy
+lifting for you.
+10:60 And because this
+is built directly
+11:02 into the navigation state, you
+get predictive back support
+11:06 for free.
+11:07 When a user swipes to
+go back from a detail
+11:10 view on a foldable,
+the library knows
+11:12 to transition the
+detail pane away
+11:14 while keeping the list active.
+11:16 It's fluid, it's intuitive,
+and most importantly, it's
+11:20 one single source of truth
+for your entire application.
+11:24 [MUSIC PLAYING]
+11:26 NAOMI KOO: This session isn't
+just about a library update.
+11:29 We've listened to your
+feedback and are committed
+11:31 to making Material 3 more
+robust, more flexible,
+11:34 and significantly
+easier to implement
+11:36 in your daily workflow.
+11:38 KENDRICK UMSTATTD:
+As you can see,
+11:39 we've been busy making Compose
+expressive, performant,
+11:43 customizable, and adaptive.
+11:45 You can check out some of
+what we discussed today
+11:47 in our guidelines,
+Design Kit, AlphaCode,
+11:50 and API documentation.
+11:53 NAOMI KOO: If you're migrating
+from Views to Compose,
+11:55 check out our guide
+to help you out.
+11:57 Or if you want to learn
+more about Styles API,
+12:00 read our overview.
+12:02 Both are available on the
+Android Developer site.
+12:05 KENDRICK UMSTATTD: We're so
+excited to see what you build.
+12:08 Read about Material
+going Compose first
+12:10 on our material.io blog.
+12:13 Share your work and feedback
+with us using the hashtag
+12:16 M3Expressive on social or
+by tagging @GoogleDesign
+12:20 on Instagram and X. Stay tuned.
+12:23 This is just the beginning.
+12:25 We have more updates coming to
+Compose in the months ahead.
+12:29 NAOMI KOO: Last but not least,
+if you enjoyed our session,
+12:32 be sure to check out Bradley
+and Liam's design talk,
+12:35 "Make Material Your Own."
+12:37 Thank you.
+12:38 [MUSIC PLAYING]

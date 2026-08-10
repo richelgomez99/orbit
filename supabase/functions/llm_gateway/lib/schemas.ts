@@ -47,6 +47,10 @@ const SUMMARIZE_MAX_TOKENS = 512;
 const MAX_REGISTERED_FUNCTIONS = 64;
 const MAX_ENVELOPE_SUMMARIES = 200;
 const ENVELOPE_SUMMARY_MAX = 4_000;
+const ACTIVE_INTENT_ID_MAX = 256;
+const ACTIVE_INTENT_LABEL_MAX = 256;
+const ACTIVE_INTENT_EXCERPT_MAX = 240;
+const ACTIVE_INTENT_REASON_MAX = 512;
 
 export const EmbedPayloadSchema = z.object({
   text: z.string().max(TEXT_MAX_LONG),
@@ -77,6 +81,37 @@ export const GenerateDayHeaderPayloadSchema = z.object({
 
 export const ScanSensitivityPayloadSchema = z.object({
   text: z.string().max(TEXT_MAX_SHORT),
+});
+
+export const ActiveIntentCompactEvidenceSchema = z.object({
+  kind: z.string().max(ACTIVE_INTENT_LABEL_MAX).optional(),
+  label: z.string().max(ACTIVE_INTENT_LABEL_MAX).optional(),
+  source: z.string().max(ACTIVE_INTENT_LABEL_MAX).optional(),
+  confidence: z.number().min(0).max(1).optional(),
+  excerpt: z.string().max(ACTIVE_INTENT_EXCERPT_MAX).optional(),
+  hash: z.string().max(ACTIVE_INTENT_LABEL_MAX).optional(),
+  reason: z.string().max(ACTIVE_INTENT_REASON_MAX).optional(),
+  createdAt: z.number().optional(),
+  reviewedAt: z.number().optional(),
+}).strict();
+
+export const ActiveIntentReviewContextSchema = z.object({
+  schemaVersion: z.literal(1),
+  intentId: z.string().max(ACTIVE_INTENT_ID_MAX),
+  captureId: z.string().max(ACTIVE_INTENT_ID_MAX),
+  mode: z.string().max(ACTIVE_INTENT_LABEL_MAX),
+  intentType: z.string().max(ACTIVE_INTENT_LABEL_MAX),
+  status: z.string().max(ACTIVE_INTENT_LABEL_MAX),
+  completionKeyStatus: z.string().max(ACTIVE_INTENT_LABEL_MAX),
+  primaryAction: z.string().max(ACTIVE_INTENT_LABEL_MAX).optional(),
+  dueAt: z.number().optional(),
+  expiresAt: z.number().optional(),
+  evidence: ActiveIntentCompactEvidenceSchema,
+  completionKey: ActiveIntentCompactEvidenceSchema.optional(),
+}).strict();
+
+export const ActiveIntentReviewPayloadSchema = z.object({
+  reviewContext: ActiveIntentReviewContextSchema,
 });
 
 // --- Root request schema (discriminated union) ---
@@ -112,9 +147,21 @@ export const LlmGatewayRequestSchema = z.discriminatedUnion("type", [
     requestId: RequestId,
     payload: ScanSensitivityPayloadSchema,
   }),
+  z.object({
+    type: z.literal("active_intent_review"),
+    requestId: RequestId,
+    payload: ActiveIntentReviewPayloadSchema,
+  }),
 ]);
 
 // --- Upstream response validation schemas (used by handlers) ---
 
 /** ActionProposal[] returned by the extract_actions Anthropic handler. */
 export const ActionProposalArraySchema = z.array(ActionProposalSchema);
+
+export const ActiveIntentReviewResultSchema = z.object({
+  decision: z.enum(["KEEP_FOLLOWING", "MARK_HANDLED", "NOT_NEEDED", "ADD_CONTEXT"]),
+  confidence: z.number().min(0).max(1),
+  rationale: z.string().min(1).max(512),
+  suggestedResolution: z.string().max(128).nullable(),
+}).strict();

@@ -156,14 +156,14 @@ app/
 └── src/
     ├── main/
     │   ├── AndroidManifest.xml              # Process splits + permission scoping
-    │   └── java/com/capsule/app/            # NOTE: package rename to com.orbit.app
+    │   └── java/com/orbit/app/            # NOTE: package rename to com.orbit.app
     │       │                                # tracked at repo root; v1 keeps current
     │       │                                # package to avoid churn in this milestone
     │       │
-    │       ├── CapsuleApplication.kt        # 001 — KEPT; minor WorkManager init
+    │       ├── OrbitApplication.kt        # 001 — KEPT; minor WorkManager init
     │       │
     │       ├── service/                     # 001 — KEPT AS-IS
-    │       │   ├── CapsuleOverlayService.kt # (runs in :capture process now)
+    │       │   ├── OrbitOverlayService.kt # (runs in :capture process now)
     │       │   ├── OverlayLifecycleOwner.kt
     │       │   ├── ClipboardFocusStateMachine.kt
     │       │   ├── ForegroundNotificationManager.kt
@@ -242,12 +242,12 @@ app/
     │       └── ui/                          # 001 — KEPT
     │           ├── MainActivity.kt          # DEMOTED to launcher → Diary
     │           └── theme/
-    │               ├── CapsuleTheme.kt
+    │               ├── OrbitTheme.kt
     │               ├── Color.kt
     │               └── Type.kt
     │
     └── test/
-        └── java/com/capsule/app/
+        └── java/com/orbit/app/
             ├── data/
             │   ├── IntentEnvelopeDaoTest.kt     # Instrumented (Room + SQLCipher)
             │   ├── EnvelopeRepositoryTest.kt

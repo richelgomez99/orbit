@@ -83,7 +83,7 @@ implementation(libs.ktor.client.android)
 The SDK's default `SessionManager` writes plaintext JWT + refresh token to `SharedPreferences`. We replace it with one backed by `EncryptedSharedPreferences`:
 
 ```kotlin
-// app/src/main/java/com/capsule/app/net/EncryptedSessionManager.kt
+// app/src/main/java/com/orbit/app/net/EncryptedSessionManager.kt
 internal class EncryptedSessionManager(context: Context) : SessionManager {
     private val prefs = EncryptedSharedPreferences.create(
         context,
@@ -140,7 +140,7 @@ private val authBinder: AuthStateBinder = SupabaseAuthStateBinder {
 A real Sign in / Sign up UI is a separate spec (likely folded into spec 006 Orbit Cloud or a dedicated `015-supabase-auth-ui`). Until that ships, dev builds get a debug-only helper:
 
 ```kotlin
-// app/src/debug/java/com/capsule/app/net/DebugSupabaseSeed.kt
+// app/src/debug/java/com/orbit/app/net/DebugSupabaseSeed.kt
 // Reads dev credentials from local.properties → BuildConfig.DEBUG_SUPABASE_EMAIL/PASSWORD
 // and calls supabase.auth.signInWith(Email) on first :net startup if no session exists.
 // Compiled out of release builds.
@@ -156,10 +156,10 @@ This unblocks T014-021 (live E2E from emulator) without needing UI work.
 |------|--------|---------|
 | `gradle/libs.versions.toml` | modify | Add `supabaseKt`, `ktor`, three library refs |
 | `app/build.gradle.kts` | modify | Add three deps; add `BuildConfig.SUPABASE_URL` / `BuildConfig.SUPABASE_PUBLISHABLE_KEY` if missing; add `BuildConfig.DEBUG_SUPABASE_EMAIL` / `DEBUG_SUPABASE_PASSWORD` (debug-only, blank in release) |
-| `app/src/main/java/com/capsule/app/net/EncryptedSessionManager.kt` | create | EncryptedSharedPreferences-backed `SessionManager` |
-| `app/src/main/java/com/capsule/app/net/NetworkGatewayImpl.kt` | modify | Lazy `SupabaseClient`; replace `NoSessionAuthStateBinder` with `SupabaseAuthStateBinder { supabase.auth.currentSessionOrNull()?.accessToken }` |
-| `app/src/debug/java/com/capsule/app/net/DebugSupabaseSeed.kt` | create | Debug-only auto-sign-in for emulator E2E (T014-021 unblocker) |
-| `app/src/test/java/com/capsule/app/net/EncryptedSessionManagerTest.kt` | create | Round-trip save/load/delete; survives across instances |
+| `app/src/main/java/com/orbit/app/net/EncryptedSessionManager.kt` | create | EncryptedSharedPreferences-backed `SessionManager` |
+| `app/src/main/java/com/orbit/app/net/NetworkGatewayImpl.kt` | modify | Lazy `SupabaseClient`; replace `NoSessionAuthStateBinder` with `SupabaseAuthStateBinder { supabase.auth.currentSessionOrNull()?.accessToken }` |
+| `app/src/debug/java/com/orbit/app/net/DebugSupabaseSeed.kt` | create | Debug-only auto-sign-in for emulator E2E (T014-021 unblocker) |
+| `app/src/test/java/com/orbit/app/net/EncryptedSessionManagerTest.kt` | create | Round-trip save/load/delete; survives across instances |
 | `local.properties` (gitignored) | document only | New keys: `supabase.debug.email`, `supabase.debug.password` (dev-only) |
 
 ---
@@ -171,8 +171,8 @@ This unblocks T014-021 (live E2E from emulator) without needing UI work.
 3. `./gradlew :app:lint` PASS — specifically no `OrbitNoHttpClientOutsideNet` regressions; SDK does not pull OkHttp/ktor into the default process.
 4. Cold launch of debug build, with `supabase.debug.email` set in `local.properties`, results in a logged "session restored" or "signed in" log line in `:net` and a non-null `currentJwt()` within 5 s.
 5. Without `supabase.debug.email`, cold launch logs a single warn line `"no debug seed credentials; gateway calls will UNAUTHORIZED until UI sign-in lands"` and `currentJwt()` returns null.
-6. Constitution check: ✓ Principle II (SDK in `:net` only, verified by `grep -r "io.github.jan-tennert.supabase" app/src` returning matches only under `app/src/main/java/com/capsule/app/net/` and `app/src/debug/`).
-7. Constitution check: ✓ Principle VII (no JWT or refresh token in plain `SharedPreferences` — verified by inspecting `/data/data/com.capsule.app/shared_prefs/` after sign-in: only `supabase_auth_session.xml` exists and its values are base64 ciphertext).
+6. Constitution check: ✓ Principle II (SDK in `:net` only, verified by `grep -r "io.github.jan-tennert.supabase" app/src` returning matches only under `app/src/main/java/com/orbit/app/net/` and `app/src/debug/`).
+7. Constitution check: ✓ Principle VII (no JWT or refresh token in plain `SharedPreferences` — verified by inspecting `/data/data/com.orbit.app/shared_prefs/` after sign-in: only `supabase_auth_session.xml` exists and its values are base64 ciphertext).
 
 ---
 

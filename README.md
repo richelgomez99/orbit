@@ -65,7 +65,7 @@ We've normalized building products that turn your attention into someone else's 
 **Core principles** (full list in [`.specify/memory/constitution.md`](./.specify/memory/constitution.md)):
 
 1. Local-first supremacy — source of truth lives on-device, in SQLCipher; cloud augments capability, not authority
-2. Privilege separation by design — split code boundaries for capture, ML, network, UI, with network clients restricted to `com.capsule.app.net.*`
+2. Privilege separation by design — split code boundaries for capture, ML, network, UI, with network clients restricted to `com.orbit.app.net.*`
 3. Intent before artifact — every save starts with *why*, not *what*
 4. Under-deliver on noise — Orbit stays quiet by default
 5. Cloud LLM routing is allowed through the audited `:net`/gateway path, with local-mode fallback
@@ -79,7 +79,7 @@ We've normalized building products that turn your attention into someone else's 
 - **Cloud AI + observability:** Supabase Postgres + pgvector, Vercel Edge Function LLM gateway, no-content traces/evals where enabled
 - **Storage:** Room + SQLCipher, Android Keystore for key wrapping
 - **Service model:** Foreground service with `specialUse` type for the overlay, WorkManager for retention + hydration workers
-- **IPC / boundaries:** Android services and Binder/AIDL where available; network code remains isolated behind `com.capsule.app.net.*`
+- **IPC / boundaries:** Android services and Binder/AIDL where available; network code remains isolated behind `com.orbit.app.net.*`
 
 ---
 

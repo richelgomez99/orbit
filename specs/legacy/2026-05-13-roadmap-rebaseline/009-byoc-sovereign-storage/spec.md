@@ -196,9 +196,9 @@ differences are operational:
 - 002 T025c–T025d (EnvelopeStorageBackend abstraction)
 - 002 T025 (NetworkGatewayService in `:net`)
 - 006 shipped with schema stable (BYOC schema mirrors 006)
-- New: `com.capsule.app.net.cloud.ByocPostgresClient` with pgvector support
-- New: `com.capsule.app.settings.ByocStorageScreen`
-- New: Migration tool `com.capsule.app.net.cloud.SchemaMigrator` (shared
+- New: `com.orbit.app.net.cloud.ByocPostgresClient` with pgvector support
+- New: `com.orbit.app.settings.ByocStorageScreen`
+- New: Migration tool `com.orbit.app.net.cloud.SchemaMigrator` (shared
   with 006)
 
 ---

@@ -7,8 +7,8 @@
 **Input**: User description: "Cloud LLM Routing + Supabase Backbone Day 1 — keystone refactor that unblocks every Phase 11 Block 4+ task."
 
 > **Relationship to prior specs.** This spec is the **execution unit for Day 1** of the cloud pivot described in
-> `~/.gstack/projects/richelgomez99-capsule-app/orbit-pivot-plan-2026-04-28.md` and the design doc
-> `~/.gstack/projects/richelgomez99-capsule-app/richelgomez-spec-003-orbit-actions-design-20260428-161116.md`. It introduces a
+> `~/.gstack/projects/richelgomez99-orbit-app/orbit-pivot-plan-2026-04-28.md` and the design doc
+> `~/.gstack/projects/richelgomez99-orbit-app/richelgomez-spec-003-orbit-actions-design-20260428-161116.md`. It introduces a
 > **strangler-fig** abstraction (`LlmProvider` routing) so cloud-mode AI inference can land in
 > Phase 11 Block 4 without ripping out `NanoLlmProvider`. It also stands up the **Supabase backbone**
 > (project, schema, RLS policies, multi-user smoke test) that all subsequent specs (sync, auth,
@@ -44,7 +44,7 @@
 ### Session 2026-04-28 (Round 2, post-/specify)
 
 - Q: Cloud schema column shape — Day-1 plaintext-only (rename later when spec 006 lands), Day-1 ciphertext-only with `*_ct` bytea (block alpha until spec 006 ships DEK/KEK), or **hybrid** (plaintext columns mirroring Room **plus** reserved nullable `*_ct` ciphertext columns alongside)? → A: **Hybrid (Option C).** Rationale: future-proofs the schema with minimal Day-1 cost. When spec 006 (Orbit Cloud Storage) ships DEK/KEK provisioning + client-side AES-GCM, the migration to encrypted-at-rest only has to populate the ciphertext columns and drop the plaintext ones — never `ALTER TABLE` to add new columns. Slightly wider Day-1 schema in exchange for a smoother future migration. Day-1 writes plaintext only; ciphertext columns stay `NULL` until spec 006 lands. The ciphertext column set is the one defined in `specs/contracts/envelope-content-encryption-contract.md` (e.g. `body_ct`, `ocr_ct`, `transcript_ct`, `result_ct`, `object_ct`, …) typed as nullable `bytea`. This affects FR-013-023 and the Supabase-tables Key Entity below.
-- Q: `ClusterDetectionWorker` migration scope for Day 1 — fold it into the FR-013-016 sweep (every `NanoLlmProvider()` site routes through `LlmProviderRouter`), or carve it out and pin it to local-mode until the Phase 11 Block 4 cluster-engine cloud migration lands? → A: **Option B — carve `ClusterDetectionWorker` out of the FR-013-016 migration.** Rationale: ADR-006 explicitly gates cluster-engine cloud migration to Phase 11 Block 4 (separate spec). Day-1 spec preserves the existing direct `NanoLlmProvider()` construction in `app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt` only, with a `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` comment immediately above the constructor that references the future Phase 11 Block 4 spec by ID. This affects FR-013-016, SC-001, SC-005, and adds FR-013-028 (carve-out self-documenting).
+- Q: `ClusterDetectionWorker` migration scope for Day 1 — fold it into the FR-013-016 sweep (every `NanoLlmProvider()` site routes through `LlmProviderRouter`), or carve it out and pin it to local-mode until the Phase 11 Block 4 cluster-engine cloud migration lands? → A: **Option B — carve `ClusterDetectionWorker` out of the FR-013-016 migration.** Rationale: ADR-006 explicitly gates cluster-engine cloud migration to Phase 11 Block 4 (separate spec). Day-1 spec preserves the existing direct `NanoLlmProvider()` construction in `app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt` only, with a `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` comment immediately above the constructor that references the future Phase 11 Block 4 spec by ID. This affects FR-013-016, SC-001, SC-005, and adds FR-013-028 (carve-out self-documenting).
 
 **Round 2 (post-/specify) closed: 2 questions surfaced (schema shape, cluster worker), 2 questions resolved. Spec is ready for `/speckit.plan`.**
 
@@ -187,7 +187,7 @@ boundary in either direction.
   outages, not for forcing Nano on devices that cannot run it.
 - **AIDL schema drift between `:capture` and `:net`.** The two parcel classes
   (`LlmGatewayRequestParcel`, `LlmGatewayResponseParcel`) MUST live under a single source of truth
-  in `app/src/main/java/com/capsule/app/net/ipc/` (matching the AIDL package) so both processes
+  in `app/src/main/java/com/orbit/app/net/ipc/` (matching the AIDL package) so both processes
   link the same Kotlin types. JSON wire format uses kotlinx.serialization for forward compatibility.
 - **`Embed` response equality.** `LlmGatewayResponse.Embed` carries a `FloatArray`, which has
   reference-equality `equals` by default. The data class MUST override `equals`/`hashCode` to use
@@ -216,7 +216,7 @@ boundary in either direction.
   implementations only, and the interface contract permits cloud-mode implementations that route
   through `:net`. The interface signature and method count MUST NOT change.
 - **FR-013-002 (RuntimeFlags extension)**: System MUST extend the existing `RuntimeFlags.kt` at
-  `app/src/main/java/com/capsule/app/RuntimeFlags.kt` (package `com.capsule.app`) with two new
+  `app/src/main/java/com/orbit/app/RuntimeFlags.kt` (package `com.orbit.app`) with two new
   persisted boolean flags: `useLocalAi` (default `false`) and `clusterEmitEnabled` (default `true`).
   The existing `clusterModelLabelLock` field MUST NOT be removed or have its Day-1 default changed
   (it stays pinned to `NanoLlmProvider.MODEL_LABEL` until Phase 11 Block 4 cuts the cluster engine
@@ -233,9 +233,9 @@ boundary in either direction.
   subtype carries `FloatArray` and MUST override `equals`/`hashCode` using `contentEquals` /
   `contentHashCode`.
 - **FR-013-005 (AIDL surface extension)**: System MUST extend the existing
-  `app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl` (package `com.capsule.app.net.ipc`)
+  `app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl` (package `com.orbit.app.net.ipc`)
   with `LlmGatewayResponseParcel callLlmGateway(in LlmGatewayRequestParcel request)`. The two
-  parcelable wrappers MUST live in `app/src/main/java/com/capsule/app/net/ipc/` and use
+  parcelable wrappers MUST live in `app/src/main/java/com/orbit/app/net/ipc/` and use
   kotlinx.serialization JSON for the wire format inside the parcel. Existing AIDL methods MUST NOT
   change.
 - **FR-013-006 (`LlmGatewayClient`)**: System MUST add a new `LlmGatewayClient.kt` in the `:net`
@@ -283,7 +283,7 @@ boundary in either direction.
 - **FR-013-016 (call-site migration)**: System MUST replace every direct `NanoLlmProvider()`
   construction in production code (everything under `app/src/main/`) with
   `LlmProviderRouter.create(context, networkGateway)`, **except**
-  `app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt`, which remains pinned to
+  `app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt`, which remains pinned to
   local-mode via direct `NanoLlmProvider()` construction with a
   `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` comment immediately above the constructor
   (per ADR-006 and the Round 2 clarification). Migration of this file is owned by the Phase 11
@@ -300,13 +300,13 @@ boundary in either direction.
   `ClusterDetectionWorker` so cluster card surfacing can be disabled at runtime in case of a
   cloud-summarisation regression. This spec adds the flag; the consuming worker logic lands later.
 - **FR-013-028 (cluster worker carve-out is self-documenting)**: The source file
-  `app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt` MUST contain a single-line
+  `app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt` MUST contain a single-line
   comment exactly matching `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` immediately above
   the `NanoLlmProvider()` construction call. The comment is the durable signal that this
   call-site is intentionally exempt from the FR-013-016 sweep and is owned by the Phase 11 Block 4
   spec. The Phase 11 Block 4 spec's `tasks.md` MUST include a task that removes this comment when
   it migrates the constructor to `LlmProviderRouter.create(...)`. Verifiable by
-  `grep -n "CLUSTER-LOCAL-PIN" app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt`
+  `grep -n "CLUSTER-LOCAL-PIN" app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt`
   returning exactly one line on Day 1 and zero lines after Phase 11 Block 4 lands.
 - **FR-013-020 (smoke compile + tests)**: After all the above land, the command
   `./gradlew compileDebugKotlin compileDebugUnitTestKotlin testDebugUnitTest --tests '*Llm*' --tests '*Cluster*'`
@@ -431,7 +431,7 @@ boundary in either direction.
   `Error(code, message)`. `Embed` overrides equality on its `FloatArray`.
 - **`LlmGatewayRequestParcel` / `LlmGatewayResponseParcel`**: Android `Parcelable` wrappers around
   the sealed types, using kotlinx.serialization JSON inside the parcel for forward compatibility.
-- **`RuntimeFlags` (extended)**: Existing object at `com.capsule.app.RuntimeFlags`. Adds
+- **`RuntimeFlags` (extended)**: Existing object at `com.orbit.app.RuntimeFlags`. Adds
   `useLocalAi: Boolean = false` and `clusterEmitEnabled: Boolean = true`. Persists via the
   existing `SharedPreferences` mechanism.
 - **`LlmProviderRouter` (new)**: Object that resolves a `LlmProvider` instance based on

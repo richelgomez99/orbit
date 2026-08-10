@@ -112,7 +112,7 @@ soft-deleted with `INVALIDATED` audit row).
 
 ## 2. ActionProposalEntity (new)
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/ActionProposalEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/ActionProposalEntity.kt`
 
 ```kotlin
 @Entity(
@@ -166,7 +166,7 @@ no-op via `OnConflictStrategy.IGNORE`.
 
 ## 3. ActionExecutionEntity (new)
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/ActionExecutionEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/ActionExecutionEntity.kt`
 
 ```kotlin
 @Entity(
@@ -213,7 +213,7 @@ backfilled.
 
 ## 4. AppFunctionSkillEntity (new)
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/AppFunctionSkillEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/AppFunctionSkillEntity.kt`
 
 Schema **mirrors spec 006's `skills` table verbatim** so v1.1+
 sync is a row-level mirror with no transform.
@@ -227,8 +227,8 @@ sync is a row-level mirror with no transform.
     ]
 )
 data class AppFunctionSkillEntity(
-    @PrimaryKey val functionId: String,          // e.g., "com.capsule.app.action.calendar_insert"
-    val appPackage: String,                      // "com.capsule.app" for v1.1
+    @PrimaryKey val functionId: String,          // e.g., "com.orbit.app.action.calendar_insert"
+    val appPackage: String,                      // "com.orbit.app" for v1.1
     val displayName: String,                     // "Add to calendar"
     val description: String,                     // shown in Settings → Actions
     val schemaVersion: Int,                      // bumps on schema change
@@ -245,15 +245,15 @@ data class AppFunctionSkillEntity(
 
 | functionId | displayName | reversibility | sensitivityScope |
 |---|---|---|---|
-| `com.capsule.app.action.calendar_insert` | Add to calendar | EXTERNAL_MANAGED | PUBLIC |
-| `com.capsule.app.action.todo_add` | Add to to-dos | REVERSIBLE_24H | PERSONAL |
-| `com.capsule.app.action.share` | Share | EXTERNAL_MANAGED | SHARE_DELEGATED |
+| `com.orbit.app.action.calendar_insert` | Add to calendar | EXTERNAL_MANAGED | PUBLIC |
+| `com.orbit.app.action.todo_add` | Add to to-dos | REVERSIBLE_24H | PERSONAL |
+| `com.orbit.app.action.share` | Share | EXTERNAL_MANAGED | SHARE_DELEGATED |
 
 ---
 
 ## 5. SkillUsageEntity (new)
 
-**Location**: `app/src/main/java/com/capsule/app/data/entities/SkillUsageEntity.kt`
+**Location**: `app/src/main/java/com/orbit/app/data/entities/SkillUsageEntity.kt`
 
 Schema **mirrors spec 006's `skill_usage` table verbatim**.
 

@@ -14,7 +14,7 @@ No checkboxes were changed in this pass because this file mixes original Day 1 s
 > **Hard rules (non-negotiable)**
 > 1. Each task = a single atomic commit on `cloud-pivot` (NFR-013-007). Sized for ~30 min – 2 hr.
 > 2. Tasks are strictly sequenced by dependency. `[P]` is applied **only** where files are genuinely independent.
-> 3. The FR-013-016 migration sweep **excludes** [`ClusterDetectionWorker.kt`](../../app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt) per the Round 2 clarification (carve-out). The `CLUSTER-LOCAL-PIN` comment is added by a separate task.
+> 3. The FR-013-016 migration sweep **excludes** [`ClusterDetectionWorker.kt`](../../app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt) per the Round 2 clarification (carve-out). The `CLUSTER-LOCAL-PIN` comment is added by a separate task.
 > 4. **No `git push` tasks.** All work stays local until the user explicitly approves a push (NFR-013-008).
 > 5. Multi-user smoke test (Phase I) is a **release gate** per ADR-007 / SC-008 — no alpha install ships until it prints `PASS`.
 
@@ -35,43 +35,43 @@ No checkboxes were changed in this pass because this file mixes original Day 1 s
 **Independent test**: `./gradlew compileDebugKotlin` continues to pass after each commit; no behavior change.
 
 - [X] **T013-001** [Phase A] Relax `LlmProvider` interface doc-comment to scope the network-ban to local-mode implementations only (FR-013-001).
-  - **Files**: [`app/src/main/java/com/capsule/app/ai/LlmProvider.kt`](../../app/src/main/java/com/capsule/app/ai/LlmProvider.kt)
+  - **Files**: [`app/src/main/java/com/orbit/app/ai/LlmProvider.kt`](../../app/src/main/java/com/orbit/app/ai/LlmProvider.kt)
   - **Acceptance**: Doc comment on `interface LlmProvider` no longer reads "MUST NOT touch the network" unconditionally; instead scopes the ban to local-mode implementations and documents that cloud-mode implementations route through `:net`. Method signatures and method count unchanged. `./gradlew compileDebugKotlin` exits 0.
   - **Commit**: `docs(ai): scope LlmProvider network ban to local-mode impls (FR-013-001)`
   - **Depends on**: —
 
 - [X] **T013-002** [Phase A] Extend `RuntimeFlags` with `useLocalAi` (default `false`) and `clusterEmitEnabled` (default `true`); preserve `clusterModelLabelLock` (FR-013-002).
-  - **Files**: [`app/src/main/java/com/capsule/app/RuntimeFlags.kt`](../../app/src/main/java/com/capsule/app/RuntimeFlags.kt)
-  - **Acceptance**: Two new `@Volatile @JvmStatic var` fields persisted via the existing `SharedPreferences` (keys `cloud.use_local_ai` and `cluster.emit_enabled`). Default for `useLocalAi` is `false` (cloud is default). `clusterModelLabelLock` and its default (`NanoLlmProvider.MODEL_LABEL`) are unchanged. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0. `grep -n "useLocalAi" app/src/main/java/com/capsule/app/RuntimeFlags.kt` returns ≥ 1 line.
+  - **Files**: [`app/src/main/java/com/orbit/app/RuntimeFlags.kt`](../../app/src/main/java/com/orbit/app/RuntimeFlags.kt)
+  - **Acceptance**: Two new `@Volatile @JvmStatic var` fields persisted via the existing `SharedPreferences` (keys `cloud.use_local_ai` and `cluster.emit_enabled`). Default for `useLocalAi` is `false` (cloud is default). `clusterModelLabelLock` and its default (`NanoLlmProvider.MODEL_LABEL`) are unchanged. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0. `grep -n "useLocalAi" app/src/main/java/com/orbit/app/RuntimeFlags.kt` returns ≥ 1 line.
   - **Commit**: `feat(runtime): add useLocalAi + clusterEmitEnabled flags (FR-013-002)`
   - **Depends on**: —
 
 - [X] **T013-003** [P] [Phase A] Create `LlmGatewayRequest` sealed class with the six subtypes per data-model §1.1 (FR-013-003).
-  - **Files**: `app/src/main/java/com/capsule/app/ai/gateway/LlmGatewayRequest.kt` (NEW; new sub-package `com.capsule.app.ai.gateway`)
+  - **Files**: `app/src/main/java/com/orbit/app/ai/gateway/LlmGatewayRequest.kt` (NEW; new sub-package `com.orbit.app.ai.gateway`)
   - **Acceptance**: `@Serializable sealed class LlmGatewayRequest` with subtypes `Embed`, `Summarize`, `ExtractActions`, `ClassifyIntent`, `GenerateDayHeader`, `ScanSensitivity`. Every subtype carries `requestId: String` plus method-specific payload fields per [data-model.md §1.1](data-model.md). Discriminator `"type"` matches the values in [contracts/llm-gateway-envelope-contract.md](contracts/llm-gateway-envelope-contract.md). `./gradlew compileDebugKotlin` exits 0.
   - **Commit**: `feat(ai/gateway): add LlmGatewayRequest sealed hierarchy (FR-013-003)`
   - **Depends on**: —
 
 - [X] **T013-004** [P] [Phase A] Create `LlmGatewayResponse` sealed class with seven variants and `Embed` `equals`/`hashCode` override (FR-013-004).
-  - **Files**: `app/src/main/java/com/capsule/app/ai/gateway/LlmGatewayResponse.kt` (NEW)
+  - **Files**: `app/src/main/java/com/orbit/app/ai/gateway/LlmGatewayResponse.kt` (NEW)
   - **Acceptance**: `@Serializable sealed class LlmGatewayResponse` with `EmbedResponse`, `SummarizeResponse`, `ExtractActionsResponse`, `ClassifyIntentResponse`, `GenerateDayHeaderResponse`, `ScanSensitivityResponse`, `Error(code, message)`. Every variant carries `requestId: String`. `EmbedResponse` overrides `equals` using `vector.contentEquals` and `hashCode` using `vector.contentHashCode`. `./gradlew compileDebugKotlin` exits 0.
   - **Commit**: `feat(ai/gateway): add LlmGatewayResponse sealed hierarchy with Embed equals override (FR-013-004)`
   - **Depends on**: —
 
 - [X] **T013-005** [P] [Phase A] Add `@Serializable` mirror DTOs `StateSnapshotJson`, `AppFunctionSummaryJson`, `ActionProposalJson` per data-model §1.4.
-  - **Files**: `app/src/main/java/com/capsule/app/ai/gateway/GatewayDtos.kt` (NEW)
+  - **Files**: `app/src/main/java/com/orbit/app/ai/gateway/GatewayDtos.kt` (NEW)
   - **Acceptance**: Three field-for-field `@Serializable` mirrors of `StateSnapshot`, `AppFunctionSummary`, and `ActionProposal`. They are referenced by `LlmGatewayRequest.ExtractActions` and `LlmGatewayResponse.ExtractActionsResponse`. `./gradlew compileDebugKotlin` exits 0.
   - **Commit**: `feat(ai/gateway): add @Serializable DTO mirrors for AIDL wire format`
   - **Depends on**: T013-003, T013-004
 
 - [X] **T013-006** [P] [Phase A] Create `LlmGatewayRequestParcel` + sibling AIDL parcelable declaration.
-  - **Files**: `app/src/main/java/com/capsule/app/net/ipc/LlmGatewayRequestParcel.kt` (NEW); `app/src/main/aidl/com/capsule/app/net/ipc/LlmGatewayRequestParcel.aidl` (NEW)
-  - **Acceptance**: Kotlin data class implements `android.os.Parcelable` with single `payloadJson: String` field, manual `writeToParcel`/`CREATOR` mirroring [`FetchResultParcel.kt`](../../app/src/main/java/com/capsule/app/net/ipc/FetchResultParcel.kt). AIDL stub contains exactly `parcelable LlmGatewayRequestParcel;` in package `com.capsule.app.net.ipc`. `./gradlew compileDebugKotlin` exits 0.
+  - **Files**: `app/src/main/java/com/orbit/app/net/ipc/LlmGatewayRequestParcel.kt` (NEW); `app/src/main/aidl/com/orbit/app/net/ipc/LlmGatewayRequestParcel.aidl` (NEW)
+  - **Acceptance**: Kotlin data class implements `android.os.Parcelable` with single `payloadJson: String` field, manual `writeToParcel`/`CREATOR` mirroring [`FetchResultParcel.kt`](../../app/src/main/java/com/orbit/app/net/ipc/FetchResultParcel.kt). AIDL stub contains exactly `parcelable LlmGatewayRequestParcel;` in package `com.orbit.app.net.ipc`. `./gradlew compileDebugKotlin` exits 0.
   - **Commit**: `feat(net/ipc): add LlmGatewayRequestParcel (Parcelable + AIDL stub)`
   - **Depends on**: T013-003
 
 - [X] **T013-007** [P] [Phase A] Create `LlmGatewayResponseParcel` + sibling AIDL parcelable declaration.
-  - **Files**: `app/src/main/java/com/capsule/app/net/ipc/LlmGatewayResponseParcel.kt` (NEW); `app/src/main/aidl/com/capsule/app/net/ipc/LlmGatewayResponseParcel.aidl` (NEW)
+  - **Files**: `app/src/main/java/com/orbit/app/net/ipc/LlmGatewayResponseParcel.kt` (NEW); `app/src/main/aidl/com/orbit/app/net/ipc/LlmGatewayResponseParcel.aidl` (NEW)
   - **Acceptance**: Same shape as T013-006 (single `payloadJson: String`, manual `Parcelable`). AIDL stub contains `parcelable LlmGatewayResponseParcel;`. `./gradlew compileDebugKotlin` exits 0.
   - **Commit**: `feat(net/ipc): add LlmGatewayResponseParcel (Parcelable + AIDL stub)`
   - **Depends on**: T013-004
@@ -85,26 +85,26 @@ No checkboxes were changed in this pass because this file mixes original Day 1 s
 **Independent test**: `./gradlew :app:generateDebugAidl` produces stubs containing `callLlmGateway`; no production call site is yet using them.
 
 - [X] **T013-008** [Phase B] Extend `INetworkGateway.aidl` with `callLlmGateway(in LlmGatewayRequestParcel) → LlmGatewayResponseParcel` (FR-013-005).
-  - **Files**: [`app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl`](../../app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl)
+  - **Files**: [`app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl`](../../app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl)
   - **Acceptance**: AIDL adds the new method exactly as in [data-model.md §3](data-model.md). `fetchPublicUrl` signature is unchanged. Imports for the two new parcels are added. `./gradlew :app:generateDebugAidl` produces stubs; `find app/build/generated/aidl_source_output_dir -name "INetworkGateway*.java" | xargs grep -l "callLlmGateway"` returns ≥ 1 file. `NetworkGatewayImpl.kt` will fail to compile until T013-013; that is expected.
   - **Commit**: `feat(net/ipc): extend INetworkGateway AIDL with callLlmGateway (FR-013-005)`
   - **Depends on**: T013-006, T013-007
 
 - [X] **T013-009** [Phase B] Create `LlmGatewayClient` skeleton with model routing, request envelope shape, and timeout matrix (FR-013-006, FR-013-007, FR-013-010).
-  - **Files**: `app/src/main/java/com/capsule/app/net/LlmGatewayClient.kt` (NEW)
+  - **Files**: `app/src/main/java/com/orbit/app/net/LlmGatewayClient.kt` (NEW)
   - **Acceptance**: Class uses the existing OkHttp dependency (no new HTTP client added to `:net` Gradle config). It exposes a single suspending entry `suspend fun call(request: LlmGatewayRequest): LlmGatewayResponse` that selects the model per-type (`Embed`→`openai/text-embedding-3-small`, `Summarize`/`ExtractActions`/`GenerateDayHeader`→`anthropic/claude-sonnet-4-6`, `ClassifyIntent`/`ScanSensitivity`→`anthropic/claude-haiku-4-5`), serializes to the provider-agnostic `{type, payload}` JSON envelope per [contracts/llm-gateway-envelope-contract.md](contracts/llm-gateway-envelope-contract.md), and applies 30s default timeout / 60s for `Summarize`. Day-1 placeholder URL `https://gateway.example.invalid/llm`. `./gradlew compileDebugKotlin` exits 0.
   - `LlmGatewayClient.send(request)` wraps the flat sealed-class JSON `{type, requestId, …fields}` into the nested HTTP envelope `{type, requestId, payload: {…fields}}` before POST. On response, it unwraps the nested HTTP envelope `{type, requestId, ok, data: {…fields} | error: {code, message}}` into either the flat sealed-class JSON for `LlmGatewayResponse` (success) or `LlmGatewayResponse.Error(code, message)` (failure). Wrap/unwrap is a private helper inside `LlmGatewayClient`; the parcel layer (T013-006/T013-007) only ever sees flat sealed-class JSON.
   - **Commit**: `feat(net): add LlmGatewayClient skeleton with model routing + envelope (FR-013-006/007/010)`
   - **Depends on**: T013-003, T013-004, T013-005
 
 - [X] **T013-010** [Phase B] Add retry-once direct-provider fallback to `LlmGatewayClient` per ADR-003 (FR-013-008).
-  - **Files**: `app/src/main/java/com/capsule/app/net/LlmGatewayClient.kt`
+  - **Files**: `app/src/main/java/com/orbit/app/net/LlmGatewayClient.kt`
   - **Acceptance**: On Gateway 5xx response, the client retries the same request once against the direct provider endpoint (Anthropic Messages or OpenAI Embeddings, placeholder URLs). Retry-once is per-request, no exponential backoff. Two consecutive 5xx surface a single `LlmGatewayResponse.Error(code = "PROVIDER_5XX", ...)`. `IOException` and timeouts surface `Error(code = "NETWORK_UNAVAILABLE" | "TIMEOUT", ...)` rather than throwing across the AIDL boundary. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
   - **Commit**: `feat(net): add retry-once direct-provider fallback to LlmGatewayClient (FR-013-008)`
   - **Depends on**: T013-009
 
 - [X] **T013-011** [Phase B] Add bearer-token graceful-null handling to `LlmGatewayClient` (FR-013-009).
-  - **Files**: `app/src/main/java/com/capsule/app/net/LlmGatewayClient.kt`
+  - **Files**: `app/src/main/java/com/orbit/app/net/LlmGatewayClient.kt`
   - **Acceptance**: Client attempts to read a bearer token from a `tokenProvider: () -> String?` constructor parameter (Day-1 stub returns `null` because `AuthSessionStore` does not yet exist). When the result is `null` or blank, no `Authorization` header is sent and the request proceeds. No `NullPointerException` is thrown on the no-auth path. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
   - **Commit**: `feat(net): graceful-null bearer-token handling in LlmGatewayClient (FR-013-009)`
   - **Depends on**: T013-009
@@ -118,25 +118,25 @@ No checkboxes were changed in this pass because this file mixes original Day 1 s
 **Independent test**: Unit tests covering the embed-null contract and parcel round-trip pass.
 
 - [ ] **T013-012** [Phase C] Wire `callLlmGateway` handler into `NetworkGatewayImpl` (FR-013-011).
-  - **Files**: [`app/src/main/java/com/capsule/app/net/NetworkGatewayImpl.kt`](../../app/src/main/java/com/capsule/app/net/NetworkGatewayImpl.kt)
+  - **Files**: [`app/src/main/java/com/orbit/app/net/NetworkGatewayImpl.kt`](../../app/src/main/java/com/orbit/app/net/NetworkGatewayImpl.kt)
   - **Acceptance**: New override `override fun callLlmGateway(request: LlmGatewayRequestParcel): LlmGatewayResponseParcel` parses `request.payloadJson` into `LlmGatewayRequest` via kotlinx.serialization, delegates to a held `LlmGatewayClient` instance (constructor-injected), encodes the returned `LlmGatewayResponse` to JSON, wraps in `LlmGatewayResponseParcel`. `fetchPublicUrl` handler is unchanged. No locks taken across the network call (per FR-013-011). `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
   - **Commit**: `feat(net): wire callLlmGateway handler into NetworkGatewayImpl (FR-013-011)`
   - **Depends on**: T013-008, T013-011
 
 - [ ] **T013-013** [Phase C] Create `CloudLlmProvider` implementing all six `LlmProvider` methods with asymmetric error mapping (FR-013-012, FR-013-013).
-  - **Files**: `app/src/main/java/com/capsule/app/ai/CloudLlmProvider.kt` (NEW)
-  - **Acceptance**: Class implements [`LlmProvider`](../../app/src/main/java/com/capsule/app/ai/LlmProvider.kt). Constructor takes `INetworkGateway`. Each method generates a UUIDv4 `requestId`, builds the appropriate `LlmGatewayRequest` subtype, JSON-encodes it into `LlmGatewayRequestParcel`, calls the AIDL method, decodes the response, and returns. Error mapping per [data-model.md §1.3](data-model.md): `embed()` returns `null` on any `Error`; `summarize` and `extractActions` throw `IOException`; remaining methods throw `IOException`. No direct OkHttp/Retrofit/HttpURLConnection import. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
+  - **Files**: `app/src/main/java/com/orbit/app/ai/CloudLlmProvider.kt` (NEW)
+  - **Acceptance**: Class implements [`LlmProvider`](../../app/src/main/java/com/orbit/app/ai/LlmProvider.kt). Constructor takes `INetworkGateway`. Each method generates a UUIDv4 `requestId`, builds the appropriate `LlmGatewayRequest` subtype, JSON-encodes it into `LlmGatewayRequestParcel`, calls the AIDL method, decodes the response, and returns. Error mapping per [data-model.md §1.3](data-model.md): `embed()` returns `null` on any `Error`; `summarize` and `extractActions` throw `IOException`; remaining methods throw `IOException`. No direct OkHttp/Retrofit/HttpURLConnection import. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
   - **Commit**: `feat(ai): add CloudLlmProvider with asymmetric error contract (FR-013-012/013)`
   - **Depends on**: T013-008, T013-012
 
 - [ ] **T013-014** [Phase C] Unit test `CloudLlmProviderTest` — embed-null contract and per-method error mapping.
-  - **Files**: `app/src/test/java/com/capsule/app/ai/CloudLlmProviderTest.kt` (NEW)
+  - **Files**: `app/src/test/java/com/orbit/app/ai/CloudLlmProviderTest.kt` (NEW)
   - **Acceptance**: Test uses a fake `INetworkGateway` that returns canned `LlmGatewayResponseParcel`s wrapping success and `Error` variants. Cases: (a) `embed()` returns `null` on every `Error.code`; (b) `summarize()` and `extractActions()` throw `IOException` on `Error`; (c) remaining four methods throw on `Error`; (d) success path returns the expected typed result for each method. `./gradlew testDebugUnitTest --tests '*CloudLlmProviderTest*'` exits 0.
   - **Commit**: `test(ai): cover CloudLlmProvider error contract`
   - **Depends on**: T013-013
 
 - [ ] **T013-015** [Phase C] Unit test `LlmGatewayParcelRoundTripTest` — Parcel write/read survives kotlinx.serialization round-trip.
-  - **Files**: `app/src/test/java/com/capsule/app/ai/gateway/LlmGatewayParcelRoundTripTest.kt` (NEW)
+  - **Files**: `app/src/test/java/com/orbit/app/ai/gateway/LlmGatewayParcelRoundTripTest.kt` (NEW)
   - **Acceptance**: Test (Robolectric) constructs each `LlmGatewayRequest` subtype, encodes to parcel, writes to `Parcel.obtain()`, rewinds, reads back, decodes, asserts equality. Special-case for `EmbedResponse`: assert `contentEquals` on the `FloatArray` and that two `EmbedResponse` instances with the same vector hash to the same value. `./gradlew testDebugUnitTest --tests '*LlmGatewayParcelRoundTripTest*'` exits 0.
   - **Commit**: `test(ai/gateway): parcel round-trip + Embed equality contract`
   - **Depends on**: T013-006, T013-007
@@ -150,19 +150,19 @@ No checkboxes were changed in this pass because this file mixes original Day 1 s
 **Independent test**: SC-001 grep returns zero outside the two excluded files; SC-004 router unit test passes.
 
 - [ ] **T013-016** [Phase D] Create `LlmProviderRouter` with `hasNanoCapableHardware()` stub returning `false` (FR-013-014, FR-013-015).
-  - **Files**: `app/src/main/java/com/capsule/app/ai/LlmProviderRouter.kt` (NEW)
+  - **Files**: `app/src/main/java/com/orbit/app/ai/LlmProviderRouter.kt` (NEW)
   - **Acceptance**: `object LlmProviderRouter { fun create(context: Context, networkGateway: INetworkGateway?): LlmProvider }`. Resolution: if `RuntimeFlags.useLocalAi == true && hasNanoCapableHardware() == true` → return `NanoLlmProvider()`; else return `CloudLlmProvider(checkNotNull(networkGateway) { "networkGateway required for cloud mode" })`. `hasNanoCapableHardware()` is a private `fun` returning `false` unconditionally on Day 1 with a `// TODO: real Pixel 9 Pro / S24 detection — separate spec` comment. `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
   - **Commit**: `feat(ai): add LlmProviderRouter with hardware-stub (FR-013-014/015)`
   - **Depends on**: T013-002, T013-013
 
 - [ ] **T013-017** [Phase D] Unit test `LlmProviderRouterTest` proving SC-004 (flag flip changes returned impl).
-  - **Files**: `app/src/test/java/com/capsule/app/ai/LlmProviderRouterTest.kt` (NEW)
+  - **Files**: `app/src/test/java/com/orbit/app/ai/LlmProviderRouterTest.kt` (NEW)
   - **Acceptance**: Test cases: (a) default (`useLocalAi=false`) returns `CloudLlmProvider`; (b) `useLocalAi=true` + Nano-capable=`false` (the unconditional Day-1 stub) still returns `CloudLlmProvider` (per acceptance scenario 3); (c) `useLocalAi=false` + `networkGateway=null` throws `IllegalStateException` whose message names the missing dependency. `./gradlew testDebugUnitTest --tests '*LlmProviderRouterTest*'` exits 0.
   - **Commit**: `test(ai): cover LlmProviderRouter resolution rules (SC-004)`
   - **Depends on**: T013-016
 
 - [X] **T013-018** [Phase D] Migrate every production `NanoLlmProvider()` call site under `app/src/main/` to `LlmProviderRouter.create(context, networkGateway)` — **except** `cluster/ClusterDetectionWorker.kt` (FR-013-016 sweep with carve-out).
-  - **Files**: every file under `app/src/main/` matching `grep -rln "NanoLlmProvider()" app/src/main/` at the time of the task **excluding** [`app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt`](../../app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt), [`app/src/main/java/com/capsule/app/ai/LlmProviderRouter.kt`](../../app/src/main/java/com/capsule/app/ai/LlmProviderRouter.kt) (local-mode branch), and [`app/src/main/java/com/capsule/app/ai/NanoLlmProvider.kt`](../../app/src/main/java/com/capsule/app/ai/NanoLlmProvider.kt) itself.
+  - **Files**: every file under `app/src/main/` matching `grep -rln "NanoLlmProvider()" app/src/main/` at the time of the task **excluding** [`app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt`](../../app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt), [`app/src/main/java/com/orbit/app/ai/LlmProviderRouter.kt`](../../app/src/main/java/com/orbit/app/ai/LlmProviderRouter.kt) (local-mode branch), and [`app/src/main/java/com/orbit/app/ai/NanoLlmProvider.kt`](../../app/src/main/java/com/orbit/app/ai/NanoLlmProvider.kt) itself.
   - **Acceptance**: After this commit, the SC-001 verification command returns zero results:
     ```sh
     grep -rn "NanoLlmProvider()" app/src/main/ \
@@ -174,8 +174,8 @@ No checkboxes were changed in this pass because this file mixes original Day 1 s
   - **Depends on**: T013-016
 
 - [X] **T013-019** [Phase D] Add `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` comment in `ClusterDetectionWorker` immediately above the `NanoLlmProvider()` constructor (FR-013-028).
-  - **Files**: [`app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt`](../../app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt)
-  - **Acceptance**: Exactly one line `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` appears immediately above the `NanoLlmProvider()` construction call. `grep -n "CLUSTER-LOCAL-PIN" app/src/main/java/com/capsule/app/cluster/ClusterDetectionWorker.kt | wc -l` returns exactly `1`. The constructor itself and the `clusterModelLabelLock` usage are unchanged (FR-013-018). `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
+  - **Files**: [`app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt`](../../app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt)
+  - **Acceptance**: Exactly one line `// CLUSTER-LOCAL-PIN: migrated in Phase 11 Block 4` appears immediately above the `NanoLlmProvider()` construction call. `grep -n "CLUSTER-LOCAL-PIN" app/src/main/java/com/orbit/app/cluster/ClusterDetectionWorker.kt | wc -l` returns exactly `1`. The constructor itself and the `clusterModelLabelLock` usage are unchanged (FR-013-018). `./gradlew compileDebugKotlin compileDebugUnitTestKotlin` exits 0.
   - **Commit**: `chore(cluster): pin ClusterDetectionWorker to local mode with self-doc comment (FR-013-028)`
   - **Depends on**: T013-018
 

@@ -140,7 +140,7 @@ supabase/
 
 app/
 ├── build.gradle.kts                        # MODIFIED — read cloud.gateway.url from local.properties → BuildConfig
-└── src/main/java/com/capsule/app/
+└── src/main/java/com/orbit/app/
     ├── auth/
     │   └── AuthStateBinder.kt              # NEW — interface { suspend fun currentJwt(): String? }
     ├── di/
@@ -271,9 +271,9 @@ returns sensible cost values.
 **Deliverables**:
 - `app/build.gradle.kts` — read `cloud.gateway.url` from `local.properties` and stamp
   `BuildConfig.CLOUD_GATEWAY_URL` (FR-014-016).
-- `app/src/main/java/com/capsule/app/auth/AuthStateBinder.kt` — interface
+- `app/src/main/java/com/orbit/app/auth/AuthStateBinder.kt` — interface
   `interface AuthStateBinder { suspend fun currentJwt(): String? }`.
-- `app/src/main/java/com/capsule/app/data/auth/SupabaseAuthStateBinder.kt` — production
+- `app/src/main/java/com/orbit/app/data/auth/SupabaseAuthStateBinder.kt` — production
   implementation pulling from the Supabase Auth Kotlin SDK session.
 - `LlmGatewayClient.kt` — accept `AuthStateBinder` in the constructor; on each request,
   call `currentJwt()`. If null → return `LlmGatewayResponse.Error(code = UNAUTHORIZED, ...)`

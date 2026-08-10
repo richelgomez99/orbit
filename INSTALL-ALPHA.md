@@ -38,7 +38,7 @@ adb install -r app-debug.apk
 
 ### Tagged release (stable URL)
 
-When a `v*` tag is pushed, the workflow attaches `orbit-debug.apk` to a GitHub Release at `https://github.com/richelgomez99/capsule-app/releases/tag/<tag>`. From Linux:
+When a `v*` tag is pushed, the workflow attaches `orbit-debug.apk` to a GitHub Release at `https://github.com/richelgomez99/orbit-app/releases/tag/<tag>`. From Linux:
 
 ```bash
 gh release download <tag> -p orbit-debug.apk
@@ -61,7 +61,7 @@ adb install -r orbit-debug.apk
 
 ### Download from the latest Release
 
-Get the URL of the latest `orbit-debug.apk` from the [Releases page](https://github.com/richelgomez99/capsule-app/releases). Then:
+Get the URL of the latest `orbit-debug.apk` from the [Releases page](https://github.com/richelgomez99/orbit-app/releases). Then:
 
 ```bash
 # macOS / Linux — replace <release-url> with the asset URL from the release page.
@@ -82,8 +82,8 @@ Samsung's Auto Blocker treats sideloaded APKs as untrusted. Workaround: Settings
 ### Verifying the install worked
 
 ```bash
-adb shell pm path com.capsule.app
-# Should print: package:/data/app/.../com.capsule.app-.../base.apk
+adb shell pm path com.orbit.app
+# Should print: package:/data/app/.../com.orbit.app-.../base.apk
 ```
 
 Open Orbit on the phone. If sign-in fails, the build was likely produced before `DEBUG_SUPABASE_URL` / `DEBUG_SUPABASE_ANON_KEY` were configured as repo secrets — re-run the workflow after secrets land.

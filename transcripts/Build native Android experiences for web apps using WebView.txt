@@ -1,0 +1,544 @@
+00:00 [MUSIC PLAYING]
+00:06 SCOTT MYERS: Hi, I'm Scott,
+a developer relations
+00:08 engineer on web on Android.
+00:10 SASHA LUKIN: And I'm Sasha, a
+developer relations engineer
+00:13 on laptops and tablets.
+00:14 If you have an existing
+web app and you
+00:16 want to create an
+Android application
+00:18 by leveraging your
+web investments,
+00:20 this video is for you.
+00:21 We'll show you how
+to display your web
+00:23 content inside the
+Android app and enhance it
+00:26 with powerful native
+Android experiences.
+00:29 This lets you create
+a highly optimized app
+00:31 while reusing a lot of
+your existing web code.
+00:35 Let's take a look at the
+website we built for this video.
+00:37 It's a simple note-taking app.
+00:40 And here is an Android
+app built from it.
+00:43 A user sees a list of
+nodes they've created.
+00:46 They can click on any of
+them and add some text.
+00:49 Use keyboard shortcuts to
+make it bold, add a picture,
+00:53 download a node in PDF
+format, and even set
+00:57 a reminder that pops a native
+Android push notification.
+01:01 So how does this actually
+work behind the scenes,
+01:03 and how can you do the
+same for your web app?
+01:06 We'll cover everything
+you need to know--
+01:09 WebView fundamentals,
+how to implement tabs,
+01:12 how to set up two-way
+communication between WebView
+01:15 and Android APIs, and finish
+with advanced WebView APIs,
+01:19 service workers,
+and offline support
+01:21 to create a polished
+app-like experience.
+01:24 Scott, why don't you start us
+off with the basics of WebView?
+01:30 SCOTT MYERS: Thanks, Sasha.
+01:32 So what exactly is a WebView?
+01:34 Think of it as a
+specialized web rendering
+01:37 engine based on the
+same Chromium code
+01:39 that powers Chrome, that you
+can drop into your Android app
+01:42 as a native component.
+01:44 It's a seamless way
+to display web content
+01:46 without requiring your users
+to leave your app's context.
+01:50 Developers use WebView
+for all kinds of things,
+01:53 like showing a terms of
+service or privacy policy page,
+01:56 or embedding dynamic web
+content inside a native UI.
+01:59 In our example app, we
+use a full screen WebView,
+02:02 which works in a
+mobile form factor
+02:04 and looks especially good
+on a large-screen device.
+02:07 Keep in mind that a WebView
+operates in its own isolated
+02:11 profile.
+02:12 This means it doesn't
+share a cookie jar
+02:14 or local storage with Chrome or
+any other browser on the device.
+02:18 This isolation is a
+deliberate design choice
+02:21 that ensures your app's data
+stays within its own sandbox.
+02:25 And since the app
+owns the WebView,
+02:27 your native code is able to
+communicate with and modify
+02:30 the content of the WebView.
+02:32 This is the key to enabling
+native Android features
+02:34 in our web app.
+02:36 Let's take a look at the code.
+02:38 You can add a WebView
+to your Compose layout
+02:40 by wrapping it in
+an Android view,
+02:41 and we're looking
+into how to make
+02:43 it even easier in the future.
+02:45 Use the factory block to
+initialize the engine,
+02:48 change the WebView
+settings, and load a URL.
+02:51 For our web app, the
+key settings we need
+02:54 are enabling JavaScript
+which is disabled by default,
+02:57 enabling DOM storage
+which gives access
+02:59 to session storage
+and local storage,
+03:02 and modifying the
+user agent string
+03:04 so that our server gives
+us a desktop instead
+03:06 of mobile version
+when our app is
+03:07 used on a large-screen device.
+03:10 Now that you know
+the basics, Sasha
+03:12 will show how we've used
+some native UI elements
+03:14 to add tab support to our app.
+03:18 SASHA LUKIN: A big
+advantage of using
+03:19 WebViews is that we can mix them
+with native Android elements
+03:23 to create even
+more powerful apps.
+03:25 Let's look at our app.
+03:26 The main part is the WebView.
+03:29 It displays the web content and
+provides the main functionality.
+03:32 And on the top,
+you can see tabs.
+03:35 They are implemented using
+a native Android structure.
+03:39 We've implemented this
+by wrapping the whole app
+03:41 in an Android column,
+where the WebView takes up
+03:44 the bottom space, and
+the top row sits on top.
+03:48 The tab bar is another
+native Android element,
+03:51 in our case a LazyRow.
+03:53 Each item in it is a
+material design card.
+03:56 It separates content
+from the background
+03:59 and provides clear
+visual structure.
+04:01 When the Create New
+Tab button is clicked,
+04:04 a separate WebView is
+initialized and added
+04:07 to our state.
+04:08 But how do we store
+these values and how
+04:10 do we switch between
+them without losing
+04:13 memory, JavaScript context,
+or scroll position?
+04:16 To solve this, we do two things.
+04:19 First, we wrap each WebView
+in a small custom data class
+04:23 called TabInstance.
+04:25 We then store all tab
+instances in a stateful list.
+04:29 This keeps stable
+references to the WebViews
+04:32 and prevents them from
+being garbage collected
+04:34 when they are off-screen.
+04:36 Second, when navigating
+between tabs,
+04:39 we don't destroy the
+non-selected WebViews.
+04:41 Instead, we always keep them
+active and simply hide them.
+04:46 We stack them
+inside a box and use
+04:48 modifier offset to move
+the hidden ones off screen.
+04:52 If we were to
+recreate the WebView,
+04:54 the page would reload
+and lose its state.
+04:57 And that's how we've
+implemented tabs.
+04:60 Now Scott will explain how to
+establish two-way communication
+05:03 between Android and web.
+05:07 SCOTT MYERS: Another
+benefit of WebView
+05:09 is that it's not just a
+container for your web content.
+05:12 Your native Android
+code can actually
+05:13 talk directly to your web
+app's JavaScript engine,
+05:15 allowing you to do things
+like trigger JS functions
+05:17 and manipulate the DOM.
+05:19 And your web app's
+JavaScript code
+05:21 can call native functions, which
+lets your web app access Android
+05:24 features.
+05:25 The two WebView functions
+we're going to use
+05:27 are evaluateJavascript,
+which handles native code
+05:30 to JavaScript communication;
+and addMessageListener,
+05:33 which adds JavaScript functions
+that can call native code.
+05:36 Let's start with
+evaluateJavascript
+05:38 and do some simple
+DOM manipulation.
+05:41 In our note-taking
+app, we have a feature
+05:43 that we want to
+remove from the app
+05:44 when it's running in a WebView,
+specifically this button.
+05:49 We can use WebView's
+evaluateJavascript command
+05:52 to execute any JavaScript
+code we'd like.
+05:54 And now that button's gone.
+05:57 Side note, if you're
+interested in the return value
+05:59 from your JavaScript
+call, evaluateJavascript
+06:01 can accept a callback
+function to get you that info.
+06:05 Next, we'll take a look
+at how addMessageListener
+06:07 can enable our web
+apps JavaScript
+06:08 to call our native code.
+06:11 Our notes web app
+has a feature that
+06:12 lets users set a
+reminder on a note
+06:14 and receive a notification
+at a specified time.
+06:18 To implement this using
+native Android features,
+06:20 we updated our
+JavaScript code to check
+06:22 for the presence of an object
+named myNativeReminder.
+06:26 And if it's there, we
+send the reminder data
+06:28 to it using its
+postmessage function.
+06:31 You might be wondering, where
+did the myNativeReminder object
+06:35 come from?
+06:36 We created it over
+in our native code
+06:38 using addWebMessageListener.
+06:41 You pass it your WebView,
+the name of the JavaScript
+06:44 object to create, the
+set of domain names
+06:46 that your web app is
+hosted on, and a callback
+06:49 function to receive the data
+from the JavaScript call.
+06:52 Our callback function will
+transform the JSON data string
+06:54 into a native
+reminder object, which
+06:56 we can send to
+Android's AlarmManager
+06:58 to schedule in the background.
+07:00 Optionally, we could
+even send a message
+07:02 back to our web app using
+the reply proxy object that
+07:04 gets passed to our callback.
+07:07 The message will be received by
+the my NativeReminder.onmessage
+07:10 function, which we implement
+on the JavaScript side.
+07:14 Now our web app can
+schedule native reminders,
+07:16 but that's just one example.
+07:18 If the user grants our app
+the proper permissions,
+07:20 we could use this technique to
+trigger priority notifications,
+07:23 schedule background
+tasks via WorkManager,
+07:26 or even read data from
+the device sensors
+07:27 directly into our web logic.
+07:30 Now that we have our
+native code and web
+07:31 app talking to each
+other, Sasha is
+07:33 going to show some
+strategies for how
+07:35 our WebView app can respond
+when the device is offline.
+07:41 SASHA LUKIN: Now let's
+talk about offline support.
+07:43 It's a critical user
+journey and a great way
+07:45 to understand several
+fundamental WebView concepts.
+07:49 A common scenario
+for any internet app
+07:51 is losing the
+network connection.
+07:54 By default, when this
+happens, WebView simply
+07:57 shows an error page.
+07:58 But we can provide a
+much better experience.
+08:01 For example, a user
+could create a new node
+08:04 and edit it even without
+the internet connection,
+08:07 and then have all the
+changes automatically
+08:09 sync when the device
+is back online.
+08:13 There are several ways
+we can implement this.
+08:16 The first option is to
+use a service worker.
+08:18 It is a piece of JavaScript
+that runs independently
+08:21 from the web pages.
+08:23 It acts as a network
+proxy between the website
+08:26 and the internet.
+08:27 It can intercept
+requests, cache resources,
+08:30 and run background tasks.
+08:32 The good news is that
+the service workers
+08:34 are supported in WebViews.
+08:36 So if you choose
+this approach, you
+08:38 can add offline support
+both to your website
+08:41 and to the WebView
+based Android app.
+08:43 Another option is to cache
+pages inside the app.
+08:47 WebView provides
+an API that allows
+08:49 us to intercept any network
+request such as HTML, CSS,
+08:53 JavaScript, images,
+videos, or API calls.
+08:57 Each request goes
+through a function
+08:59 called shouldInterceptRequest.
+09:01 There we can decide whether
+we want to proceed as usual
+09:05 or intercept it and use the
+locally stored resources
+09:08 instead.
+09:09 This method can be used
+to replace or block
+09:12 some specific resources,
+as well as serve cached web
+09:16 pages when the user is offline.
+09:18 But perhaps the cleanest
+solution for our app
+09:20 is simply to detect when
+WebView fails to load a page.
+09:24 WebView provides a
+convenient API for that.
+09:28 To implement this, we create
+an isOfflineState variable
+09:32 and set it to false when the
+WebView starts loading a page.
+09:35 If loading fails, we
+check the error code
+09:38 in the unreceived
+error callback.
+09:41 If we detect that
+the issue is caused
+09:43 by a lack of internet
+connectivity,
+09:45 we update the
+isOfflineState variable.
+09:48 This variable determines
+what the user sees,
+09:51 either the WebView content
+or a native Android screen
+09:54 called NoInternetScreen
+with a Retry button.
+09:57 This is a good
+example of how you
+09:59 can improve your web experience
+by adding native Android
+10:02 elements.
+10:03 And for our last topic,
+Scott will show how
+10:05 to use WebView native hooks.
+10:08 SCOTT MYERS: Now let's take a
+look at some of the native hooks
+10:11 that WebView lets us tap into.
+10:13 We'll start with how our
+app handles uploading files,
+10:16 like when the user clicks
+the Insert Photo button.
+10:20 We'll need to override WebView's
+onShowFileChooser hook, which
+10:24 is called whenever a website
+requests to open a file upload
+10:27 dialog.
+10:29 By default, this hook will just
+reject the file upload request.
+10:32 But for our app's use case, we
+want to show the native photo
+10:35 picker.
+10:36 First, we need to
+override onShowFileChooser
+10:39 in our web Chrome client.
+10:41 Next, we use the modern
+Android Photo Picker,
+10:44 which is great because it
+doesn't require the user
+10:46 to accept any
+permissions dialogs.
+10:49 Once the user
+selects their image,
+10:51 we pass that URI back to the
+WebView's filePathCallback.
+10:55 Depending on your
+app's use case,
+10:57 you could replace the photo
+picker with a file picker
+10:59 or even handle the file
+selection programmatically.
+11:02 Our app also has
+a download feature
+11:04 that gives the user
+a PDF of their note.
+11:07 To handle this, we'll call
+WebView's setDownloadListener
+11:10 function, which is called
+whenever a website requests
+11:13 a file download.
+11:15 Again, by default, it'll
+just reject the file download
+11:18 request.
+11:19 But for our app's
+use case, we want
+11:20 to hand it off to the
+native DownloadManager
+11:23 so it appears in the
+notification shade
+11:25 and gets sent to the
+default downloads folder.
+11:28 WebView's Download Listener
+will provide information
+11:30 like the file's
+URL and MIME type
+11:33 to help your app decide
+what to do with it.
+11:36 Instead of sending it to the
+download manager like we are,
+11:38 your app might download
+the file itself
+11:40 and keep it in a temporary
+buffer for processing,
+11:43 or keep it in the
+app storage space.
+11:46 Here's how we pass the download
+request to the native Android
+11:49 Download Manager.
+11:51 First, we create a
+download manager request
+11:54 object using the URL given to us
+by WebView's Download Listener.
+11:59 We specify that we want
+it to show a notification
+12:01 while downloading and to save it
+to the default downloads folder.
+12:05 Then we just enqueue that
+request and the download manager
+12:08 takes it from there.
+12:11 While our example
+app doesn't use them,
+12:13 your web app might request
+permissions such as camera,
+12:15 microphone, or location access.
+12:18 In that case, you want
+to keep in mind WebView's
+12:21 onGeolocationPer
+missionsShowPrompt
+12:23 and onPermissionsRequest hooks.
+12:26 These hooks will let you show
+the user a native permissions
+12:29 request for these features,
+or pass through the ones
+12:31 that your native app has
+already been granted.
+12:34 Now, I'll hand it back
+to Sasha to wrap it up.
+12:39 SASHA LUKIN: We've
+covered a lot today.
+12:40 If you want to see how your
+web app might look on Android,
+12:43 check out this
+sample app on GitHub.
+12:45 Open it in Android Studio.
+12:47 Change the link from Notizen.dev
+to your website and see
+12:50 the result. While we focused on
+leveraging your web investments
+12:54 today, if you're looking to
+build a fully native experience
+12:57 specifically for
+large-screen foldables,
+12:59 be sure to check out the video
+"Design and Build Desktop Class
+13:03 Android Experiences."
+13:05 Thank you for joining us.
+13:06 Let's keep building
+great things together.
+13:08 Happy coding.
+13:09 [MUSIC PLAYING]

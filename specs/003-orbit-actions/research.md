@@ -89,9 +89,9 @@ Alternatives rejected:
   `recordInvocation(functionId, outcome, latencyMs)` to other
   processes via the existing `:ml` binder service.
 - v1.1 registers exactly three Orbit-owned skills:
-  `com.capsule.app.action.calendar_insert`,
-  `com.capsule.app.action.todo_add`,
-  `com.capsule.app.action.share`.
+  `com.orbit.app.action.calendar_insert`,
+  `com.orbit.app.action.todo_add`,
+  `com.orbit.app.action.share`.
 - AppFunction execution always re-validates the schema-typed
   argument bag at the call site to defend against future
   divergence between registered schema and execution code.
@@ -248,7 +248,7 @@ what we can and cannot do.
 **v1.1 ships two paths**:
 
 1. **Local Orbit to-dos**: a built-in to-do list backed by a
-   dedicated AppFunction (`com.capsule.app.action.todo_add`). The
+   dedicated AppFunction (`com.orbit.app.action.todo_add`). The
    to-do is a small entity in the same DB; appears as a regular
    envelope of kind `REGULAR` with intent `WANT_IT` and a
    structured `todo_meta` JSON column. Editing happens inline in

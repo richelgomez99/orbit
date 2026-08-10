@@ -1,0 +1,461 @@
+00:00 [MUSIC PLAYING]
+00:06 RYAN WEEKES: Hi, I'm Ryan, a
+product manager on the Google
+00:09 Home team.
+00:10 Last year, we brought Google
+Home into the Gemini era,
+00:13 moving beyond simply
+allowing users
+00:15 to control their
+devices to Home that
+00:17 acts on your behalf, a home that
+notices things before you do
+00:20 and that knows what
+matters to you most.
+00:22 Gemini for Home is now available
+as a full-stack, AI-offering
+00:26 for security and home
+management service providers,
+00:29 built on top of the
+Google Home APIs
+00:31 that give you access to
+hundreds of millions of devices
+00:34 and Gemini features for
+you to build your own apps
+00:36 and services.
+00:37 Now, you can build
+monetizable services
+00:39 that proactively care for
+your users, their homes,
+00:43 and the world around them.
+00:45 We're breaking this
+into three parts.
+00:47 First, I'll show
+you Gemini for Home,
+00:49 bringing the full power of
+Gemini into the Google Home app
+00:53 and on our devices.
+00:55 Then, Liz will join us to
+discuss how carriers, ISPs,
+00:59 and security
+companies can bundle
+01:01 these features to create new,
+compelling, high-value services.
+01:06 And finally, Mihai will
+show you how to seamlessly
+01:09 extend Gemini for Home
+to your own devices
+01:12 with our new Partner
+Hardware program,
+01:14 allowing you to build
+devices with Gemini built in
+01:17 faster than ever before.
+01:19 Let's start with
+Gemini for Home.
+01:21 The same tools we're making
+available to developers
+01:24 are already transforming
+the Google Home experience
+01:27 for users, making it more
+powerful and proactive.
+01:31 It all starts with understanding
+what's happening in the home.
+01:34 We've created a brand-new camera
+experience, camera intelligence,
+01:37 built with Gemini for Home, that
+actually sees what's happening.
+01:42 Previously, users could
+only get generic events
+01:45 detected by a camera.
+01:46 Things like a person or
+an animal being detected.
+01:50 Now, Gemini can
+actually understand
+01:52 what's happening in a home.
+01:54 Instead of a person
+seen, it knows
+01:56 Robin has driven her toy
+car down the garden patch.
+01:59 It creates descriptive, relevant
+notifications for users.
+02:02 We've also transformed how
+users interact with their homes.
+02:06 With Gemini for Home, users
+can now talk to their home
+02:10 with voice or Ask Home using
+natural language in a way that's
+02:13 easy and accessible.
+02:15 For years, users
+have had to deal
+02:17 with robotic-sounding
+assistants.
+02:19 And they've had to perform
+complex tasks manually
+02:21 through app functions.
+02:23 Gemini for Home is different.
+02:25 We now have a selection of 10
+new, natural sounding voices,
+02:29 trained on our latest
+large language models
+02:31 that have realistic
+pacing and intonation.
+02:34 Using voice or by
+chatting with Ask Home,
+02:36 you can ask anything
+about the world
+02:38 around you, like did Sunny
+chew the shoe on the couch?
+02:42 And receive real-time tailored
+answers specific to your needs.
+02:45 You can also create
+automations more easily using
+02:48 natural language.
+02:50 Instead of creating
+complex logic from scratch,
+02:52 you can simply say things like,
+if someone is at the front door,
+02:56 show me the doorbell
+camera on the TV.
+02:58 Gemini for Home even
+remembers things
+03:00 that you tell it, like who
+your family members are.
+03:03 With the included
+Home Brief feature,
+03:05 Gemini uses the hours of
+sensor data and video data,
+03:08 it understands, plus what it
+knows about your household,
+03:11 to provide relevant
+daily summaries like,
+03:14 "This morning, Julie was seen
+with a bouquet of flowers.
+03:17 They delivered the flowers to
+Marina upstairs in the bedroom."
+03:20 It cuts through the
+noise and allows
+03:22 users to catch up at a glance.
+03:24 These three capabilities--
+camera intelligence, Ask Home,
+03:28 and Home Brief--
+03:30 are not just locked inside
+our app and devices, They're?
+03:33 the foundation for an agentic
+future, where Gemini for Home
+03:36 is a partner that can take
+action, make suggestions,
+03:39 provide reminders, and more.
+03:41 And these are the
+exact capabilities
+03:43 we're exposing to you
+today via the Home
+03:45 APIs and our Hardware Program.
+03:48 We're giving you the
+ability to build services
+03:49 that fully understand
+the household context
+03:52 and that your users can
+interact with directly, using
+03:55 natural language.
+03:56 To talk more about that, I'd
+like to hand it over to Liz.
+04:01 LIZ LEE: Thanks, Ryan.
+04:02 Hey, everyone.
+04:03 I'm Liz.
+04:04 If you're a service provider,
+whether a carrier, ISP,
+04:07 or security company, you
+are the gateway to the home.
+04:10 And we know that what
+your customers value
+04:12 most isn't just connectivity,
+it's peace of mind.
+04:15 Gemini for Home lets
+you provide that peace
+04:17 of mind via truly personalized
+service that gives users
+04:21 proactive control of their
+environment and helps
+04:23 keep them safe.
+04:24 Today, we are enabling you
+to incorporate new Gemini
+04:27 capabilities, like
+Ask Home, directly
+04:30 into your users' experiences by
+Google Home premium subscription
+04:34 with your branded services.
+04:36 Let's look at three examples
+of how you can bring
+04:38 Gemini for Home to your users.
+04:41 First is daily
+household awareness.
+04:43 Your customers are busy.
+04:45 By bundling Gemini for Home
+features into your subscription,
+04:49 you can surface what
+they need to know most.
+04:51 Our Home Brief feature
+leverages Gemini's understanding
+04:54 of the home, allowing
+you to give your users
+04:57 a synthesized summary
+of their home's activity
+04:59 that they can customize
+to focus on what they care
+05:01 about the most along
+with the ability
+05:04 to ask natural questions
+about their day.
+05:07 Your users will be able to
+know if the dog walker came by
+05:09 to pick up the dogs using
+camera intelligence.
+05:12 And their Home
+Brief summaries will
+05:13 identify who came and went
+throughout the day to highlight
+05:16 any notable activity.
+05:18 Second is advanced deterrence.
+05:21 You can also security features
+that go beyond simple alarms.
+05:26 Your users can build
+simulated presence
+05:28 using natural language
+and Ask Home or by voice
+05:32 to create automations that make
+it look like someone is home
+05:35 while they're away on vacation.
+05:37 This makes it easy to
+have your home look
+05:38 occupied even when it's empty.
+05:41 You can also provide users
+with suggested automations
+05:44 based on historical patterns,
+so they can do things
+05:46 like when the car leaves the
+house from the driveway, turn
+05:49 on the cameras and lights
+for added peace of mind.
+05:51 And third is
+proactive protection.
+05:54 Help your users cut through the
+noise of spammy notifications
+05:57 with Gemini's
+camera intelligence.
+05:59 Whether it's a package
+that was delivered by UPS,
+06:02 a friend arriving
+early for dinner,
+06:05 or an unfamiliar person
+hanging around the porch,
+06:08 your users will have
+detailed information about
+06:10 what's going on while
+they're away as it happens.
+06:14 Then, they can use Ask Home to
+easily respond to the situation,
+06:17 whether that's unlocking
+the door for their friend
+06:19 or turning on the house lights.
+06:22 We see this opportunity
+come to life today
+06:24 with AT&T. AT&T is using Google
+Home APIs to integrate our Home
+06:29 premium subscription
+and Gemini for Home
+06:31 directly into their Connected
+Life, Android and iOS apps.
+06:35 Through this integration,
+they have access
+06:37 to the various levels
+of camera intelligence
+06:40 coming directly from their
+users' Gemini-powered cameras
+06:42 on Google Home, like
+our Google Nest cameras.
+06:46 AT&T is combining this with
+the best of their own services,
+06:49 providing LTE backup to deliver
+a robust, AI-driven security
+06:53 solution, ensuring
+their users are always
+06:55 connected and protected.
+06:57 This is our vision
+for Google Home
+06:59 and our ecosystem of partners.
+07:01 We provide the AI infrastructure
+so you don't have to build it.
+07:04 By leveraging Home APIs,
+you can build applications
+07:07 that interface directly with
+Google Home and our Home premium
+07:10 subscription services,
+including everything we've
+07:13 shown you in Gemini for Home.
+07:15 Whether you're a carrier looking
+to increase broadband attachment
+07:18 or a security provider looking
+to modernize your monitoring
+07:20 services, integrating our
+Home premium subscription
+07:23 into your services enables
+you to deploy Gemini for Home
+07:27 immediately.
+07:28 But to benefit from
+these subscriptions,
+07:30 users need devices.
+07:31 And you know best what
+they need in their homes.
+07:34 To help you best serve
+the needs of your users,
+07:37 we're opening up our Hardware
+program like never before.
+07:40 To tell you how you can build
+your own devices with Gemini
+07:43 built in, I'll hand
+it over to Mihai.
+07:47 MIHAI ANTONESCU: Thanks, Liz.
+07:48 Hi.
+07:49 I'm Mihai.
+07:50 We've talked about the
+software and the services.
+07:52 Ultimately, to deliver
+these experiences,
+07:55 you need compatible
+hardware in the home.
+07:57 And for many of
+you, it is important
+07:59 that this hardware
+carries your brand.
+08:01 You want the devices
+sitting on the counter
+08:03 to be a physical
+extension of your service,
+08:06 reinforcing trust every time
+a user interacts with it.
+08:09 But the barrier
+to entry is high.
+08:11 Building AI native hardware
+that can see what's happening
+08:14 and support natural language
+requires massive research
+08:17 and development, long
+development cycles,
+08:20 and ongoing software
+maintenance.
+08:22 I'm thrilled to announce the
+expansion of the Google Home
+08:24 Gemini Built-in program.
+08:26 This is a turnkey
+solution designed
+08:28 to let you launch Gemini
+built-in hardware faster
+08:31 than ever before.
+08:32 We're taking our engineering
+standards, interoperability,
+08:36 and security protocols
+and packaging them
+08:38 into easy-to-use
+reference designs,
+08:40 letting you focus on
+what matters most,
+08:42 the service experience that
+you deliver to your customers.
+08:46 This isn't just a spec sheet.
+08:48 It's a fully validated
+and scalable design
+08:50 we built with our system
+integrator partner, Amlogic,
+08:53 and original design manufacturer
+partners, SEI Robotics
+08:56 and Apical.
+08:58 We provide the complete hardware
+reference design, including
+09:01 the system on a chip,
+sensors, and mics,
+09:04 paired with a software image to
+run it seamlessly with our Cloud
+09:07 Services and APIs.
+09:09 This means your devices
+come with Gemini
+09:11 for Home right out of the box
+and will integrate seamlessly
+09:14 with your Gemini-based features.
+09:17 No custom integration headaches.
+09:19 We have already proven
+this model works
+09:21 with some of our partners.
+09:22 And today, we're
+opening this program up
+09:25 to a new category, speakers.
+09:27 The smart speaker is the
+command center of the home.
+09:30 Our new speaker
+reference design allows
+09:32 you to build high-fidelity
+speakers that
+09:34 support the full Gemini
+for Home voice experience.
+09:37 Whether you are a retailer
+launching a home brand
+09:40 or a service provider looking
+to add a voice-based controller
+09:43 to the home, you can
+now build a device
+09:45 that is more than a speaker.
+09:47 We are providing you with
+a full suite of devices
+09:50 to make it easier for you
+to bring Gemini for Home
+09:52 to your customers.
+09:54 And now, back to you, Ryan.
+09:57 RYAN WEEKES: So let's
+bring it all together.
+09:60 We've demonstrated some
+of the early things
+10:01 that Gemini for
+home can do today--
+10:04 Home Brief, camera
+intelligence, and Ask Home.
+10:07 This is just the
+beginning of our journey
+10:09 to make the home
+truly interactive.
+10:11 We've shown how you
+can use Gemini for Home
+10:14 to build advanced,
+proactive services,
+10:16 and how AT&T is combining
+their unique capabilities
+10:19 with our Google Home
+premium subscription
+10:21 to create new user value.
+10:24 And we've explained our
+turnkey Hardware program,
+10:26 making it easy to deploy
+premium, AI-native cameras
+10:29 and speakers with
+Gemini built in.
+10:32 This is the most open
+Google Home has ever been.
+10:35 We're giving you the
+keys to the full stack
+10:37 so you can build a home that
+doesn't just wait for a command,
+10:40 but proactively cares
+for the people inside it
+10:42 and the world around them.
+10:45 Whether you're building the
+app, the service, or the device,
+10:48 you now have the power
+to deliver that magic
+10:50 to your customers.
+10:52 If you're interested in
+our hardware reference
+10:54 designs or our subscription
+reseller program,
+10:57 please scan the QR code or
+go to the link on the screen.
+11:00 Let's build the
+helpful home together.
+11:03 [MUSIC PLAYING]

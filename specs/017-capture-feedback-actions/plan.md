@@ -66,7 +66,7 @@ than a simple parcel addition.
 ### Source Code
 
 ```text
-app/src/main/java/com/capsule/app/
+app/src/main/java/com/orbit/app/
 ├── data/
 │   ├── EnvelopeRepositoryImpl.kt
 │   ├── dao/IntentEnvelopeDao.kt
@@ -74,10 +74,10 @@ app/src/main/java/com/capsule/app/
 │   └── model/AuditAction.kt
 ├── data/ipc/                         # AIDL/Binder typed seal result
 ├── overlay/                          # SealOutcome/PostCaptureUi + UI actions
-└── service/CapsuleSealOrchestrator.kt
+└── service/OrbitSealOrchestrator.kt
 
-app/src/androidTest/java/com/capsule/app/data/   # migration/repository tests
-app/src/test/java/com/capsule/app/               # pure unit tests where possible
+app/src/androidTest/java/com/orbit/app/data/   # migration/repository tests
+app/src/test/java/com/orbit/app/               # pure unit tests where possible
 ```
 
 ## Phase Plan

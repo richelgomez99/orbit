@@ -1,0 +1,998 @@
+00:00 [MUSIC PLAYING]
+00:06 JOYCE TOH: Hi, I'm Joyce from
+the Android Developer Relations
+00:09 Team.
+00:10 Today, we'll be exploring
+the foundations of inking
+00:13 with the Jetpack Ink library and
+the various Android capabilities
+00:16 that can help developers
+build unique and enjoyable
+00:19 note-taking
+experiences for users.
+00:22 And don't click away if your app
+isn't focused on note-taking.
+00:25 A lot of what we'll cover
+today about inking and Android
+00:28 productivity is still relevant
+for all types of apps looking
+00:31 to add creativity
+experiences and optimize
+00:34 for the modern Android
+ecosystem, which
+00:37 has come a long way from being
+a mobile-only operating system.
+00:40 Today, it celebrates
+the diversity
+00:42 of devices in the ecosystem,
+and we invite our developers
+00:45 to do the same.
+00:47 In particular,
+large-screen devices
+00:49 that support additional input
+interactions, like stylus,
+00:52 provide a suitable setup
+for productivity workflows
+00:55 like note-taking.
+00:57 Stylus input can transform
+these large-screen devices
+00:60 into digital notebooks, allowing
+users to access all their notes
+01:04 and to-do lists and drawings
+with just one device.
+01:06 Of course, at the
+heart of a premium
+01:08 note-taking app is a natural
+and seamless inking experience.
+01:13 The Jetpack Ink API makes it
+easy to draw and manipulate
+01:16 beautiful ink strokes.
+01:17 And our innovative,
+near-zero latency
+01:20 makes it feel like
+the ink is truly
+01:22 an extension of the stylus.
+01:23 On top of that, custom brushes
+bring endless possibilities
+01:27 for fun and creativity to users.
+01:30 Outside of the
+inking experience,
+01:32 there are additional features
+that bring critical productivity
+01:35 and system integrations
+to an app that
+01:37 makes it feel like a truly
+unique and modern app built
+01:39 for all the devices
+and form factors
+01:41 in the Android ecosystem.
+01:43 Enable user productivity with
+multitasking capabilities
+01:46 like desktop windowing
+and multi-instance.
+01:49 Further elevate your app by
+unlocking additional entry
+01:52 points from the OS
+with the Notes role,
+01:54 and support intuitive
+data transfer
+01:56 with drag-and-drop interactions.
+01:58 So follow along as we put all
+these ideas into practice.
+02:02 We'll dive into each
+of these concepts
+02:03 and show you example
+implementations
+02:05 from a real note-taking app
+that Chris helped build.
+02:10 CHRIS ASSIGBE: Thanks, Joyce.
+02:12 I'm Chris, developer
+relations engineer in Android.
+02:17 Building a fluid,
+natural inking experience
+02:21 used to be incredibly difficult.
+To get that pen-on-paper feel,
+02:27 you had to manage complex
+graphics pipelines,
+02:31 handle Bézier curves, and
+build custom geometry tools
+02:35 to just erase a line.
+02:37 This is why we built
+the Jetpack Ink API.
+02:41 Our goal was simple--
+02:44 handle the complex
+graphics and input
+02:47 processing so you can focus
+on building unique features.
+02:52 We designed it to
+be highly modular,
+02:55 meaning you can adopt
+the entire suite or just
+02:59 the specific pieces you
+need for your use case.
+03:03 In fact, Android's
+own Circle to Search
+03:06 leverages Ink's authoring
+and brush modules
+03:10 to accurately capture input
+and draw that signature
+03:14 glowing line.
+03:16 Ink API is broken
+into six modules.
+03:21 First, the Strokes module--
+03:24 the foundation that handles
+input batches and all
+03:28 the geometry
+involved with inking.
+03:32 Next, Authoring, which
+handles the real-time capture
+03:37 of the pointer input, in this
+case likely a stylus, and this
+03:42 with near-zero latency
+because Ink API is
+03:46 built on top of our previously
+released low-latency library
+03:51 and the motion prediction API.
+03:55 And then the Rendering module.
+03:58 It efficiently draws your
+strokes to the Android canvas
+04:02 by using optimized
+graphics pipelines.
+04:07 The Geometry module gives
+you the mathematic primitives
+04:11 to build things like selection
+tools and custom erasers,
+04:17 while the Brush modules
+defines the visual style, size,
+04:22 and color of your strokes.
+04:25 And finally, our
+newest module, Storage,
+04:30 which uses protobufs
+and delta compression
+04:34 algorithm to efficiently
+serialize your stroke data.
+04:39 Let's take a look at how some of
+our partners are using Ink API.
+04:44 Google Docs is using the Ink
+API for the new smart markups.
+04:50 And PDF Scanner by
+RV Appstudio uses
+04:55 it to provide seamless,
+low-latency document markup.
+04:59 You might ask, how do we
+put this into practice?
+05:03 Meet Cahier, our comprehensive,
+offline-first, note-taking app
+05:09 sample available
+right now on GitHub.
+05:12 In this session,
+we will demonstrate
+05:15 how Cahier uses
+Ink's API Compose
+05:18 component for
+low-latency drawing,
+05:21 how it implements
+expressive custom brushes,
+05:25 and leverages deep system
+integration for a premium feel.
+05:30 Let's start with
+the drawing canvas.
+05:32 In Cahier's drawing screen, we
+use Ink's composable component
+05:38 in progress strokes from
+the Authoring module
+05:41 to handle real-time
+stylus and touch input.
+05:45 This module captures
+pointer events and renders
+05:49 the web ink, which is the
+active stroke currently being
+05:53 drawn with the lowest
+possible latency.
+05:57 From there, you just need to
+pass to it your current brush
+06:01 state and a callback for
+when the stroke is finished.
+06:06 Once the user lifts
+the stylus, the stroke
+06:09 is considered finished or dry.
+06:11 The own stroke's
+finished callback fires.
+06:15 This provides a finalized,
+immutable stroke
+06:18 object from our Strokes module
+to the app, which is then
+06:23 managed in our ViewModel.
+06:27 To display both existing
+and newly dry strokes,
+06:31 Cahier uses the
+canvas stroke renderer
+06:33 from the Rendering module.
+06:36 It efficiently draws
+the stroke objects
+06:40 onto the standard
+compose canvas.
+06:44 We use this in two places--
+06:47 inside the drawing
+surface for active drawing
+06:51 and in the drawing
+detail pane preview
+06:54 to show a static preview of
+the notes on the home screen.
+06:59 What if a user makes
+a mistake and draws
+07:02 something they didn't intend?
+07:04 That's where the
+Geometry module comes in.
+07:07 When the eraser tool
+is active in Cahier,
+07:10 it creates a mutable
+parallelogram
+07:14 around the path of
+the input gesture.
+07:18 The eraser then checks for
+intersection between this shape
+07:22 and the bounding boxes
+of existing strokes
+07:25 to determine exactly
+what to erase,
+07:29 making the action feel
+intuitive and precise.
+07:33 Finally, we need to save
+these drawings in order
+07:37 to retrieve them later, when the
+app is relaunched, for example.
+07:42 A single stroke can contain
+hundreds of data points.
+07:47 You can save that naively,
+but then your app's database
+07:51 will blow up very quickly
+and even sometimes
+07:54 crash due to the sheer
+size of the strokes.
+07:58 To solve for this, in Cahier,
+we use the Storage module
+08:03 combined with Room.
+08:05 Inside our converter's class,
+we use the Storage module's
+08:09 encode function to
+serialize the stroke input
+08:12 batch, that is the raw point
+data, into a byte array.
+08:18 This applies a highly optimized
+delta compression algorithm,
+08:22 shrinking the footprint
+significantly.
+08:25 We then save that byte
+array as a JSON string.
+08:30 When a node is loaded,
+the decode function
+08:34 reconstructs the strokes.
+08:37 Remember that you need to
+serialize the brush properties
+08:41 when saving strokes
+and deserialize them
+08:44 when redrawing the strokes.
+08:46 OK, capturing input with
+low latency is great.
+08:52 But a user may also
+want their note
+08:54 to be an expression
+of their creativity.
+08:57 Out of the box, Ink API provides
+stock brushes for common brush
+09:02 styles, like a
+pressure-sensitive pen,
+09:06 a marker, a highlighter,
+and a dashed line.
+09:11 Why should you care about these?
+09:13 Because they allow you to
+get up and running instantly
+09:16 with high-quality,
+familiar tools
+09:19 without needing any
+custom design work.
+09:22 You can modify these
+stock brushes' properties
+09:25 such as color, size,
+and epsilon, which
+09:29 controls the rendering fidelity
+of the strokes when zoomed in.
+09:34 But we want to take
+it a step further
+09:36 and unlock through
+artistic expression.
+09:40 That's why we're excited
+about custom brushes.
+09:43 Custom brushes allow you to
+move beyond basic stroke lines
+09:49 and create completely
+unique textures.
+09:52 Think calligraphy pen, wet
+paint, or even animated particle
+09:57 effects.
+09:60 This is how you match your
+app's existing signature
+10:02 tool set or create
+something entirely new
+10:06 to delight your users.
+10:08 For example, our
+launch partner, NoteIn,
+10:11 use custom brushes to migrate
+all their core brushes to Ink.
+10:18 To understand how
+this works, you
+10:20 have to take a look at the
+anatomy of the Jetpack Ink
+10:24 engine.
+10:25 A brush isn't just
+a color and a size.
+10:29 It's a dynamic physic model.
+10:31 A brush family contains
+one or more brush coats,
+10:36 meaning a single
+stroke can actually
+10:39 lay down multiple
+overlapping layers of ink.
+10:42 Each coat is defined by a tip.
+10:46 That is the physical
+geometry of the nib,
+10:49 like its scale, slant,
+and corner rounding,
+10:55 and the paint, which handles
+colors, blending, and textures.
+11:00 But the real magic happens
+in the brush behaviors.
+11:05 Behaviors are a node-based logic
+graph evaluated natively frame
+11:10 by frame.
+11:12 You can wire a source
+node like stylus pressure
+11:16 or speed through a
+math node like damping
+11:20 or random noise and then
+pipe that into a target
+11:23 node like size or opacity.
+11:26 So you can easily
+build a rule that
+11:29 says, as the user's
+stylus speeds up,
+11:32 apply a damping curve
+to smoothly fade
+11:35 the stroke's opacity to 0.
+11:38 Building these complex graphs by
+hand, or rather protobuf code,
+11:44 can be tricky.
+11:46 So today we are releasing
+the Brush Designer.
+11:51 This is a visual tool that
+lets your design team build
+11:55 these note tags, tweak textures,
+adjust how the brush reacts
+12:00 to pressure and tilt
+curves, and instantly
+12:03 see how the native engine
+renders the brush in real time.
+12:08 You can access it in
+Cahier's Settings screen.
+12:13 Let's take a look at how
+you can design and use
+12:16 a brush with the
+Brush Designer in Ink.
+12:20 We will use an expressive
+calligraphy pen as an example.
+12:25 We start with a basic stroke.
+12:27 It's perfectly uniform, which
+is great for a standard pen,
+12:31 but a bit lifeless and nothing
+like a calligraphy pen.
+12:36 The defining feature
+of a calligraphy pen
+12:39 is its flat nib,
+chisel shape that
+12:43 creates thick downstrokes
+and thin cross strokes.
+12:47 So our first stop
+is a Tip Shape tab.
+12:51 We tap on the Scale X value
+and set it to about 100%.
+12:57 Then we tap on Scale Y and
+bring it down to about 30%.
+13:03 Instantly, our round dot
+becomes a wide, flat ellipse,
+13:08 a chisel nib.
+13:11 Next, we set corner rounding
+to 0% for crisp edges.
+13:17 Now, when we draw on
+the preview canvas,
+13:21 we already get that signature
+thick/thin variation--
+13:24 thick on the down strokes,
+thin on the cross strokes.
+13:29 That's the geometry
+doing all the work.
+13:32 But we can make it
+feel even more alive.
+13:35 We head over to
+the Behaviors tab.
+13:38 Under Standard Dynamics,
+we tap Pressure Size.
+13:42 This adds a behavior
+that maps stylus pressure
+13:47 to stroke's width.
+13:49 Now, the harder we
+press, the wider the nib
+13:53 spreads, just like a real pen
+flexing under the pressure.
+13:58 For that premium, fluid
+feel, we go further.
+14:03 So under Advanced Dynamics,
+we tap Smooth Pressure
+14:08 to Size button.
+14:09 This adds a damping filter
+between the pressure
+14:12 input and the size output.
+14:15 Now, instead of
+snapping instantly,
+14:18 the width now
+transitions smoothly
+14:21 over a fraction of a second.
+14:23 It perfectly mimics real
+ink pulling into paper.
+14:29 Finally, let's add
+one more behavior.
+14:32 We tap on Smooth
+Speed to Opacity.
+14:37 This takes your stroke speed
+and uses it to drive opacity.
+14:42 Now, when I do a fast
+flick on the screen,
+14:46 the ink trails off and
+fades out beautifully.
+14:50 You can expand any
+behavior to fine tune
+14:53 the damping gap, source
+range, or target multiplier.
+14:58 In just a few clicks, we went
+from a basic digital line
+15:04 to a highly expressive,
+physic-driven tool.
+15:09 Once you've designed a
+perfect brush for you,
+15:13 you export it as
+a dot brush file.
+15:16 Under the hood, this
+file is actually a gzip
+15:20 compressed protobuf message.
+15:24 Importing it into your
+Android project is seamless.
+15:28 In Cahier, we drop these
+dot brush files right
+15:32 into our res/raw directory.
+15:35 But you don't even
+have to export them.
+15:37 In Cahier, we wired
+up the brush designer
+15:41 directly into our own database.
+15:44 When you click Save to
+Palette, the view model
+15:48 gzips the protobuf bytes
+and saves them locally.
+15:53 The main drawing canvas
+observes that database,
+15:56 so your brand-new
+custom brush instantly
+15:59 appears in Cahier's
+toolbox, ready to use.
+16:04 At runtime, we simply
+pass the input stream
+16:08 into BrushFamily.decode.
+16:12 The native engine
+unzips the payload,
+16:15 parses the behavior graph,
+and initializes the brush.
+16:19 And if your brush uses a
+custom texture, like the music
+16:23 staff or the granular shadow
+brushes we built for Cahier,
+16:28 it's just as easy.
+16:30 The engine handles
+the tiling, stamping,
+16:34 and spreadsheet
+animations automatically.
+16:37 You load your bitmaps
+into a TextureBitmapStore,
+16:43 set your Blend Modes like
+SRC_OVER or MODULATE,
+16:47 and pass that store directly
+to your CanvasStrokeRenderer.
+16:51 And just like that, your users
+have access to a rich, premium,
+16:57 custom palette.
+16:59 Now that we have a beautiful
+drawing canvas that
+17:02 can be rendered at the very
+low latency with the Ink API,
+17:07 let's talk about how to make
+your app a true productive tool.
+17:12 Back to you, Joyce.
+17:13 [MUSICAL FLOURISH]
+17:15 JOYCE TOH: While a
+premium inking experience
+17:17 is at the core of
+a note-taking app,
+17:19 there are also other things to
+keep in mind to further elevate
+17:22 your app to be a first-class
+Android experience.
+17:25 These include building
+adaptive app experiences
+17:28 as well as multitasking
+capabilities
+17:30 like desktop windowing
+and multi-instance.
+17:33 We'll also cover
+productivity features
+17:35 like implementing the
+Android notes rule
+17:37 and drag-and-drop for natural
+data import and export.
+17:41 A note-taking app that
+has fully embraced
+17:43 these differentiated
+experiences and adaptive app UI
+17:46 is Notability.
+17:48 Notability is a
+beloved go-to app
+17:51 for millions of students,
+creatives, and professionals,
+17:54 renowned for its
+incredibly fluid inking
+17:56 and audio transcription features
+for note-taking and AI-powered
+18:00 learning.
+18:01 Today, we're absolutely thrilled
+to share that Notability is
+18:05 officially coming to Android.
+18:07 Notability is built using
+Android's modern development
+18:10 framework and best
+practices, leveraging
+18:12 many of Android's powerful APIs,
+including adaptive UI, the Notes
+18:16 role, multi-instance
+support, and drag-and-drop
+18:19 to deliver a truly
+productive and integrated
+18:22 note-taking experience.
+18:24 As we deep dive into
+each topic, we'll
+18:26 give you a sneak preview of how
+the Notability app implements
+18:29 some of these features.
+18:31 And if you'd like to
+check it out yourself,
+18:33 the app is now available
+in beta in the Play Store
+18:35 and targeted to fully
+launch later this year.
+18:38 Now, let's dive
+right into building
+18:41 adaptive app experiences.
+18:43 At the foundation of
+building a modern Android app
+18:46 is providing a great experience
+across device form factors,
+18:49 screen sizes, display modes,
+and device configurations.
+18:52 Note-taking apps can
+be highly personal,
+18:55 and users want to be able to
+access their notes at all times
+18:57 from any of their
+Android devices.
+18:59 So an app should implement
+adaptive UI and layouts
+19:02 to provide an optimized user
+experience for all screen sizes
+19:06 and device configurations.
+19:08 Furthermore, with the recently
+launched Connected Display
+19:11 Support on Android, users
+can connect supported Android
+19:15 devices to an external monitor
+and transform their device
+19:18 into a desktop-like environment.
+19:21 So providing enhanced
+support for additional inputs
+19:24 like keyboard,
+mouse, and trackpad
+19:27 becomes even more
+crucial for productivity.
+19:30 To learn more about building
+an adaptive app for desktop
+19:32 environments, check out the
+"Design and Build Desktop-Class
+19:36 Android Experiences" I/O talk.
+19:38 On large-screen tablet
+and desktop devices,
+19:41 and now with the new
+Connected Displays experience,
+19:44 multitasking is a
+key user pattern that
+19:46 can boost user productivity.
+19:48 The additional
+screen real estate
+19:50 is primed for users to
+multitask and manage
+19:52 workflows efficiently.
+19:55 Android offers advanced
+windowing capabilities
+19:57 that provides users
+with the flexibility
+19:59 to customize their workspace.
+20:01 Desktop windowing enables
+users to run multiple apps
+20:04 simultaneously and separately
+movable and freely resizable
+20:08 app windows for versatile,
+desktop-like experience.
+20:13 As you can see, Cahier
+has enabled desktop
+20:15 windowing so the app can move
+freely as a resizable window,
+20:19 and users can adapt it to
+meet their workspace needs.
+20:23 Supporting desktop
+windowing requires
+20:25 ensuring your app is
+resizable and properly handles
+20:28 configuration changes.
+20:30 First, declare your
+app as resizable
+20:32 to enable multi-window
+mode, which includes split
+20:35 screen and desktop windowing.
+20:38 In the app manifest, set
+resizableActivity to true.
+20:42 Note that starting in Android
+12 with API level 31 and higher,
+20:47 the default on large
+screens is already
+20:48 to support multi-window
+mode regardless
+20:51 of the app configuration.
+20:53 You can also leverage
+multi-instance,
+20:55 which allows an app to launch
+multiple independent instances
+20:58 of itself in separate windows.
+21:01 While this won't make sense
+for all apps, for note-taking,
+21:03 this can enhance
+user productivity
+21:05 by allowing users to work on
+several notes simultaneously.
+21:09 Cahier implements
+multi-instance,
+21:11 so users can reference and
+compare two notes side by side
+21:14 or more easily switch between
+and work across multiple notes.
+21:18 To enable users to start
+another instance of your app
+21:21 from the system
+launcher or taskbar,
+21:23 make sure, in your
+app manifest file,
+21:25 the launcher
+activity element has
+21:27 set the resizableActivity
+attribute to true
+21:31 since multi-window support is a
+prerequisite to multi-instance.
+21:35 And make sure the launch
+mode attribute is not
+21:37 set to a mode that prevents
+multiple instances.
+21:40 On Android 15 with API
+level 35 and higher,
+21:44 an app can also use Property
+Supports Multi Instance System
+21:49 UI to declare support
+for multi-instance
+21:51 and signal that the system
+UI should expose windowing
+21:54 controls for the user to create
+multiple instances of the app.
+21:58 Alternatively, to launch a new
+instance from within your app,
+22:02 you can start new activities by
+adding Flag_Activity_New_Task
+22:06 to the intent, like
+Cahier does here.
+22:09 And to cover the case
+where a task might already
+22:11 be running for
+the same activity,
+22:13 force the creation
+of a new instance
+22:15 of the activity and a
+new task by also adding
+22:19 Flag_Activity_Multiple_Task.
+22:21 This prevents the system from
+bringing the existing task
+22:24 to the foreground.
+22:26 Now that we've
+unlocked multitasking
+22:28 with desktop windowing,
+this opens us up
+22:30 to additional interactions
+with the system and other apps.
+22:33 Truly productive apps
+should work and interact
+22:36 seamlessly with the
+OS and other apps,
+22:39 especially when it
+comes to data transfer.
+22:42 On large-screen devices
+with multi-window support,
+22:45 drag-and-drop is an intuitive
+pattern for both touch
+22:47 and cursor input.
+22:49 Android provides a
+drag-and-drop framework
+22:51 to enable data transfer
+within an app or between apps.
+22:55 This includes copying
+and moving text, images,
+22:58 and other data that can
+be represented by a URI.
+23:03 Jetpack Compose
+provides two modifiers
+23:05 to support drag-and-drop,
+drag-and-drop source,
+23:08 and drag-and-drop target.
+23:10 First, let's look at
+how Cahier enables
+23:12 media to be dragged
+to other apps
+23:14 or even within the app itself.
+23:16 It uses the
+dragAndDropSource modifier
+23:19 to set a drag source to
+initiate data transfer.
+23:23 The modifier will apply a drag
+shadow to the element dragged.
+23:26 The function returns a
+DragAndDropTransferData object
+23:30 that represents the
+transferable data.
+23:33 The data is wrapped
+in a clip data object.
+23:36 To enable dragging past
+the border of an app,
+23:38 set the flags
+argument to include
+23:40 DRAG_FLAG_GLOBAL,
+which specifies
+23:43 that data can be dragged
+from one app to another.
+23:45 Next, let's see how Cahier sets
+a drop zone to receive events
+23:49 with the dragAndDropTarget
+modifier.
+23:52 The modifier accepts
+two parameters.
+23:55 The shouldStartDragAndDrop
+parameter
+23:58 is a function that lets
+the composable decide
+24:00 if it wants to receive
+the drag-and-drop event.
+24:03 This is a good place to
+inspect the MIME type
+24:05 and check for
+compatible content.
+24:07 The second parameter is the
+DragAndDropTarget interface,
+24:11 which receives events
+and the transfer data.
+24:13 This is where callbacks
+can be implemented
+24:15 to observe when a drag event
+starts, ends, or enters
+24:19 and exits a component, allowing
+for precise control of the UI
+24:23 and app behavior.
+24:25 The onDrop callback should
+be overridden and implemented
+24:29 to parse and consume
+the drag data.
+24:32 In order to accept
+data from other apps,
+24:34 call
+requestDragAndDropPermission.
+24:37 Then release the permission
+once the data has been received.
+24:40 Note that the drag-and-drop
+event from the callback
+24:42 is not the one expected by
+the permission request method.
+24:46 So first, call the
+toAndroidDragEvent extension
+24:49 function to get the
+backing dragEvent.
+24:53 Finally, we want to make sure
+users can easily and quickly
+24:56 access their preferred
+note-taking app not just
+24:59 from the device
+launcher taskbar,
+25:01 but wherever and whenever
+the need strikes.
+25:04 Android prioritizes this
+with the Notes role, which
+25:06 identifies a default
+note-taking app,
+25:09 and enables additional
+quick access
+25:11 through lock-screen shortcuts
+or in a floating window
+25:14 while other apps are open.
+25:17 We're excited to share
+that Lenovo has also
+25:19 enabled support
+for the Notes role
+25:21 on tablets running
+Android 15 and higher.
+25:24 So users of the Lenovo Yoga
+Tab, Yoga Tab Plus, Idea Tab Pro
+25:30 Gen 2, and all
+upcoming Lenovo tablets
+25:32 can set their default
+note-taking app
+25:35 to enable these additional
+entry points and productivity
+25:37 features.
+25:38 To declare support
+for the Notes role,
+25:40 an app activity must handle
+the note-taking intent.
+25:44 In Cahier's app manifest, we
+made the following declarations.
+25:48 showWhenLocked makes your app
+accessible from the device
+25:51 lock-screen.
+25:52 turnScreenOn enables your
+app to turn the device
+25:55 screen on when the app runs.
+25:57 And the action CREATE_NOTE
+is the note-taking intent
+26:00 to which your app responds to.
+26:03 This action can be used to start
+an activity on the lock-screen.
+26:07 With the app
+manifest declaration,
+26:09 we signaled to the system that
+the app is a potential candidate
+26:12 for the Notes role.
+26:13 Since only one app can possess
+the Notes role at a time,
+26:16 we need to check
+the role's status.
+26:18 With roleManager, call
+the isRoleAvailable method
+26:22 on ROLE_NOTES.
+26:23 If it's available,
+create an intent
+26:25 to bring the user to
+the Settings page,
+26:27 where the user can grant
+the Notes role to your app.
+26:30 As the default
+note-taking app, your app
+26:32 must provide a
+full-screen activity
+26:34 that is invoked from
+the device lock-screen.
+26:37 To preserve user
+privacy and security,
+26:39 only create a new note when
+opened from the lock-screen.
+26:44 For example, with Notability set
+as the default note-taking app,
+26:48 clicking on the note-taking
+shortcut from the device
+26:50 lock-screen immediately opens
+a new blank note in the app
+26:53 so users can quickly take
+a note without having
+26:56 to unlock the device.
+26:58 On the other hand, if the user
+has explicitly consented while
+27:01 in the unlocked device
+state to showing past notes,
+27:05 you may opt to show
+historical notes.
+27:07 To check the
+lock-screen state, use
+27:09 the keyguardManager
+isKeyguardLocked method.
+27:13 Alternatively, when
+a note-taking app
+27:15 is invoked while the
+device is unlocked,
+27:18 the app opens in
+a floating window
+27:20 to allow for
+contextual note-taking.
+27:23 For an optimized user
+experience, ensure your app
+27:25 provides an activity compatible
+with floating windows.
+27:29 In Notability's case, when
+the device is unlocked,
+27:32 the shortcut opens the
+app in a floating window
+27:35 and shows all available
+notes for user flexibility
+27:38 and easy note-taking
+while multitasking.
+27:41 One last thing.
+27:42 Remember when we enabled
+multi-instance mode earlier
+27:45 as part of desktop
+windowing capabilities?
+27:48 Well, to cover the scenario in
+which your note-taking app is
+27:51 already open in full-screen
+or in split-screen mode,
+27:55 multi-instance will allow us
+to enable multiple floating
+27:58 windows.
+27:58 So good thing we already
+did that earlier.
+28:01 As you can see, for
+multi-instance and drag-and-drop
+28:04 to the Notes role, Android
+offers note-taking apps
+28:07 many ways to build
+differentiated features
+28:09 and closely integrate
+with the system
+28:11 for a productive and
+optimized user experience.
+28:14 And this is on top of the
+high-performance drawing
+28:17 experience that the
+Jetpack Ink API provides
+28:20 and the delightful creativity
+that expressive custom
+28:22 brushes unlock.
+28:24 Back to Chris to wrap it up.
+28:26 [MUSICAL FLOURISH]
+28:28 CHRIS ASSIGBE: Now
+it's your turn.
+28:31 We've open-sourced the entire
+sample and brush designer
+28:35 so you can see exactly
+how it all fits together.
+28:40 Check out the GitHub repository.
+28:43 Read through the
+updated developer guides
+28:45 on developer.Android.com.
+28:48 And try the brush
+designer to start creating
+28:51 your own signature brushes.
+28:54 Also, please check out other
+Android Large screens talks like
+28:59 "Adaptive Development for the
+Expanding Android Ecosystem"
+29:03 from our colleagues
+Diana and Emily.
+29:06 Thank you so much
+for joining us.
+29:09 And we can't wait to
+see what you build.
+29:11 [MUSIC PLAYING]

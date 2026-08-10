@@ -1,0 +1,576 @@
+00:00 [MUSIC PLAYING]
+00:06 BEN SAGMOE: Hello.
+00:07 I'm Ben, a Developer
+Relations Engineer
+00:09 working on Navigation 3.
+00:10 And I'll be joined by Clara.
+00:12 In this session, we'll
+be covering everything
+00:13 you need to know about
+building adaptive layouts
+00:15 for your app with Navigation 3.
+00:17 After a brief refresher on the
+core concepts of the library,
+00:20 we'll cover what's new
+in the 1.1 release.
+00:23 That includes a deep dive
+on scene decorators, which
+00:25 can be used to add
+common UI elements,
+00:27 such as top and bottom bars
+around your app's main content.
+00:30 To close things out,
+we'll take a look
+00:31 at how Navigation 3 is expanding
+to Wear OS and give you
+00:35 a preview of what we're
+working on for 1.2.
+00:39 CLARA FOK: Hello.
+00:40 I'm Clara.
+00:41 First, let's go over some
+basic Navigation 3 concepts.
+00:44 Navigation 3 was
+built from the ground
+00:46 up with Compose State as a
+fundamental building block.
+00:49 This means that it fully buys
+into the declarative programming
+00:52 model.
+00:53 You change the state you own,
+and we react to that new state.
+00:57 To start, the Navigation back
+stack is just a regular list
+01:00 that you fully own.
+01:02 The back stack contains keys
+which can be of any type,
+01:05 and each key in the back
+stack maps to a NavEntry
+01:08 that contains the
+composable content.
+01:10 As you add and remove
+keys on the back stack,
+01:13 navigation reacts by
+recomposing the content
+01:15 based on the current
+keys on the stack.
+01:18 To set this up,
+define your NavKey
+01:20 and create a back
+stack with the key.
+01:23 In this example, the key extends
+the optional NavKey interface.
+01:28 Then invoke the
+NavDisplay composable
+01:31 and pass in the back stack.
+01:33 Now, NavDisplay
+also needs to know
+01:34 what content the key
+maps to, so you need
+01:37 to pass in an entryProvider.
+01:39 The entryProvider is
+responsible for providing
+01:42 a NavEntry for a given key.
+01:45 In the NavDisplay, call
+the entryProvider DSL
+01:48 and add entries with the NavKey
+and the associated content.
+01:51 And that's it.
+01:52 NavDisplay will first
+decide what to display,
+01:55 and then it calls your
+entry provider with the key
+01:57 to get the correct entry.
+01:59 In this example,
+the entryProvider
+02:01 will return the home
+NavEntry for the Home key.
+02:05 By default,
+navigation will render
+02:07 the NavEntry associated with
+the last key on the back stack.
+02:11 But what if you want
+a more complex layout?
+02:13 For example, what if you want
+to display multiple entries
+02:16 at the same time?
+02:17 This is where the scene
+interface comes in.
+02:20 A scene controls which
+entries are displayed
+02:23 and how they are displayed.
+02:24 This means that
+the same NavDisplay
+02:26 can be used to show entries
+in different layouts,
+02:29 such as a dialog,
+a side-by-side list
+02:31 detail, a horizontal pager,
+a bottom sheet, or just
+02:35 a single pane.
+02:36 But how does the NavDisplay
+pick the correct scene
+02:38 to show the entries?
+02:40 It does that by asking each of
+the scene strategy instances
+02:43 you pass to it.
+02:45 The NavDisplay
+goes through a list
+02:46 of scene strategies in the order
+they were added to the list,
+02:50 and the first
+strategy that returns
+02:51 the scene dictates
+the entries to display
+02:53 and the layout to
+display them in.
+02:56 NavDisplay will then
+invoke the return scene
+02:58 to display the actual content.
+03:01 The list of strategies
+can be modified,
+03:03 and NavDisplay will just
+recalculate and display
+03:06 the new scene.
+03:07 Now, how does the
+scene strategy decide
+03:09 whether to return
+a scene or not?
+03:11 One of the ways is by
+evaluating the entry's metadata.
+03:15 The NavEntry has
+a metadata field,
+03:17 which is a map of string
+key to any values.
+03:20 NavEntries can opt in to be
+displayed by specific strategies
+03:24 through adding the metadata
+defined by a strategy.
+03:28 This gives entries control over
+how it wants to be displayed.
+03:32 In this example, the entry opts
+in to be displayed as a dialog.
+03:36 In our 1.1 release, we
+listen to your feedback
+03:39 and made several
+improvements to our APIs.
+03:42 In the past, scene
+strategies used
+03:44 to be passed in as a
+chain of strategies
+03:46 linked by a then infix.
+03:49 However, it was named as
+a singular scene strategy,
+03:52 and the then infix
+was not discoverable.
+03:55 So in 1.1, we
+renamed the parameter
+03:58 to a plural scene
+strategies, and now it
+04:01 takes a list of strategies.
+04:04 But remember that order
+still matters here.
+04:07 As mentioned, the first
+strategy that returns a scene
+04:10 becomes a dictating strategy.
+04:12 And strategies are
+evaluated by the order
+04:15 they are added to the list.
+04:17 Next, in 1.1, we also
+improve the metadata APIs.
+04:21 As mentioned, the
+metadata is a map
+04:23 of string to any, which
+is not very type-safe.
+04:26 Also, the keys are commonly
+declared as string constants,
+04:30 so they are not
+readily discoverable.
+04:32 So we improved them by
+adding a NavMetadataKey
+04:36 interface and a metadata DSL.
+04:39 Now, when you define a
+metadata key, the key,
+04:41 can optionally implement
+the metadata key interface.
+04:45 You'll notice that the
+interface has a type parameter.
+04:48 The parameter
+represents the type
+04:50 of the data that is
+associated with the key.
+04:53 This means that, when
+you define the key,
+04:55 you are also declaring the
+type of data it expects.
+04:58 This helps ensure you store
+the correct data type.
+05:01 With the NavMetadataKey, you
+can now use the metadata DSL.
+05:05 The DSL is a
+type-safe map builder
+05:07 that provides a
+put function, which
+05:09 accepts keys that extends the
+new key interface and the value
+05:13 associated with the key.
+05:15 The DSL returns a map of string
+to any containing the data you
+05:19 added with the put function.
+05:21 And you can use a plus operator
+to combine metadata maps.
+05:26 This allows you to declare
+modular reusable metadatas,
+05:30 which you can mix and match
+to create the final metadata
+05:32 for a given entry.
+05:35 With the DSL, you can also
+write conditional logic
+05:38 to determine the final
+metadata that you want to add.
+05:41 Another new feature
+that was added in 1.1
+05:44 is the support for
+shared NavEntries.
+05:47 NavDisplay now animates shared
+entries as shared elements
+05:50 when you use
+SharedTransitionLayouts.
+05:53 As mentioned, Nav 3 can
+render multiple entries
+05:56 on the screen at the same time.
+05:58 And sometimes the same
+entry can be shared
+06:01 between different screens.
+06:03 For example, consider
+a two-pane app
+06:05 with a screen displaying entry
+A and B. The app then navigates
+06:09 to a new screen with entry
+B and C. In this case,
+06:14 the two screens share entry
+B. Let's see what this
+06:18 looks like in an actual app.
+06:20 This app shows two products
+side by side on the screen.
+06:23 When you navigate
+to the next product,
+06:26 the product currently on
+the right moves to the left.
+06:29 And the new product is now
+displayed on the right.
+06:32 It works as expected.
+06:33 However, you'll notice that
+there is no transition animation
+06:36 when the entry moves
+from right to the left,
+06:39 and there is a flash
+on the right side.
+06:42 This is because an entry
+can be only displayed
+06:44 on the screen once.
+06:46 So the entry on the right
+side is dropped immediately
+06:49 when the screen is recomposed
+with that entry now on the left.
+06:54 In 1.1, we improved
+shared NavEntries
+06:57 by animating them
+as shared elements.
+06:60 This allows a shared entry
+to exit the old screen
+07:02 and enter the new screen with
+a single continuous transition.
+07:07 Let's go back to the same app.
+07:10 Now you can see that, as you
+navigate to the next screen.
+07:12 The product that is
+currently on the right side
+07:14 slides smoothly to the left.
+07:17 As mentioned, support for
+shared entries is added in 1.1.
+07:21 So all you have to do is
+apply shared transitions.
+07:24 Let's see what the
+code looks like.
+07:27 First, wrap NavDisplay within
+a SharedTransitionLayout.
+07:31 Then, pass the provided shared
+transition scope to NavDisplay
+07:36 And that's it.
+07:37 Now, when the screen
+transitions from one to another,
+07:40 any shared NavEntries
+between them
+07:42 will be animated as a
+shared element, resulting
+07:45 in a smooth transition.
+07:46 Now, back to Ben to
+explain scene decorators.
+07:49 [MUSIC PLAYING]
+07:51 BEN SAGMOE: Finally, 1.1
+introduces scene decorators,
+07:54 which allow you to modify
+the scene calculated
+07:56 by your app's scene strategies.
+07:58 Scene decorators can be used to
+add UI elements, such as top app
+08:02 bars and navigation
+bars or rails
+08:04 that you'd like to add at the
+scene, rather than NavEntry
+08:06 level.
+08:07 To illustrate this
+API, let's walk
+08:09 through the process of
+implementing a basic scene
+08:11 decorator that applies a border
+around the scene it decorates.
+08:16 To start, we'll define
+a BorderScene class that
+08:18 takes in a scene, as well
+as some configuration
+08:20 for the border that it draws.
+08:22 Since BorderScene implements
+the scene interface,
+08:25 it needs to override the key,
+entries, previous entries,
+08:28 and content properties.
+08:30 Because BorderScene just
+wraps this input scene,
+08:33 it has the same entries
+and previous entries.
+08:36 For the purposes
+of this example,
+08:38 it can also copy the
+input scene's key,
+08:41 but more on that later.
+08:43 As for its content
+property, BorderScene
+08:45 uses a box with the
+modifiers necessary to create
+08:48 an outer border.
+08:49 And within that box, it calls
+the input scene's own content
+08:52 composable.
+08:53 Now that we have the BorderScene
+class, we need a way to use it.
+08:56 This is where the scene
+decorator strategy
+08:58 interface comes in.
+08:60 We'll create the BorderScene
+decorator strategy class
+09:02 as our implementation
+of the interface.
+09:04 This interface has
+just one method
+09:05 to override, decorate scene.
+09:08 Unlike the calculate scene
+method of the scene strategy
+09:10 interface, decorate
+scene can't return null.
+09:13 Instead, if the input scene
+shouldn't be decorated,
+09:15 you just return it as is.
+09:18 When determining whether or
+not to decorate a given scene,
+09:20 a scene decoration
+strategy can consider
+09:22 the metadata of its input
+scene, its NavEntries,
+09:25 as well as any other
+state that it can access.
+09:27 The last step is to create
+instances of your scene
+09:30 decorator strategies and apply
+them to your app's NavDisplay,
+09:33 using the same decorator
+strategies parameter.
+09:36 Now, when we run the app,
+we get a result like this.
+09:39 Just like we want,
+the borders are
+09:41 applied around all of
+the NavEntry content,
+09:43 regardless of whether
+one or multiple entries
+09:45 are being displayed
+at a given time.
+09:48 Let's take a closer
+look at what's
+09:49 happening under the hood in
+these two configurations.
+09:52 When the window size is narrow,
+the two-pane scene strategy
+09:55 returns null during
+scene calculation
+09:58 because there isn't enough
+space to display two panes
+10:00 side by side.
+10:02 NavDisplay then falls back to
+a single-pane scene strategy,
+10:05 which returns a
+single-pane scene.
+10:07 In the scene decoration phase,
+the blue border decoration
+10:10 strategy takes in
+that single-pane scene
+10:12 and returns a border
+scene that wraps it.
+10:15 The returned blue border scene
+is then passed as the input
+10:18 to the red border scene
+decoration strategy, which wraps
+10:21 it in another border scene.
+10:24 Now let's look at what happens
+when the window size is wider.
+10:27 In this case, the
+two-pane scene strategy
+10:30 returns a two-pane scene, and
+the scene calculation phase
+10:33 ends there.
+10:34 The scene decoration phase
+follows the same flow
+10:37 as before, just with the initial
+input being a two-pane scene
+10:40 instead of a single-pane scene.
+10:42 An important thing to
+note from this example
+10:44 is that the class of the scene
+returned after scene decoration
+10:47 to remain the same, even
+when the class of the scene
+10:50 returned during scene
+calculation changes.
+10:53 This is noteworthy because
+NavDisplay animates transitions
+10:57 between scenes
+when a key derived
+10:59 from the class of the current
+scene and its key property
+11:01 changes.
+11:03 This can cause
+unexpected behavior
+11:05 when introducing scene
+decorators in an app where
+11:07 different scenes
+use the same key,
+11:10 such as in the Nav 3
+Recipes List Detail Sample.
+11:14 In such a case, one solution
+is to provide an initial scene
+11:17 decorator strategy
+that copies everything
+11:19 from the calculated scene except
+for the key, instead using one
+11:23 derived from its class end key.
+11:25 This lets the following
+scene decorators just copy
+11:28 the key of their input scene.
+11:30 Following this approach,
+the List Detail Recipe
+11:32 now behaves like it did
+without any scene decorators.
+11:36 Now that we've covered the
+basics of scene decorators,
+11:38 let's see how they can
+be used for some more
+11:40 practical purposes.
+11:42 We've published recipes in
+the Nav 3 Recipes GitHub repo
+11:45 that demonstrate two use cases.
+11:48 The first shows how to create a
+scene decorator that adaptively
+11:51 switches between showing
+a bottom navigation
+11:53 bar or a navigation rail
+based on window size.
+11:56 And the second
+shows how to create
+11:58 a scene decorator
+that can display
+11:59 an entire scene in a dialog.
+12:02 We can't get into all of
+the details in this video.
+12:05 Here's a high-level overview of
+what those recipes demonstrate.
+12:08 In the responsive
+navigation recipe.
+12:11 We show how you can use
+Compose's movable content
+12:13 and shared element
+APIs to ensure
+12:15 that only one instance
+of a composable--
+12:17 in this case, the
+navbar or rail--
+12:19 is composed at any given time.
+12:21 We also demonstrate
+how a scene decorator
+12:23 can consider states such as
+the current window size class
+12:26 while determining how
+to decorate a scene.
+12:29 In the dialogue scene
+decorator recipe,
+12:31 we show one way
+that metadata can
+12:32 be used to determine if and how
+a scene should be decorated.
+12:37 And that's it for what's
+new in Navigation 3.1.1.
+12:40 Now I'll hand it back to Clara
+to share updates on Wear OS
+12:44 and what's coming
+next for Navigation 3.
+12:46 [MUSIC PLAYING]
+12:48 CLARA FOK: Support
+for Navigation 3
+12:49 goes beyond mobile devices.
+12:52 Available today is
+a Nav 3 integration
+12:54 for Wear OS with
+SwipeDismissibleSceneStrategy
+12:58 in Wear Compose Navigation
+1.6 stable version.
+13:02 Simply add rememberSwipeDis
+missibleSceneStrategy
+13:05 to your NavDisplay,
+and the entries
+13:07 will be displayed in
+Wear Material Components.
+13:10 It also comes with full
+support for swipe gestures.
+13:14 Beyond the 1.1
+release, we're also
+13:16 working on a couple new
+features for Version 1.2.
+13:20 Yes, we heard you.
+13:22 We will be adding APIs to
+support deep links and APIs
+13:25 to pass events or state-based
+results between destinations.
+13:30 Currently, we have recipes to
+show sample implementations
+13:33 of both features, but we
+are graduating these recipes
+13:37 into APIs to make
+it easier for you.
+13:40 So there's still more to come.
+13:41 [MUSIC PLAYING]
+13:44 BEN SAGMOE: Thanks
+for joining us today.
+13:45 We hope you've
+enjoyed learning how
+13:47 Navigation 3 can make building
+adaptive UIs easier than ever.
+13:50 To view the recipes mentioned
+in this talk as well
+13:52 as many others, check the
+link in the description.
+13:55 And last but not least, if you
+have any feedback or feature
+13:58 requests you'd like
+to share with us,
+13:60 please reach out through
+the GitHub or Issue Tracker.
+14:02 [MUSIC PLAYING]

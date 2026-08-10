@@ -100,9 +100,9 @@ Exposed via the `EnvelopeRepository` service as an additional AIDL:
 
 ```aidl
 // IAuditLog.aidl
-package com.capsule.app.data.ipc;
+package com.orbit.app.data.ipc;
 
-import com.capsule.app.data.ipc.AuditEntryParcel;
+import com.orbit.app.data.ipc.AuditEntryParcel;
 
 interface IAuditLog {
     // Returns the entries for a given day, most recent first.

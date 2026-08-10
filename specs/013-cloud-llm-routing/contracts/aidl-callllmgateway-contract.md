@@ -2,7 +2,7 @@
 
 **Boundary**: Android `:capture` process (`CloudLlmProvider`) → Android `:net` process (`NetworkGatewayImpl`)
 **Status**: DRAFT — Day 1 of `013-cloud-llm-routing`
-**Surface**: extends [`INetworkGateway.aidl`](../../../app/src/main/aidl/com/capsule/app/net/ipc/INetworkGateway.aidl) — package `com.capsule.app.net.ipc`.
+**Surface**: extends [`INetworkGateway.aidl`](../../../app/src/main/aidl/com/orbit/app/net/ipc/INetworkGateway.aidl) — package `com.orbit.app.net.ipc`.
 
 This contract is the Android-internal IPC counterpart of [`llm-gateway-envelope-contract.md`](llm-gateway-envelope-contract.md). It is concerned only with the Binder boundary between processes; once the request reaches `:net`, the envelope contract takes over.
 
@@ -11,11 +11,11 @@ This contract is the Android-internal IPC counterpart of [`llm-gateway-envelope-
 ## 1. AIDL signature
 
 ```aidl
-package com.capsule.app.net.ipc;
+package com.orbit.app.net.ipc;
 
-import com.capsule.app.net.ipc.FetchResultParcel;
-import com.capsule.app.net.ipc.LlmGatewayRequestParcel;
-import com.capsule.app.net.ipc.LlmGatewayResponseParcel;
+import com.orbit.app.net.ipc.FetchResultParcel;
+import com.orbit.app.net.ipc.LlmGatewayRequestParcel;
+import com.orbit.app.net.ipc.LlmGatewayResponseParcel;
 
 interface INetworkGateway {
     FetchResultParcel fetchPublicUrl(String url, long timeoutMs);                       // existing, UNCHANGED
@@ -27,13 +27,13 @@ The two new parcelable types each require a sibling `.aidl` declaration file:
 
 ```aidl
 // LlmGatewayRequestParcel.aidl
-package com.capsule.app.net.ipc;
+package com.orbit.app.net.ipc;
 parcelable LlmGatewayRequestParcel;
 ```
 
 ```aidl
 // LlmGatewayResponseParcel.aidl
-package com.capsule.app.net.ipc;
+package com.orbit.app.net.ipc;
 parcelable LlmGatewayResponseParcel;
 ```
 

@@ -262,6 +262,89 @@ describe("classify_intent handler — Haiku, prompt-cached", () => {
   });
 });
 
+describe("active_intent_review handler — Haiku, compact decision brief", () => {
+  const baseReq = {
+    type: "active_intent_review" as const,
+    requestId: RID,
+    payload: {
+      reviewContext: {
+        schemaVersion: 1 as const,
+        intentId: "basic:capture-1",
+        captureId: "capture-1",
+        mode: "SMART",
+        intentType: "CHAT_ACTION",
+        status: "ACTIVE",
+        completionKeyStatus: "FOUND",
+        primaryAction: "reply_or_dismiss",
+        evidence: {
+          kind: "CATEGORY",
+          label: "CHAT_ACTION",
+          source: "messaging_source",
+          excerpt: "Chelsea has a scheduled appointment at 2pm",
+        },
+      },
+    },
+  };
+
+  it("happy path → active_intent_review_response", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            decision: "KEEP_FOLLOWING",
+            confidence: 0.81,
+            rationale: "This looks like a message follow-up with a specific appointment time.",
+            suggestedResolution: null,
+          }),
+        },
+      ],
+      usage: { input_tokens: 44, output_tokens: 20, cache_read_input_tokens: 100 },
+    });
+    const { handle } = await import("../handlers/active_intent_review.js");
+    const result = await handle(baseReq, { userId: "u", requestId: RID });
+
+    expect(result.response).toMatchObject({
+      type: "active_intent_review_response",
+      requestId: RID,
+      decision: "KEEP_FOLLOWING",
+      confidence: 0.81,
+      modelLabel: "anthropic/claude-haiku-4-5",
+    });
+    expect(result.cacheHit).toBe(true);
+  });
+
+  it("non-JSON upstream → MALFORMED_RESPONSE", async () => {
+    mockCreate.mockResolvedValueOnce(anthropicSuccess("not json at all"));
+    const { handle } = await import("../handlers/active_intent_review.js");
+    const result = await handle(baseReq, { userId: "u", requestId: RID });
+    expect(result.response).toMatchObject({ type: "error", code: "MALFORMED_RESPONSE" });
+  });
+
+  it("schema-invalid decision → MALFORMED_RESPONSE", async () => {
+    mockCreate.mockResolvedValueOnce(
+      anthropicSuccess(
+        JSON.stringify({
+          decision: "DELETE_SCREENSHOT",
+          confidence: 0.9,
+          rationale: "bad",
+          suggestedResolution: null,
+        }),
+      ),
+    );
+    const { handle } = await import("../handlers/active_intent_review.js");
+    const result = await handle(baseReq, { userId: "u", requestId: RID });
+    expect(result.response).toMatchObject({ type: "error", code: "MALFORMED_RESPONSE" });
+  });
+
+  it("upstream 5xx → GATEWAY_5XX", async () => {
+    mockCreate.mockRejectedValueOnce(makeApiError(502));
+    const { handle } = await import("../handlers/active_intent_review.js");
+    const result = await handle(baseReq, { userId: "u", requestId: RID });
+    expect(result.response).toMatchObject({ type: "error", code: "GATEWAY_5XX" });
+  });
+});
+
 describe("scan_sensitivity handler — Haiku, prompt-cached", () => {
   it("happy path with cache hit → cacheHit=true, tags array", async () => {
     mockCreate.mockResolvedValueOnce({

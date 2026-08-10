@@ -1,0 +1,849 @@
+00:00 [MUSIC PLAYING]
+00:06 PAUL FENG: Hi, everyone.
+00:08 Hi, everyone.
+00:08 I'm Paul, I'm the VP of Product
+Eng in UX for Google Play.
+00:13 And welcome, and thanks
+for being here today.
+00:17 I'm super excited to
+be able to be here
+00:19 to share all the new ways
+that we've been working
+00:22 to support your success.
+00:25 We know how much work you
+put into what you build.
+00:28 And our job is to help
+you take those big ideas
+00:32 and share them with the
+world, helping people
+00:34 solve problems, find
+some fun, and helping
+00:38 you turn your passion into
+a successful business.
+00:44 We are always trying
+to ensure we're
+00:46 delivering more value to you.
+00:48 And today the team and I
+are very excited to show you
+00:51 how we're doing that.
+00:53 First, I'll walk
+you through the ways
+00:55 we're helping you, giving you
+more choice over your business
+00:59 model.
+01:01 Then Kelly will
+show you how we're
+01:03 creating new ways for your apps
+and content to be discovered.
+01:07 And finally, Diego
+will show you how
+01:09 we're streamlining your
+workflows, shifting
+01:11 your focus away
+from tedious tasks,
+01:15 so you can focus on growth.
+01:18 I'll start with how we're
+evolving our business
+01:20 model with more choice.
+01:22 As part of this evolution, we've
+built Play's billing system
+01:26 to drive the highest
+conversion for your business.
+01:29 We think it's the
+best in the world.
+01:31 It supports your growth in
+three key ways-- in trust,
+01:36 in seamless commerce,
+and in global reach.
+01:39 I'll start with trust.
+01:41 When users choose
+Play Billing, they
+01:43 trust us for a safe
+and secure experience.
+01:47 We've built our system
+with the highest privacy
+01:49 standards and integrated robust
+protections for families.
+01:55 This foundation continues to
+be a primary engine driving
+01:59 your revenue growth.
+02:02 Next, global reach-- we continue
+to expand our reach globally.
+02:06 Today, Play Billing supports
+over 300 local payment methods
+02:10 across more than 65
+markets and handles
+02:13 the complexity of regional
+taxes and compliance,
+02:17 so you don't have to.
+02:19 Beyond geography, it's
+about business models.
+02:21 Our system provides a
+sophisticated subscriptions
+02:25 platform to help you build
+long-term recurring revenue.
+02:31 Finally, seamless commerce--
+we're making the path
+02:34 to purchase smoother,
+so users are
+02:36 ready to pay before
+they even open your app.
+02:39 This has helped bring the total
+number of purchase-ready users
+02:42 on Play to over 890 million.
+02:48 But while Play Billing is a
+core part of our platform,
+02:52 we have heard that
+some developers
+02:54 say they want more flexibility.
+02:57 We've recently announced
+upcoming changes
+02:59 that will give you expanded
+billing choice and new, lower
+03:03 service fees.
+03:06 As we first shared
+in March, we'll
+03:08 soon give you the flexibility
+to offer alternative billing
+03:12 alongside Google Play Billing.
+03:14 This means you can give
+your users the option
+03:16 to choose how they pay, through
+Play or an alternative method,
+03:20 whether that's a third-party
+billing system in your app
+03:23 or game, or an
+external web link.
+03:27 To support this, we're
+decoupling our platform service
+03:30 fee from the billing fee
+and lowering service fees
+03:33 even further.
+03:35 Under this new structure, our
+standard service fee on mobile
+03:39 will be 10% on your
+first hundred--
+03:42 or first million dollars
+in annual earnings and 10%
+03:48 on recurring transactions
+like subscriptions.
+03:53 For non-recurring
+recurring transactions,
+03:55 like in-app purchases,
+your fee will now
+03:57 depend on whether a user is
+a new or existing install.
+04:02 We're lowering the standard
+service fee for new installs
+04:05 to 20%, while
+existing installs will
+04:08 have a standard rate of 25%.
+04:12 But we're not stopping there.
+04:14 We want to invest
+alongside you to make
+04:16 sure your users get the best
+experience on every device they
+04:20 own.
+04:21 To reward your investment
+in giving users
+04:25 the best experience
+on our ecosystem,
+04:27 we're offering an
+even lower rate
+04:30 of 15% for new installs and
+20% for existing installs
+04:36 through our revamped Level
+Up program and our new Apps
+04:39 Experience program.
+04:41 In the coming weeks,
+we'll share more details
+04:43 so you'll have time to
+prepare before the new rate
+04:46 card goes live on December 30.
+04:51 Now, to ensure a seamless
+transition as well as alignment
+04:54 with local regulations,
+these changes
+04:56 are going to roll out
+on a staggered schedule.
+04:59 The rollout date for
+each region is also
+05:01 the date for determining
+what counts as a new install.
+05:05 We think this is a big deal.
+05:07 And we're really excited.
+05:08 With these changes,
+Google Play service fees
+05:10 will be among the
+lowest of any app store
+05:14 and will give you more
+resources to reinvest directly
+05:17 into your apps and games.
+05:20 But these changes are
+just the beginning
+05:22 of how we're supporting
+your growth in 2026.
+05:28 We know the reason
+you invest in Android
+05:30 and you invest in
+Play is because it's
+05:31 the best way to reach the
+most users around the world.
+05:35 So we continue to
+make big investments
+05:37 in how users
+discover and interact
+05:40 with your apps and content.
+05:42 To walk you through how
+we're helping you further
+05:44 expand your reach, on
+and beyond the store,
+05:47 please welcome
+Kelly to the stage.
+05:50 [APPLAUSE]
+05:54 KELLY JORRIE: Thank you, Paul.
+05:56 Hi, everyone.
+05:57 I'm Kelly, Global Head of
+Apps Category Management
+06:01 and Go-To-Market at Google Play.
+06:03 My team and I work to ensure
+that all the categories of apps
+06:07 that users love-- like
+media and entertainment,
+06:10 social, or native AI, and more
+can grow and succeed on Play.
+06:17 Today, your apps and the
+incredible worlds that you build
+06:21 are no longer just
+a single destination
+06:24 but connected experiences
+that reach users
+06:27 across surfaces and devices.
+06:31 And our mission is to
+connect you with people
+06:34 at the moments that matter most.
+06:36 Since last I/O, we've
+doubled down on this goal
+06:40 in continuing to evolve Play
+into a content for destination
+06:45 that offers people the immersive
+and personalized experiences
+06:49 that they crave.
+06:50 For example, last fall we
+added a new content format
+06:55 at the top of Apps
+Home called Spotlight.
+06:59 This format curates
+timely, seasonal,
+07:02 and cultural moments in
+a new and immersive way,
+07:06 such as the Olympics or
+the recent global launch
+07:09 of BTS's latest album,
+which received over
+07:14 1.3 billion impressions
+during its first weekend,
+07:19 driving more exploration
+and discovery on the Store.
+07:23 And You tab-- a
+personalized space
+07:27 that makes it easier for users
+to reengage and discover content
+07:31 from their favorite
+apps and games.
+07:34 For gamers, it's even more.
+07:36 It's a single hub for accessing
+their gamer profile, rewards,
+07:41 stats all in one place.
+07:44 You tab is already seeing
+over 250 million active users
+07:49 engaging with your apps
+and games every month.
+07:53 And to help users find what
+they're looking for faster,
+07:57 we've made search way better.
+08:00 For example, with AI-powered
+Q&A, the next time
+08:04 a user is curious if an app like
+Vrbo has rentals in Costa Rica,
+08:10 they can simply ask, and
+Play can help address
+08:13 these nuanced questions.
+08:15 AI-powered Q&A is already
+providing comprehensive answers
+08:20 for 95% of the questions
+users are asking
+08:24 about your apps and games.
+08:25 Spotlight, You tab,
+and AI-powered Q&A
+08:29 are just a few examples of
+the new content-forward play,
+08:34 making it easier for users
+to discover and better
+08:37 connect with your content.
+08:40 Today, I'm excited to share
+new updates that further expand
+08:45 your reach by meeting
+users where they are,
+08:48 whether that's on the
+Store, beyond the Store,
+08:54 or in your apps and games.
+08:57 Let's start with helping your
+apps reach users on the Store.
+09:02 Users love short-form video
+curated to their interests.
+09:06 And many of our most
+successful developers
+09:09 are already using it to create
+compelling in-app experiences.
+09:13 Plus, many users like Gen Z
+are looking for better ways
+09:17 to learn more about your app's
+capabilities and content.
+09:21 So to meet user demand,
+we're launching Play Shorts,
+09:25 a vertical, full-screen
+video feed that
+09:28 evolves how users can get a
+glimpse into your app's look,
+09:32 feel, and functionality.
+09:34 You can upload Shorts
+directly in the Play Console.
+09:38 Shorts is launching
+next month for users
+09:40 in the US and select developers.
+09:43 And we're looking forward
+to rolling this out
+09:45 to more markets and
+more developers soon.
+09:49 Users also want to find the
+right apps and games more
+09:53 effortlessly.
+09:54 The challenge is, they often
+don't know if your app can
+09:58 meet the need that they have.
+09:60 So building on the
+intelligent layers for search,
+10:03 I'm thrilled to
+introduce Ask Play.
+10:07 This AI-powered overlay
+turns app discovery
+10:10 into a natural
+conversation and is
+10:13 accessible to users across
+surfaces throughout the Store.
+10:18 Whether a user is starting
+with the broadest of searches
+10:21 or has a specific question, Ask
+Play understands the context
+10:26 and adapts to every follow-up
+before connecting the user
+10:30 to the right app.
+10:31 For example, I've
+recently been wanting
+10:34 to learn how to play chess.
+10:36 I can simply ask
+Play to show me which
+10:39 app might make learning
+chess a little bit more fun.
+10:43 Duolingo-- Ask Play is able to
+identify that Duolingo recently
+10:48 added chess lessons to their
+language-learning content.
+10:52 That's interesting.
+10:54 Does Duolingo offer free
+lessons, or is it paid?
+11:01 Super Duolingo
+sounds compelling,
+11:03 but I think I want to
+learn just a little more.
+11:07 I can simply follow-up again.
+11:13 Seems like there's
+a lot of benefits
+11:15 packed into that subscription.
+11:17 More compelling
+for me, though, I
+11:18 think I'll try out the
+seven-day free trial.
+11:21 And perhaps my chess master
+dreams are right on the horizon.
+11:26 So as you can see, Ask
+Play is able to understand
+11:29 the context of my questions
+and make recommendations
+11:33 and adjustments to
+connect the right apps
+11:35 to the right audience.
+11:37 And as your apps add
+new capabilities,
+11:40 Ask Play is able to
+keep users informed.
+11:43 It's available today in English
+in the US with more languages
+11:48 and markets coming soon.
+11:50 We're also pushing the
+boundaries of your reach
+11:54 beyond the Store.
+11:56 As users start their
+journeys more and more
+11:59 with virtual assistants,
+we want to ensure
+12:02 that your apps and the content,
+solutions, and experiences
+12:06 that they provide
+are an essential part
+12:08 of this new era of discovery.
+12:11 That's why I'm incredibly
+excited to announce
+12:14 a completely new way for you to
+reach users beyond the Store.
+12:19 In the coming weeks, we're
+bringing app discovery directly
+12:23 to the Gemini app on
+Android and the web,
+12:26 connecting your apps and games
+to millions of Gemini users.
+12:31 This is huge.
+12:32 Let me show you how it works.
+12:34 I often will plan our family
+vacations around scuba diving.
+12:39 And I've recently
+discovered that I
+12:41 like to learn about
+the types of fish
+12:43 that I might see ahead of time.
+12:45 So some might say I'm
+in my bird-watching era,
+12:48 but for the ocean.
+12:50 So I might ask Gemini,
+can you recommend
+12:53 an app that will show
+what type of fish
+12:56 I can see in my
+upcoming scuba dive?
+12:59 Or when I'm ready to recap our
+trip on social media, I may ask,
+13:05 I've been into this
+blurry, vintage-film look
+13:08 on social media.
+13:09 How can I get that '90s
+disposable camera aesthetic
+13:13 for my photos?
+13:18 I think I'll download VSCO.
+13:20 Instead of a static
+list of links,
+13:23 Gemini surfaces the
+actual magic of your apps.
+13:29 It might suggest Fish
+Identifier to really get
+13:32 the most out of my
+dive or highlight
+13:34 VSCO to nail that retro vibe.
+13:37 By presenting your Store
+listing as a direct solution
+13:41 to a conversation,
+we're making it
+13:44 effortless for a fish enthusiast
+or an aspiring creator
+13:48 to go from a spark
+of inspiration
+13:51 directly to your app experience.
+13:54 And here's the best part.
+13:55 Just like Ask Play, this
+requires zero additional code
+13:59 by you.
+13:60 Plus, Play already
+understands your apps deeply,
+14:03 thanks to the information that
+you provide in the store listing
+14:07 page on the Play Console.
+14:09 And now we can ensure
+that Gemini also
+14:11 presents your app and its
+store listing as you intend.
+14:16 For select topics like finding
+great movies or TV series,
+14:21 coming later this year,
+Google Play and Gemini users
+14:24 can even inquire about
+specific content.
+14:27 For example, let's say I ask,
+I want to watch "Landman."
+14:31 Where can I stream it?
+14:33 Gemini intelligently identifies
+the show and its primary home
+14:37 to stream, Paramount+, and
+provides a clear watch CTA,
+14:42 allowing users to jump
+right into their stream.
+14:45 And if a user doesn't
+have the app already,
+14:48 it will prompt them to
+install it to get started.
+14:52 Play and Gemini users will be
+able to explore content across
+14:57 over 450,000 movies and shows.
+15:01 This experience will also
+be expanding to sports,
+15:05 allowing fans to ask
+questions like, where can I
+15:08 stream tomorrow's
+Fever versus Sky game?
+15:11 Gemini will let them
+know that they can
+15:13 catch the game on the WNBA app.
+15:16 We're kicking off
+content discovery
+15:18 in media and entertainment
+apps and will be expanding
+15:21 to other categories soon.
+15:24 And for developers who want
+to go even further and build
+15:28 richer, deeper
+experiences, we provide
+15:31 AppFunctions, Android's
+native implementation
+15:35 of MCP for mobile apps.
+15:37 Check out the Android show
+link here to learn more.
+15:43 OK, there's one
+more way that we're
+15:46 expanding your reach beyond the
+Store, specifically designed
+15:50 for game developers.
+15:52 This new and
+exciting service aims
+15:54 to strengthen the relationship
+between you and your gamers.
+15:58 Play Games Sidekick is our
+helpful, in-game overlay
+16:03 that gives users instant
+access to gaming information,
+16:07 like AI-generated games tips,
+rewards, achievements, and more,
+16:12 keeping them fully engaged.
+16:14 Over 100 games have already
+incorporated Sidekick.
+16:18 And we're looking forward
+to seeing more games enable
+16:21 this experience this summer as
+part of our global expansion.
+16:26 You can head to the Play Console
+to enable it today and begin
+16:29 testing the user experience,
+so you're fully primed
+16:32 for our global launch.
+16:34 Plus, next month, we're adding
+two more social features
+16:38 to Sidekick to further
+grow your gamer community.
+16:42 First, gamers will be able to
+see what games their friends are
+16:47 playing.
+16:47 And second, they can track
+their friends achievements,
+16:50 letting them know what
+milestones they've reached.
+16:53 Reaching users where they are,
+whether that's on the Store,
+16:57 across devices, or
+right in your games
+17:01 is a huge part of helping
+you grow your business.
+17:05 We're also empowering you
+with new tools and reports
+17:08 you need to cut
+through the noise
+17:10 and streamline your
+day-to-day operations.
+17:13 For that, I'd like
+to invite Diego
+17:15 to the stage to share
+how we're helping
+17:17 you scale with less complexity.
+17:19 [APPLAUSE]
+17:20 DIEGO DAYAN: Thank you, Kelly.
+17:21 [APPLAUSE]
+17:27 Hello, everyone.
+17:28 I'm Diego, Director of
+Engineering on the Play team.
+17:32 I'm going to walk
+you through three
+17:33 ways wear helping you scale
+your business with less
+17:36 manual overhead.
+17:39 First, AI-powered
+content management--
+17:42 we're using Gemini to handle
+the heavy lifting of localizing
+17:46 your Store content and
+managing your catalog.
+17:50 Second, revenue
+optimization-- we're
+17:53 building tools that
+work behind the scenes
+17:56 to optimize your revenue
+and your conversion.
+17:60 And finally, reporting
+and insights-- we're
+18:02 introducing AI-powered
+features that
+18:05 help you get more out
+of your data faster.
+18:10 OK, let's start
+with localization.
+18:12 We are eliminating the manual
+work of localizing your Store
+18:15 listings.
+18:17 Previously, this required
+tens of copy/pastes
+18:20 for each language.
+18:22 You can now upload structure
+files, like a CSV or Google
+18:26 Sheet, and Gemini will
+pre-populate the listings
+18:28 for you.
+18:29 No more copy/pasting.
+18:31 Just review and submit.
+18:36 And you can also use AI to
+translate your subscription
+18:38 benefits to help users
+fully understand your value
+18:42 proposition in their
+native language.
+18:47 And we're also helping you
+turn search trends into growth.
+18:51 We already recommend search
+keywords in your growth overview
+18:54 page and suggest listings
+that support those keywords.
+18:59 Now, when you click
+on a recommendation,
+19:02 we will take you straight
+to a new custom listing.
+19:05 Store listing, that is
+automatically tailored
+19:07 to that keyword and ready to
+deploy with just one click.
+19:20 And beyond Store presence,
+we are simplifying
+19:23 how you manage your in-app
+products with agentic catalog
+19:26 management.
+19:28 Soon you will be able to use
+Gemini right in the Play Console
+19:31 to execute bulk
+price changes, import
+19:34 SKUs, and configure metadata,
+saving you hours of manual work.
+19:40 And now let's move on
+to revenue optimization.
+19:44 Managing a global
+subscriber base is complex,
+19:48 so we're building tools that
+maximize revenue at every stage,
+19:52 including at the
+point of conversion,
+19:55 the point of renewal, and
+the point of cancellation.
+19:59 To optimize at the
+point of conversion,
+20:02 we're introducing
+delayed charging.
+20:04 When a payment fails, our risk
+models evaluate the transaction.
+20:08 If it's low risk, we still
+grant the user access
+20:10 to your paid content
+while we retry
+20:12 the charge in the background.
+20:14 This means the user gets
+the best experience,
+20:17 and you are less likely
+to lose subscribers
+20:19 due to some temporary glitch.
+20:22 We know one of the
+most frustrating ways
+20:26 to lose a subscriber is not
+because they lost interest,
+20:29 but because of payment failures,
+like when they have an expired
+20:32 credit card.
+20:33 To help, we recently extended
+the default account recovery
+20:37 period from 30 to 60 days,
+giving users more time
+20:41 to fix their payments.
+20:44 This change has resulted
+in an 18% reduction
+20:47 in involuntary churn and a
+9% reduction in total churn
+20:51 for top developers.
+20:54 But when a user wants to
+cancel, a rich experience
+20:57 can make retention
+more challenging.
+20:60 So we are giving
+you more flexibility
+21:01 to keep customers
+who are on the fence.
+21:05 Coming soon, our in-app
+Subscription Management API
+21:08 will let users easily change
+plans directly within your apps.
+21:13 But more importantly,
+we're bringing
+21:15 this functionality into the
+cancellation flow itself.
+21:18 If a user hits cancel, you can
+offer them a downgrade instead.
+21:22 Combined with our
+new replacement modes
+21:25 that automatically handle the
+math for prorated refunds,
+21:28 and you have a powerful toolkit
+to save Android subscribers.
+21:38 And while we're focused on
+keeping your users happy,
+21:41 we're just as focused on keeping
+on keeping the bad actors out.
+21:45 Last year, our
+anti-fraud efforts
+21:48 protected apps using Google
+Play billing from $3.4 billion
+21:53 in attempted fraud and $130
+million in abusive refunds.
+21:58 We run tools in the background
+24/7 to safeguard your business,
+22:02 often with no developer
+work required.
+22:05 To help you scale safely, we're
+launching Protected with Play.
+22:11 This new console dashboard
+lets you monitor and configure
+22:14 your app integrity,
+distribution, and monetization
+22:17 defenses all in one place.
+22:21 Front and center
+of this dashboard
+22:23 is the Play Integrity API.
+22:25 Many of you already rely
+on this tool for billions
+22:28 of checks every day.
+22:29 To make it more powerful,
+we're making these checks
+22:33 significantly faster.
+22:35 Now you can use them during
+your most critical user journeys
+22:38 without compromising
+the experience.
+22:42 OK, now let's talk about
+reporting and insights.
+22:47 We're making it easier to
+understand your performance
+22:49 and ROI on Play.
+22:52 This starts with a new rich
+metric on the Grow overview
+22:55 page, which shows you how
+often your app is seen on Play.
+22:60 We are combining
+that broader view
+23:02 of the funnel with new
+traffic source attribution.
+23:05 Previously, you could see
+how different traffic sources
+23:09 contributed to your metrics
+only in the initial acquisition.
+23:15 Now you can also see how these
+traffic sources, like explore
+23:19 or paid and direct, contribute
+to reach engagement, retention,
+23:23 and revenue even
+after the acquisition.
+23:27 This helps you understand where
+your most valuable users are
+23:29 coming from.
+23:32 And we're also moving
+to indirect attribution
+23:34 for all Store reporting.
+23:36 This ensures you accurately
+measure the impact of your Store
+23:40 content like video
+and screenshots,
+23:42 even if a user visits
+your page today
+23:44 but wait until later to install.
+23:48 And once your users
+reach your app,
+23:51 we also want to help you
+optimize their path to purchase.
+23:56 With card conversion rate
+added to your core performance
+23:60 metrics, we are also making it
+easier to optimize conversions.
+24:05 And we are also making it easier
+to understand subscription churn
+24:09 with better data on how
+long users are staying,
+24:12 their device tiers, and
+the reasons they leave.
+24:16 So you can easily identify which
+segments are at risk and why.
+24:28 OK, finally, let's talk about
+making data more useful.
+24:32 The goal isn't just to
+give you more metrics.
+24:35 It's also to get
+you more answers.
+24:38 Last year, we launched
+Gemini-powered chart
+24:41 descriptions on the
+statistics page.
+24:43 Today we're expanding
+these descriptions
+24:45 to our reach and devices
+and Store performance pages
+24:49 to help you spot key acquisition
+trends the second you open
+24:52 the page.
+24:56 And we also added interactive,
+follow-up Q&A directly
+24:59 into your charts.
+25:00 This means you can go beyond
+understanding what happened
+25:04 and use suggested questions
+to ask Gemini why it happened
+25:08 and what to do next.
+25:11 Combined with new AI-driven
+performance insights
+25:15 that give you tailored
+monetization recommendations,
+25:18 you now have a much faster
+way to optimize your business.
+25:26 We covered a lot today,
+from Pulse updates
+25:29 on our more flexible
+business model
+25:31 to look at how Gemini
+is reimagining discovery
+25:36 to the new ways
+we are automating
+25:39 your daily operations.
+25:40 Our goal is simple.
+25:42 We want to be a good
+partner for your growth.
+25:46 And there's so much more
+we wanted to talk about.
+25:48 To get more details
+on everything
+25:50 we covered today and more,
+please see our blog post.
+25:57 On behalf of Paul, Kelly,
+and the entire Play team,
+26:01 thank you for your
+partnership, your feedback,
+26:03 and for everything
+you build on Android.
+26:05 Enjoy the rest of I/O.
+26:06 [APPLAUSE]
+26:07 [MUSIC PLAYING]

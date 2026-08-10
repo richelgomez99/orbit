@@ -1,0 +1,1275 @@
+00:00 [MUSIC PLAYING]
+00:06 DON TURNER: Hey, everyone.
+00:07 I'm Don, and this is Jose.
+00:10 Today we're going to talk
+to you about building
+00:12 adaptive UIs, specifically for
+mobile and large-screen form
+00:17 factors.
+00:18 So generally, when you think
+about building an adaptive UI,
+00:21 you think about how it looks
+on different form factors.
+00:24 You start with
+phones, which is still
+00:27 definitely the most
+important form factor,
+00:30 but then you consider tablets,
+foldables, laptops, desktops,
+00:34 TV, cars, and a whole bunch
+of other form factors.
+00:38 Form factors represent an
+abstraction for a device's size
+00:43 and capabilities,
+and they give us
+00:46 a shared vocabulary
+that makes it
+00:48 easy to discuss how
+our apps should look
+00:51 on a given class of devices.
+00:53 After all, we all know
+what a tablet is, right?
+00:59 OK, so let's test that.
+01:02 Hands up if you think
+this is a tablet.
+01:07 OK, about 75% 80%.
+01:12 So we're mostly in
+agreement there.
+01:15 So same question--
+how about this?
+01:17 Do think this is a tablet?
+01:20 This is the same device in a
+charging dock with a keyboard
+01:24 and mouse.
+01:26 OK, so I'd say that
+was about 50% of you.
+01:31 So last one-- how about this?
+01:34 Do you think this is a tablet?
+01:38 OK, maybe 20%.
+01:43 OK.
+01:44 So it turns out we don't all
+agree on what a tablet is.
+01:50 This is kind of fun, though,
+so let's do another one.
+01:53 Is this a phone?
+02:00 It's definitely a
+phone when it's not
+02:02 plugged into that monitor.
+02:04 But does it become something
+else when it's connected?
+02:08 So my point here is
+that we don't all
+02:11 agree on what form factors are.
+02:14 Devices can have
+multiple form factors.
+02:16 They can switch
+between them instantly,
+02:18 and they sometimes don't
+neatly fall into a form factor
+02:22 category.
+02:24 And this means that form factors
+aren't quite as useful as we
+02:27 once thought they were
+for designing UIs. Also,
+02:31 creating form factor-specific
+UIs can lead to branches
+02:35 or entire code bases with lots
+of repeated code and loads
+02:39 of maintenance requirements.
+02:42 So a better approach is
+to design and develop
+02:45 for UI capabilities such as
+window size and pointer type.
+02:50 And this allows you to
+create an optimal UI,
+02:53 regardless of the form factor.
+02:55 And with the APIs and tools that
+we're going to show you today,
+02:58 it doesn't have to be
+a costly investment.
+02:60 And you never know.
+03:01 It might actually be fun.
+03:04 JOSE ALCÉRRECA: All
+right, so in this talk,
+03:06 Don will focus on
+the adaptive APIs,
+03:09 and I'll show you
+how you can implement
+03:11 the changes using AI agents.
+03:15 The good news is that
+AI agents make this
+03:18 a lot easier and a lot faster.
+03:20 You can adapt layouts,
+create regression tests,
+03:24 refactor code, and
+migrate to modern APIs.
+03:27 And in this session, we'll
+talk a lot about new APIs.
+03:31 The problem is that models
+might not know about them yet,
+03:35 and that's why we need to
+complement large language
+03:38 models with fresh knowledge.
+03:41 If we do this, then the
+accuracy improves a lot.
+03:44 For that, we've released
+two key resources
+03:47 that you should know and
+use as Android developers.
+03:51 First, the Knowledge Base, which
+is a collection of thousands
+03:55 of up-to-date articles, mainly
+from Android's documentation,
+03:59 but also Firebase, Google Play,
+Kotlin, Google Developers,
+04:03 et cetera.
+04:05 And also, we released the
+official Android skills.
+04:08 Skills are modular
+instructions to help
+04:12 LLMs understand best practices
+and execute specific workflows.
+04:17 They are a lot more opinionated
+than regular documentation,
+04:21 as they contain specific
+instructions for agents.
+04:25 The Knowledge Base and skills
+are available in both Android
+04:28 Studio and the Android CLI, so
+you can use them from any agent.
+04:33 If you don't know what
+the Android CLI is,
+04:35 it's a collection
+of tools for agents
+04:37 that let you manage your SDK
+and emulators, deploy apps.
+04:42 And also, it lets you
+search the Knowledge Base
+04:44 and install skills.
+04:47 Today, we are announcing
+an adaptive skill.
+04:50 It's an opinionated guide to
+help you make your UIs adaptive.
+04:54 You can download it from
+GitHub or using Android CLI.
+04:60 So now, with all
+of these resources,
+05:03 can you adapt a whole
+app in just one prompt?
+05:07 Can you just ask the agent,
+make my app adaptive?
+05:12 It depends a lot on the
+app, but one thing is clear.
+05:14 The change is a lot better
+and, in the long run, faster
+05:18 if we go step by step,
+and we have a clear plan.
+05:22 DON TURNER: Yeah, that's right.
+05:23 So the more you know
+about the tools and APIs,
+05:25 the better your prompts,
+the better your plans,
+05:28 and the better
+your code reviews.
+05:30 Plus, agents can
+make mistakes, so you
+05:33 need to be able to review
+any generated code.
+05:37 So in this talk, we'll give you
+the guidance and API information
+05:40 you need to get high-quality
+code from your AI agent.
+05:44 JOSE ALCÉRRECA: All right,
+let's switch to the laptop.
+05:52 DON TURNER: Done.
+05:53 JOSE ALCÉRRECA: [LAUGHS]
+05:55 There you go.
+05:57 So for this talk,
+we're going to be using
+05:59 this app that I vibe-coded.
+06:01 It's called Pawparazzi.
+06:02 It shows pictures of pets.
+06:05 It also has a Messages tab
+to talk to other users.
+06:09 DON TURNER: Yeah, it
+wouldn't be Google I/O
+06:11 without someone showing
+you a new chat app, right?
+06:14 JOSE ALCÉRRECA: Exactly.
+06:16 And it has a pet of the month
+with a simple list for now.
+06:20 DON TURNER: Yeah.
+06:21 And just to be clear, we know
+that all pets are the best.
+06:25 It's just a demo app.
+06:27 JOSE ALCÉRRECA: Exactly.
+06:29 So this app looks fine.
+06:32 It's just a sample
+app made quickly
+06:34 with a simple UI architecture.
+06:36 But let's unfold first--
+06:40 you are probably seeing
+some issues already.
+06:43 By the way, I cannot recommend
+the foldable emulator enough.
+06:47 It's super handy to be
+able to rotate and unfold,
+06:50 to check multiple screen
+sizes with just one emulator.
+06:55 But let's see what
+happens if I rotate it.
+07:02 It's not great.
+07:04 However, this is the
+reality of lots of apps.
+07:07 And now that the portrait
+restrictions are being lifted,
+07:10 we really should focus
+on making this better.
+07:13 In case you don't
+know, in Android 16,
+07:15 you can't restrict your
+app to portrait anymore.
+07:20 All right, let me open the agent
+here and send a prompt just
+07:25 to show you how
+skills are activated.
+07:27 So I'll just say, make
+my app adaptive, for now.
+07:33 So it's important to note
+that I previously installed
+07:35 the adaptive skill
+that you can see here.
+07:40 And immediately, the agent,
+or the model, in this case,
+07:43 has decided to activate it.
+07:45 You can see it here.
+07:46 So if I open it, it's over here.
+07:51 We're not going to show the
+agent running the whole task.
+07:54 That's like watching paint dry.
+07:55 But all the prompts that
+we're showing in this talk
+07:58 have been run multiple
+times in an automated way,
+08:01 making sure that they always
+yield the same result.
+08:04 And they've been run with Gemini
+3 Flash in Android Studio.
+08:09 All right, let's switch
+to the slides again.
+08:14 Cool.
+08:15 So even though we don't
+recommend this in a real app,
+08:18 let's just try this
+prompt with our sample
+08:21 app-- make my app adaptive.
+08:24 Once finished,
+the mobile version
+08:27 looks the same as it
+already looked, fine.
+08:31 On a foldable, it now
+looks a little better.
+08:34 We have a navigation rail
+instead of a bottom navigation
+08:37 bar, and it even created
+a list detail layout
+08:41 for the Messages tab.
+08:44 In a bigger window,
+it's making better use
+08:46 of the available space.
+08:49 DON TURNER: Yeah.
+08:49 I mean, it looks
+pretty good, right?
+08:52 And all this in just
+a single prompt.
+08:55 Are we done?
+08:56 JOSE ALCÉRRECA:
+Yeah, let's go home.
+08:58 No, this is the classic
+vibe-coding illusion.
+09:02 Doing things from scratch or
+to a simple app like this one
+09:05 is a lot easier for models
+because they can just
+09:07 make generic decisions.
+09:09 However, more complex apps have
+more screens, different layouts,
+09:14 more customization, and
+there's just some decisions
+09:18 that you or your UX
+team should be making.
+09:22 For example, if we open the
+app on mobile in landscape,
+09:26 we see that there's very
+little space for the pictures.
+09:29 So the skill
+definitely helps, but
+09:31 if you ask the agent to
+make your app adaptive--
+09:35 but it's much better if you use
+it to support you along the way,
+09:39 going step by step.
+09:41 DON TURNER: OK, so instead
+of using a single prompt
+09:43 and hoping that the AI
+agent does the right thing,
+09:47 we need a plan.
+09:49 And in fact, you can use the
+adaptive skill with your agent
+09:53 to create this plan.
+09:55 So the first thing
+we need to do is
+09:57 make sure our codebase
+is ready for adaptation.
+09:59 And this means migrating
+all views to Compose.
+10:03 We announced that Android is
+now Compose-first, meaning that,
+10:06 going forward,
+all UI development
+10:08 should be done in Compose,
+and the Views system libraries
+10:11 are entering maintenance mode.
+10:13 Plus, virtually all the APIs
+you'll see today are Compose.
+10:18 So basically, use Compose.
+10:21 Next, you should-- not navigate.
+10:24 You should migrate
+to Navigation 3.
+10:27 And Nav3's superpower
+is that it natively
+10:30 supports multi-pane layouts
+without changing the backstack
+10:35 state, which makes it
+perfect for adaptive layouts.
+10:39 Next, if you don't
+already have them,
+10:41 add tests to verify how your app
+looks on different form factors.
+10:45 These allow you to easily
+verify any UI changes.
+10:50 And you'll probably also need
+some behavior tests to make sure
+10:52 that nothing breaks when you're
+going through this process.
+10:56 So with that out
+of the way, you're
+10:58 then ready to start
+making your app adaptive.
+11:01 And for this, it helps to
+understand the process.
+11:05 So you use UI capabilities to
+drive decisions about your UI.
+11:13 And UI capabilities
+include things
+11:14 like window size
+and pointer types
+11:18 like mouse, touch, and stylus.
+11:21 And it also includes things
+the type of keyboard being used
+11:25 and many other capabilities.
+11:28 And these capabilities
+can be used
+11:30 to change your UI
+at different levels.
+11:33 So at the app level, you could
+change your overall layout
+11:36 to display a bottom nav bar on
+a compact window width and a nav
+11:41 rail on wider-screen devices.
+11:45 You can also adapt your main
+content layouts from single pane
+11:48 to multi-pane.
+11:50 And lastly, you can make
+lower-level UI components
+11:53 adaptive like lists,
+grids, and buttons,
+11:59 for example, by making a
+grid of photos or cards
+12:02 with an adaptive
+number of columns.
+12:05 Now, these aren't
+hard boundaries.
+12:07 You can and should
+adapt your app
+12:09 at any level that
+is appropriate.
+12:13 So all right, we've got a plan.
+12:16 Let's get to work.
+12:18 If you're still using Views,
+migrate your screens to Compose.
+12:21 And you can wrap Views
+inside Compose components
+12:24 if you don't want to
+do a full migration.
+12:26 But you should still consider
+it because, as mentioned
+12:29 in the last talk, we've got
+a skill for migrating Views
+12:32 to Compose.
+12:33 And this skill can also
+help you create a plan,
+12:36 set up dependencies, deal with
+theming and migrate layouts.
+12:40 And the models are actually
+really good at doing this,
+12:42 so using this skill can save
+you an awful lot of time.
+12:48 So once you've migrated
+your screens to Compose,
+12:50 we can get started with
+the Nav3 migration.
+12:52 And guess what?
+12:56 We've got a skill
+for that, as well.
+12:59 The Nav3 skill contains
+a migration guide that
+13:01 converts Nav2 apps to Nav3.
+13:05 It includes a whole
+bunch of code recipes,
+13:07 including multiple backstacks,
+conditional navigation,
+13:10 and dependency injection.
+13:12 So it's a super useful skill to
+install if you're using Nav3.
+13:18 All right, that's all
+our migrations done.
+13:20 And the next stage
+would be testing.
+13:24 JOSE ALCÉRRECA: All
+right, I'm glad you asked.
+13:26 So any big change,
+any change, really,
+13:29 needs a solid testing strategy.
+13:32 It's important to make
+sure that we don't break
+13:34 anything that already worked.
+13:36 And while we're at
+it, we'll add tests
+13:39 to make sure that
+the new features work
+13:41 across all the form factors.
+13:43 So first, we're going to make
+sure that we have a good testing
+13:47 strategy.
+13:48 And guess what?
+13:49 We have a skill for that.
+13:51 The testing-setup skill
+is an opinionated way
+13:54 to add multiple types
+of tests to your app,
+13:57 and it's a great
+way to get started.
+13:59 You can use it to add tests in
+general, if you have no testing
+14:03 strategy at all.
+14:04 It has good defaults
+that we recommend.
+14:06 But given that we're
+making a lot of UI changes,
+14:09 we're going to focus on
+enabling screenshot testing.
+14:12 Of course, you should also have
+UI behavior tests, unit tests,
+14:16 et cetera.
+14:18 In our sample app we are using
+Compose preview screenshot
+14:21 testing, which is handy because
+you can compare multiple window
+14:25 sizes very quickly with
+just one annotation.
+14:28 These are the specs
+that we're using--
+14:30 phone, phone in landscape,
+foldable, and desktop.
+14:33 But of course, you
+can customize that.
+14:36 Creating preview tests
+is extremely easy.
+14:38 You can right-click on a
+composable in Android Studio
+14:41 to generate its
+preview with the agent,
+14:43 and it will handle all
+the mock data, et cetera.
+14:48 So if you don't
+have them already,
+14:50 add screenshot tests
+before making any changes.
+14:54 That way, you'll
+track the progress,
+14:56 and also, you'll be
+able to find problems
+14:58 in the future across all
+of your form factors.
+15:03 OK, great, so that's
+all our prep work done.
+15:06 DON TURNER: OK, cool.
+15:07 So now we can actually
+get to the fun part
+15:09 of actually making
+our app adaptive,
+15:11 starting with adaptive layouts.
+15:14 So I first wanted to
+share how we're thinking
+15:17 about you, the developer.
+15:20 And believe it or
+not, we do spend
+15:22 a lot of time thinking about you
+and what you need from our APIs.
+15:27 So we know that some of
+you just want a ready-made,
+15:30 out-of-the-box solution that
+works with your existing code
+15:34 base.
+15:36 Some of you want a good
+starting point for customization
+15:39 and extension.
+15:41 And some of you just want to
+build something from scratch.
+15:43 And our intention is to
+provide APIs and guidance
+15:46 for all of these approaches.
+15:48 And we know we might not have
+complete coverage right now,
+15:51 but this is just to let you know
+how we're thinking in future.
+15:56 So let's talk specifically
+about the APIs
+15:58 that we have for adaptive
+navigation areas.
+16:02 So for an
+out-of-the-box solution,
+16:03 you can use the Material
+NavigationSuiteScaffold.
+16:08 To customize or build
+app-level layouts from scratch,
+16:12 you can use Nav3's new
+Scene Decorators feature.
+16:16 And these allow you to wrap your
+main content with other content
+16:19 like nav rails and bars.
+16:22 So to customize an
+existing decorator,
+16:25 we have a recipe on the
+Nav3 recipes repository.
+16:29 And you can build your own by
+implementing the Scene Decorator
+16:32 strategy interface.
+16:34 And we have a whole load of
+fresh documentation on this.
+16:39 JOSE ALCÉRRECA: All right, so we
+can finally start making changes
+16:41 to our app.
+16:43 Let's try this prompt-- make
+the navigation area adaptive.
+16:48 The skill contains a section
+about navigations with scaffold,
+16:51 which is what you
+should use when
+16:53 you don't need customization.
+16:56 And this is the result
+from the prompt.
+16:58 The bottom navigation
+bar is replaced by a nav
+17:01 rail in a larger screen.
+17:04 And now that you are familiar
+with the APIs involved,
+17:06 you can check that they're
+being used correctly.
+17:10 DON TURNER: OK, so moving on.
+17:12 On larger screens, you can
+display related content side
+17:16 by side in multi-pane
+layouts, which
+17:19 can be a lot more
+convenient for users
+17:21 than going back and
+forth between screens.
+17:25 So there are two canonical
+multi-pane layouts.
+17:28 There's list-detail,
+where the list and detail
+17:31 screens are shown side
+by side when the window
+17:33 width is large enough.
+17:36 And there's also
+supporting pane,
+17:38 where supporting content
+is shown to the side
+17:40 or underneath the primary
+content when you have
+17:43 enough space and in
+a bottom sheet when
+17:46 there's not as much space.
+17:49 So both these are supported in
+Nav3 through the use of Scenes.
+17:54 You can use Material Scenes
+for an out-of-the-box solution.
+17:57 You can use the recipes
+from our recipes
+18:00 repository as a starting
+point for customization.
+18:04 And lastly, you can implement
+the SceneStrategy interface
+18:07 to build something from scratch.
+18:10 And there's a dedicated
+Nav3 talk with Ben and Clara
+18:14 released yesterday that covers
+all the latest features of Nav3,
+18:18 including the much-requested
+deep links feature, which
+18:22 was released yesterday.
+18:23 So I know a lot of you
+have been waiting for that.
+18:28 JOSE ALCÉRRECA: OK, so let's
+use the agent to do this for us,
+18:31 since we know that we have
+some list-detail relationships
+18:35 in our app.
+18:37 The first one could
+be the pictures feed.
+18:40 However, I don't think that a
+list-detail layout makes sense
+18:43 here.
+18:44 In a large screen,
+you want to use
+18:46 the screen real estate
+to browse through more
+18:49 photos at the same time.
+18:51 And when you select
+a photo, you probably
+18:53 want to see it as
+big as possible.
+18:55 But that's a product decision.
+18:57 It depends 100% on the use case.
+18:59 Maybe you want this.
+19:00 That's fine.
+19:02 So let's be explicit about what
+we want and go step by step.
+19:05 Let's convert the Messages
+screen to a list-detail layout.
+19:10 Also, it's better to be
+specific in the prompt,
+19:12 rather than leaving
+it up to the AI.
+19:15 So you might want
+to decide now if you
+19:18 want to show maybe the first
+conversation or, instead,
+19:22 a placeholder, when no
+conversation is selected yet.
+19:26 Let's go with a placeholder that
+says, select a conversation.
+19:32 And this is the generated code,
+the ListDetailSceneStrategy
+19:36 contains a detailed
+placeholder, so the model
+19:39 uses it, thanks to the skill.
+19:42 And here's the result,
+working as expected.
+19:48 But that's not all.
+19:49 Again, to save time,
+after big changes,
+19:52 I like to ask the agent
+to build, generate
+19:55 screenshot tests, or even
+deploy the app to the emulator,
+19:59 navigate, et cetera.
+20:01 But wait.
+20:01 Does your agent have the
+skills to manage emulators?
+20:06 Well, obviously we've
+got a skill for that.
+20:08 The Android CLI has
+an emulator manager.
+20:11 And with the skill,
+you can say things
+20:13 like, deploy to the
+emulator, and the model just
+20:17 knows how to do it.
+20:19 If you want to know
+more about Android CLI,
+20:21 check out the
+developer tools talk.
+20:24 DON TURNER: OK, so
+that's our app layout's
+20:27 been made to be
+adaptive, which is great.
+20:30 So let's now look at how
+we can make individual UI
+20:33 components adaptive.
+20:35 So first, anywhere that
+you're using a list or a grid
+20:38 with a fixed number
+of columns or rows,
+20:40 you should consider using
+an adaptive column count.
+20:44 And you can use any of the
+LazyGrid layouts for this.
+20:46 Then, when specifying
+the column count,
+20:48 you can use GridCells.Adaptive.
+20:51 And this takes the
+minimum column width
+20:54 and creates as many columns as
+it can in the available space,
+20:57 and any remaining space
+is distributed equally
+21:01 throughout each column.
+21:04 So our feed screen is actually
+a prime candidate for this.
+21:08 It currently always shows
+us two pictures per row,
+21:12 which is fine on mobile
+portrait, but on a foldable,
+21:16 as you can see, it doesn't
+really scale very well.
+21:19 JOSE ALCÉRRECA: All
+right, so this is
+21:21 something covered by the skill.
+21:22 We have a section on
+making LazyLists adaptive.
+21:27 So what prompt do
+I use to do this?
+21:30 Make this layout adaptive?
+21:32 Yeah, this might
+work, but it would
+21:34 be much better if you are
+specific about what you want.
+21:39 So "Show two columns on portrait
+phone, three on a foldable,
+21:43 four or more on bigger screens."
+21:46 However, you don't have to tell
+it to use the Grid Cells API,
+21:50 but it's important
+to know what's
+21:51 possible so you know
+that a prompt like this
+21:53 will work first time.
+21:55 The model is smart
+enough to calculate
+21:58 that a minimum size of
+180 dps is what we need
+22:02 to match those constraints.
+22:05 And this is much better now.
+22:07 Now it adapts to
+the size, showing
+22:10 a different number of columns
+depending on the space.
+22:13 DON TURNER: Yeah,
+definitely much better.
+22:15 But if you rotate that
+phone to landscape,
+22:18 you can hardly see that
+first row of images.
+22:21 In this case, we should
+hide that bottom nav bar
+22:24 when the user scrolls to make
+more space for the content.
+22:29 JOSE ALCÉRRECA: All
+right, let's just do it.
+22:31 "Make the bottom bar collapse
+on scroll when the height is
+22:34 compact."
+22:35 This is a very common
+pattern, so let's see
+22:37 if a model is capable of it.
+22:40 And now it's looking better,
+but what happened here?
+22:45 There's too much
+padding at the top.
+22:49 We're drawing behind the camera.
+22:51 And the bottom navigation went
+transparent, for some reason.
+22:56 It's almost as if the model
+didn't have the skills to go
+22:60 edge to edge with the new APIs.
+23:04 And you're not going
+to believe this,
+23:06 but there's an
+edge-to-edge skill.
+23:10 Combining this one and
+the adaptive skill,
+23:13 you'll be able to implement
+collapsible top and bottom bars.
+23:17 And of course, it
+includes all the basics
+23:20 of edge-to-edge, including
+troubleshooting and what
+23:23 not to do.
+23:24 So let's install the
+skill and go edge to edge.
+23:29 "Make lists go edge to edge,
+collapse top app bar on scroll,
+23:32 and show it again when the
+user scrolls all the way up."
+23:35 That's important, because
+there's two modes.
+23:38 "When the height is compact,
+and the user scrolls,
+23:40 collapse the navigation bar."
+23:43 I like to include
+multiple tasks in one
+23:46 prompt when they are related.
+23:47 That actually saves
+time and tokens
+23:50 because the agent doesn't have
+to figure the context twice.
+23:53 But you can split it
+in two, if you want.
+23:58 So with this
+information, the model
+24:00 can come up with the relatively
+complex Compose code needed
+24:04 to make all of this work.
+24:07 And of course, it
+did the right thing,
+24:09 and now a user in landscape can
+see two full rows of pictures
+24:14 using all the screen space.
+24:17 There's no custom
+landscape layout, just
+24:20 some code to make
+the same layout adapt
+24:23 to different configurations.
+24:26 So let's continue.
+24:28 DON TURNER: OK, so
+in that last prompt,
+24:30 we introduced the
+concept of using
+24:32 a UI capability, the window
+height, to make a UI decision,
+24:37 collapse the bottom
+navigation bar.
+24:39 And this is a very
+common pattern.
+24:41 And it's used under the
+hood by the adaptive layout
+24:44 APIs we saw earlier.
+24:45 For example, the Material
+list-detail SceneStrategy
+24:49 uses window size to determine
+when there's enough space
+24:52 to create a list-detail scene.
+24:56 But what if you want to get
+access to those capabilities
+24:59 yourself, so you're in charge
+of making those UI decisions?
+25:03 Well, here's how
+you can do that.
+25:05 So the most important
+property that you'll
+25:07 want to get access
+to is window size.
+25:10 And you can access it directly
+using LocalWindowInfo.
+25:14 But it's often more convenient
+to work with window size
+25:18 classes.
+25:19 These are opinionated
+viewport breakpoints
+25:22 that help you design app level
+layouts for typical scenarios.
+25:27 You can use Material's
+predefined window size classes,
+25:30 or you can define your
+own using WindowSizeClass.
+25:35 So another important
+capability is
+25:38 how the user is pointing
+to your UI elements.
+25:42 And this is important because
+a mouse pointer is much more
+25:46 precise than a finger.
+25:48 So when using a mouse, the
+target areas for UI elements
+25:52 can be smaller, and you
+can create a denser UI.
+25:57 Now, there's plenty
+more UI capabilities,
+25:59 including device posture
+for foldables and laptops
+26:03 and whether a physical
+keyboard is attached.
+26:06 And the APIs for all
+of these capabilities
+26:09 have been around for
+a long time and are
+26:11 spread throughout the
+Android API surface.
+26:14 Many of them are pre-Compose,
+which means sometimes they
+26:17 require a bit of massaging
+to get them to work nicely
+26:23 with Compose.
+26:25 And this is why
+we are introducing
+26:28 a new experimental
+API called MediaQuery.
+26:32 Now, it's inspired by
+the CSS MediaQuery API.
+26:36 So if you're thinking,
+why is it Media?
+26:38 Is that to do with
+video or audio playback?
+26:41 Well, Media refers
+to the type of device
+26:45 that the UI is
+being rendered on.
+26:48 So this API currently
+has capabilities
+26:51 for window size,
+pointer precision,
+26:54 whether the device has a
+microphone, camera, keyboard,
+26:58 and how far the user is
+viewing from the screen.
+27:05 So if you want to try it
+out, here's how to use it.
+27:10 So the mediaQuery
+function accepts a lambda
+27:13 where you can access
+these UI capabilities
+27:16 like pointerPrecision.
+27:17 And it returns the same
+type as the lambda.
+27:22 So the mediaQuery
+function will recompose
+27:24 whenever one of the
+underlying UI capabilities
+27:27 accessed inside
+this lambda changes.
+27:30 So you can rely on
+MediaQuery to recompose
+27:33 any dependent composables.
+27:37 A convenient pattern
+here is to have
+27:39 your lambda return a Boolean.
+27:41 For example, in
+this code sample,
+27:44 we're returning True
+when the primary pointer
+27:49 has fine precision.
+27:53 And we can use this to make
+your UI elements smaller.
+27:57 So when a less
+precise pointer is
+27:60 being used, like
+a touch screen, we
+28:02 can make our UI elements larger.
+28:05 Now, you'd usually do
+this by customizing
+28:07 the style for the UI element.
+28:10 And we actually have a new
+API to do this, the Style API.
+28:14 And if you want to
+know more about this,
+28:15 then stay in this
+room because the talk
+28:17 after ours talks all about this.
+28:21 So anyway, back to MediaQuery.
+28:24 For rapidly changing
+values like window size--
+28:29 and this can rapidly change
+when you're running your app
+28:32 on a desktop, and the users
+are drag-resizing that window--
+28:37 you would use derivedMediaQuery.
+28:40 And this allows you to say,
+I'm aware that my state is
+28:43 dependent on a value
+that is rapidly changing,
+28:46 but I only want to recompose
+when the derived state changes.
+28:51 So MediaQuery is very
+much an experimental API.
+28:55 Please do try it
+out, and file issues,
+28:57 and let us know what
+you need from it.
+29:02 JOSE ALCÉRRECA: All right, so
+even though it's experimental,
+29:04 the documentation
+for MediaQuery is
+29:06 available in the adaptive
+skill and the Knowledge Base.
+29:10 So if you ask the
+agent to use it,
+29:12 it will fetch the information.
+29:14 So let's try it out.
+29:16 Let's say to the agent, "Reduce
+the padding of PetFilterChip
+29:21 to 2 dps when the pointer
+precision is fine."
+29:25 It uses the right mediaQuery
+construct that is only
+29:29 updated when necessary.
+29:31 And then we can just
+assign paddings.
+29:34 And this is the
+result on a device
+29:36 with a mouse or a
+trackpad, such as a laptop.
+29:39 The filters will be
+a little bit smaller.
+29:42 DON TURNER: Cool.
+29:43 OK, so we have a couple more
+experimental layout APIs
+29:47 to share that can be
+extremely useful when
+29:49 you're creating adaptive UI.
+29:52 So first up is FlexBox.
+29:54 Now, FlexBox lays out
+items in one direction,
+29:58 and it can resize its children
+to fill the available space.
+30:02 You use the flex modifier
+to access Flex's properties.
+30:06 And here, we're using
+the grow property
+30:09 to have that central child grow
+when there's any extra space.
+30:14 And this is particularly useful
+in places like top app bars
+30:18 when you want a
+single item to grow,
+30:20 and everything
+else remains fixed.
+30:23 So FlexBox can also
+wrap items onto new rows
+30:26 when there's not enough space,
+and you use FlexBox's config
+30:30 parameter to configure container
+behavior, like wrapping here.
+30:36 And this is very
+useful when you have
+30:38 child items of
+differing size, and you
+30:41 can wrap them onto new lines.
+30:44 So this is really only
+scratching the surface
+30:46 of what FlexBox is capable of.
+30:48 So check it out, and
+see how you can use it.
+30:52 OK, so let's continue making
+our UI components adaptive.
+30:56 Now, our designer wanted to
+show all the filters in the feed
+30:59 when there's enough
+space for it.
+31:01 So right now, we're showing
+a single, scrollable row.
+31:05 So some of these filters are
+actually going off the screen.
+31:08 So extremely conveniently, this
+feels like a job for FlexBox.
+31:14 JOSE ALCÉRRECA: No problem.
+31:15 Let's ask the agent.
+31:18 "In the feed, the filters should
+be shown in a scrollable row,
+31:21 but from 600 dps width, wrap
+them so that they are shown
+31:26 in multiple rows."
+31:27 Note that I'm using 600 dps
+here instead of a window size
+31:32 because I'm talking
+about container size.
+31:36 And this is the
+result. Now the code
+31:39 is a little bit
+more complex, but it
+31:41 does exactly what we asked for.
+31:42 Depending on whether
+it's wide or not,
+31:45 we wrap, or we apply
+a horizontal scroll.
+31:49 And this is the result.
+We have a FlexBox
+31:52 that wraps on large screens.
+31:55 DON TURNER: Nice.
+31:56 OK, so FlexBox is great for
+one-dimensional layouts.
+31:59 But for complex, 2D layouts
+with items that span both rows
+32:03 and columns, we have another
+experimental API called Grid.
+32:08 And you configure it
+the same way as FlexBox,
+32:10 with a config block
+for the container.
+32:13 And in this example here, we
+use the column and row functions
+32:17 to define a 3-by-3 grid
+with 100 dp cell sizes.
+32:21 And we can also specify the gap
+between the rows and columns.
+32:27 We use the Grid item modifier
+to access Grid's features,
+32:31 like spanning across
+multiple cells.
+32:33 So here we're using
+rowSpan and columnSpan
+32:36 to make that green box fit
+into two cells wide and two
+32:42 cells high.
+32:43 Now, Grid is great
+for situations
+32:46 where important items
+need to be larger,
+32:49 but everything still needs
+to be aligned to the grid.
+32:53 And it just so happens, we have
+the perfect feature for Grid
+32:56 in our app, which is
+the top pet screen.
+32:59 Currently, it is
+showing all of the pets
+33:02 the same size, but
+what I think would
+33:05 be cool is if we have that
+very important first place pet
+33:09 take four times the amount
+of space as the other pets.
+33:15 OK, so this is my vision.
+33:18 We can have a 2-by-4
+grid on mobile portrait.
+33:21 And then, on
+larger-screen devices,
+33:23 we can switch to a 4-by-2 grid.
+33:26 JOSE ALCÉRRECA: Beautiful.
+33:28 DON TURNER: We'll see.
+33:29 JOSE ALCÉRRECA: All
+right, so again,
+33:31 we don't need to tell the model
+exactly how to use the API.
+33:34 We just need to
+describe what we want.
+33:36 So make the top pet screen adapt
+to a different window sizes.
+33:41 It should always show pet number
+one using a 2-by-2 grid cell,
+33:45 while the rest take up 1-by-1.
+33:47 And the grid cell should
+be 2-by-4, 4-by-2,
+33:50 depending on the
+available space.
+33:52 So here's the code.
+33:54 Again, it's a couple of
+very easy-to-understand if
+33:58 statements.
+33:58 And then we just
+calculate the cell size.
+34:02 And here it is.
+34:03 It correctly interpreted what
+I meant with available space.
+34:07 So we're done here.
+34:10 DON TURNER: Yeah, I
+mean, it looks all right.
+34:12 So this is my idea.
+34:13 And I'm not a designer.
+34:14 I'm an engineer.
+34:15 So just try and
+imagine how good this
+34:17 would look in the hands of
+an actual competent designer.
+34:22 OK, so we're done.
+34:25 Hopefully you can see the
+power of these new APIs
+34:28 and that making
+your app adaptive
+34:29 doesn't have to
+be a load of work.
+34:32 So if you are interested in
+going from mobile portrait
+34:35 or wherever you are on
+your adaptive journey,
+34:39 this is where you should start.
+34:41 So all of the skills
+that we've mentioned
+34:43 will help you bring your
+app into the adaptive world.
+34:48 So start with migrating
+screens to Compose.
+34:51 And even if you
+have to wrap views,
+34:53 then you can use the
+Navigation 3 skill
+34:55 to migrate from Nav2 to Nav3.
+34:59 You also should add
+tests, and then you
+35:03 can start asking your agent
+to make your layouts adaptive,
+35:07 preferably one by one and
+preferably with detailed prompts
+35:10 and even mocks produced by
+your UX or product teams.
+35:16 Lastly, definitely check out
+the repository for skills.
+35:19 We're adding new
+skills all the time,
+35:21 and we currently have skills
+for the Android Gradle plugin,
+35:24 performance for
+camera [INAUDIBLE],
+35:26 and a whole bunch of other
+very useful skills for Android
+35:28 development.
+35:29 And if you want to learn more
+about how to use these skills,
+35:33 you can check out the
+Develop With Android Studio
+35:36 talk, which was actually
+the talk before ours.
+35:40 JOSE ALCÉRRECA: All right,
+so to end this talk,
+35:42 we'd like to say that
+it's absolutely awesome
+35:45 that a complete beginner
+can create a prototype
+35:48 app in two minutes.
+35:50 But what users
+really care about is
+35:52 quality, apps that
+delight them, apps
+35:56 that don't ask me
+to log in every time
+35:58 I use them when
+there's no reason, that
+36:02 work in dark mode, that
+support edge-to-edge,
+36:05 and of course, then I can
+use on multiple devices
+36:08 in any configuration.
+36:10 That's quality.
+36:12 I just want to be able to rotate
+my phone while I'm filling out
+36:16 a form without
+having to start over.
+36:18 That's also quality.
+36:20 And AI agents and
+LLMs can be incredibly
+36:23 helpful in producing
+high-quality apps,
+36:26 as long as you know
+what to ask for.
+36:29 So with AI, a good developer
+will create a good app,
+36:33 and an excellent developer
+will create an excellent app.
+36:35 That is not changing.
+36:38 So now it's the time to
+make your apps adaptive.
+36:41 We understand that you still
+need a little bit more QA,
+36:45 maintain a little bit more code.
+36:47 But the investment is
+considerably lower now,
+36:49 and the return keeps
+growing every day.
+36:53 So you're not going to get
+there in a single prompt,
+36:56 but it's so much better now.
+36:58 You might even have fun.
+37:00 Thank you.
+37:01 [MUSIC PLAYING]

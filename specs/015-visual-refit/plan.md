@@ -12,7 +12,7 @@ deferred to post-Demo Day. Every commit gated by Claude review.
 ## Technical Context
 
 - **Language/Version**: Kotlin 2.x (matches existing app module).
-- **Primary Dependencies**: Jetpack Compose, existing `CapsulePalette`,
+- **Primary Dependencies**: Jetpack Compose, existing `OrbitPalette`,
   Material 3 (Compose-side only — refit does not depend on Material You /
   dynamic color).
 - **Storage**: N/A (no schema changes).
@@ -65,7 +65,7 @@ No `contracts/`: presentation refit, no API surface.
 ### Source Code (touched paths)
 
 ```text
-app/src/main/java/com/capsule/app/
+app/src/main/java/com/orbit/app/
 ├── RuntimeFlags.kt                        # add useNewVisualLanguage
 ├── ui/
 │   ├── tokens/
@@ -97,7 +97,8 @@ specs/010-visual-polish-pass/spec.md       # D4 amendment entry
 
 ### Phase 0 — Foundation (3 commits, gated by Claude review after each) — risk: LOW
 
-**Goal**: tokens + primitives in tree, no screens touched, flag defaulted OFF.
+**Goal**: tokens + primitives in tree, no screens touched, flag initially defaulted OFF;
+alpha hygiene later flips the source default ON after T015-904.
 
 **Commits** (each one a separate review gate):
 
@@ -107,7 +108,8 @@ specs/010-visual-polish-pass/spec.md       # D4 amendment entry
    - add `tokens/Type.kt` (display = Cormorant Garamond, body = Inter,
      caption = JetBrains Mono)
    - wire fonts to `app/src/main/res/font/`
-   - add `RuntimeFlags.useNewVisualLanguage = false`
+   - add `RuntimeFlags.useNewVisualLanguage = false` initially; alpha hygiene later
+     flips the source default to true after T015-904
    - **NO SCREEN CHANGES**
    - gates: `:app:compileDebugKotlin` clean, `:app:lintDebug` no new
      warnings, `:build-logic:lint:test` green
@@ -167,7 +169,7 @@ content-description / test tags identical and only swapping visual
 composables.
 
 **Inputs**: `design/visual-refit-2026-04-29/project/orbit-screen-diary.jsx`,
-`app/src/main/java/com/capsule/app/diary/ui/DiaryScreen.kt`.
+`app/src/main/java/com/orbit/app/diary/ui/DiaryScreen.kt`.
 
 **Gate criteria**: flag-OFF Diary unchanged; flag-ON Diary matches design
 reference; existing instrumented tests green on flag-OFF; new
@@ -187,7 +189,7 @@ sensitivity surface (Principles IX, X). Mitigate by writing copy review
 into the gate.
 
 **Inputs**: `design/visual-refit-2026-04-29/project/orbit-screen-settings.jsx`,
-`app/src/main/java/com/capsule/app/settings/SettingsScreen.kt`.
+`app/src/main/java/com/orbit/app/settings/SettingsScreen.kt`.
 
 **Gate criteria**: flag-OFF unchanged; flag-ON renders new pattern; danger-row
 copy reviewed against constitution Principles IX + X; LD-004 hardware
@@ -210,7 +212,7 @@ Do not invent presentation-only widening of the intent field as a
 shortcut.
 
 **Inputs**: `design/visual-refit-2026-04-29/project/orbit-screen-capture.jsx`,
-`app/src/main/java/com/capsule/app/capture/...`.
+`app/src/main/java/com/orbit/app/capture/...`.
 
 **Gate criteria**: spec 016 merged into main; flag-OFF unchanged; flag-ON
 capture flow saves an envelope with the new intent set; no "sealed at

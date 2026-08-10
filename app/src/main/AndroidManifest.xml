@@ -45,7 +45,7 @@
     </queries>
 
     <application
-        android:name=".CapsuleApplication"
+        android:name=".OrbitApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -53,11 +53,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Capsule">
+        android:theme="@style/Theme.Orbit">
 
         <!--
           Remove the auto-installed AndroidX WorkManager initializer.
-          CapsuleApplication implements Configuration.Provider so
+          OrbitApplication implements Configuration.Provider so
           WorkManager.getInstance(ctx) lazily initialises in every
           Orbit process; the auto-init ContentProvider would race
           and trigger lint's RemoveWorkManagerInitializer error.
@@ -79,7 +79,7 @@
             android:name=".diary.DiaryActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Capsule">
+            android:theme="@style/Theme.Orbit">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -91,28 +91,28 @@
             android:name=".ui.MainActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- T096: OnboardingActivity — first-run only, routed from DiaryActivity. -->
         <activity
             android:name=".onboarding.OnboardingActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- T103b: ReducedModeActivity — read-only Diary when capture perms declined. -->
         <activity
             android:name=".onboarding.ReducedModeActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- T070: SettingsActivity — deep-link only (opened from Diary). -->
         <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- T091a: TrashActivity — opened from Settings. -->
         <activity
@@ -120,7 +120,7 @@
             android:exported="false"
             android:label="@string/app_name"
             android:parentActivityName=".settings.SettingsActivity"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- T091: AuditLogActivity — "What Orbit did today". -->
         <activity
@@ -128,7 +128,7 @@
             android:exported="false"
             android:label="@string/app_name"
             android:parentActivityName=".settings.SettingsActivity"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- T055b: EnvelopeDetailActivity — launched from EnvelopeCard tap.
              Not exported; internal explicit-intent only. -->
@@ -137,11 +137,11 @@
             android:exported="false"
             android:label="@string/app_name"
             android:parentActivityName=".diary.DiaryActivity"
-            android:theme="@style/Theme.Capsule" />
+            android:theme="@style/Theme.Orbit" />
 
         <!-- :capture process -->
         <service
-            android:name=".service.CapsuleOverlayService"
+            android:name=".service.OrbitOverlayService"
             android:process=":capture"
             android:exported="false"
             android:foregroundServiceType="specialUse">
@@ -156,8 +156,8 @@
             android:process=":ml"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.capsule.app.action.BIND_ENVELOPE_REPOSITORY" />
-                <action android:name="com.capsule.app.action.BIND_AUDIT_LOG" />
+                <action android:name="com.orbit.app.action.BIND_ENVELOPE_REPOSITORY" />
+                <action android:name="com.orbit.app.action.BIND_AUDIT_LOG" />
             </intent-filter>
         </service>
 
@@ -167,12 +167,12 @@
             android:process=":net"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.capsule.app.action.BIND_NETWORK_GATEWAY" />
+                <action android:name="com.orbit.app.action.BIND_NETWORK_GATEWAY" />
             </intent-filter>
         </service>
 
         <!-- 003 v1.1: ActionExecutorService runs in :capture (no-network process).
-             Bound by :ui via "com.capsule.app.action.BIND_ACTION_EXECUTOR".
+             Bound by :ui via "com.orbit.app.action.BIND_ACTION_EXECUTOR".
              See specs/003-orbit-actions/contracts/action-execution-contract.md §2.
              No new permissions are added by 003 — see T099. -->
         <service
@@ -180,7 +180,7 @@
             android:process=":capture"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.capsule.app.action.BIND_ACTION_EXECUTOR" />
+                <action android:name="com.orbit.app.action.BIND_ACTION_EXECUTOR" />
             </intent-filter>
         </service>
 

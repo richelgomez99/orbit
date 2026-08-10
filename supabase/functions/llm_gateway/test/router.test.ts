@@ -172,4 +172,60 @@ describe("router — happy paths dispatch by type", () => {
     expect(spy).toHaveBeenCalledOnce();
     spy.mockRestore();
   });
+
+  it("active_intent_review → active_intent_review handler", async () => {
+    const handler = await import("../handlers/active_intent_review.js");
+    const spy = vi.spyOn(handler, "handle");
+    await postBody({
+      type: "active_intent_review",
+      requestId: RID,
+      payload: {
+        reviewContext: {
+          schemaVersion: 1,
+          intentId: "basic:capture-1",
+          captureId: "capture-1",
+          mode: "SMART",
+          intentType: "CHAT_ACTION",
+          status: "ACTIVE",
+          completionKeyStatus: "FOUND",
+          primaryAction: "reply_or_dismiss",
+          evidence: {
+            kind: "CATEGORY",
+            label: "CHAT_ACTION",
+            source: "messaging_source",
+            excerpt: "Chelsea has a scheduled appointment at 2pm",
+          },
+        },
+      },
+    });
+    expect(spy).toHaveBeenCalledOnce();
+    expect(spy.mock.calls[0]![0]!.type).toBe("active_intent_review");
+    spy.mockRestore();
+  });
+
+  it("active_intent_review rejects forbidden raw evidence keys", async () => {
+    const res = await postBody({
+      type: "active_intent_review",
+      requestId: RID,
+      payload: {
+        reviewContext: {
+          schemaVersion: 1,
+          intentId: "basic:capture-1",
+          captureId: "capture-1",
+          mode: "SMART",
+          intentType: "CHAT_ACTION",
+          status: "ACTIVE",
+          completionKeyStatus: "FOUND",
+          evidence: {
+            kind: "OCR",
+            label: "bad",
+            rawHtml: "<html>secret</html>",
+          },
+        },
+      },
+    });
+    const body = await res.json();
+    expect(body.error.code).toBe("INTERNAL");
+    expect(body.error.message).toBe("request body failed validation");
+  });
 });

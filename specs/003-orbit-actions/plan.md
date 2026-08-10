@@ -212,7 +212,7 @@ specs/003-orbit-actions/
 ### Source Code (additions / modifications, all under `app/`)
 
 ```text
-app/src/main/java/com/capsule/app/
+app/src/main/java/com/orbit/app/
 ├── data/                                      # 002 — EXTENDED
 │   ├── OrbitDatabase.kt                       # MODIFIED: schema v1 → v2 migration
 │   ├── entities/
@@ -263,7 +263,7 @@ app/src/main/java/com/capsule/app/
 └── audit/                                     # 002 — EXTENDED
     └── AuditAction.kt                         # MODIFIED: + 7 new actions
 
-app/src/test/java/com/capsule/app/
+app/src/test/java/com/orbit/app/
 ├── ai/
 │   ├── ActionExtractorTest.kt                 # NEW
 │   ├── DateTimeParserTest.kt                  # NEW
