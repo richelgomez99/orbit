@@ -1,0 +1,1372 @@
+00:00 [MUSIC PLAYING]
+00:06 REBECCA FRANKS: Hi, everyone,
+and welcome to "Building Custom
+00:09 Design Systems with Jetsnack
+Compose's New Styles API."
+00:13 My name is Rebecca, and with
+me today on stage we have--
+00:16 MEGAN MEHTA: Meghan.
+00:17 CHUCK JAZDZEWSKI: And Chuck.
+00:19 REBECCA FRANKS: We've
+seen how Android
+00:20 is evolving to support
+different device form factors
+00:23 and how apps are increasingly
+wanting to stand out
+00:26 from the crowd with their
+own custom design system
+00:29 definitions.
+00:32 We understand that
+every app is unique.
+00:34 Many apps use Material from
+a full Material-based design
+00:37 system to a full
+custom design system.
+00:41 And if you fall somewhere
+in between this spectrum,
+00:43 we are building a framework
+that works across this.
+00:48 Jetsnack, one of our very first
+examples we released in Compose,
+00:52 has always been a great
+showcase of building something
+00:54 custom in Compose that
+leverages Material components
+00:57 under the hood.
+00:59 But its design system has always
+had its own unique definition
+01:03 in that it has used a very
+broad usage of gradients
+01:06 throughout it.
+01:08 The component designs
+have typically
+01:09 been slightly different
+from the components
+01:11 that Material Design
+offers out of the box.
+01:14 It's used gradients in
+various different ways,
+01:17 such as this filter
+chip that has
+01:18 a gradient border
+for the normal state,
+01:21 and the pressed state
+is a solid gradient.
+01:25 Separately, when looking
+at Material Components,
+01:28 they come built-in with
+really great defaults,
+01:30 and this is why we
+love using Material.
+01:32 It handles all of these
+complexities for you,
+01:35 such as accessibility standards,
+right-to-left positioning,
+01:39 various different interaction
+states, and components
+01:42 generally look great
+out of the box.
+01:45 But as we've seen, our
+designer has given us
+01:47 something that's a
+little bit more custom.
+01:50 So how would you
+typically go about this?
+01:53 For this filter
+chip example, you've
+01:55 likely tried importing
+the Material filter chip
+01:58 and then immediately tried to
+set a background color that's
+02:01 a gradient when it's selected.
+02:04 And at this point, you probably
+see that the API was only
+02:07 designed with a
+single color in mind,
+02:09 and it doesn't support
+the brush type.
+02:12 You may, at this point,
+probably do one of a few things.
+02:16 In this case, I set the
+color to transparent
+02:19 and then surround the chip
+in a box and use modified
+02:22 or background on the
+box to try and actually
+02:24 set the gradients instead,
+then moving the filter chip
+02:28 to be within this box.
+02:31 Things are looking OK with this
+until we actually try and run
+02:34 them.
+02:35 We can see that we also need to
+apply the shape to the container
+02:38 too.
+02:39 Not only that, but we also
+need to build in our own logic
+02:42 to handle pressed and
+selected states now.
+02:46 So at this point,
+you might have also
+02:47 decided it was time to
+fork the Material source
+02:51 or create your own version
+of these components.
+02:54 In Jetsnack, we've created
+our own components.
+02:57 However, this means that
+our app is losing all
+02:59 of these benefits of Material.
+03:02 So we've been working
+on something new
+03:03 that we want to preview with
+you today called Styles.
+03:08 Styles are a new mechanism
+in Jetsnack Compose
+03:10 for customizing elements.
+03:13 They're designed to
+separate form from function
+03:15 and unlock easy
+state-based styling,
+03:17 along with some added
+performance benefits.
+03:21 The Styles API has been
+released in a version
+03:23 1.12 of Compose Foundation
+as experimental,
+03:26 with Materials adoption
+in the APIs coming soon.
+03:30 You'll see this is a
+big shift in how you
+03:31 interact with components today.
+03:35 We will show you how Styles
+helps customize your components
+03:37 in an easy-to-use way through a
+refreshed version of Jetsnack--
+03:42 still using gradients,
+just a tad more subtle.
+03:45 I'll give it over to
+Meghan to tell you more.
+03:50 MEGAN MEHTA: Thank you, Rebecca.
+03:51 So let's hop into it.
+03:53 Like we said, we're
+giving Jetsnack
+03:55 a makeover using the Style API,
+but you might all be asking,
+03:59 what's a Style?
+04:01 A Style is an
+interface that defines
+04:03 the appearance of a component.
+04:06 A Style is a
+specialized modifier
+04:07 that automatically gives
+performance and reusability
+04:10 benefits.
+04:11 And I really want to stress
+that Styles are not here
+04:14 to replace modifiers,
+but instead here
+04:17 to replace parameters that are
+related to visual properties.
+04:21 Let me show you what I mean.
+04:23 As we've mentioned
+in this talk, we
+04:24 are going to be working
+with Jetsnack, which
+04:26 uses a custom
+implementation of button
+04:28 to achieve the gradient effect.
+04:31 And as you can see, this
+definition of button
+04:33 has many different styling
+parameters-- disabled state,
+04:37 shape, border, et cetera.
+04:39 But with Styles, we can
+replace all of those lines
+04:42 with a simple Style
+parameter, which
+04:46 provides a standardized
+set of properties that
+04:48 can be set on any component.
+04:52 OK, so now you know
+what a Style is.
+04:54 Let's see how you
+would use a Style.
+04:57 There are two use
+cases for adding Styles
+04:60 to your components.
+05:01 One is creating a
+custom component
+05:03 and making it
+stylable, and the other
+05:05 is using a composable that
+has a Style parameter.
+05:09 So let's look at how to make
+a custom component stylable.
+05:14 Under the hood,
+Jetsnack's button
+05:16 is implemented as a
+row that is clickable.
+05:20 And in order to make
+the button stylable,
+05:22 you can add a stylable modifier.
+05:25 And then you would
+add a Style parameter
+05:27 to your method signature,
+so that implementations
+05:30 of the custom button
+can use the Style
+05:32 parameter to customize their
+implementation of the button.
+05:35 And it's always recommended
+to provide a Style parameter
+05:39 on design system
+components in the same way
+05:41 that you always
+apply a modifier.
+05:45 Then you'll pass in Style
+state and the Style parameter
+05:48 into the stylable modifier.
+05:50 And we're not going to get
+into Style state right now,
+05:52 but we will get into
+it later in this talk.
+05:55 And now our custom button
+is ready-to-use Styles.
+05:60 The other use case
+that you would use
+06:02 is to Style a component that
+has a Style parameter, just
+06:05 like the button we just created.
+06:08 Within Jetsnack, we're
+going to be using the custom
+06:11 implementation of button.
+06:13 And here's what it looks like
+with nothing in the Style block.
+06:16 And let's add some styling in.
+06:19 So here's a list
+of all the Style
+06:21 properties that are available.
+06:22 And as you can see, it's
+quite comprehensive.
+06:24 Don't get lost in the weeds.
+06:25 It's all in documentation.
+06:28 And we're going to use
+the background property
+06:30 to update the background
+to be light gray.
+06:32 In the Style block, we add
+background and pass in light
+06:36 gray.
+06:36 And it's that easy to
+modify our component
+06:39 using a Style property.
+06:40 Of course, yes, we're barely
+scratching the surface here,
+06:43 and we're going to be going over
+how to go from what we see here
+06:47 to this button with a
+gradient, animations,
+06:50 and state-based styling using
+the Style API in this talk.
+06:55 But before we can get
+into all of that fun,
+06:57 we have to get into the
+fundamentals of Style.
+07:03 OK, guys.
+07:04 Come on.
+07:07 Yeah, that's what I want.
+07:11 OK, fundamental one is
+that Style properties
+07:13 override one another.
+07:16 Second is that Style
+properties are inherited.
+07:20 Third is that
+Styles are reusable.
+07:24 And fourth is Styles
+are mergeable.
+07:26 So we're going to demonstrate
+all four of these while styling
+07:29 our new Jetsnack button.
+07:33 Going back to our
+button code, we've
+07:34 already used the background
+button property, the background
+07:37 property to change the
+background color to light gray.
+07:40 And just as easily, we can
+also set other properties
+07:43 on the button.
+07:44 Syntax-wise, we can just add
+a new line per property--
+07:47 no commas needed.
+07:48 We'll add width, height, shape,
+font weight, and text alignment.
+07:53 And then let's also add an
+external padding of 32 DP.
+07:58 And then if I wanted to
+modify only the top padding,
+08:01 I would add external
+padding top with 16 DP.
+08:04 And you may expect this to give
+you 32 DP plus 16 DP of padding,
+08:08 but instead you only get
+16 DP of padding on top.
+08:13 And this is because Style
+properties override one another
+08:16 when the same
+property is set twice.
+08:20 The button has 32 DP of padding,
+but since external padding top
+08:24 is the last defined property
+for the top padding,
+08:27 it will override the top
+padding, making it 16 DP.
+08:33 If we did this
+with modifiers, it
+08:35 would add the two
+paddings together,
+08:37 giving us a top
+padding of 48 DP.
+08:43 Now, in Jetsnack, we also
+have a custom text composable
+08:46 that accepts a Style parameter.
+08:49 And with that in
+mind, you may be
+08:51 asking, why are we setting
+font weight and text
+08:54 align through the button when
+we could set it through the text
+08:57 Style property?
+08:58 After all, these properties
+affect the text, not the button.
+09:02 So let's investigate text align.
+09:04 If we remove the text
+align from button style
+09:07 and instead add it
+directly on text style,
+09:09 we do get the same
+intended result.
+09:12 And depending on
+our use case, we
+09:14 would set text align
+on the button level
+09:16 because certain text style
+properties are inheritable.
+09:21 By setting the text align
+on the button level,
+09:24 the text content inherits
+the text alignment
+09:26 from the parent composable.
+09:27 It doesn't make so
+much of a difference
+09:29 when there's only
+one child composable.
+09:33 But if we instead pass this
+column of text composables
+09:37 as the button content,
+they would all
+09:39 inherit center text align.
+09:43 But then, if you add a
+direct text align style
+09:45 parameters on a text
+composable, that
+09:48 would take precedence over the
+inherited parent composable.
+09:51 Here, add and cart are
+overriding the center text
+09:54 align, and 2 is not, so
+it's still inheriting
+09:58 the button's text align.
+10:02 The lowest item on the
+precedence totem pole
+10:04 is the parent-defined styles.
+10:07 And then, if you provide a
+modifier on your component
+10:09 that sets the style, that
+will have a higher precedence
+10:12 than the parent-defined style.
+10:16 And then finally, setting
+a direct style parameter
+10:18 has the most precedence.
+10:20 Again, this is only for
+certain text style properties
+10:22 which are inheritable.
+10:26 So now what we have is a
+really nice button style,
+10:29 and we may want to use it on
+multiple buttons in our app.
+10:34 So we can create a Style
+object called Button Style.
+10:37 And in that block, we can
+add the same properties
+10:39 that we added to the
+button style block.
+10:42 And then we could replace all
+of the button style property
+10:44 with Button Style.
+10:48 And then, because
+styles are reusable,
+10:51 our style can be passed into
+multiple different buttons
+10:54 and provide styling for them.
+10:58 So now let's add in a new
+style called Gradient Style
+11:01 for our more special
+custom styling,
+11:03 like shadows and gradients.
+11:06 In it, we can add a drop
+shadow and an inner shadow.
+11:11 And then if we
+replace Button Style
+11:13 with Gradient Style in
+our Button Style block,
+11:15 we lose everything
+from Button Style.
+11:18 We lose the width, the height,
+the shape, the padding,
+11:20 and the text alignment.
+11:21 But what we actually
+want here is
+11:23 a combination of both the Button
+Style and the Gradient Style.
+11:27 And to do this, we'll
+use Style Merging.
+11:30 In the Style parameter, we
+will pass both Button Style
+11:35 and Gradient Style by simply
+adding another argument
+11:37 to the Style constructor.
+11:39 Now we can properly see
+shadows from the Gradient
+11:42 Style, which adds so much
+dimension to the button.
+11:46 And now let's add the
+background gradient.
+11:48 In our Gradient Style,
+we can add a brush
+11:50 using a linear gradient.
+11:53 But wait.
+11:54 If you remember, we
+do have a background
+11:56 defined in the Button Style
+and then again in the Gradient
+11:59 Style.
+12:00 But the Gradient Style is the
+background that we're seeing.
+12:04 This is because
+Gradient Style comes
+12:06 after Button Style when we pass
+them into the Style parameter.
+12:10 Remember when we covered Style
+properties being overridable,
+12:13 that the last defined Style
+property is the one that wins?
+12:17 Since gradient is
+passed in second,
+12:18 its background property
+is defined last.
+12:21 So that's what we see.
+12:24 If we switch the order of
+Gradient Style and Button Style,
+12:28 then the gray background
+would be what the user sees.
+12:31 We still see shadows because
+Gradient Style is still
+12:34 being applied.
+12:35 It's only the background
+property that's overridden
+12:37 because it's defined twice.
+12:40 Note that because
+Styles are overridable,
+12:42 the gradient background replaces
+the gray background instead
+12:45 of having gray underneath.
+12:49 And also, syntax-wise, you can
+use the infix then operator
+12:53 to combine styles
+together as well.
+12:56 So in this section, we learned
+about the Style fundamentals
+12:59 of being overridable,
+inheritable, reusable,
+13:02 and mergeable and used
+those fundamentals
+13:05 to build this beautiful
+gradient button.
+13:08 Yay.
+13:09 [APPLAUSE]
+13:14 Now let's talk interaction
+states and styles.
+13:18 So we do have this
+beautiful button styled,
+13:20 but we want to add styling based
+on the different interaction
+13:23 states.
+13:24 The Styles API
+comes with a couple
+13:26 of states built in by default--
+13:28 default state when no
+interactions are happening,
+13:32 pressed state, hovered
+state, and focused state.
+13:37 Hovered and focused
+are triggered
+13:38 on devices that have
+either a mouse attached,
+13:40 and focused is also
+triggered on devices like TVs
+13:43 that have D-pad navigation.
+13:46 It's good to define
+all of these styles.
+13:49 It's good to define
+all of these states
+13:51 for each interactable
+element, as your users
+13:54 will be using your app with
+various different device
+13:56 configurations.
+13:60 So we already have Button
+Style and Gradient Style passed
+14:02 into the Style parameter.
+14:04 And we could add our state-based
+styling through a Style object,
+14:07 or we could add an
+inline style block
+14:08 by adding a block after
+the parentheses, which
+14:10 we decided to do.
+14:13 And in that block, you
+can add a press block.
+14:18 In our press block, the syntax
+is the same as within a style
+14:21 block.
+14:21 In order to define the Style,
+when the button is pressed,
+14:24 we will add a
+background property
+14:26 and set it to light purple.
+14:29 And now you can see
+that when it's pressed,
+14:31 it turns to light purple.
+14:36 Now let's add
+hovered and focused.
+14:38 Hovered is a lavender
+background right here.
+14:41 And then focused is a
+light purple border.
+14:45 Wait for it to go.
+14:49 And all of our states-- yay.
+14:52 So that's basically
+all you got to do
+14:54 to have your state-based
+styling for pressed,
+14:56 hovered, and focused.
+14:57 Back to Rebecca.
+14:58 [APPLAUSE]
+15:02 REBECCA FRANKS: Now
+let's chat briefly
+15:03 about animations and styles--
+15:05 my favorite topic.
+15:07 We were able to add
+state-based styling, which
+15:09 adds so much to your
+app, but the transition
+15:11 between the states isn't
+as smooth or as elegant
+15:13 as we would want it.
+15:15 It simply snaps to the end state
+without any smooth transition.
+15:20 To ease between these
+different states,
+15:22 you can surround any style
+property with an animate lambda.
+15:25 And this will perform
+an automatic transition
+15:28 between the start and defined
+state within the lambda block.
+15:32 In this example, we set
+the inner shadow initially
+15:34 to have a 0 DP offset, and then
+when it's in the hover state,
+15:38 we change the DP offset
+inwards of -6 DP and -2 DP.
+15:44 We also moved the drop
+shadow in the same way,
+15:46 resulting in this
+delightful shadow movement
+15:48 animation on hover.
+15:51 We can add many
+different properties
+15:52 to be animated here, though.
+15:54 For example, we can also
+animate the background color
+15:56 to make the buttons
+change on hover.
+15:58 The nice part is
+that this cleans up
+16:00 having to track state
+changes yourself
+16:03 and creating all of those
+various animated state variables
+16:06 that you may have
+previously needed to create.
+16:09 To customize these
+animations, you
+16:11 can also pass in an animation
+spec into this animation block.
+16:15 Here we pass in a tween
+spec with a longer duration
+16:18 just to see the animation
+slow down a little bit,
+16:21 but we can supply in any other
+animation spec that you'd like.
+16:24 Now, I'll pass it off to
+Chuck for the next section.
+16:27 [APPLAUSE]
+16:31 CHUCK JAZDZEWSKI: Now let's
+talk about custom StyleState
+16:34 and why you'd want to use them.
+16:36 Let's go back to our
+button definition,
+16:37 where we defined the
+StyleState and passed it
+16:40 into the stylable modifier.
+16:42 What is that StyleState, anyway?
+16:45 The StyleState represents the
+current state of the UI element,
+16:49 which is used for tracking the
+interaction state, like pressed,
+16:53 hovered, and focused, and is
+used for state-based styling
+16:56 to select the different style
+properties based on that state.
+17:01 It allows linking the
+interaction source
+17:03 to the style itself.
+17:05 Without linking up the
+state to the style,
+17:08 the code would still compile,
+but when you press the button,
+17:11 nothing would happen.
+17:13 This is the definition
+of the StyleState.
+17:16 The class definition--
+you can see
+17:18 that there are some
+states that are built in.
+17:20 You may have noticed at the very
+end, there's a get operator.
+17:25 This get operator
+enables custom states
+17:28 because the StyleState is a
+map from the StyleState key
+17:32 to a value.
+17:34 Let's look at an example
+of how this might be used.
+17:36 In Jetsnack, we wanted
+the Add to Cart button
+17:41 to look different when
+we're loading something
+17:44 or when an error occurs.
+17:46 Here we have an updated design
+for what the different states
+17:49 should look like.
+17:51 Note the design for
+loaded isn't changed.
+17:54 That makes sense.
+17:55 It's our default.
+17:57 But the design is different
+for loading and error.
+18:02 To implement these
+designs, we need
+18:03 to somehow communicate the
+loading state to the Style
+18:08 so we can change the button's
+look to match the design.
+18:13 This is what custom
+states are for.
+18:18 To create a custom
+state, you first
+18:20 need to create a
+type for the state.
+18:23 For Jetsnack, we wanted to
+track the states of loading,
+18:27 so we created an
+enum class that has
+18:29 three values that we're
+interested in-- loading, loaded,
+18:34 and error.
+18:36 Next, we need to create the
+corresponding StyleState key.
+18:40 The key is used by the component
+to record the current state
+18:43 of the loading state
+into the StyleState,
+18:46 and later, we'll
+use that same key
+18:48 to read the style
+in the state itself.
+18:54 When creating a
+StyleState key, you
+18:55 need to provide a default value.
+18:58 This should be the value when
+the state is not special.
+19:01 In our case, it's when
+we're already loaded,
+19:04 so we use LoadingState.Loaded
+as the default.
+19:08 To allow Style to read
+this custom state,
+19:11 we need to add an
+extension function
+19:13 to StyleScope that will
+only execute its block when
+19:19 the custom state is loading.
+19:22 This, for example, is how
+the pressed is implemented.
+19:25 It only calls its block
+when isPressed is true.
+19:31 The StyleScope is the receiver
+scope of the Style lambda,
+19:36 and it introduces the Style
+properties such as padding,
+19:39 background, and border.
+19:41 By extending it,
+we allow loading
+19:43 to be used to customize the
+Style based on its loading
+19:46 state.
+19:47 The StyleScope contains
+a helper function
+19:50 called State for extension
+functions like loading to use.
+19:53 It requires a key, a block,
+and an active expression.
+19:57 The key is the key
+we just created,
+19:59 which is the loading state key.
+20:02 The block is the
+block parameter.
+20:04 We just pass it on
+through to state.
+20:07 The block parameter
+sets the properties
+20:10 that are unique to
+the loading state.
+20:14 And finally, we have
+the active lambda,
+20:16 which returns true when
+we're in the loading state.
+20:20 In this case, we just
+compare the current state
+20:22 to loadingstate.loading,
+and that is, we'll
+20:26 set the properties that are
+unique to the loading state.
+20:33 We can then add another
+extension function
+20:36 when we're in the
+error state, which
+20:38 we're going to call loading
+error, which follows
+20:41 the same pattern as loading.
+20:43 We now go back to
+the button and update
+20:46 it to take the loading state
+and communicate that back
+20:49 to the Style.
+20:50 First, we update the
+button to take a loading
+20:53 state as a parameter.
+20:54 We make the default
+loadingstate.loaded, which
+20:56 matches our StyleState key.
+20:59 Next, we need to update the
+StyleState with the loading
+21:03 state.
+21:03 This is done in
+the same expression
+21:05 that creates the StyleState.
+21:07 Remember, updated StyleState
+takes a trailing lambda,
+21:11 which is called whenever
+the button is recomposed.
+21:14 We use the loading state key
+to record the loading state
+21:18 into the StyleState.
+21:21 Now we can customize the button.
+21:24 Here we have a
+simplified version
+21:26 of the full button, which covers
+focused, pressed, and hovered.
+21:31 We can now update this to
+change the look of the button
+21:35 when we're in the loading
+states using the extension
+21:38 functions we just created.
+21:40 This is how the
+StyleState lambda
+21:42 allows us to override the values
+of loading and loading error,
+21:44 just as we do pressed,
+hovered, and focused.
+21:48 Now, remember, these are the
+designs we wanted to implement,
+21:53 and we implement those
+designs by changing the color
+21:58 to light orange
+when we're loading,
+22:01 and when we're in
+the error state,
+22:02 we change it to light red.
+22:06 And there we have implemented
+a custom state-based styling.
+22:11 I just looking at it, anyway.
+22:13 By extending the
+StyleState to add loading,
+22:16 now any component
+that uses Style
+22:18 can also use the loading state.
+22:20 For example, this can be used in
+the Jetsnack card or the filter
+22:23 chip.
+22:24 Now, this is fine
+for states that
+22:25 are common across
+many components
+22:28 but clutters the scope with a
+bunch of StyleState functions
+22:31 that may not apply to
+a particular component.
+22:34 For example, neither the
+Jetsnack card or the filter chip
+22:38 update the loading state.
+22:40 The loading and loading
+error state function
+22:42 should only be available when
+the loading state is applicable.
+22:46 Ideally, we would want to
+make loading a syntax error
+22:49 when it's used in a
+style of a component that
+22:51 doesn't have a loading state.
+22:54 This is what Custom
+Styles allow us to do.
+22:58 A Custom Style
+allows a component
+23:01 to restrict the StyleScope
+to only the properties that
+23:05 are appropriate for
+it and also control
+23:08 which extension
+functions are available.
+23:11 In our case, we would like to
+control when loading and loading
+23:14 error are visible.
+23:16 Let's see how that is done.
+23:19 Creating a Custom Style starts
+by creating what you want
+23:22 to be visible in the scope.
+23:24 For a button, we
+just want to control
+23:27 how the style is extended,
+not restricted in any way,
+23:30 so we make the loading
+StyleScope inherit directly
+23:33 from StyleScope.
+23:36 Next, we create a custom
+loading style using
+23:40 the scope we just created.
+23:43 We then update the
+extension functions
+23:45 we wrote to extend this new
+scope instead of StyleScope.
+23:49 Now these extension
+functions will only
+23:51 be usable inside
+of a loading style,
+23:54 and are no longer
+valid in Style.
+23:56 Lastly, we go back
+to the button,
+23:58 and we update it to use
+the new Custom Style.
+24:01 As the custom loading style
+is not actually a Style type,
+24:05 you need to convert
+it to a Style
+24:06 before we pass it to
+the Style property.
+24:08 So we call two Style on it.
+24:11 Loading and loading
+error now can
+24:13 be used to customize
+a button, but not
+24:16 when customizing a filter chip,
+which is exactly what we wanted.
+24:22 Now, you may ask, what's
+the cost of all this power?
+24:26 Well, surprisingly,
+Styles are usually cheaper
+24:29 than using the
+corresponding modifiers.
+24:31 The main reason
+for this is Styles
+24:33 make it much easier to use
+Compose performance best
+24:37 practices.
+24:39 Let's take a look at
+the best case example.
+24:42 This code is changing
+the border color of a box
+24:44 and setting a couple
+of other properties.
+24:47 All the benchmarks
+we've written are
+24:50 much like this-- a component
+implemented with modifiers
+24:52 and the same component
+implemented with Styles.
+24:55 In this benchmark, Styles
+had approximately 70%
+24:60 fewer allocations and
+used up to 2.3 times
+25:03 faster to render the next pixel.
+25:05 To see how this done,
+let's take a closer look
+25:08 of how Styles work.
+25:10 Styles are a modifier that
+only affects layout and draw.
+25:16 When a layout property such
+as content padding changes,
+25:19 only layout and draw run.
+25:22 If a draw property such
+as background changes,
+25:25 only the draw phase runs.
+25:27 For the benchmark above,
+only the draw phase
+25:31 was running to update
+the next pixel.
+25:35 The performance
+benefits for Styles
+25:36 really comes from three things.
+25:38 Styles are created
+in composition,
+25:41 but they're only evaluated
+after composition.
+25:44 As explained earlier,
+this shifts the work
+25:46 done by a modifier to a
+later phase of Compose,
+25:49 allowing composition to be
+skipped when a style changes.
+25:53 Styles also use a
+single modifier.
+25:55 This reduces the number
+of allocations needed
+25:57 for the same functionality.
+25:59 And there are no animations
+created during composition.
+26:02 They're only
+created when they're
+26:04 needed, which reduces the cost
+of creating the composable
+26:07 in the first place.
+26:10 The border benchmark is
+a very targeted benchmark
+26:13 to highlight what
+Styles does best.
+26:15 In a more real-world example,
+we've already seen improvements.
+26:21 In a prototype of Materials
+button implementation,
+26:23 we switched to a
+Style-based version,
+26:25 and the allocations reduced
+by approximately 37%,
+26:29 and the button was 1.6 times
+faster to render the next pixel.
+26:33 Now, back to Rebecca
+to talk about theming.
+26:37 [APPLAUSE]
+26:42 REBECCA FRANKS: Thanks, Chuck.
+26:43 So far, we've learned a great
+deal about styling and Compose
+26:46 with the new APIs.
+26:47 Let's take a look at how you can
+integrate this into your themes.
+26:51 As mentioned at
+the start, we know
+26:52 that there is a spectrum
+of Material adoption
+26:54 that your app can
+have, and the way
+26:56 in which you adopt
+Styles in your theme
+26:58 may differ depending
+on your level.
+27:02 So how can you
+actually adopt Styles?
+27:04 The way Styles should be
+integrated with your app
+27:07 is through your
+theme by exposing
+27:09 a Style object that
+wraps your default
+27:12 styles for your components.
+27:14 This is a new layer that sits
+on top of the current subsystems
+27:17 that your design
+system may provide.
+27:19 For example, in
+Jetsnack, we have colors,
+27:23 shapes, and typography
+defined at a theme level.
+27:26 We now introduce a component
+default style layer
+27:29 into our theme, which
+is a group of styles
+27:31 that accesses the
+subsystems for tokens,
+27:35 for colors, shapes,
+and typography.
+27:38 Then our button composable
+would use the default style
+27:41 from the theme over directly
+accessing the subsystems,
+27:44 like it used to before.
+27:46 Now when the button
+is rendered, it
+27:47 will resolve the style using the
+precedence hierarchy that Meghan
+27:51 spoke about earlier, and by
+taking the incoming Style
+27:54 parameter on the button,
+the themes button style,
+27:58 and the inherited
+attributes up the tree
+28:00 to resolve the computed
+style for that button.
+28:04 So if you're not
+using Material Design,
+28:06 you can try out Styles in
+your own design system today.
+28:09 If you are in one
+of these two camps,
+28:11 you are either not
+using Material at all,
+28:13 or you have a custom theme
+that wraps Material components.
+28:17 Our recommendation is to use
+Styles within your own theme
+28:20 components, and when Material
+components expose a Style
+28:24 parameter, you can use that
+in your wrapped component
+28:27 definitions.
+28:29 Let's take a look at
+the Jetsnack example.
+28:32 This app has its
+own custom theme,
+28:34 and it uses some of the
+Material components.
+28:37 So we already had
+our own custom theme
+28:38 set up with the subsystems
+like colors, typography,
+28:41 and shapes all being
+different from Material.
+28:44 So to adopt Styles, we add
+our new Jetsnack Styles object
+28:48 exposed as a property
+on the theme that
+28:50 exposes the static object.
+28:53 We also add StyleScope
+extension functions
+28:55 to be able to easily
+access the subsystem tokens
+28:58 in the style themselves.
+29:00 Styles can access
+composition locals.
+29:04 Then in our Jetsnack
+Styles object,
+29:06 we create the default
+for a component.
+29:09 For example, we remove
+the button style
+29:11 that we defined earlier
+into this class,
+29:13 and we switch the hardcoded
+colors to use theme-level tokens
+29:17 from each subsystem.
+29:19 For example, the background
+here is set to a linear gradient
+29:22 brush using the list of colors
+defined in our custom design
+29:26 system sets of colors.
+29:29 This means that the
+style will automatically
+29:31 change when the subsystems
+are switched out.
+29:33 In this case, we're switching
+from dark to light mode.
+29:36 The colors would
+automatically adapt.
+29:39 Within our design system
+component definition,
+29:41 we now access the
+theme-level styles
+29:44 and resolve the effects of Style
+by combining the incoming Style
+29:47 parameter with the themed style,
+making our button themeable.
+29:53 Now we are able to
+easily use this button
+29:55 and customize it by passing
+in an additional style
+29:57 to override
+particular parameters.
+29:59 In this example, we are
+passing in different shapes.
+30:02 This combined with this default
+style sets at the theme level.
+30:07 You can see that there is also
+correct light and dark mode
+30:09 theming of the
+button, since it's
+30:12 using the underlying
+composition locals.
+30:16 So what about the case when you
+are using Material components?
+30:20 Material is adopting Styles
+within their UI components,
+30:23 which will be available
+in future releases,
+30:25 starting with Material 3.
+30:27 If you're still using
+Material 2 components,
+30:29 we encourage you to migrate
+to Material 3 in the meantime.
+30:33 When using Material, you might
+be using the whole Material
+30:36 design system, and in
+that case, you just
+30:39 use the Style parameter when
+it's offered on a component.
+30:42 If your design system
+is Material 3 based,
+30:45 but you have one or
+two global differences,
+30:48 you'd then be able to override
+them at the theme level.
+30:53 With Material components that
+expose a Style parameter,
+30:56 you'll be able to customize
+these components to your heart's
+30:58 content.
+30:60 For example, this
+Material 3 button
+31:02 will provide a Style
+parameter on it,
+31:04 so you'll be able to
+use Material components
+31:06 without the need of
+forking the implementation,
+31:09 and instead customize
+it to your requirements
+31:12 with a custom background,
+shape, padding, et cetera.
+31:16 This allows you to change
+other properties on a Material
+31:19 component that you
+previously may not have
+31:21 been able to change before.
+31:24 You can learn more
+about how Material
+31:25 is evolving to ensure you
+benefit from Material,
+31:28 whilst bringing your
+own customizations.
+31:30 Check out this talk.
+31:31 Back to Meghan.
+31:33 [APPLAUSE]
+31:37 MEGAN MEHTA: So we've talked
+at length about the Styles API
+31:41 and how you can get set up and
+integrate into your themes.
+31:44 But there's also a way
+to make your themes adapt
+31:47 to different device
+characteristics.
+31:50 We've introduced
+another experimental API
+31:53 called MediaQuery.
+31:57 What this API provides
+is a simple way
+31:59 to access window
+characteristics, which
+32:01 can unlock building only one
+theme to use across the device
+32:05 spectrum.
+32:06 The API works hand in
+hand with the Styles API
+32:09 to provide easy-to-use
+queries that can change Styles
+32:12 based on device properties.
+32:14 Let's look at a quick example.
+32:17 So with Android being able to
+adapt to more and more devices,
+32:21 you may want to know how
+you could easily add support
+32:24 for these different adaptations.
+32:26 For example, if you
+have a mouse attached,
+32:28 your pointer
+position variable now
+32:30 reports bind pointer
+position, meaning
+32:33 that you have ability to click
+on smaller device targets.
+32:38 To change a Style property
+based on a MediaQuery,
+32:41 you can use the
+example as follows.
+32:43 It returns only a
+single Boolean value,
+32:46 and the style will be
+invalidated and be reresolved
+32:49 after composition when
+the conditional changes.
+32:53 Here, you can see this set of
+buttons changes padding and size
+32:57 when on a device with
+a mouse plugged in.
+32:59 The button at the right--
+33:01 right at the button--
+33:03 let's try it again.
+33:05 The button right at
+the bottom overall
+33:06 looks smaller, even
+though we are using
+33:08 the exact same composable.
+33:11 The style will now
+automatically adjust
+33:13 based on device properties.
+33:16 And you can learn more about
+the newest MediaQuery APIs
+33:19 at the link right here.
+33:21 And be sure to check
+out Make Your UI
+33:23 Adaptive with Android
+Studio's AI agent,
+33:26 or ask Don and Jose right here.
+33:28 Back to Chuck.
+33:31 You want to stand
+behind the podium?
+33:33 REBECCA FRANKS: I'll stand.
+33:34 CHUCK JAZDZEWSKI:
+At this point, you
+33:35 may be asking yourself,
+when should you
+33:37 pick a modifier versus a style?
+33:39 As we've seen, there are
+some overlap between the two
+33:41 different systems.
+33:44 As a reminder, Styles are not
+meant to replace modifiers,
+33:47 but are instead meant to
+replace the parameters related
+33:50 to visual properties.
+33:53 When comparing
+the two, modifiers
+33:54 are designed as
+low-level capabilities
+33:57 and are still the way to work
+with behaviors, semantics,
+34:00 additive properties,
+and complex layouts,
+34:03 whereas styles are a
+high-level modifier designed
+34:05 for visual appearance,
+individual sizing,
+34:08 and themeable properties.
+34:10 Styles are a level
+above modifiers,
+34:13 and they're built
+on top of modifiers.
+34:16 Looking at the logic,
+modifiers are additive,
+34:20 where styles are override.
+34:23 For theming, with modifiers,
+it can be quite challenging
+34:26 as they were not designed to
+be elevated to the theme level,
+34:29 whereas styles, using them
+in a theme is by design.
+34:35 Looking at performance
+between the two,
+34:37 this is nuanced, of course,
+but styles by design skip
+34:40 composition, whereas modifiers
+often require all three phases.
+34:46 And with regard to
+animations, modifiers
+34:49 need separate
+animation primitives,
+34:51 whereas styles have
+animations built in.
+34:54 So when you should use
+a style or modifier?
+34:57 Well, choose a
+style when you want
+34:59 to override the defaults
+for an existing component,
+35:03 perform high-performance
+interactive state animations,
+35:07 or to define theme-wide sets
+of properties for a component.
+35:12 And choose modifiers
+for behaviors,
+35:14 like clickable or
+other gestures,
+35:16 to define unique
+one-off layouts,
+35:19 or if you need to have
+an additive properties
+35:21 on your composable.
+35:23 Now, back to Rebecca
+to wrap us up.
+35:29 REBECCA FRANKS:
+And with that, we'd
+35:30 like to encourage you to
+try out Styles in Compose
+35:33 and let us know if you have
+any feedback on the APIs.
+35:36 As a reminder, the API is
+experimental and subject
+35:39 to change as we receive
+feedback from you.
+35:41 We have an extensive
+set of documentation
+35:43 that are already
+available at this link.
+35:45 Additionally, if you'd like
+to try out the new Styles
+35:48 skill with your own agent that
+can assist in the migration
+35:51 to use Styles with your
+own custom design system
+35:54 or just the basic
+usage in Compose,
+35:56 you can access a skill
+at the following link
+35:58 or download the skills
+using the new Android CLI.
+36:02 Thank you so much
+for joining us.
+36:03 Check out the resources
+linked and let
+36:05 us know what you think
+of the Styles API.
+36:07 [MUSIC PLAYING]

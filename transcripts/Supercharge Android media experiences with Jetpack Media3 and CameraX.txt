@@ -1,0 +1,755 @@
+00:00 [MUSIC PLAYING]
+00:06 BASSAM DGHEIM: Hi, everyone.
+00:07 Welcome to our technical session
+on supercharging your Android
+00:11 media experiences.
+00:12 I'm Bassam, a product manager
+for Android Camera and Media.
+00:16 Joining me today are Nevin
+from developer relations
+00:19 and Kailiang from
+our engineering team.
+00:21 We're thrilled to
+show you how Android
+00:23 is evolving to help you build
+more engaging experiences
+00:26 for our users.
+00:28 Let's get started.
+00:30 Our relationship with media
+has fundamentally changed.
+00:33 It's no longer something
+we just consume.
+00:36 It's how we create, how we
+connect, and how we live.
+00:39 More and more, we see how media
+is a vital element of Android.
+00:44 And as that
+relationship evolves,
+00:46 we also see that our users are
+deeply engaged with their media
+00:50 as they use their devices to
+watch, listen, create, share,
+00:54 and connect.
+00:56 This is why we want your
+media to feel effortless.
+01:00 Every video you watch,
+every song you hear,
+01:03 and every story
+you love should be
+01:05 delivered with brilliant,
+uninterrupted quality.
+01:09 With that comes a promise to
+also be your creative partner,
+01:13 making it simple to capture
+your life as you remember it
+01:17 and craft the stories
+only you can tell.
+01:20 We strive to deliver media
+that you don't just see
+01:24 but you can step inside.
+01:26 To deliver on that vision, we
+are focusing our investments
+01:29 across key, high impact areas.
+01:33 First, we are continuing
+investments heavily
+01:36 into quality, power, and
+performance, ensuring
+01:40 ExoPlayer helps you deliver
+the most power efficient media
+01:43 experience on Android that
+is consistent, reliable,
+01:47 and lag-free.
+01:48 We're also focusing on
+end-to-end creator journeys,
+01:52 enabling applications to take
+advantage of our leading edge
+01:55 intelligent camera
+with our seamless
+01:58 CameraX toolkit
+and Media3 editing
+02:00 libraries that unlock magical
+experiences for our most
+02:04 creative users.
+02:05 Finally, we are investing
+in immersive experiences
+02:09 our users can feel.
+02:11 As content breaks free
+from the flat screen,
+02:13 we are building the definitive
+platform for spatial media.
+02:17 Using our open source
+Eclipse engine,
+02:20 we will enable you to capture
+and playback spatial content
+02:24 on your Android devices.
+02:26 As we build on our
+core investments,
+02:28 we are proud of the
+innovative features we
+02:30 have brought to the ecosystem.
+02:32 Working really closely
+with partners like Meta,
+02:35 we've been able to bring
+experiences like Low Light Boost
+02:38 to the hands of many users.
+02:40 We're also bringing more
+innovative AI features
+02:43 like Magic Eraser and
+Studio Sound to the platform
+02:46 to enable the most creative
+users to have the tools
+02:49 to express themselves freely.
+02:52 Besides all the experiences
+we are enabling,
+02:54 we're incredibly proud
+to see continued adoption
+02:58 of our Jetpack libraries.
+02:59 We'll share more on
+how these libraries can
+03:01 help you take advantage
+of the latest camera
+03:04 and media features on
+Android throughout this talk.
+03:08 To dive into the
+details, I'll pass it off
+03:10 to Kailiang and Nevin.
+03:13 NEVIN MITAL: Thanks, Bassam.
+03:15 When we talk about being able
+to capture in any scenario,
+03:18 we mean giving your
+users the power
+03:20 to grab the perfect shot
+every time without friction.
+03:24 We're committed to bridging the
+gap between system capabilities
+03:28 and in-app features
+with CameraX.
+03:31 CameraX abstracts away the
+complexities of the underlying
+03:34 camera hardware, providing a
+consistent and powerful API
+03:38 surface.
+03:39 Let's look at what's new.
+03:41 For example, starting with
+version 1.5 of CameraX,
+03:45 you can capture uncompressed,
+unprocessed DNG images
+03:49 for maximum creative flexibility
+for pro-level editing.
+03:54 On the video front,
+we've introduced
+03:56 a widely anticipated feature,
+High Frame Rate Capture.
+04:00 You can capture fast moving
+action at high frame rates
+04:03 and encode it as is for
+exceptionally smooth video
+04:07 or directly encode it
+at a lower frame rate
+04:10 for dramatic slow motion video.
+04:14 For code samples and details
+on device compatibility
+04:17 and limitations, check out our
+blog post for this feature.
+04:22 Modern camera experiences will
+often combine multiple features,
+04:26 but how do you know if a device
+supports HDR video, and 60
+04:30 frames per second, and
+preview stabilization
+04:33 all at the same time?
+04:35 The new feature group API in
+CameraX removes the guesswork.
+04:39 The feature group API currently
+supports HLG 10 HDR video,
+04:44 60 frames per second,
+preview stabilization,
+04:48 and ultra HDR image.
+04:49 You can provide a
+prioritized list of features
+04:52 and CameraX will determine
+the best combination supported
+04:55 by the device, enabling
+them in order of your list.
+04:59 You might consider using
+this API to create a settings
+05:01 UI that disables toggles
+for unsupported options.
+05:05 For more guidance, visit
+our feature group blog post.
+05:10 Moving on, next, let's take
+a look at Low Light Boost,
+05:13 a powerful feature for
+brightening the camera
+05:16 stream in real time for
+previews and recordings.
+05:19 Instagram recently added
+support for Low Light Boost
+05:22 to help users capture
+memories at night
+05:25 with as much authentic
+detail as possible.
+05:28 With CameraX,
+implementing the hardware
+05:30 accelerated AE mode of Low
+Light Boost in your capture flow
+05:34 takes just a single line,
+calling the CameraControl.En
+05:38 ableLowLightBoost AsyncAPI.
+05:42 Check out our developer
+documentation for guidance
+05:45 on how to enable the software
+implementation of Low Light
+05:48 Boost as a fallback solution on
+devices where Low Light Boost AE
+05:52 mode isn't available.
+05:54 So far, we've covered how
+CameraX can adapt your capture
+05:57 experiences to
+different environments,
+05:60 from fast action to low light.
+06:02 But users also have
+a variety of devices
+06:05 now, including foldables,
+tablets, headsets, and glasses.
+06:09 So it's more important
+than ever to build
+06:11 a camera experience
+that can seamlessly
+06:14 adapt to new form factors.
+06:16 Here's Kailiang to show you how.
+06:21 KAILIANG CHEN: CameraX
+already included
+06:23 tools you need to build adaptive
+capture experiences that
+06:26 enable users to make the
+most of their devices.
+06:30 Make sure to use the
+CameraX Viewfinder
+06:32 Composable to automatically
+manage reconfigurations, aspect
+06:36 ratios, and scaling to prevent
+stretches or stuttering
+06:40 previews.
+06:41 This works out of
+the box, saving you
+06:43 from writing
+device-specific workarounds.
+06:47 Here I have some sample
+CameraX code for setting up
+06:50 a preview use previous case.
+06:52 And it's important that we store
+the surface request from CameraX
+06:56 as a state in our ViewModel.
+06:58 We can then pass the surface
+request into CameraX Viewfinder
+07:03 and it will handle lifecycle
+management recomposition
+07:06 as needed.
+07:07 While we're on the
+topic of helping
+07:09 users make the most of their
+devices, here's something cool.
+07:14 We can use the JPEG
+Picture-in-picture library
+07:16 to give users the
+ability to multitask
+07:19 while recording with CameraX.
+07:21 Going back to our Camera
+Viewfinder example,
+07:24 we'll add an instance of
+basic picture-in-picture
+07:28 from the JPEG
+Picture-in-picture library.
+07:31 We'll also create
+a function that
+07:33 updates the picture-in-picture
+params based
+07:35 on where our camera preview
+is positioned on the screen.
+07:39 And finally, in our
+CameraX Viewfinder,
+07:42 we will call
+updateSourceRectHint
+07:45 when it gets positioned.
+07:47 Now whenever we
+want to enable this,
+07:49 we simply call Enter
+Picture-in-picture mode
+07:52 on this activity.
+07:53 NEVIN MITAL: For
+example, this might
+07:55 be useful for reading a
+script while recording.
+07:58 KAILIANG CHEN: And
+finally, looking ahead,
+08:01 CameraX is at the
+forefront of new format
+08:03 support with the
+addition of Motion Photo.
+08:07 Later this year, you'll be able
+to use CameraX to implement
+08:11 motion photo capture
+capabilities in your app, which
+08:14 are already supported
+for editing and playback
+08:17 in JPEG Media3.
+08:20 NEVIN MITAL:
+Speaking of editing,
+08:21 next we'll show how the
+transformer APIs in Jetpack
+08:24 Media3 are designed to make
+creative and complex editing
+08:28 easy.
+08:29 A major focus for
+Transformer has
+08:31 been to enable more
+complex editing workflows.
+08:34 And the APIs now have support
+for multi-asset editing.
+08:38 Multi-asset editing
+refers to the suite
+08:40 of tools necessary to composite
+multiple input media items
+08:44 into a single output video.
+08:47 This could include, for
+example, concatenating
+08:50 items one after the other,
+overlaying them, or arranging
+08:53 them for simultaneous playback,
+and applying operations
+08:56 that span multiple items.
+08:59 In Media3, you can apply
+effects and transformations
+09:02 to media with the Effects API,
+preview the fully composited
+09:06 compositions with
+Composition Player,
+09:09 and finally, export the
+creation to an output
+09:12 video with Transformer.
+09:14 To apply effects to
+a single media item,
+09:17 you can create an
+edited media item,
+09:19 which groups a media
+item with a list
+09:22 of video effects and audio
+processors to apply to it.
+09:26 You can arrange
+multiple edited media
+09:28 item instances into an edited
+media item sequence and layer
+09:32 multiple edited media
+item sequences together
+09:35 into a composition.
+09:38 There are some editing options,
+like HDR behavior, that you can
+09:41 apply at the composition level.
+09:44 You can then play this
+composition with a composition
+09:47 player to preview your edits
+or pass the composition
+09:50 into an instance of
+transformer to export
+09:53 a video with the edits baked in.
+09:55 On top of this, Transformer
+is packed with new features
+09:58 and improvements, including
+faster trimming with Edit List
+10:02 Metadata so you can quickly
+create high quality, shortened
+10:06 video clips by marking the
+start and stop boundaries using
+10:09 metadata instead of
+re-encoding the clip;
+10:13 new input format support,
+such as Android Professional
+10:16 Video for professional
+grade editing control;
+10:20 Media3 Muxer as the default
+rather than the platform
+10:24 muxer for more consistent
+behavior across devices;
+10:28 and a more intuitive API for
+speed adjustment and frame
+10:31 rate setting as part of the
+Edited Media Item Builder.
+10:35 One developer taking advantage
+of Transformer is Adobe.
+10:38 For their upcoming
+Adobe Premiere app,
+10:41 Adobe used Transformer as
+the foundation of their media
+10:44 editing infrastructure to
+reduce their maintenance costs
+10:47 and ensure greater compatibility
+across the Android ecosystem
+10:51 while maintaining
+the flexibility they
+10:53 need to use their own
+custom graphics pipeline.
+10:57 Beyond Transformer, to
+help tackle video encoder
+10:59 fragmentation across the
+diverse Android ecosystem,
+11:03 we're also introducing the
+new Codec DB module in Media3.
+11:08 This project leverages extensive
+testing from real devices
+11:11 to provide data-driven,
+chipset-specific recommendations
+11:15 for optimal video
+encoder settings.
+11:18 You can use Codec
+DB's recommendations
+11:20 to achieve better
+and more consistent
+11:22 video quality across devices
+at a target bit rate,
+11:26 all while avoiding
+device-specific issues.
+11:29 Here's an example where we've
+encoded a video with default
+11:32 settings on the left and with
+Codec DB's provided settings
+11:35 on the right.
+11:37 See if you can notice the
+improvement that Codec DB's
+11:39 recommendations have had.
+11:41 We can look at a single frame
+for side by side comparison.
+11:45 Notice the reduced blurriness
+in the branches of the bush,
+11:49 the sharper lines
+in the building,
+11:51 and the clear delineation
+between the mountain
+11:53 and the sky.
+11:55 With Codec DB, the API
+is designed for you
+11:58 to express an intent rather
+than a granular configuration.
+12:02 In this example, we're
+optimizing for high quality
+12:05 recording, but could instead
+request settings for use cases
+12:09 like live streaming or
+social media posting.
+12:12 We can also outline any
+constraints we're aware of.
+12:15 For example, the
+video resolution,
+12:17 specific codecs to consider,
+and a target quality level.
+12:21 And if, by chance,
+Codec DB doesn't
+12:24 have the data needed to
+provide a recommendation,
+12:27 we can also define a
+fallback configuration.
+12:30 At time of recording, the API is
+still actively in development,
+12:34 so please refer to the
+latest documentation
+12:36 for up-to-date guidance.
+12:40 KAILIANG CHEN:
+Looking ahead, we're
+12:41 also developing advanced
+on-device AI-powered effects
+12:45 to help redefine mobile
+storytelling for users
+12:48 and empower developers to ship
+premium AI-driven experiences
+12:52 across Android ecosystem.
+12:55 The first of these features
+that we're excited to introduce
+12:58 is image and video enhanced.
+13:01 This model includes tone
+mapping, denoising, deblurring,
+13:05 and super resolution
+capabilities.
+13:08 This can be valuable,
+for example,
+13:10 by enabling you to deliver
+smaller or low quality
+13:13 media to save on storage
+and bandwidth costs,
+13:16 and still restore image
+and video to high quality
+13:20 at the time of delivery.
+13:22 We've been partnering
+with Instagram Edits app
+13:25 to test this feature and
+will be rolling it out soon.
+13:29 To give users more
+creative control,
+13:32 we're also eager to bring
+Magic Eraser capability to apps
+13:36 through these effects.
+13:38 Magic Eraser leverages
+on-device models
+13:41 to intelligently remove
+unwanted objects or distractions
+13:45 from the picture and
+fill in the background.
+13:49 And finally, to enable clearer
+and more professional audio
+13:52 in videos, we are
+launching Studio Sound.
+13:56 This is an AI-empowered
+feature designed
+13:58 to improve audio quality
+by distinguishing
+14:01 between different audio
+sources like speech, music,
+14:05 and background noise.
+14:07 Users can then
+reduce distraction
+14:10 and boost the key sounds.
+14:12 I will pause here
+for a moment so you
+14:14 can hear the difference creators
+can make with this feature.
+14:17 [VIDEO PLAYBACK]
+14:18 - Baby, please don't cry.
+14:25 We're cutting for your dinner.
+14:29 Baby please don't cry.
+14:36 We're cutting for your dinner.
+14:39 [END PLAYBACK]
+14:40 KAILIANG CHEN: To make
+it straightforward
+14:42 for you to access these
+new capabilities and more,
+14:44 we are delivering them
+through a standard interface
+14:48 in a new Media3 AI
+Effects Library.
+14:51 That means you can
+adopt a feature once
+14:53 and we'll take care of
+all the heavy lifting
+14:56 to dynamically use the optimal
+implementations at runtime based
+14:60 on device capabilities.
+15:02 This is helpful
+because this feature
+15:04 can come from different
+sources to take
+15:07 maximum advantage of software
+and hardware they run on.
+15:12 For example, they
+could be implemented
+15:14 in software for broad reach.
+15:17 They could be released as a
+new feature in Android platform
+15:20 for deeper system
+integrations, or they
+15:23 could be a hardware accelerator
+model for optimized performance.
+15:28 The new AI Effects
+Module in JPEG Media3
+15:31 will abstract away
+this complexity
+15:33 so you automatically get the
+best experience, even on devices
+15:37 update to provide
+more optimized paths.
+15:41 This framework is a powerful
+and extensible interface
+15:45 that enables you to
+stay on the cutting edge
+15:47 and adopt the latest
+advances for Google research
+15:50 with minimal effort.
+15:52 We are excited to bring
+these advanced capabilities
+15:55 to your apps and eager to
+see the delightfully creative
+15:58 experience you can
+craft with them.
+16:01 Please stay tuned
+for an upcoming
+16:03 release of JPEG Media3 library
+that includes these APIs.
+16:10 NEVIN MITAL: Finally, let's talk
+about the last crucial piece,
+16:13 playback.
+16:15 Jetpack Media3's ExoPlayer
+is the recommended solution
+16:18 for media playback
+in Android apps.
+16:21 And we continue
+to invest heavily
+16:23 in making it more efficient,
+reliable, and feature rich.
+16:27 Let's run rapid fire through
+some of these improvements.
+16:30 KAILIANG CHEN: We've heard your
+feedback on improving the user
+16:33 experience during seeking.
+16:35 ExoPlayer now has a
+new scrubbing mode.
+16:38 Enable it via ExoPlayer dot
+setScrubbingModeEnabled.
+16:43 This optimizes performance
+for frequent user-driven
+16:46 seeks, like dragging
+a seek bar, resulting
+16:49 in a much more
+smoother experience.
+16:52 If you have a scrubbing UI, you
+should additionally configure
+16:56 the seek tolerance values.
+16:58 This allows ExoPlayer
+to be more efficient
+17:01 decoding frames while seeking.
+17:04 In this example, we are
+setting the tolerance to 8 DP
+17:08 before and after the
+seeking position,
+17:10 which allows ExoPlayer to find
+an optimal frame to seek to
+17:14 within that range.
+17:16 NEVIN MITAL: Last year, we
+announced the player surface
+17:19 composable.
+17:20 And we're continuing
+to add more Compose UI
+17:22 elements to the library,
+including button and state
+17:26 holders for playback
+controls like play,
+17:28 next, mute, and shuffle; a state
+holder for playback progress
+17:33 that can be used to create
+a progress indicator;
+17:36 and content frame, a composable
+that helps handle scaling
+17:40 and underlying player surface
+while maintaining its aspect
+17:43 ratio and also has an
+easily enabled shutter
+17:47 to hide the playback content.
+17:49 We've also introduced the
+new UI Compose Material 3
+17:52 module, which
+provides components
+17:54 with Material 3 design styling.
+17:57 This includes
+individual components
+17:59 such as playback control
+buttons, position and duration
+18:02 text, and a progress
+slider that allows seeking.
+18:06 Here you can see the
+Media3 Compose demo
+18:09 app, which uses the new top
+level player composable.
+18:13 This provides a basic player UI
+layout with customizable slots
+18:17 to add controls.
+18:19 KAILIANG CHEN:
+Preloading content
+18:21 is key to fast startup
+times, especially
+18:24 for short form content.
+18:26 We've enhanced our
+preload manager
+18:28 with caching support and
+improved memory management.
+18:33 NEVIN MITAL: We've also
+introduced new APIs
+18:35 for frame and metadata
+extraction, which
+18:37 have better
+reliability and format
+18:39 support than the
+equivalent platform APIs.
+18:42 KAILIANG CHEN: For
+remote playback,
+18:44 Media3 now has enhanced cast
+support with the new cast player
+18:49 API.
+18:50 This player implementation
+acts as a drop-in replacement
+18:54 to ExoPlayer for
+seamless transitions
+18:57 between local and cast playback,
+handling the playback state
+19:01 management on your behalf.
+19:03 NEVIN MITAL: We're also happy to
+announce that Eclipsa Video is
+19:06 launching on Android.
+19:08 Eclipsa Video is a next
+generation HDR video format
+19:12 that provides exceptional
+color and stunning imagery
+19:15 across a diverse set of devices.
+19:18 Android is the first
+operating system
+19:20 to adopt this new standard.
+19:23 Eclipsa Video removes a class
+of issues plaguing existing HDR
+19:27 videos today, such as
+unpredictable light levels
+19:29 and inconsistent
+rendering across devices.
+19:33 We've updated ExoPlayer to
+provide out-of-the-box box
+19:35 support for playback, so you can
+deliver high quality HDR videos
+19:39 to your users with
+little to no effort.
+19:43 KAILIANG CHEN: In
+addition, with how much
+19:44 time users spend consuming
+media on their phones,
+19:48 we are putting extra focus into
+power saving and reliability
+19:52 for playback use cases.
+19:54 And you can explore some
+of these work in progress
+19:57 improvements in Media3 main
+branch, including PCM offload.
+20:03 For apps with audio only,
+screen off playback use cases,
+20:07 enabling PCM offload can result
+in up to 25% battery savings
+20:13 based on our lab testing data.
+20:15 Dynamic scheduling,
+which allows the CPU
+20:18 to adapt how frequently it
+wakes up based on the workload.
+20:23 Renderer pre-warming
+to efficiently prepare
+20:26 resources needed for
+playback ahead of time
+20:29 for lower start up latency.
+20:32 Stack player detection
+to give remote signals
+20:35 if the player ever gets stuck
+in buffering or playing state
+20:39 without making progress, helping
+you identify and fix issues.
+20:46 BASSAM DGHEIM: So to
+recap, Jetpack CameraX
+20:48 helps you build powerful and
+consistent camera experiences
+20:52 to capture in any scenario.
+20:54 Media3 Transformer makes
+creative and complex editing
+20:58 easy and performant.
+20:60 And Media3 ExoPlayer delivers
+efficient and reliable playback.
+21:05 KAILIANG CHEN: Exactly.
+21:06 And together, they supercharge
+your Android media experiences.
+21:10 NEVIN MITAL: We can't wait
+to see what you build.
+21:12 For more information
+on anything we
+21:14 covered, check out the latest
+documentation and samples linked
+21:17 in the video description below.
+21:19 [MUSIC PLAYING]

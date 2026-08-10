@@ -1,0 +1,594 @@
+00:00 [MUSIC PLAYING]
+00:06 KATHLEEN BRYAN:
+Welcome to I/O. Today,
+00:08 we're talking about the next
+frontier of Android development
+00:11 AI glasses.
+00:12 The Android XR ecosystem
+ranges from XR headsets,
+00:15 to wired XR glasses,
+and AI glasses.
+00:18 Today, we will walk
+you through how
+00:20 you can extend a mobile app
+to work across both AI glasses
+00:23 and AI glasses with display.
+00:26 We will also take you through
+what's new with Jetpack Composed
+00:29 Glimmer, how to build
+with it, and finally,
+00:31 how you can start building
+and testing your apps
+00:33 today with the glasses emulator.
+00:35 Building for AI glasses
+poses some new challenges
+00:38 for Android developers.
+00:40 Last December, we announced
+Jetpack Compose Glimmer.
+00:42 Jetpack Compose Glimmer
+is a Compose UI Toolkit
+00:45 for building augmented
+XR experiences optimized
+00:48 for display AI glasses.
+00:50 Not all AI glasses
+have displays,
+00:52 and even if they
+do have a display,
+00:54 the user may have the
+display turned off.
+00:56 But how do we build
+apps for AI glasses
+00:58 when a display is not available?
+00:59 That's what I will
+be covering today.
+01:03 At last year's Android
+Show XR Edition,
+01:05 we showed the
+prototype to do list
+01:07 that demonstrated how to build
+a display experience for AI
+01:10 glasses using the Gemini Live
+API and function calling.
+01:13 Today we'll expand on
+that by showing you
+01:16 how you might think
+about building
+01:17 a single experience that
+covers both AI glasses
+01:20 and display AI glasses.
+01:23 To get started, let's review
+a few important details
+01:26 about building apps
+for AI glasses.
+01:29 First, remember that your
+code doesn't run directly
+01:32 on AI glasses hardware.
+01:33 You define a projected
+activity in your mobile app,
+01:36 and this activity runs in
+the context of AI glasses.
+01:39 If a display is available,
+your Jetpack Compose Glimmer UI
+01:43 is rendered onto the
+display of the AI glasses.
+01:46 You can learn more about how
+to launch your activity onto AI
+01:49 glasses by checking out
+Build Your First AI Glasses
+01:52 App with Jetpack Compose
+and Projected Libraries,
+01:55 which you can find in the
+YouTube video description.
+01:59 Let's look at the
+architecture of how
+02:01 we will accommodate
+both AI glasses and AI
+02:03 glasses with a display.
+02:05 By leveraging the
+existing view model,
+02:07 we can then observe the
+availability of a display
+02:10 with the Jetpack
+Projected library.
+02:12 This lets us lead with a
+seamless audio-only interaction
+02:15 when necessary, or
+render a glanceable UI
+02:18 when a display is present.
+02:20 For our example, we
+will choose to implement
+02:22 an in-app agent using Gemini
+Live API and the Firebase AI
+02:26 Logic SDK.
+02:28 Building out an agentic
+audio experience
+02:30 with the Gemini Live API is
+the same as it is on mobile.
+02:34 You can check out a great
+example of an agentic experience
+02:37 as part of the AI sample catalog
+that is available on GitHub.
+02:41 Check out the Gemini
+Live to do sample.
+02:43 There are some
+additional considerations
+02:45 to think about when building
+audio experiences for AI
+02:48 glasses when a display
+is not available.
+02:50 I'll cover a few of these next.
+02:52 We recommend that you
+provide a sign of life
+02:54 when your projected
+activity launches.
+02:57 This helps indicate the
+projected activity is
+02:59 running and ready to interact.
+03:01 Here, we are using the Gemini
+Live API to greet me with,
+03:05 "Hello, Kathleen.
+03:06 You have three list items.
+03:07 Ready to get started?
+03:08 When to do app starts up.
+03:10 You might also think
+about implementing
+03:12 additional agentic
+tools to enable actions
+03:14 that a user might normally
+do via the graphical user
+03:17 interface.
+03:18 In this example,
+the user indicates
+03:20 they want to stop the session.
+03:22 The model executes
+a function call
+03:23 that updates the microphone
+state and closes the session.
+03:27 When the AI glasses have
+a display available,
+03:30 some of the features
+we discussed
+03:31 could come across as
+redundant or verbose.
+03:34 The Jetpack Projected library
+provides a few functions
+03:37 to help you adjust the
+audio experience when
+03:39 a display is available.
+03:41 You can query projected
+device controller capabilities
+03:44 and look for
+capability visual UI.
+03:47 This will let you know
+if the current device has
+03:49 a display at all.
+03:51 The projected device controller
+add presentation mode change
+03:54 listener will let you know when
+the presentation mode changes.
+03:58 A presentation
+mode of visuals on
+04:00 indicates that the
+current display is on.
+04:02 We pass the display state
+into our route screen,
+04:05 and when that state
+changes to true,
+04:07 it triggers a recomposition.
+04:09 As you can see in the code
+here, we conditionally
+04:12 render the Jetpack
+Compose Glimmer
+04:13 UI or the audio experience
+based on the state of
+04:16 is display capable and
+are visuals on flags.
+04:20 If a display is
+not available, we
+04:22 will fall back to the
+audio first experience.
+04:25 Let's now look at some
+Jetpack Compose Glimmer UI
+04:27 code in action.
+04:29 We're declaring a list item
+for each item to the screen.
+04:32 This allows the user to check
+off, add, and remove items.
+04:36 As you continue to
+expand your app,
+04:38 you will want to take full
+advantage of Jetpack Compose
+04:40 Glimmer library.
+04:42 To talk you through some
+of those great capabilities
+04:44 and Jetpack Compose Glimmer,
+I will now hand it off
+04:46 to Adhi, who will take
+you through what's
+04:48 new in Jetpack Compose Glimmer.
+04:52 ADHITHYA RAMAKUMAR: Hi,
+my name is Adhithya,
+04:54 and I lead design for Android
+developer experiences.
+04:57 Designing UI for
+display AI glasses
+04:59 is an extremely
+different ballgame
+05:01 than designing for a phone.
+05:03 Why?
+05:04 Because glasses uses an
+additive transparent display.
+05:08 This means it can only add light
+and it cannot create black.
+05:13 What you see in your
+standard design tools
+05:15 is not how it will
+appear on the device.
+05:18 Last year, we introduced Jetpack
+Compose Glimmer specifically
+05:22 to create user interfaces
+for this medium.
+05:26 This year, we're
+expanding the library
+05:28 with more components and
+a refined visual language.
+05:32 Jetpack Compose Glimmer
+provides a comprehensive set
+05:35 of composables and
+building blocks optimized
+05:38 for the visual and interaction
+constraints of display AI
+05:42 glasses.
+05:43 These components are designed
+to ensure legibility, support
+05:48 touchpad input, and
+manage visual hierarchy.
+05:52 Let's briefly look at the
+core primitives you get today,
+05:55 starting with the Jetpack
+Compose Glimmer theme.
+05:59 Out of the box, Glimmer theme
+applies additive safe colors
+06:03 and legible typography so
+your content is designed
+06:06 to maximize legibility across
+a wide variety of real world
+06:10 environments.
+06:12 When it comes to font choices,
+Jetpack Compose Glimmer
+06:15 components include
+Google Sans Flex
+06:18 by default, a typeface
+specifically tuned
+06:21 for the unique display
+requirement of glasses.
+06:24 Now let's look at
+some of the components
+06:26 that Jetpack Compose Glimmer
+supports, starting with buttons.
+06:30 These are pre-wired for glasses,
+touchpad gestures, like taps,
+06:34 and swipes.
+06:35 They provide clear,
+outline-based visual feedback
+06:39 you need for
+transparent displays.
+06:41 Next up, button toggles.
+06:44 Along with standard focused,
+unfocused, and pressed states,
+06:48 these have dedicated,
+selected and unselected states
+06:51 to show what's on or off.
+06:54 They're perfect for
+mic and camera toggles.
+06:57 Next, let's talk
+about button groups.
+06:60 These allow you to
+provide multiple actions
+07:02 in a minimal footprint.
+07:04 You can provide just icon
+buttons, label buttons,
+07:08 or buttons with both.
+07:10 The button group
+will automatically
+07:11 overflow off screen and
+scroll as you move focus.
+07:15 Cards in Jetpack Compose.
+07:16 Glimmer are modular,
+adaptable containers
+07:19 that group information into
+single, digestible units
+07:23 that fully support images.
+07:25 Next is title chips.
+07:27 This component, when used in
+conjunction with your cards,
+07:31 gives better context
+and categorization
+07:34 to the content displayed.
+07:35 Beyond these basic
+primitives, we're
+07:38 also introducing several
+interactive components.
+07:41 These allow you to
+organize content
+07:43 with a structural
+hierarchy required
+07:45 to truly leverage the AI
+glasses' display effectively.
+07:50 These include. vertical list,
+a dynamic container with
+07:54 built in scrolling
+and focus support
+07:56 for various element sizes.
+07:59 Stacks are designed to show only
+one item in a group at a time,
+08:03 hinting at additional
+items above or below.
+08:07 They particularly shine
+by allowing the user
+08:10 to navigate between
+items one at a time,
+08:13 while masking items off
+screen to let the user focus
+08:16 on the currently selected item.
+08:19 And finally, a voice
+input indicator
+08:22 to give users visual feedback
+when their microphone is
+08:25 active and in use.
+08:27 We built these
+components so you don't
+08:29 have to worry about the
+constraints of the display.
+08:32 You can just focus on building
+incredible experiences.
+08:35 Louis will now show
+you how to use some
+08:37 of these components in code.
+08:41 LOUIS PULLEN-FREILICH: When
+we developed Jetpack Compose
+08:43 Glimmer, we wanted to make
+it easy to build polished,
+08:45 out-of-the-box experiences,
+while allowing for customization
+08:48 and flexibility
+in our components.
+08:50 Let's look at some of the
+APIs for the components Adhi
+08:52 introduced.
+08:53 Jetpack Compose Glimmer
+follows the same API principles
+08:56 and patterns with the
+other Compose libraries
+08:58 that you're already
+familiar with.
+08:59 Let's revisit the to do app
+Kathleen showed earlier.
+09:02 To build the list
+of to do items,
+09:03 we can use a vertical list
+which allows users to scroll
+09:06 through different items.
+09:07 Vertical list is used
+with list item, which
+09:09 contains a primary label and
+an optional leading icon,
+09:12 trailing icon, and
+supporting label.
+09:14 Vertical list follows the same
+API shape as existing Compose
+09:17 APIs such as LazyColumn, but
+includes out-of-the-box support
+09:20 for smooth focus scrolling and
+a scrim to indicate to the user
+09:23 whether there is more
+content off screen.
+09:25 Notice as you swipe
+on the touchpad,
+09:27 the list smoothly
+scrolls and moves
+09:29 focus between items
+while scrolling.
+09:31 The scrolling speed
+is also reduced
+09:33 at the start and end of
+the list to make it easier
+09:35 to move focus between items.
+09:37 Let's now imagine you want to
+add subtasks to the to dos.
+09:41 We can use the stack to
+show individual subtasks,
+09:43 allowing us to use most of
+the screen for the currently
+09:46 selected item.
+09:47 Stacks similarly follow
+the same general pattern
+09:49 for lazy components,
+and so the API shape
+09:51 should look very familiar to
+Compose APIs like LazyColumn
+09:54 and also the vertical
+list we showed earlier.
+09:57 Stacks let the user navigate
+between cards once at a time,
+10:00 while masking items off
+screen to let the user focus
+10:02 on the currently selected item.
+10:05 Now we need to
+connect the main list
+10:06 of to dos with the new
+subtask screen we just built.
+10:09 When building a mobile app,
+you can use the Navigation 3
+10:12 library to handle
+navigation between screens.
+10:15 The same is true when
+building an AI glasses app.
+10:17 You can follow the same patterns
+and libraries in your mobile app
+10:20 for handling navigation between
+Jetpack Compose Glimmer screens.
+10:24 When the user clicks on a
+to do item with subtasks,
+10:27 we navigate to a new nav
+entry with the stack.
+10:29 When the user navigates back,
+we pop the backstack and return
+10:33 to do list screen.
+10:34 Let's talk about customization.
+10:37 With display AI glasses,
+UI customization
+10:39 has some additional challenges.
+10:41 Component surfaces are typically
+translucent with thin borders,
+10:44 so there are generally fewer
+pixels that can be changed.
+10:47 Jetpack Compose Glimmer
+contains a theming system
+10:50 with a set of colors that can be
+customized to match your brand.
+10:53 Customizing the primary
+and secondary colors
+10:55 is a good way to make sweeping
+changes across surfaces
+10:58 in your application.
+10:59 The primary color is typically
+used with icons and components
+11:02 such as buttons and cards.
+11:04 Using border colors
+is also a good way
+11:06 to accentuate particular
+interactive components.
+11:09 You can apply a border color
+underneath the focus highlight
+11:11 effect to apply some additional
+emphasis or semantic meaning.
+11:15 For example, we can
+use the positive color
+11:17 from the theme to define a
+button with a confirmation
+11:20 action.
+11:21 I will now pass it back
+to Adhi to walk you
+11:23 through how to emulate
+running apps on glasses.
+11:27 ADHITHYA RAMAKUMAR:
+Thanks, Louis.
+11:29 So we built a journey that
+goes from phone to AI glasses,
+11:33 but how do you actually
+test all these experiences?
+11:36 More importantly,
+how do you test them
+11:39 without physical hardware?
+11:42 In addition to writing your
+code, with Android Studio,
+11:45 you can emulate, test, and
+preview glasses experiences,
+11:49 just like you test mobile apps.
+11:51 First, to create
+a virtual device,
+11:54 you simply add an AI
+glasses virtual device,
+11:58 select the appropriate
+system image, and hit Finish.
+12:01 This automatically
+downloads and installs
+12:04 the virtual device on which
+you can emulate display glasses
+12:07 experiences.
+12:09 Next, you need to pair
+the glasses device
+12:11 to an available phone.
+12:14 You can do this by clicking
+on the Pair Glasses
+12:16 button in your AI
+glasses virtual device.
+12:20 When you open the
+pairing assistant,
+12:22 your installed Canary
+devices will appear.
+12:26 This automatically
+sets up a connection
+12:28 between the phone
+and the glasses.
+12:33 After this, you're ready to
+launch your projected activity
+12:36 directly on your virtual
+AI glasses device.
+12:40 After you launch your
+glasses app on the emulator,
+12:43 you can interact
+with your application
+12:45 exactly as you would
+with a mobile app.
+12:48 By tapping or swiping on
+the AI glasses emulator,
+12:51 you can simulate trackpad input.
+12:54 This allows you to
+experience firsthand
+12:56 how your application responds
+to different touchpad gestures.
+13:01 Finally, to test those beautiful
+Jetpack Compose Glimmer UI
+13:05 states, we use Compose
+previews and the ability
+13:08 to change environments to test
+your UI against various lighting
+13:12 scenarios.
+13:14 You can simulate light, dark,
+or busy backgrounds in Studio
+13:18 to ensure your UI is legible.
+13:20 Now, back to Kathleen.
+13:24 KATHLEEN BRYAN: We've
+covered a lot today,
+13:26 from architecture to UI testing,
+but most important takeaway
+13:30 is that building for
+AI glasses doesn't
+13:32 mean starting from scratch.
+13:34 In this specific case,
+we are able to create
+13:36 these rich glasses experiences
+using all the existing app
+13:40 infrastructure we
+had already built.
+13:43 By treating your
+existing apps view model
+13:46 as is the single
+source of truth,
+13:47 you can seamlessly
+extend your mobile app
+13:49 to support both AI glasses
+and display AI glasses using
+13:53 the skills you already have.
+13:55 When you are ready to build
+the visual experience,
+13:58 Jetpack Compose
+Glimmer's components
+13:60 ensure your UI inherently
+adapts to the physical world.
+14:04 Best of all, with the
+new emulator tools,
+14:07 you don't need a physical
+device to get started.
+14:10 You can test your display and
+audio-only experiences right
+14:13 from your desk.
+14:16 To help you get
+started building today,
+14:18 we've published a
+complete to do list sample
+14:20 app, a comprehensive Figma
+library for designers,
+14:22 and updated the documentation.
+14:24 To get started, go to
+developer.android.com,
+14:27 download Android Studio
+and start building for AI
+14:30 glasses today.
+14:31 As always, we're listening
+to your feedback.
+14:33 Thank you and enjoy
+the rest of I/O.
+14:35 [MUSIC PLAYING]

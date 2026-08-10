@@ -1,0 +1,323 @@
+00:00 [MUSIC PLAYING]
+00:07 BRADLEY PATRIE: Hi, I'm Bradley,
+a senior visual designer
+00:09 on the Material Design team.
+00:10 LIAM SPRADLIN: And I'm
+Liam, a senior interaction
+00:12 designer on Material.
+00:14 Material Design has
+evolved from a fixed system
+00:16 into a flexible,
+customizable foundation that
+00:19 empowers you to build beautiful
+and thoughtful products,
+00:21 and truly make
+Material your own.
+00:23 In this session, we'll
+explore how product teams can
+00:25 use our expressive design
+updates and new customization
+00:28 capabilities to build your own
+unique design systems on top
+00:31 of Material's research-driven,
+accessible, and functional UX
+00:34 layer.
+00:35 BRADLEY PATRIE: You will learn
+how to apply your bespoke design
+00:38 language while staying anchored
+to the systematic reliability
+00:40 that makes Material
+an industry standard.
+00:43 Material is no longer an
+"all or nothing" choice.
+00:46 Join us to discover how to
+bring your unique ideas to life
+00:49 without breaking the
+Material connection.
+00:51 LIAM SPRADLIN: Since the
+beginning of Material Design,
+00:53 we've provided a beautiful
+and usable visual design
+00:55 language and a solid
+design system that
+00:57 establishes interaction patterns
+and behaviors on Android
+00:60 and beyond.
+01:01 At its debut in 2014, there was
+a strong need for a rigid design
+01:05 system with clear
+instructions to establish
+01:07 norms and consistency on
+Android and across apps.
+01:10 BRADLEY PATRIE: Year over year,
+the Material Design system has
+01:13 evolved with new ideas and
+emerging product needs,
+01:16 adding components, variations,
+and new features, most recently
+01:20 with our Material 3
+Expressive design launches.
+01:23 Now in 2026, design
+systems are mature
+01:26 and teams are pushing
+product design
+01:28 in exciting new directions.
+01:30 However, Material
+Design is often
+01:32 still seen as a fixed visual
+language, leading designers
+01:35 to ask, how can I truly
+customize Material
+01:38 to reflect my brand identity?
+01:40 LIAM SPRADLIN: We started
+to answer this question
+01:42 by introducing theming, a way
+to adopt custom properties
+01:45 through a visual
+theme for your app.
+01:47 And we gave makers more choices
+through our Expressive design
+01:50 updates, with brand-new
+components like toolbar
+01:52 and more component variants,
+so designers had more options
+01:55 to realize their design ideas.
+01:57 BRADLEY PATRIE: We
+saw a growing trend,
+01:59 makers wanting to stretch
+our components as far as they
+02:02 could go and exploring more
+and more custom UI solutions.
+02:06 We heard you.
+02:07 This was a clear signal to
+change how we deliver the design
+02:10 system, to support your
+ideas and keep them connected
+02:13 to the Material foundation.
+02:15 So we asked a question.
+02:17 What if we evolved the
+design system itself,
+02:19 making the component
+catalog flexible enough
+02:22 that you could
+fundamentally make it
+02:23 your own without sacrificing
+its core reliability?
+02:26 LIAM SPRADLIN: While
+designers and developers
+02:28 want to adhere to
+Material's foundation,
+02:30 their unique brand
+and new product ideas
+02:32 often require visual directions
+that we can't always predict.
+02:35 Consequently, many developers
+base their design systems
+02:37 on Material, but find themselves
+forking our components
+02:40 to achieve these
+specific design intents.
+02:42 BRADLEY PATRIE: When you fork,
+you break your connection
+02:44 to the Material foundation.
+02:46 This cuts the component
+off from automatic updates
+02:49 to essential features like
+accessibility, functional logic,
+02:52 and new behaviors, all for the
+sake of a stylistic change.
+02:56 For designers, this is
+detaching a component
+02:58 from a Figma library.
+02:60 LIAM SPRADLIN: Our goal is
+to reduce the need to fork,
+03:02 so you can create beautiful,
+premium, and deeply-branded apps
+03:05 while allowing you to reuse
+as much of the Material Design
+03:07 system as is possible.
+03:09 Soon, we're integrating
+Material Components
+03:12 with the new experimental
+Jetpack Compose Styles API
+03:15 to enable deeper, more
+powerful visual customization
+03:18 than ever before.
+03:20 BRADLEY PATRIE:
+These updates allow
+03:21 you to move beyond
+Material defaults
+03:23 to build premium,
+engaging experiences that
+03:25 reflect your brand.
+03:27 We're making
+customizability easier,
+03:29 letting you bring your design
+language into Material,
+03:32 while staying anchored to
+our functional foundation.
+03:35 Now, let's walk through
+an example of how
+03:36 you can make Material your own.
+03:39 LIAM SPRADLIN: This is one of
+our Material studies, Shrine.
+03:42 Shrine uses a calming,
+muted peach color palette,
+03:45 but the designer
+wants to customize
+03:46 some of the app's components to
+make them feel subtle and more
+03:49 dimensional, like this
+promotional button
+03:50 in the middle of the screen.
+03:52 The designer loves the
+expressive shape morph
+03:54 that comes with our
+buttons, but wants
+03:56 to add custom shadows and a
+subtle animated background that
+03:59 make the button feel more
+present in the interface
+04:01 and help it draw a
+bit more attention.
+04:04 Since the button doesn't support
+these effects out of the box,
+04:06 the engineering
+team would currently
+04:08 have to fork the component
+and build the functionality
+04:10 from scratch.
+04:12 When they fork, this
+component immediately
+04:14 loses the ability to receive
+future Material updates.
+04:17 The team is now burdened
+with maintaining this custom
+04:19 component, forcing them
+to manually rebuild
+04:22 all the underlying functional
+and accessibility logic
+04:25 that Material Design
+would provide for free.
+04:27 With Styles, the team
+can now implement
+04:29 the specific visual
+change without forking.
+04:32 They remain attached
+to Material,
+04:33 guaranteeing seamless future
+updates and new features.
+04:38 BRADLEY PATRIE: Next, let's
+look at another Material study,
+04:40 Achieve, an app for setting
+and completing goals.
+04:43 Its core brand focuses
+on motivating users
+04:46 through fun and positive
+visual feedback,
+04:48 making users feel rewarded
+when they complete a task.
+04:51 This custom aesthetic is
+fundamental to their user
+04:54 experience.
+04:55 Achieve's designers
+want completing a task
+04:57 to feel special and
+highly rewarding.
+04:59 To achieve this, they need to
+replace the standard Material
+05:02 ripple effect with
+a specific custom
+05:04 animation that is a hallmark
+of their unique design system.
+05:08 Using Styles, they can create
+this custom visual effect
+05:11 while maintaining all of
+Material's functional basics
+05:14 like pressed and focused states,
+and accessibility support.
+05:18 Now, the team can
+focus on creating
+05:19 a high-polish, custom visual
+that suits their brand,
+05:22 without having to rebuild
+the components foundations.
+05:26 Here's another example.
+05:28 This is a sample app, Clip,
+an audio recording app.
+05:32 One hallmark of
+their design system
+05:33 is the use of oversized
+graphic components
+05:36 to create a bold look that's
+distinct and easy to use.
+05:40 With Material Design's
+recent Expressive update,
+05:42 the design team has new
+components and more size
+05:45 variants to experiment
+with to achieve
+05:47 the look they're going for.
+05:49 Previously, Clip's
+designers were
+05:51 limited to the size
+variance Material provided,
+05:54 and other components often
+had no size variance at all.
+05:57 Now, with Styles,
+they can more easily
+05:59 modify the size, shape,
+and inner spacing directly
+06:03 to create truly bespoke
+designs that perfectly
+06:05 fit their bold aesthetic.
+06:07 LIAM SPRADLIN: Soon,
+you'll have the freedom
+06:09 to push your brand and design
+language in bold new directions
+06:12 without the fear of breaking
+the Material connection.
+06:14 You'll be able to expand and
+evolve your unique aesthetic
+06:18 while staying anchored
+to the rigorous research,
+06:20 accessibility standards,
+and functional reliability
+06:22 that keeps Material
+Components best in class.
+06:25 You no longer have to choose
+between stand-out brand
+06:28 identity and the built-in
+usability gains of Material.
+06:31 With Material Components
+integration with Styles,
+06:33 you'll get the
+ability to create what
+06:34 you need without forking, along
+with consistent accessibility
+06:38 and usability.
+06:39 BRADLEY PATRIE:
+These updates are
+06:40 coming soon to
+Material Components
+06:42 Follow along on our
+Material Design site
+06:45 and learn more about Styles and
+Jetpack Compose on our Android
+06:48 developer site.
+06:49 Please share your work
+and feedback with us using
+06:51 # the hashtag
+#M3Expressive on socials,
+06:54 or by tagging @googledesign
+on Instagram and X.
+06:57 LIAM SPRADLIN: And
+be sure to check out
+06:59 the technical deep dive
+by Material Engineering.
+07:02 With these upcoming
+capabilities,
+07:04 we're looking forward to seeing
+what you come up with when
+07:06 you make Material your own.
+07:08 [MUSIC PLAYING]

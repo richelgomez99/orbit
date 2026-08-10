@@ -1,0 +1,831 @@
+00:00 [MUSIC PLAYING]
+00:06 ALICE YUAN: Hi.
+00:07 I'm Alice.
+00:08 And my colleagues
+and I will be sharing
+00:10 how to engineer
+performance applications.
+00:12 When we talk about
+performance, we usually
+00:15 think of the visible metrics,
+a smooth UI and a fast startup.
+00:19 But memory is the
+silent foundation
+00:21 those metrics are built on.
+00:23 If your memory usage
+is unoptimized,
+00:25 your app's performance
+and your user experience
+00:27 will be negatively
+impacted, too.
+00:30 Think of your phone's
+physical memory capacity
+00:33 similar to this finite
+grid to illustrate
+00:35 a simplified version of
+memory page usage on a device.
+00:39 Every screen, high res video
+buffering, or on-device AI model
+00:45 claims a chunk of these pages.
+00:47 As long as there are empty
+pages, everything is smooth.
+00:51 But what happens if all
+the memory pages are used
+00:54 and there are no
+free pages left?
+00:57 Behind the scenes, the system
+scrambles to find more space.
+01:01 And that scramble can result
+in costly performance impacts,
+01:05 such as UI jank, battery drain,
+ANRs and sudden app kills.
+01:11 For example, it could trigger
+frequent garbage collection
+01:14 to scan the heap for objects
+that are no longer being used.
+01:18 This occurring
+frequently can lead
+01:20 to visible stutters in the UI.
+01:23 When the free memory drops
+below a certain threshold,
+01:27 a kernel process reclaims
+and compresses memory pages.
+01:31 This can take significant
+processing power on the CPU
+01:34 and result in the unpredictable
+app ANRs and heavy battery
+01:38 drain.
+01:39 If free memory is
+critically low,
+01:41 the low memory killer
+steps in and starts
+01:44 terminating entire processes
+based on a strict priority
+01:47 hierarchy.
+01:49 This is the primary cause
+of cold starts, which
+01:52 forces users to have a
+prolonged loading screen
+01:55 while the app completely
+rebuilds its states.
+01:58 It can also cause
+highly disruptive,
+02:01 sudden kills of
+visible processes,
+02:03 like a music player
+abruptly being
+02:05 shut down in the background
+while the OS runs out
+02:08 of background processes to kill.
+02:12 Not optimizing for
+memory consumption
+02:14 can also result in your app
+exceeding the bad behavior
+02:17 threshold for ANRs or crashes,
+which may impact your app's
+02:22 discoverability on Google Play.
+02:25 Finally, Android is developing
+new methods of system level
+02:28 optimizations to ensure stronger
+memory management and device
+02:32 stability across the ecosystem.
+02:35 In this session,
+my colleagues and I
+02:37 are going to share three
+solutions for developers
+02:40 to optimize your memory,
+which will ultimately improve
+02:43 your app's user experience.
+02:45 AJESH PAI: I will share how to
+best configure your R8 tools.
+02:49 And Fung will explain
+some memory best practices
+02:51 to keep your memory usage lean.
+02:54 ALICE YUAN: Finally, I'll
+be sharing observability
+02:56 tooling so that you can catch
+memory issues in the field.
+03:00 By the end of this talk,
+you'll have a proactive roadmap
+03:04 to ensure your app
+continues to be performant.
+03:09 AJESH PAI: One of the
+most impactful changes
+03:11 you can make to improve
+your app's performance is
+03:13 to enable the R8 optimizer.
+03:16 While R8 is widely known
+for shrinking APK sizes,
+03:20 it also helps
+reduce memory usage.
+03:22 When less code is loaded
+from APK into RAM,
+03:25 the app consumes less memory.
+03:28 R8 removes unused code and
+resources from your app,
+03:32 reducing the memory
+needed to load your app.
+03:35 You want to do this because,
+if you don't, unoptimized
+03:38 heap memory usage
+triggers frequent garbage
+03:40 collection, causing UI jank.
+03:43 R8 minifies classes, methods,
+and fields into shorter names,
+03:46 reducing memory usage.
+03:48 This is important because
+stack memory issues
+03:50 contribute to a complex,
+less efficient runtime.
+03:54 R8 performs optimizations
+such as method inlining
+03:57 to replace a method called
+with the actual code
+04:00 and merges multiple classes,
+reducing the heap size
+04:04 and stack memory.
+04:06 For your users, this
+means faster startup time,
+04:09 improved rendering,
+and fewer ANRs.
+04:13 Now that we have
+seen the benefits,
+04:14 let's enable it
+in your code base.
+04:18 In your app build.gradle
+file, set isShrinkResources
+04:21 is equal to true.
+04:22 This enables R8 to remove
+unused resources and code.
+04:26 isMinifyEnabled is equal to true
+allows R8 to optimize the code,
+04:31 remove the unused classes, and
+rename the classes to reduce
+04:34 the code size.
+04:35 And finally, define the
+default ProGuard file,
+04:38 which contains the
+optimization rules.
+04:41 A key thing to make sure is to
+use the correct default ProGuard
+04:44 file.
+04:45 This legacy file prevents R8
+from applying optimizations
+04:49 to your app.
+04:50 Note that from Android
+Gradle plugin 9,
+04:53 the legacy file
+proguard-android.txt is no
+04:57 longer supported, so replace
+the incorrect default file with
+05:00 proguard-android-optimize.txt
+that is bundled with Platform
+05:05 Tools.
+05:06 This seemingly small
+configuration update
+05:08 can significantly improve
+several performance metrics.
+05:12 If your Gradle properties
+file includes a flag
+05:15 to disable R8 full
+mode, remove the flag
+05:18 to unlock R8's full potential.
+05:21 Make sure to thoroughly test
+your app after these changes
+05:23 as it enables
+powerful optimization.
+05:26 Making these changes
+can have a major impact
+05:29 on several performance metrics.
+05:31 Take the example of
+Monzo, a UK digital bank
+05:35 with 15 million
+customers and growing.
+05:38 As the app scaled,
+the engineering team
+05:40 identified app startup time as
+a critical area for improvement
+05:44 but worried it would
+require significant changes
+05:46 to their code base.
+05:47 They sought a
+solution that would
+05:49 enhance the performance
+without the overhead
+05:51 of a complete rewrite.
+05:53 By fully enabling
+R8 optimisation,
+05:55 Monzo achieved a
+massive 35% reduction
+05:59 in their application
+not responding rate.
+06:01 And you know what?
+06:02 The team also saw
+a 30% improvement
+06:04 in slow cold startup time and
+reduced their overall app size
+06:08 by 9%.
+06:10 To summarize, enable R8
+shrinkResources, correct default
+06:15 ProGuard file, and
+in full mode to get
+06:17 the maximum optimizations.
+06:21 When R8 optimizes
+your app, it can
+06:23 remove code that's used
+indirectly, such as code
+06:27 which uses reflection.
+06:29 This can cause
+your app to crash.
+06:31 In order to handle this,
+you can use keep rules.
+06:34 Keep rules are instructions
+that prevent R8
+06:36 from optimizing parts of the
+code that relies on reflection.
+06:40 To add them, create a new file
+and mention it in the ProGuard
+06:43 file DSL.
+06:45 Keep rules are at the
+core of our configuration,
+06:47 so let's take a moment to talk
+about some best practices.
+06:51 Our first and most
+important tip is
+06:53 to make sure you are not
+using any global options
+06:55 as these limit optimizations
+for your whole app.
+06:59 One such global
+keep rule to avoid
+07:01 is dontoptimize, as this
+disables optimizations
+07:04 for the entire app,
+resulting in a significantly
+07:07 larger and slower app.
+07:09 Dontshrink prevents the removal
+of unused code and resources,
+07:13 forcing your users to
+download a bloated app.
+07:16 Dontobfuscate prevents renaming
+of human readable classes,
+07:20 methods, and fields
+into shorter names,
+07:23 preventing R8 from
+reducing memory,
+07:25 especially in large apps.
+07:27 Another common pitfall is using
+broad package-wide keep rules
+07:31 with wildcards.
+07:33 A rule like this one will
+keep every single class,
+07:36 any fields and methods
+inside that entire package.
+07:39 R8 can't remove unused classes
+or methods within that package.
+07:44 It can't optimize
+the internal logic.
+07:46 And it can't minify
+any of the names.
+07:49 Having broad and wide
+keep rules like this
+07:52 can result in a non-performant
+app so consider removing them.
+07:56 Because AGP and R8 work together
+to identify fragments, views
+08:00 and activities that need to be
+retained after optimization,
+08:04 you should not write keep rules
+for these Android components.
+08:08 To recap, only add rules that
+prevent R8 from optimizing code
+08:12 that relies on reflection.
+08:14 Rules should be scoped narrowly.
+08:16 They should not include global
+options or broad package-wide
+08:19 keep rules, or keep rules
+for Android components.
+08:23 If you are a library
+developer, you
+08:25 have two places to define keep
+rules, the consumer rules file
+08:29 and the internal rules file.
+08:31 The rules that you
+need to provide
+08:33 to the app that
+uses your library
+08:35 must go into the
+consumer rules file.
+08:38 These rules are automatically
+bundled and applied
+08:40 to any app that includes
+your library, ensuring
+08:43 that any code accessed
+with reflection
+08:45 or other indirect
+means is preserved.
+08:48 Adding rules like dontshrink,
+dontoptimize, or dontobfuscate
+08:52 in consumer file is
+a critical mistake.
+08:55 Because these rules are merged
+into the app's configuration,
+08:58 you would be forcing
+every app that
+09:00 uses your library to completely
+disable R8's optimization.
+09:04 In order to prevent this
+scenario, from EGP 9,
+09:07 we have made sure
+that libraries can
+09:09 no longer publish if their code
+includes this global keep rule.
+09:14 Proguard-rules.pro file should
+contain the key rules that are
+09:17 applied to your library.
+09:20 The file is not passed on to the
+app that consumes your library.
+09:23 It's used to protect
+your library's public API
+09:26 implementation
+from being removed
+09:27 by R8 during your library's
+own build process.
+09:32 For more information
+about how to write
+09:34 keep rules for your library,
+visit the updated guide
+09:37 for library authors.
+09:40 To help you maximize
+R8's optimization
+09:43 and write specific
+keep rules, we
+09:45 have introduced the R8
+Configuration Analyzer
+09:47 with a new version of R8.
+09:49 You can generate it by running
+a build enabled with R8.
+09:53 R8 Configuration
+Analyzer shows you
+09:55 what portion of your app code
+is available for optimization.
+09:59 It provides you three metrics.
+10:01 Obfuscation score shows
+how much code of the app
+10:04 is renamed to save memory.
+10:07 Optimization score tells
+you the percentage of code
+10:10 that is optimized.
+10:12 Shrinking score shows the amount
+of resources that are removed.
+10:16 You can look at
+these three metrics
+10:18 to monitor, inspect, and improve
+your app's configuration.
+10:22 With Analyzer, you can see how
+many classes, methods, or fields
+10:26 are affected by each keep rule.
+10:29 You can also see the percentage
+of the app that is unoptimized
+10:32 due to a single keep rule.
+10:35 The detail page for a
+keep rule has information
+10:37 on which classes,
+methods, or fields are
+10:39 prevented from optimization.
+10:42 If you see that a keep rule
+is preventing optimization
+10:44 in a large number of
+classes, methods, or fields
+10:47 that could be optimized,
+replace it with a specific
+10:51 and narrow keep rule.
+10:53 With R8 Configuration
+Analyzer, you
+10:55 can also see which keep
+rules are subsuming others,
+10:58 meaning a broader
+keep rule is making
+11:00 a narrower key pool redundant by
+already covering the same code.
+11:05 Make sure to remove
+the subsuming keep
+11:07 rule that is
+preventing optimization
+11:08 in a larger number
+of classes to get
+11:11 the maximum benefits from R8.
+11:13 Android X, Kotlin libraries,
+and many standard open source
+11:16 libraries are fairly
+optimized and already include
+11:20 specific annotations, so make
+sure to remove any keep rules
+11:23 that subsumes these libraries.
+11:26 With Configuration
+Analyzer, you can also
+11:28 see which libraries are
+introducing broad keep rules.
+11:31 Consider filing issues
+with the library developers
+11:34 or using an alternate
+optimized library that
+11:37 serves the same purpose.
+11:39 For more information, check
+out the link on screen
+11:41 and try out the R8
+Configuration Analyzer today.
+11:45 To summarize, R8 is
+a foundational tool
+11:47 for building performant
+Android apps.
+11:50 Optimizing with R8 is the
+first step to a smaller, more
+11:53 performant app.
+11:55 To maximize the
+benefits, enable R8
+11:58 with the correct configuration,
+define the keep rules
+12:01 to unlock maximum
+optimization, inspect
+12:04 and improve the configuration
+by R8 Configuration Analyzer.
+12:08 In order to speed up
+your development process,
+12:10 we have added an
+agent skill that you
+12:12 can use with Android Studio
+Agent or other AI tools.
+12:16 This new agent skill streamlines
+your existing R8 setup
+12:20 by resolving misconfiguration.
+12:22 Then, it leverages the
+configuration analyzer
+12:25 to clarify how keep rules
+affect your code base
+12:28 and, finally, offers
+actionable advice
+12:31 for optimizing those rules.
+12:34 This agent skill allows you to
+improve your app's performance
+12:37 with minimal effort.
+12:39 You can find more
+details about agent skill
+12:41 and how to use them here.
+12:43 Next, Fung will show you
+how to further optimize
+12:46 your app for memory.
+12:50 FUNG LAM: Let's talk about one
+of the most impactful thing
+12:52 you can do to optimize
+your memory usage--
+12:55 bitmaps.
+12:57 In this multimedia world,
+users spend a lot of time
+13:01 with images on their phone,
+browsing social media,
+13:05 sharing photos,
+finding restaurants.
+13:08 Bitmap images are everywhere.
+13:11 It is the place you
+should put your focus.
+13:14 Bitmaps are the largest
+common memory objects
+13:17 your app will have to deal with.
+13:19 Bitmap decoding and other
+operations that scale with
+13:22 bitmap dimensions are often on
+the critical path to drawing
+13:25 frames, .
+13:27 And bitmap size continues
+to grow as displays
+13:30 are larger and higher density.
+13:33 So bitmaps are the first thing
+you should consider optimizing
+13:37 for memory improvement.
+13:39 Let's look at four best
+practices you can adopt today.
+13:42 First, scaling.
+13:45 Never load a 4K image into
+a tiny thumbnail image view.
+13:49 Doing so with massive
+amount of RAM for detail
+13:52 that user can't even see.
+13:55 Use in sample size in
+bitmap factory options
+13:58 to load a smaller version or
+use a library like Glide or Coil
+14:02 which does this automatically.
+14:05 Cropping.
+14:07 You don't have to add a padding
+into a bitmap for letterboxing
+14:10 or framing.
+14:11 That uses much more memory.
+14:14 Config.
+14:16 The default config argb4x uses
+twice as much memory as RGB 565.
+14:23 If you are loading a thumbnail
+and you don't need transparency,
+14:27 use RGB 565.
+14:30 In other cases,
+consider whether RGB 565
+14:33 provides sufficient quality.
+14:35 Lastly, we use
+Bitmap Pool can help
+14:39 you reduce bitmap and reduce the
+number of memory allocations.
+14:44 Again, use libraries like
+Glide or Coil to help you.
+14:48 Talking about reuse.
+14:50 Do you know Android
+Studio can help you
+14:52 to find duplicate bitmap usage?
+14:55 In Android Studio, you
+can profile your app
+14:58 in the Profiler pane,
+choose Analyze Memory Usage,
+15:01 and start profiling.
+15:04 After a few seconds, you can see
+the details of the heap dump.
+15:08 Can you see the yellow triangle?
+15:11 Yes.
+15:11 Duplicate bitmaps
+are now highlighted.
+15:14 But wait, how do I know which
+one is the duplicate bitmap?
+15:19 Don't worry.
+15:20 Click on the detail
+and you can see
+15:22 the preview of the image, which
+gives you a better idea where
+15:25 is this happening.
+15:27 What is the next step after
+optimizing bitmap usage?
+15:30 Memory leak.
+15:32 Don't underestimate
+memory leaks.
+15:34 These will accumulate and use
+up a huge amount of memory
+15:38 over time.
+15:39 And again, we have something
+for you in Android Studio.
+15:43 In Android Studio,
+pain-free, you
+15:45 can now find memory
+leaks with LeakCanary.
+15:48 The leak analysis is
+now within the IDE
+15:51 and integrated with
+your source code
+15:54 so it is providing
+features like Jump
+15:56 To Source and other
+helpful connections.
+15:60 You can also copy
+the entire leak
+16:02 analysis for further
+processing with Gemini.
+16:06 This could reduce the friction
+and time required to investigate
+16:09 and fix memory leaks.
+16:11 Let's have a quick recap.
+16:13 Bitmaps are the largest
+common memory objects.
+16:16 Optimizing bitmap usage can
+bring huge memory improvements.
+16:20 And Android Studio can help
+you to find duplicate bitmaps
+16:24 and fix memory leaks.
+16:26 Here's Alice to show you
+advanced memory profiling tools.
+16:31 ALICE YUAN: Now that we've
+learned some foundational memory
+16:34 best practices and tools, let's
+talk about advanced tooling
+16:37 that you can use to level
+up your memory debugging
+16:40 and analysis.
+16:42 Profiling Manager is an advanced
+performance observability
+16:46 API introduced in Android 15.
+16:49 It's the only API that lets
+you collect real user Perfetto
+16:53 profiles programmatically.
+16:55 The Profiling Manager
+API supports two types
+16:58 of profile collection.
+17:00 In app-driven
+profiles, the developer
+17:03 must explicitly define
+the start and end
+17:06 of the collection process.
+17:08 In this session, we'll focus
+on the event-driven profiles
+17:11 that are automatically
+collected by the system.
+17:15 Since Profiling
+Manager's launch,
+17:17 we've scaled up the number
+of event-based performance
+17:20 triggers significantly.
+17:22 In addition to triggers
+introduced in Android 16,
+17:26 such as ANRs, app_fully_drawn,
+and force_stop, in Android 17,
+17:32 we're launching four new
+event triggers, cold_starts,
+17:36 kills due to excessive
+CPU usage, Out of Memory,
+17:40 and Anomaly.
+17:41 For this talk, we'll be focused
+on the memory related triggers
+17:45 Out of Memory and Anomaly.
+17:48 The anomaly trigger identifies
+performance anomalies
+17:51 detected by the system.
+17:53 Memory and binary spam are the
+first two types it supports.
+17:57 When memory usage
+exceeds a threshold
+17:59 that the system
+considers a violation,
+18:02 a heap dump is triggered.
+18:04 This allows you to use
+the anomaly trigger
+18:06 to examine resource allocations
+and the application state
+18:09 to identify the root
+cause of the issue.
+18:12 To support the Android 17
+memory limit enforcement,
+18:16 the Anomaly trigger
+provides a heap
+18:18 dump prior to app termination.
+18:21 With the Out of Memory
+trigger, Profiling Manager
+18:24 monitors for out
+of memory errors.
+18:26 When one occurs, the
+system automatically
+18:29 collects a Java heap dump.
+18:31 This captures the exact state
+of your heap object allocations
+18:35 at the moment of the crash,
+providing significantly more
+18:38 actionable debug information
+than a standard stack trace.
+18:42 Let's explore how to create
+a profiling manager trigger.
+18:46 We'll use Out of Memory events
+as our example, though you
+18:50 can replace this logic
+with any other event
+18:53 trigger you wish to collect.
+18:55 To start listening
+for system triggers,
+18:57 you should do the following.
+18:59 First, import the Android X
+tracing and core libraries.
+19:04 Once the application
+launch has completed,
+19:07 initialize profiling
+manager by fetching it
+19:10 from system services.
+19:12 Register for all
+performance triggers
+19:14 you're interested in debugging.
+19:16 In our scenario, it would be
+the Out of Memory trigger.
+19:20 Then register for
+profiling results
+19:22 by providing a results
+callback listener.
+19:25 The result listener is
+defined as a consumer listener
+19:29 that listens for any
+profile completion.
+19:32 For Out of Memory crash
+triggers and other triggers
+19:35 where the app is
+killed, this data
+19:37 would return upon the
+next application launch.
+19:41 Once the Out of Memory
+trigger result has returned,
+19:45 the profiling result will
+provide the local file path.
+19:49 You can then upload
+the profiling result
+19:52 file to a server using Work
+Manager for either manual
+19:56 or bulk analysis.
+19:58 Let's see how we would manually
+inspect the heap dump collected
+20:01 using Profiling Manager and
+identify the root cause.
+20:05 I'll demo an example
+using a sample file
+20:08 parsing app that received
+an out of memory crash.
+20:12 To inspect this data, I'll
+be using Perfetto UI, a tool
+20:16 to visualize performance,
+instrumentation, and analysis.
+20:20 You can use this tool
+to inspect recorded heap
+20:23 dumps by going directly
+to UIPerfetto.dev
+20:27 and drag and drop or
+open the trace file.
+20:30 Here's what a heap dump
+looks for the sample app
+20:33 I've written that received
+the Out of Memory crash.
+20:36 Perfetto displays the root Java
+object alongside the memory
+20:41 allocation hierarchy.
+20:43 We can see that the root memory
+allocation of this heap dump
+20:46 is significant.
+20:47 It's past the maximum heap
+size of 256 megabytes defined
+20:53 by the manufacturer.
+20:54 Also merges many smaller objects
+into combined slices called
+20:59 merged within its flame graphs.
+21:02 Developers can generally
+focus the debugging efforts
+21:04 on larger objects as the
+merge smaller objects are not
+21:08 typically critical towards
+Out of Memory failures.
+21:13 You can click on a
+section of the stack
+21:15 and isolate the stack by
+using the Show Stack feature.
+21:19 Finally, I traced the root cause
+of the excessive heap usage
+21:24 to the ParseLargeFile in
+our class in Main Activity.
+21:28 I was unnecessarily
+holding references
+21:31 to string objects created
+during the file parsing, which
+21:35 prevented them from
+being garbage collected.
+21:37 I can now clear these
+references to resolve
+21:40 the Out of Memory issue.
+21:42 Profiling Manager also
+supports collecting
+21:45 of heap profiles, which
+provide deeper insight
+21:48 into native memory usage to
+help you optimize allocations
+21:52 like bitmaps.
+21:54 Check out this Perfetto
+documentation to learn more.
+21:57 To recap, Profiling Manager is
+a performance observability API
+22:02 that provides actionable,
+in-field performance data.
+22:06 Profiling Manager can record
+event-driven profiles like Out
+22:10 of Memory and memory
+anomalies in Android 17.
+22:14 Finally, use the Perfetto
+UI to analyze heap dumps
+22:18 to better understand
+memory object allocations.
+22:22 That's all from us on
+engineering performance
+22:25 applications.
+22:26 By applying the strategies
+discussed today,
+22:28 you can shift from
+a proactive memory
+22:30 roadmap that delivers a smooth
+experience for your users.
+22:35 Keep app size small by
+configuring R8 with narrow,
+22:38 specific keep rules that
+maximize bytecode optimization.
+22:42 Keep your memory usage lean
+by optimizing bitmap loading.
+22:46 Also, catch memory
+leaks early right
+22:49 inside the IDE using Android
+Studio's LeakCanary integration.
+22:54 Finally, leverage
+Profiling Manager's
+22:56 API's new event-driven
+triggers in Android 17
+23:00 that allow you to
+automatically capture
+23:02 heap dumps for out of memory
+crashes and memory anomalies.
+23:07 You can check out all of
+our additional resources
+23:10 in the video description.
+23:11 Happy learning.
+23:12 [MUSIC PLAYING]

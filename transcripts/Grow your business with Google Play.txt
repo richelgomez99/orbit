@@ -1,0 +1,551 @@
+00:00 [MUSIC PLAYING]
+00:06 LIDIA GAYMOND: Hi, everyone.
+00:07 Thanks for joining us today.
+00:08 My name is Lidia, and
+my colleague Phalene
+00:11 and I are product
+managers at Google Play.
+00:13 Together, our teams
+have been working
+00:15 on a range of exciting
+updates designed
+00:17 to help you grow your businesses
+and maximize opportunities
+00:20 for your apps and games.
+00:21 And today, we're going to give
+you the inside scoop on all
+00:25 of them.
+00:26 There's a lot of
+features to cover,
+00:27 so we've grouped them into
+three main categories.
+00:31 First, we'll talk about the
+features that save you time.
+00:34 We'll show you how to streamline
+your day-to-day tasks,
+00:37 from managing custom store
+listings to running experiments,
+00:40 so you can focus on
+building great experiences
+00:43 and let new AI-powered
+tools do the rest.
+00:46 Next, we'll dive into
+reporting and insights.
+00:49 These are the tools
+and features that
+00:51 show you where to focus your
+efforts for maximum impact,
+00:54 like the new reporting tools
+and Play Console that give you
+00:56 actionable guidance at exactly
+the right time in your app's
+00:60 lifecycle.
+01:01 And finally, we'll focus
+on monetization tools,
+01:04 including the latest ways
+to boost your bottom line
+01:07 and reduce friction in
+the purchase journey.
+01:10 These updates are
+designed to work together
+01:12 to help you grow your
+business at every stage.
+01:15 So let's get started with a
+look at our first category,
+01:18 saving you time.
+01:20 Customized store experiences are
+one of the most effective ways
+01:23 to engage and attract users,
+but we know that creating them
+01:27 can be time consuming.
+01:28 So with streamlined content
+creation and testing
+01:31 for your store
+listings, so now you
+01:33 can drive those big
+results in less time.
+01:36 We've also made it easier to
+customize the landing experience
+01:39 by language, by giving you the
+ability to import translations
+01:42 with Gemini.
+01:44 To submit translations
+for your listing,
+01:46 you no longer need
+to copy paste them.
+01:48 All you need to provide
+is a structured document
+01:51 and we'll pre-populate the
+store listing forms for you.
+01:55 And for those of you who
+are new to custom listings
+01:58 or just need some
+fresh ideas, Gemini
+02:00 can help with
+recommendations and help
+02:03 you deploy your new custom
+listing with just a click.
+02:06 When Gemini identifies a new
+growth opportunity for your app,
+02:09 you'll see it in the
+recommendations section
+02:11 on the Grow overview page,
+along with a custom listing
+02:14 to capture that opportunity
+that you can deploy right away.
+02:19 Last but not least,
+we've made it easier
+02:20 to transfer developer
+account details when
+02:23 an account owner moves on.
+02:25 With the new self-serve
+account owner transfer process,
+02:28 the current owner of the
+account can initiate a transfer
+02:31 to one of their team members.
+02:33 After proper
+verifications, you will
+02:35 be able to complete the process
+easily using Play Console.
+02:38 These are just a few
+examples, but together
+02:41 all of these improvements
+add up to a lot less time
+02:43 spent on admin and
+a lot more time
+02:45 to focus on what matters most.
+02:48 Which brings us
+to the next batch
+02:50 of updates, enhanced
+reporting and insights
+02:53 to help you figure out
+where to focus that time,
+02:56 including helpful guidance and
+tools to understand and optimize
+02:59 your performance,
+connect the dots,
+03:01 and maximize your ROI on Play.
+03:04 Starting at the
+top of the funnel,
+03:06 we've made significant
+improvements
+03:08 to the console's
+Grow overview page.
+03:10 This includes new
+metrics to give you
+03:12 a consistent and comprehensive
+view of your growth funnel.
+03:15 From reach to acquisitions,
+first opens, engagement,
+03:19 and retention all in one place.
+03:22 You'll also be able to see
+both user and device roll-ups
+03:25 for many of those metrics.
+03:27 To give you even
+more insight, we're
+03:29 also launching traffic source as
+a dimension across these metrics
+03:32 and others, including
+monetization.
+03:35 So, for example,
+if you want to know
+03:38 what proportion
+of your engagement
+03:39 is driven by Explore
+acquisitions,
+03:41 or how your user retention
+compares across traffic sources,
+03:45 now you can find out
+with just a few clicks.
+03:48 But it's not just
+metrics themselves
+03:50 we've improved, we're
+also giving the reporting
+03:53 API a major upgrade, so you
+can consume all this data
+03:56 in a way that works for you.
+03:58 Until now, the API has only
+supported Android vitals
+04:01 metrics, but we're
+in the process
+04:03 of adding not only
+Console growth
+04:05 and monetization
+top-line metrics,
+04:07 but also content
+performance metrics.
+04:10 We're also offering
+an MCP server.
+04:12 Together, these
+updates will allow
+04:14 you to access your Console
+data programmatically or using
+04:17 agents, and seamlessly integrate
+it into your own data sets
+04:21 and workflows.
+04:22 As a friendly
+reminder, access will
+04:24 depend on specific program
+requirements and account
+04:27 eligibility.
+04:29 Following last year's launch
+on the Play Console statistics
+04:31 page, Gemini-powered
+chat descriptions
+04:34 have now expanded to the reach
+and devices, store performance,
+04:37 and revenue pages.
+04:39 This brings critical,
+automated insights
+04:41 to your most vital
+charts, helping
+04:44 you interpret performance data
+more effectively at a glance.
+04:48 At the same time, we're
+also making it easier
+04:50 to compare and
+aggregate your data
+04:52 by standardizing more reports.
+04:54 Store listing
+reports will now be
+04:56 consistent with the way we
+report on other content,
+04:58 such as promotional
+content and YouTube videos.
+05:02 You will see updates to
+the way we count visitors,
+05:04 unique installs and opens,
+as well as pre-registrations
+05:07 and respective
+click through rates,
+05:09 so you can more easily
+compare those metrics
+05:12 across different
+types of content.
+05:14 Speaking of clicks and
+click through rates,
+05:16 we're also making an
+important update to the way
+05:18 we calculate this
+metric on Play.
+05:21 As Play Store drives more
+and more discovery pathways,
+05:24 we will move to indirect
+attribution for all store
+05:27 content, so we can capture
+more complex user journeys
+05:30 and provide you with
+deeper insights.
+05:33 All of these improvements,
+from new and enhanced metrics,
+05:36 to better and more
+consistent reporting,
+05:38 will help you get a clearer,
+more detailed picture
+05:41 of the value of all
+your content on Play.
+05:44 But those aren't the
+only reports and metrics
+05:46 we've improved.
+05:47 So now I'll pass the
+mic over to Phalene,
+05:49 who can tell us all about the
+improvements to our monetization
+05:52 metrics the team
+has been working on.
+05:54 [MUSIC PLAYING]
+05:57 PHALENE GOWLING: Thanks, Lidia.
+05:58 So to complete your ROI
+analysis, the Monetize with Play
+06:01 overview is the
+core destination.
+06:04 We've made some awesome
+upgrades to this page
+06:06 to give you an even clearer
+view of your revenue drivers,
+06:09 along with new insights.
+06:11 Let's check it out.
+06:13 Firstly, one of our newest
+AI features in development
+06:16 that you can take advantage of.
+06:18 You've told us that you spend
+a lot of time navigating in
+06:21 between all of the
+reporting pages
+06:23 to find what you're looking for.
+06:25 Well, why not see how effective
+your current monetization
+06:28 strategies are with a single
+click of the button using AI?
+06:33 You don't need to
+analyze multiple pages
+06:35 or even manually enter a prompt.
+06:37 Just click to see the latest
+insights on your buyers,
+06:40 conversion, churn, and pricing.
+06:43 Sign up to our early
+access program today.
+06:46 Earlier this year,
+we added the ability
+06:48 to track your cart
+conversion rate
+06:50 right within your core
+performance metrics,
+06:52 making it easier to
+optimize your conversions.
+06:56 Because Play's global presence
+extends across the whole Android
+06:59 device ecosystem, we recommend
+using the premium user device
+07:03 segment for benchmarking
+your performance.
+07:06 You can get a deeper
+understanding of user behavior
+07:09 and your user's
+intent to purchase
+07:12 by segmenting by other
+dimensions such as countries
+07:15 and biotype.
+07:16 We're giving you more
+granular insights
+07:18 into the purchase
+journey with new metrics
+07:21 on network health, user
+intents, and payment processing,
+07:25 showing you exactly where
+friction exists so you
+07:27 can continue to optimize.
+07:30 Besides these new metrics,
+we've also given you more ways
+07:32 to understand your impact.
+07:34 Earlier this year, we launched
+a new value insights carousel,
+07:38 which highlights ROI that you
+might not already know about.
+07:41 For example, you might see
+how user-facing features
+07:44 like purchase verifications
+and payment reminders
+07:48 have increased purchase
+for the users, which
+07:50 in turn led to an increase
+in your first-time buyers.
+07:53 Or if you offer subscriptions,
+how many subscriptions
+07:57 have been recovered
+for our churn reduction
+07:59 features such as resubscribe
+and payment decline recoveries.
+08:04 And this is just a start.
+08:05 We'd love to hear which insights
+you find the most useful,
+08:08 so please like the
+insights that you
+08:10 find more valuable to see
+more like them in the future.
+08:14 For finding your app's
+biggest opportunities,
+08:16 our tailored recommendations
+at the bottom
+08:18 of the Monetize
+with Play overview
+08:20 are focused on ways in which
+you can maximize your ROI.
+08:24 We've used Play-wide
+data to prioritize
+08:26 the ones we think could
+benefit your business the most.
+08:29 So go take a look today.
+08:31 So thinking back to
+the app lifecycle,
+08:34 now that you've taken advantage
+of all the amazing ways
+08:36 to save time in growing your
+app and understand your ROI,
+08:41 the next step is to think
+about your ever-growing success
+08:43 in monetization.
+08:45 With that in mind,
+and to wrap things up,
+08:48 let's look at some
+of the newest tools
+08:50 to support your
+monetization strategy
+08:52 and reduce friction in
+the purchase journey.
+08:55 One of the most amazing
+things about Play
+08:57 is our huge global audience,
+and this is only getting bigger.
+09:01 Recently, we reached over 880
+million purchase-ready users
+09:06 around the world.
+09:07 That's more than one in
+every six people on Earth.
+09:10 To help you reach this
+incredible audience,
+09:12 we've continued to expand
+our support for local payment
+09:15 methods in emerging markets,
+including Africa and South
+09:19 America, and added card networks
+in Asia, the Middle East,
+09:22 and Nordics.
+09:24 We've also enabled users
+to buy in Mongolia,
+09:27 and provided developers
+in Kyrgyzstan and Kosovo
+09:30 with the ability to monetize,
+enabling the ecosystem
+09:33 to grow even further globally.
+09:36 For merchandising across
+Play Store surfaces,
+09:39 we've streamlined the
+console experience
+09:40 with a single, unified
+merchandising flow
+09:43 to improve your
+efficiency and ROI.
+09:46 And even better, you can
+optimize those offers
+09:49 with the Play
+Billing Lab testing
+09:51 app, which makes it easy to
+test how your offers are shown
+09:54 to users on Play surfaces.
+09:57 And speaking of offers, why
+not encourage your users
+09:60 to stick around and
+remind them what
+10:01 they love about
+their subscription,
+10:03 by offering your subscribers a
+discount from within the Google
+10:07 Play cancellation flow.
+10:09 By engaging users
+at critical moment,
+10:12 it's a great way to help
+you keep more subscribers.
+10:15 We're also partnering with
+developers, payments and gifting
+10:18 partners to source offers
+for Play users, which
+10:21 will be automatically presented
+when they're ready to pay.
+10:25 No hunting for codes
+or waiting for a cash
+10:27 back for the user and
+no extra work for you.
+10:30 Win-win.
+10:31 We've heard from you that churn
+can be challenging to solve for,
+10:35 so we've been looking
+at multiple ways
+10:36 to help you with your
+churn-rate performance.
+10:39 First, we're streamlining
+the checkout experience
+10:42 for one time products
+and subscriptions,
+10:44 starting with UPI.
+10:46 Buyers who use
+this payment method
+10:48 will now see a single
+screen checkout,
+10:51 so there's less time
+for user hesitation
+10:53 when they go to purchase.
+10:55 This is only the
+start, and we'll
+10:56 be rolling out our updates to
+other payment methods later
+10:59 this year.
+11:02 To improve your
+involuntary churn rates,
+11:04 we've enabled backup
+payment methods.
+11:06 Now, if a user has insufficient
+funds on their primary card,
+11:10 we can automatically charge
+the next payment method
+11:12 within their wallet.
+11:14 We've also rolled out dynamic
+grace periods for subscriptions.
+11:18 Using our personalized
+machine learning models,
+11:21 this feature turns grace
+periods into precision tool
+11:23 for reducing churn.
+11:25 Instead of a single fixed
+grace period for everyone,
+11:28 our system can identify
+a high-value user
+11:31 and grant them a
+longer window to fix
+11:33 their payment without
+them losing access
+11:35 to your app's content.
+11:37 This intelligently
+reduces involuntary churn,
+11:40 all while maintaining a
+premium user experience.
+11:43 And next, we want to
+extend our flexible tooling
+11:46 to managing your purchases.
+11:48 We've introduced the
+dynamic purchases API,
+11:51 which lets you define all
+product metadata at runtime
+11:54 instead of predefining your
+products on Play Console.
+11:58 Finally, with more
+flexible pricing,
+12:00 you can now set product prices
+of up to $8,000 US in supported
+12:05 markets.
+12:06 For more details, be sure to
+check out the Play Console Help
+12:09 Center.
+12:10 Don't forget that the
+quickest way to get access
+12:12 to all of these monetization
+features, including subscription
+12:16 churn reduction tools,
+pre-orders, auto top-ups
+12:19 and more, is by integrating
+directly with the Play Billing
+12:22 Library.
+12:23 This also helps you to avoid
+the functional limitations often
+12:26 found in middleware SDKs.
+12:29 To fully unlock the power
+of Play's billing platform,
+12:32 including the latest tools
+and features announced today,
+12:34 we strongly recommend
+upgrading to the Play Billing
+12:37 Library 9.0, available
+at the end of May.
+12:42 As a reminder, we will
+continue to support
+12:44 each major release of the Play
+Billing Library for two years.
+12:48 This means support for version
+7 will end in November 2026,
+12:52 and you'll need to upgrade
+before you can publish
+12:54 new versions of your app.
+12:56 And that's it for our session.
+12:58 We hope you enjoyed
+learning about the latest
+12:60 ways to save time,
+gain deeper insights,
+13:03 and boost your bottom
+line with Play.
+13:05 We've certainly enjoyed
+sharing them with you.
+13:07 Thank you for spending
+your time with us
+13:09 and for all of your amazing
+work with Google Play.
+13:12 [MUSIC PLAYING]

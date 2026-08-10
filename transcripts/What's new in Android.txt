@@ -1,0 +1,1648 @@
+00:00 [MUSIC PLAYING]
+00:06 DANIEL GALPIN: Hello,
+and welcome to What's
+00:08 New in Android, your
+guided tour of the latest
+00:11 and greatest changes
+in Android development.
+00:13 We're going to highlight
+some of the ways
+00:15 we're helping you
+build delightful,
+00:18 performant, and intelligent
+apps, all while keeping
+00:21 users safe.
+00:22 We're going to cover how Android
+is evolving from an operating
+00:25 system into an
+intelligent system,
+00:28 and how your app can
+leverage this shift
+00:30 to deliver more proactive,
+and helpful, and context aware
+00:35 experiences.
+00:38 ASH NOHE: We need that.
+00:39 We'll dive into performance.
+00:40 It's no secret
+we're seeing a shift
+00:42 where device memory is
+more important than ever.
+00:45 Not only have we made strides
+in memory optimizations
+00:48 in Android 17, we're
+providing the tooling and API
+00:52 support to help you stay
+ahead of stricter memory
+00:55 requirements later this year.
+00:58 We'll also cover improvements
+in media, camera, and GPU
+01:02 capabilities, and how to build
+adaptive apps for the expanding
+01:05 ecosystem, from XR to
+cars to premium laptops.
+01:09 NICK BUTCHER: But we'll
+start with the latest updates
+01:12 to our recommended native
+stack of Kotlin, Jetpack,
+01:15 and my favorite,
+Jetpack Compose.
+01:18 [CHEERING]
+01:21 Now, this stack delivers you
+the most performant and device
+01:24 optimized experience.
+01:26 Whether you're developing
+in Android Studio
+01:28 or developing
+through Android CLI,
+01:30 it gives you direct access to
+the latest updates straight
+01:32 from us, like new platform
+APIs, and we support it
+01:35 with great tools.
+01:37 So this stack makes
+sure that you're
+01:39 ready for any new opportunities,
+such as new form factors
+01:42 or for new platform APIs.
+01:46 In the five years that we've
+been developing Jetpack Compose,
+01:49 we've been working
+hard to give you
+01:51 all of the features,
+performance, and tools
+01:53 that you need to build
+beautiful UIs that
+01:55 run across the variety
+of Android devices.
+01:58 And you've told us that you're
+far more productive when
+02:00 working with Compose.
+02:03 Compose has matured into the
+standard for building Android
+02:06 UI.
+02:08 And we believe that all
+Android UI should now
+02:11 be built with Jetpack Compose.
+02:13 We call this going
+Compose First.
+02:16 So from now on,
+we're going to be
+02:18 providing all APIs, libraries,
+tools, and guidance in Compose.
+02:22 And we consider
+the View components
+02:23 that Compose replaces to
+now be in maintenance mode.
+02:27 [CHEERING]
+02:32 But don't worry.
+02:34 We have no plans to deprecate or
+remove View components just yet.
+02:40 [LAUGHTER]
+02:42 You're not supposed
+to laugh at that.
+02:44 But they will receive
+no new features
+02:47 and will only be shipping
+critical bug fixes to them
+02:49 from now on.
+02:51 The same goes for
+View-based libraries
+02:52 like Fragment, RecyclerView,
+and Material View Components.
+02:56 We consider them to be complete,
+and they too will only receive
+02:58 critical features--
+critical bug fixes, sorry--
+03:01 as we focus all of our
+efforts on Jetpack Compose.
+03:05 We believe that all Android UI
+should now be built with Compose
+03:09 and that you should consider
+converting existing UI
+03:11 to Compose as you
+touch it to receive
+03:13 the many benefits of Compose.
+03:16 To help you to convert, and
+in addition to the skill
+03:18 that we've already launched
+to help you to convert XML
+03:21 to Compose, we're also
+working on some new tools
+03:23 in Android Studio.
+03:25 Now, these tools use the
+knowledge of your Android
+03:28 project in order to
+augment the agent
+03:30 to help it to convert your UI,
+things like deterministically
+03:34 understanding the
+styles and the resources
+03:36 that your layouts
+reference, or creating
+03:38 screenshot tests to help you
+to compare the before and after
+03:41 and ensure that you're
+getting a good conversion.
+03:44 These will be coming to Android
+Studio soon, and to learn more,
+03:48 check out the What's New in
+DevTools talk coming up later.
+03:53 The recent Compose 1.10 and
+1.11 releases added a whole raft
+03:57 of new features, from the
+retain API to more deterministic
+04:01 testing APIs, improvements to
+shared element transitions,
+04:04 and new text field features.
+04:07 One of the larger changes
+that I'm really excited about
+04:10 is the new Styles API, which is
+experimental in Compose 1.11.
+04:14 Now, we've heard your feedback
+that you want more customization
+04:17 of components.
+04:19 The Styles API defines
+a standardized set
+04:21 of styleable
+attributes which help
+04:23 you to separate [INAUDIBLE]
+Compose behavior
+04:26 from its appearance.
+04:28 So we think you can
+use this to make
+04:30 much more, easier customization
+of the components.
+04:34 Styles has built-in support
+for different states,
+04:36 even letting you animate state
+changes so you can build much
+04:39 more responsive components.
+04:41 And it's performant
+out of the box,
+04:43 automatically minimizing
+recompositions for you.
+04:48 So we're working
+on Styles, and we'd
+04:49 love your feedback as we
+continue to build this out.
+04:52 And we plan to add Style
+support to our Material
+04:54 Components in a future release.
+04:56 [APPLAUSE]
+05:02 For more details, I highly
+encourage you to check out
+05:05 this talk on the Style system.
+05:07 So Compose not only helps you
+to build a more stylish app,
+05:10 but it also can help
+it be performant.
+05:12 In our latest
+release, Compose 1.11,
+05:15 we're seeing even better
+performance across key CUJs
+05:18 like scroll jank,
+startup speed, and even
+05:20 in hybrid UIs where you
+interleave Views and Compose.
+05:24 To back this up, we're
+releasing a new suite
+05:26 of benchmarks which compare
+real-world app performance
+05:29 between Views and Compose.
+05:31 These are open source, so you
+can check them out and verify
+05:33 the results for yourself.
+05:35 And best of all, you get
+most of these benefits
+05:38 just by upgrading
+the Compose version.
+05:40 So make sure that you're
+using the latest release.
+05:43 And it's not just benchmarks.
+05:45 We see this in production too.
+05:46 In fact, TikTok told us
+that the expressive Compose
+05:50 APIs helped them to rewrite
+a number of their screens
+05:53 into Compose.
+05:55 And this not only made their
+code more maintainable,
+05:57 but they also saw
+performance improvements,
+05:59 seeing a reduction in page
+load time of up to 20% to 30%.
+06:03 And in one case, they
+saw a huge 78% speed up.
+06:08 And speaking of performance,
+R8 is a critical tool
+06:10 for streamlining your app.
+06:13 It helps to remove unused
+code and resources,
+06:15 and can rewrite code to optimize
+startup and runtime performance.
+06:19 But we've heard
+from you that it can
+06:20 be hard to know if you're
+getting the most out of R8.
+06:25 Wait, let me go back.
+06:27 So for example,
+Grab had huge impact
+06:31 by enabling R8 on their
+9 million line code base.
+06:34 Doing so, they saw a
+25% reduction in ANRs
+06:37 and a 16% reduction in APK size.
+06:41 And in conjunction with
+reworking their baseline
+06:44 and startup profile, they
+also saw a 27% reduction
+06:47 in startup time.
+06:50 So R8 is pretty great,
+but we have heard from you
+06:52 that it can be hard
+to know if you're
+06:54 getting the most out of it.
+06:55 And to that end, we're
+bringing new R8 insights
+06:57 into the Play Console to help
+you to identify opportunities
+07:00 to improve.
+07:02 These are going to start rolling
+out from today and more widely
+07:05 later this year.
+07:07 And to help you to
+act on these insights,
+07:09 we also have launched the
+R8 configuration analyzer.
+07:12 So this is a tool
+that runs a report
+07:15 and will give you
+a score for how
+07:17 effective your
+optimization, obfuscation,
+07:19 and resource shrinking is.
+07:21 And it helps you to spot
+opportunities to further shrink
+07:24 your app.
+07:26 For example, it might
+help you to find
+07:28 some keep rules which
+are overly broad,
+07:30 which might be thwarting
+some of R8's optimizations.
+07:34 For example, Tinder had
+already invested in using R8
+07:37 and seen many benefits.
+07:38 But by using the
+configuration analyzer,
+07:40 they were able to find
+a problematic keep rule.
+07:42 Now, removing this
+one single keep rule,
+07:45 they saw a reduction in
+their APK size of 28%,
+07:48 and they reduced their ANR
+and cold start rates as well.
+07:53 And we're also
+publishing a new skill
+07:55 to help AI agents
+to work with R8.
+07:58 And so this skill works with
+the configuration analyzer,
+08:01 and it helps you to
+get the most out of R8.
+08:04 But R8 is just a start.
+08:06 Current rising hardware costs
+and RAM supply constraints
+08:09 are forcing a
+shift in the device
+08:10 ecosystem, where
+memory management is
+08:12 more important than ever.
+08:14 Optimizing your app's
+memory footprint
+08:16 ensures that your app can
+deliver the best performance
+08:19 across all form factors.
+08:21 DANIEL GALPIN: And to ensure
+that the next generation
+08:23 of devices delivers the
+premium experience that Android
+08:26 users expect, we'll be
+partnering with you to optimize
+08:30 how Android manages memory.
+08:33 NICK BUTCHER: Over
+the coming year,
+08:34 we'll be rolling out new tools
+to help making building memory
+08:37 efficient apps much simpler.
+08:39 You can look out for memory--
+08:42 so you can look out for
+actionable memory telemetry
+08:45 right in the Play Console,
+alongside smarter debugging
+08:47 tools right in Android Studio.
+08:49 These updates will help you
+to stay ahead of the platform
+08:52 shifts to stricter
+memory management that
+08:55 are coming later this year.
+08:57 DANIEL GALPIN: With the mission
+to prevent a bad acting app
+09:00 from significantly
+degrading user experience,
+09:03 Android 17 introduces
+memory limits.
+09:05 Now, these limits are designed
+to largely impact apps
+09:08 with runaway resource
+problems such as memory leaks.
+09:13 And if your app
+session is actually
+09:15 impacted by these
+app memory limits,
+09:17 get description in
+application exitInfo
+09:19 will contain the string
+of memory limiter.
+09:22 NICK BUTCHER: And to help you
+to debug excessive memory usage,
+09:25 Android 17 has a profiling
+trigger of type anomaly or out
+09:28 of memory to the
+ProfilingManager API,
+09:31 which you can use to
+get app-specific heap
+09:33 dumps to help you to diagnose
+and to fix memory issues.
+09:36 Android 17 also
+introduces new profiling
+09:39 triggers for type cold
+start and excessive CPU.
+09:43 And LeakCanary integration into
+the Android Studio Profiler
+09:46 can help you to track
+down memory leaks faster,
+09:48 and you can ask Gemini
+to help explain the leak
+09:51 and suggest a fix.
+09:53 So that's a high-level
+overview of some of the ways
+09:56 that we're helping you
+to optimize the memory
+09:57 management of your app.
+09:59 You should check out this
+talk for more details.
+10:02 DANIEL GALPIN: So
+the platform is also
+10:04 working to reduce memory usage.
+10:06 For example, Android
+17 restricts the size
+10:09 of images in notifications
+with custom views,
+10:11 stripping them out if they
+exceed certain thresholds.
+10:15 Now, let me nerd
+out for a moment.
+10:17 I could do a whole
+talk on garbage.
+10:20 But ART is introducing more
+frequent, less resource
+10:23 intensive young generation
+collections in its GC,
+10:27 and this both improves memory
+management and performance.
+10:30 And best of all, it's not
+just available on Android 17,
+10:33 it's also available to over a
+billion devices through Google
+10:35 Play system updates.
+10:37 And so I didn't even know you
+could modify static final fields
+10:41 on Android using reflection.
+10:43 And now, once you
+target Android 17,
+10:45 you won't be able
+to do it anymore.
+10:47 And this is cool
+because it actually
+10:49 allows ART to more
+aggressively apply
+10:51 more of those sweet
+performance optimizations.
+10:54 Just make sure to test
+your app just in case
+10:57 your app or one of its
+dependencies relies on this.
+11:01 And believe it or
+not, I am psyched
+11:03 that Android 17 introduces a
+new lock-free implementation
+11:07 of the Android MessageQueue.
+11:09 And I mean, this is awesome.
+11:11 It reduces UI jank while
+massively speeding up
+11:14 high-contention scenarios.
+11:16 And there is some
+cool computer science
+11:18 that makes this possible.
+11:19 And who doesn't like numbers
+up to 5,000 times faster
+11:23 in particularly
+contentious cases?
+11:26 With goals of improved GPU
+performance and system power
+11:30 efficiency, Android is
+supporting the Vulkan API
+11:33 as its native GPU API.
+11:36 Now, Vulkan is
+already used directly
+11:38 by high-performance
+middleware and game engines
+11:40 that want maximum control.
+11:41 And other APIs like
+OpenGL and WebGPU
+11:44 are then layered
+on top of Vulkan.
+11:49 I know there's another one.
+11:50 There we go.
+11:50 Hi.
+11:52 With Android 17,
+many more devices
+11:55 will prosper by using Vulkan to
+process all graphics commands.
+12:01 If your app or game
+is still using OpenGL,
+12:04 ANGLE will translate
+its OpenGL to Vulkan,
+12:06 and we recommend
+testing on ANGLE today
+12:09 to ensure you're ready
+for the Vulkan transition.
+12:11 We're also enabling more
+ways to access Vulkan.
+12:15 So for apps to leverage
+GPU performance,
+12:18 we've built an idiomatic
+Kotlin API for WebGPU,
+12:22 the modern GPU API designed
+for manage code environments
+12:26 like ART and the web.
+12:27 And it's more capable,
+portable, and concise than older
+12:31 standards.
+12:31 Now to get started, just add
+the Jetpack WebGPU dependency
+12:34 to your project.
+12:36 And for example, the
+upcoming Adobe Premiere app--
+12:39 [CHEERING]
+12:41 Yeah, awesome.
+12:42 --uses WebGPU along
+with Jetpack Media3
+12:46 transformer for creating
+and posting things
+12:48 like YouTube Shorts with
+cool templates and effects.
+12:52 NICK BUTCHER: To help you
+get the most out of GPU, CPU,
+12:54 memory, and battery, and more,
+the new Android Performance
+12:57 Analyzer unifies our
+system-wide insights
+12:60 into a single cohesive
+toolchain, which can drastically
+13:03 simplify performance debugging.
+13:06 Engineered for
+speed, the analyzer
+13:07 is up to 26 times faster at
+loading and rendering traces
+13:11 than the original GPU Inspector,
+while maintaining broad GPU
+13:14 compatibility.
+13:15 And it runs either as
+a standalone utility
+13:18 or within the studio profiler.
+13:20 And some of our partners
+are seeing great success
+13:22 with this new
+performance analyzer.
+13:24 Netmarble reduced the GPU usage
+by up to 90% in "The Seven
+13:28 Deadly Sins: Origin."
+13:29 And The Forge reduced per frame
+CPU usage in key Vulkan APIs
+13:34 by up to 50%.
+13:36 DANIEL GALPIN:
+Now, performance is
+13:37 just one way we're helping you
+delight your Android users.
+13:41 We're creating a
+platform that delivers
+13:43 new, helpful, AI-powered
+experience that actually
+13:46 anticipate users' needs.
+13:48 Now for you, this means not
+only new discovery surfaces
+13:51 for more and deeper
+app engagement,
+13:54 but users are actually
+getting better and safer app
+13:57 experiences.
+13:58 And we're doing this at
+every level of the stack.
+13:60 This is what we mean
+when we say that Android
+14:02 is evolving from an operating
+system to an intelligent system.
+14:07 Now, your apps will be at
+the center of these changes
+14:09 in different ways.
+14:11 First, let's talk about how
+AI can enhance the ways users
+14:14 interact with your app
+with proactive help,
+14:17 leveraging the platform's deep
+understanding of native UI
+14:20 built with Kotlin and Compose.
+14:22 An example of this is our
+next-generation autofill,
+14:25 which works to get your app
+higher form completion rates,
+14:28 all using the same hints you're
+currently providing autofill.
+14:32 We can also help protect
+your users today on Pixel
+14:35 with using AI to identify
+scam patterns in notifications
+14:39 from popular messaging
+apps, warning users
+14:41 before they respond
+to a potential threat.
+14:44 Now, Magic Cue was introduced
+last year on Pixel 10,
+14:46 and it surfaces helpful
+information and actions
+14:49 within apps.
+14:50 And this is a new
+place for users
+14:51 to engage with and
+discover app content.
+14:54 And as you can see
+here, it's expanding
+14:56 to more apps, such as Snapchat.
+14:59 Now, improving your apps
+with proactive AI features
+15:02 is awesome, but we're entering
+the agentic era, where
+15:06 agents and assistants complete
+tasks on behalf of users,
+15:09 and your app can participate.
+15:11 I mean, after all,
+Android has always
+15:13 been designed to have
+multiple apps work together
+15:15 to share a task, such as
+composing an email with a photo.
+15:19 But now, agents
+such as Gemini can
+15:21 act as an orchestrator
+across multiple apps.
+15:25 Now to this end, Gemini
+can analyze app screens
+15:28 and navigate through tasks,
+stopping for user input
+15:31 when it needs clarification
+at sensitive areas
+15:33 like transactions,
+with no code needed
+15:36 from you in almost all cases.
+15:38 The user can do other tasks
+while Android actually
+15:40 runs the app in the background
+on a virtual display.
+15:44 And we'll be rolling this
+experience out more widely
+15:46 in the future.
+15:48 But you can take control
+of the capabilities
+15:52 your app exposes by integrating
+with a new API, AppFunctions.
+15:57 Now, AppFunctions is
+an Android platform API
+15:60 in a Jetpack library that
+simplifies building Android MCP
+16:03 integrations.
+16:04 It empowers your app to
+behave like on device MCP
+16:08 servers, contributing functions
+that act as tools for use
+16:11 by client agents and
+assistants like Gemini.
+16:14 Now, AppFunctions
+integration with Gemini
+16:16 is currently in a private
+preview with trusted testers,
+16:19 but you can begin preparing your
+apps now using AppFunctions.
+16:23 Now, if you built your app
+with clearly separated data
+16:26 and presentation layers
+following our recommendations,
+16:28 adding AppFunctions can be
+really, really straightforward.
+16:31 So let me show you
+what that looks like.
+16:35 All right, so here
+we are on our laptop.
+16:40 Let me actually show you a
+little bit of what we've done.
+16:44 We've actually got a skill that
+can actually add AppFunctions
+16:47 automatically to your project.
+16:50 And it works even
+better if you actually
+16:53 have architected your app well,
+but it can work in all cases
+16:56 really.
+16:57 And the key thing
+is that we're going
+16:58 to do this today with the Now
+in Android news aggregation app.
+17:02 So let me quickly just show you.
+17:03 If you haven't seen
+this, this is what
+17:06 that looks like, very nice.
+17:07 You see we've got Compose first
+as part of the news that we're
+17:11 aggregating.
+17:12 Now, what the agent has actually
+done, though, is pretty cool.
+17:17 So you can see we've just given
+it a very, very simple prompt.
+17:20 Create AppFunctions that provide
+access to topics and news
+17:22 articles, and enable users to
+follow, and things like that.
+17:25 It activates the skill.
+17:26 We've installed that
+into the project,
+17:28 and it's going to do a
+lot of things for you.
+17:31 It's going to upgrade things.
+17:32 Let's scroll to the bottom and
+look at all that it's done.
+17:34 So again, we've updated the SDK.
+17:36 We've added dependencies.
+17:37 We've created metadata.
+17:38 And more importantly,
+we've actually
+17:40 implemented four
+useful AppFunctions,
+17:43 to list topics,
+list news articles,
+17:45 follow topics, and
+bookmark things.
+17:48 And this is the actual
+code that was generated.
+17:50 Like as you can see here,
+we're really literally running
+17:51 all this from Android Studio.
+17:53 And I have not made any
+changes to the project.
+17:55 This actually worked the first
+time, which is always nice.
+17:58 And you can see it's created
+this AppFunction for list
+18:00 topics.
+18:01 And what's really
+great about the way
+18:02 that Jetpack Library
+works is that you can
+18:05 see that this is pretty normal.
+18:07 We've just annotated
+it with AppFunctions.
+18:09 It's a normal suspend function
+that runs with the context.
+18:12 You can see here that
+it's actually returning
+18:14 a fairly reasonable data model.
+18:17 And let me do that
+one more time.
+18:19 There, a very
+reasonable data model.
+18:22 And also, we're
+documenting it using KDoc.
+18:25 And the library is
+just going to make sure
+18:27 that that gets all the way
+to the agent that's using it.
+18:30 The same thing that makes
+me understand it also
+18:32 makes our agents understand it.
+18:34 And you can see we can list
+topics and news articles.
+18:37 We can follow topics.
+18:38 And we can create bookmarks.
+18:41 But how do you test this?
+18:42 Well, we've actually
+gone and created
+18:45 an agent that can
+do that for you.
+18:47 So let's go to our
+running device,
+18:49 and let's switch over
+to our test agent.
+18:52 [HUMMING]
+18:54 All right, so first
+of all, we want
+18:56 to do things deterministically.
+18:57 So let's take a look
+at what functions
+18:59 we're exporting inside
+of Now in Android.
+19:01 So we've got list topics.
+19:03 We can run those functions.
+19:04 And you see we get
+some lovely JSON.
+19:06 And you notice ID
+number 3 is Compose.
+19:08 All right, we'll use that when
+we go to listNewsArticles.
+19:11 We can also add parameters
+here right in the test agent
+19:14 and run them.
+19:15 And, again, beautifully--
+this is actually
+19:17 happening, by the way.
+19:18 This is not canned or
+anything like that.
+19:21 All right, let's talk
+about the next thing.
+19:23 The next thing we
+want to be able to do
+19:24 is actually run against a
+live instance of Gemini.
+19:27 So we've hooked it
+up to a regular cloud
+19:29 instance of Gemini.
+19:30 And we do things like, hey,
+"show me the article on Compose
+19:37 UI first."
+19:39 That's how you know
+it's not really
+19:41 canned because I would never
+make a typo in a canned demo.
+19:44 Demo gods, let's do this.
+19:46 All right, so it's connecting
+to Now in Android app.
+19:50 And Gemini actually
+has to do a bit of work
+19:52 here because you notice
+we didn't have a great API
+19:54 for actually searching this.
+19:55 So it's actually
+pulling the topics,
+19:56 pulling all the
+articles, and then
+19:57 giving you the article
+that you selected.
+19:59 And Gemini is doing
+all that work.
+20:00 But we can take it one further.
+20:02 [APPLAUSE]
+20:03 Thank you.
+20:06 We can also say "send the
+Compose UI first article to Nick
+20:13 Butcher."
+20:15 Eh, just to Nick.
+20:16 All right.
+20:17 So now what we've
+done is we actually
+20:19 have a second app
+that uses AppFunctions
+20:21 that actually is a chat app.
+20:22 We connect to that.
+20:23 We're going to find out
+who Nick is, first of all.
+20:25 And then we're going to go
+and send that article to him.
+20:28 It's actually recalled our app.
+20:30 And so now if we go over
+to our chat application
+20:34 eventually-- come on, I can use
+this in an emulator, I promise.
+20:38 All right, there we go.
+20:40 This is the article, "Android UI
+Development is Compose First."
+20:43 So that is, again, the
+agent working together
+20:47 with two different apps
+using AppFunctions.
+20:49 You can imagine all the
+cool things this can do.
+20:51 All right, back to our slides.
+20:53 So check out our tools, and you
+can experiment with AppFunctions
+20:56 today.
+20:57 You can join our
+early access program
+20:59 for the chance to be
+among the first apps
+21:00 to deploy AppFunctions
+to production.
+21:03 Now, proactive functionality
+and automation is a good start,
+21:07 but we want to bring
+the power of AI
+21:09 into every part of the
+Android experience.
+21:11 And that means helping your
+apps make direct use of AI
+21:15 with both on-device and
+server-side implementations.
+21:18 Now, using on device
+models such as Gemini Nano
+21:21 keeps sensitive user data local,
+works without connectivity,
+21:24 and also has no per
+transaction costs.
+21:27 Nano is now available on
+over 140 million devices,
+21:32 and it's based on our
+open Gemma models.
+21:34 So you can look for Nano 4
+based on the Apache license
+21:38 Gemma 4 on flagship
+devices later this year.
+21:41 It features better multilingual
+support, more battery
+21:44 efficiency, and new
+advanced capabilities.
+21:46 And you can test out some
+of those new capabilities
+21:48 today using the AI
+Core Developer Preview
+21:51 and start building with
+the ML Kit prompt API.
+21:54 Now, popular apps are
+already using the prompt API
+21:57 with existing Nano models.
+21:58 For example, Webex uses it to
+translate short chat messages.
+22:04 And Photoshop is testing
+it to automatically rename
+22:07 layers and images using
+imports and exports, which
+22:09 is something I've
+always wanted it to do,
+22:11 so I'm excited about that.
+22:13 So check out this
+talk to learn more
+22:14 about using on-device models.
+22:17 And of course,
+there are times when
+22:19 you want to leverage a
+cloud-based solution.
+22:22 So ABCmouse used Gemini
+with Google Cloud
+22:25 to build a closed-loop
+feature, which
+22:28 offers personalized
+support when it detects
+22:30 that a child needs help.
+22:31 And because it's
+implemented in the cloud,
+22:33 it even works on
+entry-level kids' tablets.
+22:36 Now, Gemini Cloud models
+have advanced capabilities,
+22:39 and you can use them directly
+in production Android
+22:41 apps via Firebase AI Logic.
+22:44 If you want to build
+cloud-based agents,
+22:46 the A2UI protocol allows them
+to display UI on the client.
+22:50 And on Android, a new
+Jetpack Compose renderer
+22:53 is coming soon to
+help you display A2UI.
+22:56 And to learn more about all of
+these cloud options and more,
+22:59 you can check out this talk.
+23:06 ASH NOHE: So those
+experiences include everyone.
+23:08 And so your app
+reaches the most users,
+23:11 you'll want to make
+your app accessible.
+23:13 Here are three things to help.
+23:15 First, we've
+published new guidance
+23:16 on scaling your app's content
+with gestures in Compose.
+23:19 DANIEL GALPIN: My
+ancient eyes thank you
+23:21 all in advance for
+implementing this everywhere.
+23:26 ASH NOHE: Second,
+Talkback can now
+23:27 automatically generate
+image descriptions
+23:30 for image composables.
+23:31 Now, we still recommend
+as a best practice
+23:34 to define your own
+content descriptions,
+23:36 but this comes in handy
+when you can't, like
+23:38 with user-generated content.
+23:40 DANIEL GALPIN: And
+it's great to see
+23:41 AI being used for some
+cool accessibility wins.
+23:43 ASH NOHE: Yeah.
+23:44 Finally, the new
+Accessibility Scanner
+23:46 is better than ever at
+catching common issues
+23:49 in your apps like low contrast
+and small touch targets.
+23:53 DANIEL GALPIN: Just
+use it please, please
+23:56 ASH NOHE: I agree.
+23:57 Thank you, Dan.
+23:59 See this talk for more updates.
+24:01 DANIEL GALPIN: Now,
+privacy and security
+24:02 are essential foundations of
+a great Android experience,
+24:05 and this help fosters
+the trust that users
+24:08 need to store their
+most personal data.
+24:10 Now, to that end, Android
+17 adds many new privacy
+24:13 and security features
+that you want
+24:15 to make sure your app is
+ready for, such as making sure
+24:17 that native libraries are read
+only when your app dynamically
+24:21 loads them, as well as SMS
+One-Time Password or OTP
+24:24 protection, which delays
+most apps from getting access
+24:28 to messages that contain
+OTPs for three hours.
+24:31 But, and this is
+the cool part, you
+24:34 may be able to avoid
+using OTPs altogether
+24:37 because Credential Manager now
+provides verified email address
+24:41 and phone number verification.
+24:44 And the traditional creation
+feature in Credential Manager
+24:47 lets apps automatically create
+passkeys for their existing
+24:50 password users.
+24:52 And the passkeys are stored in
+the user's credential provider
+24:54 as long as the user opts in.
+24:57 Health Connect allows
+users control over
+24:59 their private health data, but
+this year, apps can actually
+25:02 request that the user sync
+helpful data from another app
+25:06 to simplify cross-app setup.
+25:08 The CompanionDeviceManager
+offers a unified dialog
+25:12 for device association and
+nearby permission requests,
+25:17 removing multiple pop-ups.
+And this contains new profiles
+25:20 for medical devices
+and fitness trackers
+25:22 that also help efficiently
+request permissions.
+25:24 Because in general, we're
+trying to simplify security user
+25:28 experiences while actually
+making everything more secure.
+25:31 As an example, apps
+targeting Android 17 now
+25:34 require the
+ACCESS_LOCAL_NETWORK permission
+25:37 to discover and
+connect to devices
+25:38 on the local area network, such
+as smart home devices or casting
+25:41 receivers.
+25:42 ASH NOHE: But what
+if you just need
+25:43 access to a little
+bit of data, and you
+25:45 don't want to have to request
+broad sensitive permissions?
+25:49 DANIEL GALPIN: Worry
+not, programmers,
+25:50 you can use privacy
+preserving pickers.
+25:53 ASH NOHE: For example,
+apps supporting Google Cast
+25:55 can use Output Switcher to get
+access to specific streaming
+25:59 devices, rather than having to
+request ACCESS_LOCAL_NETWORK.
+26:04 With the new EyeDropper
+API, apps with color pickers
+26:06 can get any pixel's
+color on the screen
+26:09 without having to request broad
+screen capture permissions.
+26:13 And if you use the
+Contacts Picker,
+26:15 you can get access to specific
+fields and specific contacts
+26:18 without having to request
+the broad read contacts
+26:21 permission, which grants you
+access to the entire contacts
+26:24 list.
+26:25 And finally, Photo
+Picker has long
+26:27 been around to reduce
+broad media access,
+26:30 and now it's useful
+in more places
+26:32 because it supports
+portrait gridview.
+26:35 Those pickers are one way we're
+improving the core experience.
+26:38 Here's another way we're
+making it more integrated.
+26:41 Last year, we unveiled
+Live Update notifications
+26:44 for a few select styles.
+26:46 This year, we've
+added the metric style
+26:48 template for health and fitness
+apps, timers, and travel apps.
+26:52 And you can use the
+semantic color API
+26:55 to convey state in
+your live update.
+26:58 We're also planning for a
+more unified call history
+27:00 by bringing call logs
+from apps like WhatsApp
+27:03 and Meet together in the
+same native phone app.
+27:06 And later this
+year, we're updating
+27:08 thousands of our cute but flat
+emoji to be delightfully richer.
+27:14 All you need to do to
+get this in your app
+27:16 is use a system emoji.
+27:18 And finally, Picture in Picture
+has a new Jetpack library
+27:22 for video playback,
+call, and navigation.
+27:24 If you use it with
+CameraX, your users
+27:27 can read a script while
+recording their social media
+27:30 content.
+27:31 Speaking of cameras,
+we've built on-device APIs
+27:34 for AI-powered effects
+so you can give users
+27:37 the advanced tools
+that they need to tell
+27:39 the stories they want to share.
+27:41 For example,
+Instagram's Edits app
+27:44 improved video quality using
+the on-device image and video
+27:48 enhancement library.
+27:50 Let's see a demo of this library
+working in our sample app
+27:53 with images.
+27:55 DANIEL GALPIN: All right, cool.
+27:59 ASH NOHE: All right.
+28:09 I adore this photo
+of my mom taken
+28:12 during her rebellious
+teenage years.
+28:14 But being an old photograph,
+it's grainy and blurry.
+28:18 So I'm going to
+press AI Enhance,
+28:20 and the on-device library
+will return a clearer image
+28:23 where details like her
+eyes are more well defined.
+28:28 At a high level, to
+get this working,
+28:30 we're going to
+tell the API to use
+28:33 certain effects like upscaling.
+28:35 We could have also selected
+Deblur and Denoise, Tone
+28:39 Mapping, and then our mode
+is Enhancement Mode Bitmap.
+28:43 Or we could have also
+provided a surface view.
+28:46 And then after the user
+has made their selection,
+28:49 we will call processBitmapAsync
+to actually apply those effects
+28:54 on the given bitmap or, in
+this case, the image of my mom.
+28:58 So let's select another
+image, this one in color.
+29:03 Since all of this
+is run on device,
+29:06 it won't cost you a
+cent in server costs,
+29:09 and users can even use this
+while in airplane mode, which
+29:15 you can see here.
+29:16 [APPLAUSE]
+29:22 So what you can see
+from this image,
+29:24 the resulting image is brighter
+due to the tone mapping,
+29:27 and then the letters
+PB here are sharper
+29:31 because of the upscaling.
+29:33 Let's take a look at that.
+29:36 And there we go.
+29:37 Back to the slides.
+29:38 [MUSIC PLAYING]
+29:41 DANIEL GALPIN: Oh,
+wait, wait, wait.
+29:43 Unexpected background audio.
+29:48 I don't like it.
+29:49 Users don't like it.
+29:51 And one of the many improvements
+in Android 17 [INAUDIBLE]
+29:54 reduce those embarrassing
+audio moments
+29:58 by restricting the
+use of audio APIs
+29:60 to foreground apps and
+foreground services
+30:02 with while-in-use capabilities.
+30:04 Using media session service to
+manage background audio playback
+30:07 actually can help
+mitigate impact.
+30:09 And because you've asked,
+exact alarms are exempted.
+30:16 Now, other Android
+17 media improvements
+30:18 include support for new pro
+image and video formats,
+30:21 improved audio streaming and
+voice quality with HE-AAC,
+30:25 and camera
+enhancements, including
+30:27 vendor-defined extensions.
+30:30 Next-generation Eclipsa video is
+officially launching on Android
+30:35 17, with high-quality HDR
+playback that addresses things
+30:39 unpredictable light levels
+and rendering issues,
+30:41 and ExoPlayer provides
+out-of-the-box support.
+30:44 Now, to learn how
+to take advantage
+30:46 of these and many
+other improvements
+30:47 through our Jetpack,
+Media3, and CameraX APIs,
+30:51 check out this talk.
+30:54 NICK BUTCHER: Thank you.
+30:57 So Android is a
+multi-device ecosystem.
+30:60 Users moving between their
+phones, their foldables,
+31:02 their tablets, their watches,
+their headsets, their cars,
+31:05 and their TVs, and they expect
+their apps to move with them.
+31:10 And your app should.
+31:12 There are now over 580
+million large screen users,
+31:16 and they spend more and
+engage more with their apps.
+31:18 And they also expect
+more, such as making
+31:21 use of the full screen
+regardless of the orientation
+31:23 or aspect ratio, which
+is why in Android 17,
+31:27 we now ignore these attributes
+on large screen devices,
+31:30 and you can no longer opt out.
+31:33 So use the Navigation 3 or
+Compose adaptive libraries
+31:36 in order to build a
+rich, adaptive app.
+31:39 They handle the heavy
+lifting for you,
+31:40 covering common
+scenarios out of the box.
+31:43 So for example, version 1.1
+of the Navigation free library
+31:46 recently added scene
+decorators, which
+31:48 helps you to add UI elements
+such as navigation rails
+31:51 and bars at the scene level
+rather than at the NavEntry
+31:54 level, which can be extremely
+handy for controlling
+31:56 things like the visibility
+of global navigation UI.
+31:59 Oh, and speaking of navigation
+free, we've heard you.
+32:02 You want support for
+deep links, and we're
+32:04 pleased to say it's just
+landed in version 1.2 Alphas.
+32:08 We're also working on a
+trio of new Compose APIs
+32:11 to help you to build adaptively.
+32:13 Firstly, MediaQuery
+greatly simplifies
+32:16 querying a device's capabilities
+such as screen size or pointer
+32:21 precision or keyboard
+presence so that you can use
+32:23 these signals to adapt your UI.
+32:27 Next up, we're launching a new
+FlexBox implementation, which
+32:30 is a very flexible layout
+to help you to grow, shrink,
+32:33 or wrap elements depending
+on the available size, again,
+32:36 helping you to build
+components which will
+32:38 resize for different devices.
+32:41 And finally, Grid
+is a new layout
+32:43 which you can use to divide
+up and place your content
+32:45 into a regular grid structure.
+32:47 Now, this can be extremely
+useful as a root-level layout
+32:51 if you want to rearrange
+your content based
+32:53 on different screen sizes.
+32:55 FlexBox, MediaQuery, and Grid
+are all experimental APIs
+32:59 in Compose 1.11.
+33:00 So please try them out
+and give us your feedback.
+33:04 And speaking of large screens,
+don't forget about the largest
+33:06 screen in your house, your TV.
+33:09 Pointer remotes are
+coming to Google TVs
+33:11 to help you to quickly
+navigate around the interface.
+33:14 Check out our
+documentation and ensure
+33:16 you're using the
+latest TV libraries
+33:18 to make sure your app is
+ready for this change.
+33:24 ASH NOHE: In a
+multi-device ecosystem,
+33:26 users move between
+their devices,
+33:28 picking the best one
+for their task at hand.
+33:30 Continue On lets users
+start a task on one device
+33:33 and transition it to another.
+33:36 NICK BUTCHER: Bubbles?
+33:37 Haven't we had Bubbles
+since Android 11?
+33:39 ASH NOHE: Well, now
+we have more bubbles.
+33:41 Any app can be bubbled, and
+they're not just for chat apps
+33:43 anymore.
+33:44 And on large screen devices,
+users have a new Bubble bar
+33:47 to help manage their bubbles.
+33:50 Widgets are another
+way users multitask,
+33:52 and because users
+see them a lot,
+33:55 they may help
+improve user loyalty.
+33:57 For example, Gratitude
+found 25% higher retention
+34:01 among widget users.
+34:03 And widgets aren't just for
+tiny phone home screens anymore.
+34:07 They show up on foldables,
+tablets, and more, especially
+34:11 since this year,
+we're gearing up
+34:13 to bring widgets to the
+millions of compatible cars.
+34:16 And Tiles is evolving into Wear
+Widgets under Jetpack Glance.
+34:22 So as a developer,
+your key takeaway
+34:24 here is to use Jetpack
+Glance to build widgets
+34:27 for the adaptive ecosystem.
+34:29 When you're building
+with Glance,
+34:31 you may directly or indirectly
+come across a new library
+34:34 called Remote Compose.
+34:36 This library enables
+expressive widget animations
+34:39 like the snap scrolling
+one you see here.
+34:42 OK, see these
+talks to learn more
+34:44 about building adaptive
+widgets and apps.
+34:49 Let's talk more about Wear.
+34:51 [APPLAUSE]
+34:55 This year, we're
+releasing Wear OS 7,
+34:57 and thanks to
+platform improvements,
+34:59 you can expect up to
+10% better battery life,
+35:03 so users can do
+more with your apps.
+35:05 Let's first look at features
+that automatically extend
+35:08 from the phone to the watch.
+35:11 When a user starts
+a media session
+35:13 on your app from the phone,
+they can automatically
+35:16 choose to have system
+playback controls show up
+35:19 on their watches.
+35:21 And their watches can control
+their paired phone's media
+35:24 output, for example, to switch
+from speakers to headphones.
+35:29 Watch manufacturers may bridge
+live update notifications
+35:32 from the phone to the watch.
+35:34 And again, this doesn't
+require any work on your end.
+35:38 But if you do have
+a Wear OS app,
+35:41 you can choose to create local
+live update notifications, which
+35:44 comes in handy when the
+user is walking around
+35:47 without their phone.
+35:49 And finally, with zero
+effort on your end,
+35:51 mobile UI automation handles
+complex tasks hands free,
+35:56 like ordering from DoorDash.
+35:58 If you do have a
+Wear OS app, you
+36:00 could also create AppFunctions
+with agents like Gemini
+36:03 to invoke in-app flows, starting
+a workout with Samsung Health.
+36:09 OK, here are three more features
+if you do have a Wear OS app.
+36:15 We just went over Wear widgets.
+36:17 We're also launching Wear
+Workout Tracker in Google Play
+36:20 services later this year.
+36:22 So apps like Runkeeper can
+use this for metrics and media
+36:25 controls.
+36:27 Compose for Wear OS 1.6
+supports Navigation 3,
+36:31 and a new local
+ambient mode manager
+36:33 helps you manage content while
+your device is in a power saving
+36:36 state.
+36:38 The Wear OS 7 Canary emulator
+is available in Android Studio
+36:41 now, so you can get hands on
+with all our new features.
+36:44 See our blog and
+docs to learn more.
+36:48 Let's talk about the other
+wearable form factor.
+36:51 If you are already building
+adaptively for Android,
+36:54 you are already building
+for XR headsets,
+36:57 and your existing app
+extends to wired XR glasses.
+37:01 With these devices, you can
+create immersive experiences
+37:04 like transporting the
+user to a virtual world.
+37:07 But if you prefer designing
+everyday interactions instead,
+37:12 you can create augmented
+experiences with audio glasses
+37:15 and display glasses.
+37:17 Here the user's focus stays
+grounded in the real world,
+37:21 but their experience is enhanced
+with visual and audio overlays.
+37:25 We've made improvements to
+both immersive and augmented
+37:28 experiences with
+the Android XR SDK.
+37:31 And fundamental Jetpack XR SDK
+libraries will be in beta soon.
+37:37 So let's look at just
+four new improvements.
+37:40 First, you can soon build
+immersive worlds while keeping
+37:43 your app size small by
+creating geometry in real time,
+37:48 rather than shipping large 3D
+models in your app's binary.
+37:53 Second, are you lost?
+37:55 Not anymore, because
+we're introducing
+37:57 navigating with the Geospatial
+API for wired XR glasses.
+38:03 Third, we've expanded support
+with Godot and Unreal Engine.
+38:07 We support Android
+XR vendor extensions
+38:09 like scene understanding, light
+estimation, face tracking,
+38:13 and more.
+38:14 Fourth, we've improved
+Jetpack Compose Glimmer,
+38:17 which are the
+composables you'll use
+38:19 to design for the visual
+and interaction constraints
+38:22 of display glasses.
+38:24 We've added new interactive
+components like vertical lists
+38:28 and stacks, and
+there's a new skill
+38:29 so you can add Glimmer
+to your app easily.
+38:33 We've just scratched
+the surface,
+38:35 so see these talks
+to learn more.
+38:38 And apply to the XR
+developer catalyst program
+38:40 to get access to
+hardware, resources,
+38:43 grant funding for wired XR
+glasses and display glasses.
+38:48 OK, we're shifting
+gears from the glasses
+38:50 you wear to the car
+that gets you there.
+38:52 We've simplified
+building apps for cars
+38:55 by increasing parity
+between the two systems,
+38:58 between both Android Auto and
+cars with Google built in.
+39:02 So here are the
+ways you can build
+39:03 for both platforms at once.
+39:06 First, use latest Car
+App Library templates
+39:09 for driving optimized UI.
+39:11 This year, you can use both
+the media app templates
+39:14 on Android Auto and cars
+with Google built in,
+39:17 and you can use the Google
+Maps SDK with the Maps
+39:20 with Content Template
+on both platforms, too.
+39:24 In Car App Library
+1.9, we're adding
+39:27 10 new flexible components and
+layouts for both platforms.
+39:31 You'll see enhanced
+chips, expandable headers,
+39:35 progress bars, and more.
+39:38 With these components, apps
+like Amazon Music and Spotify
+39:41 can express their brand and add
+features from other form factors
+39:46 into cars.
+39:48 Many media app developers are
+building with Car App Library
+39:51 1.9, and you can too by
+signing up for early access.
+39:56 Finally, in the Android
+show, we shared our plan
+39:59 to release a new Car App Library
+APIs to transition from parked
+40:02 to driving on both
+systems later this year,
+40:06 and how you can build
+equivalent video
+40:08 experiences on both platforms.
+40:11 So for example, users can
+watch HD videos while parked.
+40:16 See the docs to learn more.
+40:20 NICK BUTCHER: So we're
+almost at the end.
+40:22 We're going to leave you
+with one last takeaway.
+40:25 The next iteration of ChromeOS,
+built with parts of the Android
+40:28 stack, is here, and
+it's called Googlebook,
+40:30 and it will run your Android
+apps better than ever.
+40:33 So consider also supporting
+desktop experiences
+40:35 in your adaptive app.
+40:37 For example Bandlab,
+PowerDirector, and Notability,
+40:40 they added things such as
+keyboard shortcuts, drag
+40:42 and drop, or custom pointers
+to their adaptive layouts
+40:45 to improve their
+desktop experience.
+40:48 See these talks to learn
+about adaptive development
+40:51 and how to create
+desktop class apps.
+40:54 DANIEL GALPIN: So we've
+covered a lot of ways
+40:56 to help you build
+incredible apps,
+40:59 and starting with how Android
+is evolving from an operating
+41:02 system to an intelligent system
+with your apps at the center
+41:05 of this transformation.
+41:07 We're also preparing for
+the future with Android 17,
+41:10 with support for the latest
+media and GPU standards,
+41:13 and a focus on
+memory optimization
+41:15 and system-wide
+performance so that apps
+41:18 are fast and responsive
+on every device.
+41:21 ASH NOHE: We're helping
+you foster user trust
+41:23 with features like SMS
+one-time password protection
+41:26 and privacy preserving pickers.
+41:29 And as users, move across
+the multi-device ecosystem,
+41:32 your app can meet
+them where they're
+41:34 at with adaptive APIs
+and Navigation 3.
+41:38 NICK BUTCHER: And finally,
+we're officially Compose first.
+41:40 We're focusing all of our
+new APIs, libraries, tools,
+41:43 and guidance on our
+most productive toolkit,
+41:46 which makes it fast and easy for
+you to build incredible apps.
+41:50 So together, we can
+ensure that the entire app
+41:53 ecosystem can deliver
+high-quality experiences
+41:56 to Android users.
+41:57 Please see the deep
+dive talks to learn more
+41:59 about each of these topics.
+41:60 And thank you for
+joining us today.
+42:01 [MUSIC PLAYING]

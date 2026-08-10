@@ -1,0 +1,1719 @@
+00:00 [MUSIC PLAYING]
+00:06 JOLANDA VERHOEF:
+Let's get started.
+00:08 My name is Jolanda Verhoef,
+and I will be joined later
+00:10 by my colleague Thomas.
+00:13 Our approach to AI on Android
+is based on three core pillars.
+00:19 So first of all, the
+Android operating system
+00:21 is evolving into an
+intelligent system,
+00:24 and you can expose your app's
+capabilities to that system.
+00:28 Second, you can
+bring intelligence
+00:30 into your app using Cloud
+and on-device models.
+00:33 And finally, you can use
+developer productivity
+00:38 to use intelligence
+to build your apps.
+00:41 Now, together,
+these three pillars
+00:43 represent our commitment
+to embedding intelligence
+00:46 throughout the
+Android ecosystem.
+00:49 And while all three of them
+are crucial to the future
+00:52 of Android, today, I want to
+focus on this middle pillar.
+00:56 So together with
+Thomas, we're going
+00:57 to make sure that
+you learn everything
+00:59 about in-app intelligence today.
+01:01 Now, if you want to learn more
+about the other two pillars,
+01:05 you can watch "What's
+new in Android"
+01:07 to learn more about the first
+pillar, the intelligence system.
+01:11 Or you can watch "What's new
+in Android development tools"
+01:14 if you want to learn more
+about developer productivity.
+01:18 Now, for today, we're
+going to, at a high level,
+01:21 cover five different areas.
+01:23 So I will start with
+on-device inference,
+01:26 and then Thomas will be
+here to talk about cloud
+01:29 and to talk about
+hybrid inference.
+01:31 And I'll be back again
+to talk about agents
+01:33 running in the cloud and
+how you can connect to them.
+01:36 And then finally, we'll
+have a sneak preview
+01:38 into running agents on device.
+01:42 So how are we going
+to talk about those?
+01:45 Well, what we want
+to do is we want
+01:47 to take a travel app
+called Jetpacker,
+01:49 which our team has been building
+over the past weeks/months.
+01:53 And we're going to start
+with a very basic travel app.
+01:55 And throughout the
+talk, we're going
+01:57 to make that more personalized,
+intelligent, and agentic.
+02:01 And so right now, the app
+already looks quite nice,
+02:05 but it isn't yet using the
+newest intelligence APIs.
+02:09 So I actually have the
+app running on my device.
+02:11 So without further ado,
+let's have a look at it.
+02:16 So let's have a look.
+02:17 We should see my phone.
+02:18 There we go.
+02:19 And as you can see, we have the
+Jetpacker app running there.
+02:22 So let's open it up.
+02:24 And you can also see in
+the right top of my screen
+02:26 that I'm actually
+currently in airplane mode,
+02:28 so I don't have any
+internet connection.
+02:31 And as you can see, I have my
+current California trip right
+02:33 here.
+02:35 We can look at our
+upcoming trips.
+02:37 I'm going to Ireland later.
+02:38 And then later this
+year, I'll be in Paris.
+02:41 And we can have a quick look
+at our past trips as well.
+02:44 So here, we have an
+overview of all our trips.
+02:47 We can go to our
+Itinerary screen
+02:49 to have a deeper look at what
+each of the days looks like.
+02:52 And then we can also go to
+the Detail screen as well.
+02:56 So far, so good.
+02:57 Basic app, but it
+isn't yet using
+02:59 any form of intelligent APIs.
+03:02 So let's go back to
+our slides and have
+03:05 a look at the first feature
+that we want to build.
+03:09 So during today's
+session, we're going
+03:12 to walk you through
+not one, not two,
+03:14 but seven different
+intelligent features.
+03:17 And so I think we should just
+get going with the first one.
+03:21 So for our first
+feature, we're going
+03:23 to look at our Itinerary screen.
+03:25 We know from our users that
+that screen can actually
+03:27 be quite overwhelming,
+especially when you
+03:30 have a long trip coming up.
+03:31 There's a lot of
+stuff happening.
+03:33 So what we want to do,
+we want to create a card
+03:35 at the top of the screen that
+summarizes the upcoming trip
+03:38 and that includes
+some information
+03:40 on how the user can best
+prepare for that trip.
+03:44 So for this, what we'll
+do is we'll access a model
+03:47 and we'll give it some input
+and we will get some outputs.
+03:50 So in this case, we will give
+it the full trip itinerary.
+03:54 And then as outputs, we
+will get a short summary
+03:57 and we will get some tips on
+things to pack and phrases
+03:59 to learn.
+04:02 So this setup is actually
+a great candidate
+04:05 for using an on-device model.
+04:07 It has shorter inputs.
+04:09 It has shorter
+outputs, making sure
+04:11 that that on-device model
+can run really fast.
+04:15 Now, when you use an
+on-device model, of course,
+04:18 you have no additional
+cloud inference costs,
+04:21 and we don't have to worry
+about internet connectivity,
+04:24 since the model is going to be
+consistently working even when
+04:27 we have spotty
+internet or if we have
+04:28 no internet connection at all.
+04:30 And given that we're
+traveling, that's
+04:32 quite a nice feature to have.
+04:35 So if we're going to want to
+build with on-device features,
+04:38 we're going to have
+to use Gemini Nano.
+04:41 Gemini Nano is Google's
+most efficient model
+04:44 that is optimized
+for mobile devices.
+04:47 We first introduced
+Nano a few years ago,
+04:49 and by now, we have
+over 140 million devices
+04:53 running versions of Nano.
+04:56 And our latest
+version, Nano 4, is
+04:60 based on the same architectural
+foundation as the recently
+05:03 released Gemma 4 model, and
+then got further optimized
+05:06 for maximum battery and
+performance efficiency.
+05:10 Now, Gemini Nano 4 is
+coming to consumer devices
+05:13 later this year,
+but as a developer,
+05:15 you can already preview
+and prototype with it.
+05:19 And so for today's
+demos, we're going
+05:22 to use Gemini Nano
+4 for our use cases
+05:25 and show you how capable
+that model actually
+05:28 is in a whole range of
+different scenarios.
+05:31 So let's dive
+right into our code
+05:33 using the ML Kit
+GenAI Prompt API.
+05:37 This API gives us access
+to that Gemini Nano
+05:40 model that runs on-device.
+05:42 So with this API, we simply
+take our trip itinerary
+05:46 and then we add
+it to our prompt,
+05:48 and we ask our model to
+generate a summary of our trip,
+05:51 along with tips on
+preparing for the trip.
+05:55 Now, here, what I did is I
+just wrote a prompt myself.
+05:58 I just sat down and thought,
+what would I ask this model?
+06:01 And that's great, but we kind
+of want to iterate on that.
+06:04 It's always good to
+test out a prompt
+06:06 before you bring it
+to production and kind
+06:08 of see how you can make it
+fit well with your use case.
+06:12 So let's switch back to our
+phone and let's do just that.
+06:16 So in order to do
+that, I'm going
+06:17 to actually close my
+Jetpacker app for a second,
+06:20 and I'm going to go
+into the AICore app.
+06:22 So as you can see, there's an
+app here that's called AICore.
+06:26 And you can get that app if
+you join the AICore developer
+06:29 preview.
+06:30 So this is not something
+that every Android user sees,
+06:33 but if you join the
+developer preview,
+06:34 you get access to this app.
+06:36 It is available on all
+devices that support AICore.
+06:40 And if you don't have a
+physical device with that model
+06:43 running, what you can do
+is you can actually also
+06:45 go to Android Studio and you
+can use the Gemma 4 model there.
+06:50 So let's have a look
+at the AICore app.
+06:52 As you can see, we have
+Gemini Nano 3 there,
+06:54 but we also have Nano 4 Fast
+and we have Nano 4 Full.
+06:59 So here, we can choose
+which of the models.
+07:00 Now, I already
+downloaded them just
+07:02 to make sure that
+this talk isn't
+07:03 taking an hour on this Wi-Fi.
+07:06 So let me open the fast
+model and have a look.
+07:10 So let's start with
+the prompt that I
+07:12 thought of myself originally.
+07:14 So I just copied it over
+and I put in my Paris trip.
+07:19 So when we do this,
+as you can see,
+07:21 this is generating a
+response, but it's generating
+07:25 quite a long response.
+07:27 This is taking quite some time.
+07:29 There's a lot of information.
+07:31 And we were trying
+to make things easier
+07:33 to parse for our users,
+not more difficult.
+07:35 So we want to make
+sure that we're not
+07:37 spending this much time
+generating this much text.
+07:40 So this is where
+we start iterating.
+07:42 Now, I did some
+of that iteration
+07:44 and I actually came up with
+the final prompt that might
+07:46 be useful for us to look at.
+07:49 So here, what I did is--
+let's first take a look.
+07:52 We got a very fast response.
+07:55 And as you can see, I added
+a little bit more guiding
+07:57 for the model.
+07:58 So I told it to use one
+sentence, less than 15 words,
+08:02 et cetera.
+08:03 And this is kind of
+a good way to guide
+08:05 the model into the response
+that we actually want to have.
+08:08 And with that, you could see
+that it started immediately
+08:10 generating a response.
+08:12 And it took only, what is it?
+08:13 1.6 seconds to generate it.
+08:16 Now, let's have a look at
+that in our Jetpacker app.
+08:19 So I'll go back to the app.
+08:20 I'll go to my secret debug
+menu, turn on the feature,
+08:24 and I'll go to my
+upcoming Paris trip.
+08:27 And pay good notice, because
+this is going to be fast.
+08:31 So there we go.
+08:33 We immediately
+have it coming up.
+08:36 [APPLAUSE]
+08:40 Amazing.
+08:41 Let's switch back to our slides.
+08:45 With that, we can mentally
+prepare for our trip
+08:47 and we can move on
+to our next feature.
+08:51 And for me, if
+I'm traveling, one
+08:53 of the things that I really
+don't like to do that much
+08:56 is budgeting.
+08:57 And it's managing how much I'm
+spending on souvenirs, on food,
+09:00 on all those things.
+09:02 So I usually end up with
+a whole bunch of receipts
+09:06 that are all in my
+backpack and in my pockets,
+09:09 and then I have to sort
+through and tally all of them.
+09:12 So for such a tedious
+task, wouldn't it
+09:14 be nice if we had AI
+to help us with that?
+09:18 And since receipts might
+contain sensitive information
+09:21 like credit card
+numbers and addresses,
+09:23 this is another great use case
+for using an on-device solution
+09:27 so users can be confident
+that private information will
+09:30 actually be processed
+locally on the device
+09:32 without any of their data
+being sent to the cloud.
+09:37 Nano 4 excels at multimodality,
+and so this especially
+09:41 includes image understanding for
+tasks like OCR and visual data
+09:45 extraction.
+09:46 So naturally, it will excel
+at extracting information
+09:49 for our receipts as well.
+09:52 So let's have a look
+at how this works.
+09:55 In our last example, we only
+passed in a text prompt.
+09:59 But in this example, we'll pass
+in both a text and an image
+10:03 to be processed.
+10:06 And then for our
+text prompt, we will
+10:07 specify that we want three
+pieces of information here based
+10:11 on the receipt.
+10:11 We want a generated title.
+10:13 We want to get an
+amount and a category.
+10:16 And to make sure that the
+returned result is consistent,
+10:19 we'll also tell
+the model that we
+10:21 want it to return a
+certain JSON object.
+10:26 So let's see this
+feature in action
+10:27 before we continue
+with the slides.
+10:30 Let's go to our phone,
+and let me quickly
+10:32 turn on this extra new feature.
+10:36 I have to shake my phone in
+order to go to the debug menu.
+10:39 There we go.
+10:39 I'll turn on the
+expense management
+10:42 and I'll go to my current trip.
+10:43 So we'll go to the
+California trip.
+10:46 And actually, this morning,
+I was very, very tired
+10:49 because I'm from the
+Netherlands and I got jet lag.
+10:52 So I got someone to
+bring me a coffee
+10:54 and I actually got the receipt.
+10:56 So let's take an
+image of that receipt.
+10:58 So I, here, have
+my expense menu.
+10:60 I already went for dinner.
+11:01 I already did some stuff while
+I was here in San Francisco.
+11:05 But now, let's take a
+picture of our receipt.
+11:08 Here we go.
+11:09 Say hi, everyone.
+11:10 Yay.
+11:11 And let's take a picture.
+11:13 There we go.
+11:16 And this is taking a little bit
+longer because for this, I'm
+11:19 actually using the
+Gemini full model.
+11:21 So you saw that we had a
+fast and we had a full model.
+11:24 And in this case, we want
+to have that full image
+11:26 recognition, so we're using
+that more complex model for us.
+11:30 And as you can
+see, it recognizes
+11:31 that we did an espresso blend
+purchase, which was $5.94.
+11:37 That is correct.
+11:37 Amazing.
+11:38 Cool, let's go
+back to the slides.
+11:41 [APPLAUSE]
+11:44 I'm always so happy when
+demos actually work.
+11:47 [LAUGHS] This one
+was the scariest one,
+11:49 but hey, there we go.
+11:50 And as you saw, this is already
+working pretty well, right?
+11:53 But you might have noticed that
+we had to explain to the model
+11:56 what kind of fields
+that we need,
+11:58 and we had to give it a JSON
+example of what that then
+12:01 actually looks like.
+12:03 And then after we wrote
+that whole prompt,
+12:05 we then had to go and parse
+the return data, which
+12:08 we hope is that JSON,
+into a data class
+12:10 that we can use in our app.
+12:13 This is a lot of manual steps,
+and all of those manual steps
+12:16 can go wrong.
+12:17 So it's kind of scary.
+12:20 And this is why we're
+introducing a Structured Output
+12:23 API.
+12:23 This API is going to
+land soon, but let
+12:26 me give you a
+quick sneak preview
+12:28 into what it will look like.
+12:31 So with our
+Structured Output API,
+12:32 we can mark any data
+class as generable.
+12:36 And then we can further
+describe the class using guides
+12:39 for each of the properties.
+12:41 So these annotations
+basically guide the model
+12:44 and tell it what kind of
+data it should generate.
+12:48 If we do this, we can
+actually now, for our request,
+12:54 simplify our prompt.
+12:55 We don't have to guide
+it anymore there.
+12:58 And then we can use
+the method called
+12:59 generateTypedContentRequest
+that takes
+13:02 the parsed receipt class
+name to restrict what
+13:04 the expected output should be.
+13:07 Let's make sure I
+don't lose my receipt.
+13:10 And now, our response simply
+contains this parsed receipt
+13:14 instance, or it will return null
+if it wasn't able to find one.
+13:18 So with structured
+output, we can
+13:20 be more confident about
+consistent outputs,
+13:23 and our code is
+much, much simpler,
+13:25 with Kotlin data classes
+that integrate seamlessly
+13:28 with the Android code base.
+13:31 Now, during this talk, we
+prototyped some pretty cool
+13:34 features with on-device APIs
+using the latest Gemini Nano 4
+13:38 preview model, but
+this is just the start.
+13:41 We already have seen lots
+of apps using the Prompt
+13:43 API in production to leverage
+the power of Gemini Nano for use
+13:47 cases such as classification,
+summarization,
+13:51 content inspiration,
+those kind of things.
+13:54 If you want to
+learn more about how
+13:56 you can get the latest
+in on-device Android,
+13:59 you can check out
+this talk, where
+14:01 we are going to go
+more in depth on how
+14:03 you can ship on-device
+use cases to production.
+14:07 Next, I will hand
+it off to Thomas,
+14:09 who will walk you through
+the next couple of features.
+14:12 [APPLAUSE]
+14:13 THOMAS EZAN: Thank you, Jolanda.
+14:16 So yeah, Gemini Nano 4
+is pretty impressive,
+14:19 and it's really exciting to see
+how on-device models are getting
+14:23 better and better every year.
+14:26 So we talked about Gemini Nano
+that is basically optimized
+14:29 to run on your Android
+device efficiently,
+14:33 but sometimes you
+have use cases that
+14:36 require an AI model that
+has either a greater world
+14:40 knowledge or a much
+larger context window,
+14:43 or sometimes even greater
+ability in handling
+14:47 complex tasks.
+14:49 So let's take a
+look at what we can
+14:50 build with these cloud models.
+14:54 So we are going to use them
+to build our next feature
+14:57 in the Jetpacker app.
+14:58 So we are going to build
+a museum assistant.
+15:01 So it will be a chatbot that
+is powered by Gemini Flash
+15:04 and enables you to ask questions
+to plan your next visit to,
+15:10 let's say, the Louvre
+Museum in Paris.
+15:14 So first, you need to
+add the Firebase AI
+15:17 Logic to your project.
+15:19 And once you do that, with just
+a few lines of Kotlin code,
+15:23 you can directly call
+the Gemini models
+15:26 that are running in the cloud.
+15:29 You will start by instantiating
+a generative model,
+15:33 and you will pass the
+specific version of Gemini
+15:35 that you want to use.
+15:38 And then you basically just
+have to call start chat
+15:41 to create a chat.
+15:43 And the cool thing
+about the SDK is
+15:45 that it will actually manage
+the chat history for you.
+15:50 So the communication between
+your app and the model
+15:53 is actually fully handled
+by the Firebase SDK.
+15:58 There are three series
+of Gemini AI models
+16:01 that are running in Google
+Cloud that you can use.
+16:04 So there is Gemini Pro, which is
+really good for complex tasks.
+16:09 There is Gemini Flash, which
+has a very low latency.
+16:13 And Gemini Flash
+Lite, which offers
+16:16 a really good
+intelligence cost ratio,
+16:19 and also has a very low latency.
+16:24 So we want to build a
+chatbot that is really
+16:26 knowledgeable about the museum.
+16:29 And earlier, I mentioned
+that cloud models
+16:32 store massive amounts
+of world knowledge.
+16:35 So you can assume
+that Gemini already
+16:37 knows quite a lot
+about the Louvre,
+16:40 but it doesn't necessarily
+know everything
+16:43 there is to know about it.
+16:45 So for example, if
+you ask the model
+16:48 about the current
+temporary exhibitions
+16:51 that are happening
+at the Louvre,
+16:53 the chatbot will basically
+tell us to go to the website
+16:57 and search for it ourselves.
+16:59 So it's not super helpful.
+17:02 So what we can do to
+prevent this is use
+17:04 a technique called grounding.
+17:06 So in the context window,
+which is the full input that
+17:10 is passed to the
+model, we are going
+17:12 to add some relevant content to
+help the model answer the user's
+17:16 query better.
+17:18 So grounding techniques
+are also used
+17:19 in the context of
+Retrieval-Augmented Generation,
+17:23 or RAG.
+17:26 So you can implement
+it yourself,
+17:28 but we also made it easy for
+you with the following APIs.
+17:32 There is URL grounding,
+which enables
+17:36 you to use a document
+at a specific URL,
+17:39 there is maps grounding, which
+uses the data from Google Maps,
+17:44 and there is web grounding that
+is using real-time web data.
+17:49 So let's see how
+we can use them.
+17:52 We are going to start
+with URL grounding.
+17:55 So let's imagine that
+you want to prioritize
+17:57 some data from a specific page
+that is hosted on the web.
+18:02 So you will start by
+adding the URL context
+18:05 tool to the list of tools when
+you instantiate the model.
+18:10 And then in the user prompt,
+we will tell the model
+18:13 to look at the specific page at
+the URL to grant the response.
+18:18 And so you can see that
+here, we are actually using
+18:21 the FAQ URL of the museum.
+18:24 So here, we are
+only using one URL,
+18:27 but you can actually use
+up to 20 URLs per request.
+18:31 And so now, if we ask the
+chatbot about, for instance,
+18:35 criteria to get discounted
+tickets, for example,
+18:39 Gemini is going to actually
+use the content of the FAQ page
+18:43 to answer.
+18:44 So if I say, for
+example, if having a cat
+18:47 named Mona Lisa
+grants you a discount
+18:49 to get a ticket
+at the Louvre, you
+18:52 will see that basically,
+the chatbot is saying no.
+18:55 And as accurately
+outlined in the FAQ,
+18:58 that is not enough
+to get a discount.
+19:02 If we want to give the
+chatbot the ability
+19:05 to retrieve some information
+from Google Maps,
+19:07 we can use the Google Maps tool.
+19:11 So that will, for instance,
+enable the chatbot
+19:13 to search for cafes
+or restaurants
+19:16 around the museum
+after our visit.
+19:20 So if, after adding
+the tool, when I ask,
+19:24 what are the best
+restaurants that
+19:25 are good for children
+next to the Louvre,
+19:28 we will actually get a
+pretty comprehensive response
+19:32 from the chatbot.
+19:33 It will query the
+data from Google Maps
+19:37 and return a list
+of restaurants,
+19:40 and it's actually
+anchoring on restaurants
+19:42 that are clearly known for
+having a children's menu.
+19:47 And so we can also use
+web search grounding
+19:50 to, for instance, let the
+chatbot search for more
+19:54 recent information on the web.
+19:56 So we now have a pretty
+competent museum chatbot
+20:00 to enable us to
+prepare the visit.
+20:03 And so the cool thing is
+that we built all of that
+20:06 with Gemini Flash in
+Firebase AI Logic.
+20:10 And actually, the Gemini
+Pro and Gemini Flash models
+20:13 are perfect to build, let's say,
+the first iteration of your AI
+20:17 feature.
+20:19 So whether you need multimodal
+understanding, JSON generation,
+20:23 function calling, or
+even image generation,
+20:26 you can quickly build
+everything in Kotlin
+20:29 without really
+needing any server
+20:31 code or any backend resources.
+20:35 And the cool thing is that
+if your feature actually
+20:38 doesn't rely on your own
+backend infrastructure,
+20:42 you can really go to production
+with it and scale it.
+20:45 You can use AI
+monitoring features
+20:47 in the Firebase AI Logic SDK.
+20:50 You can use server
+prompt templates
+20:52 and App Check and basically
+scale to your whole user
+20:56 audience.
+20:58 And if you think about
+it, you probably already
+21:00 have some features in your
+app that are good candidates
+21:03 to use Gemini in
+Firebase AI Logic,
+21:05 so I strongly encourage
+you to look into it.
+21:10 So it's actually used already by
+hundreds of apps in production.
+21:14 So for instance, the
+redBus application,
+21:16 which is a ticketing
+platform, uses the Gemini
+21:20 audio understanding
+capabilities to create
+21:23 a voice-first,
+multilingual review system.
+21:27 It's also used by Karrot,
+which is a marketplace app that
+21:32 basically uses it to
+translate messages
+21:34 between buyers and sellers.
+21:38 Gratitude, a journaling
+app, is using
+21:40 it to suggest journal entries.
+21:44 And finally, UltraHuman, which
+is a fitness tracker app,
+21:47 is using it to build a food
+logging feature using the Gemini
+21:53 image understanding
+capabilities.
+21:56 So a lot of
+interesting use cases.
+22:01 OK, so let's take a
+step back for a second.
+22:03 So we saw that many
+of you want to build
+22:06 with Gemini Flash and Gemini
+Pro using cloud inference.
+22:10 And earlier, Jolanda
+showed all the cool things
+22:13 you can build with
+Gemini Nano on-device.
+22:16 But we also heard some
+feedback from you.
+22:19 You basically need
+to support users
+22:20 on devices that
+don't necessarily
+22:23 support Gemini Nano just yet.
+22:26 So what if we could just
+combine both, right?
+22:29 That's actually the promise
+of hybrid inference.
+22:32 And I think I have a really
+good use case for it.
+22:35 So reviews are a pretty
+key element in most Android
+22:40 applications today.
+22:42 So in your app, maybe
+you're asking your users
+22:45 to write other users, or
+write a business, or even
+22:49 a piece of content, like, I
+don't know, a song or a show.
+22:52 And so you're often
+asking your users
+22:55 to basically write a
+review, or sometimes you're
+22:58 even asking users to post a
+review for your application
+23:01 in Google Play.
+23:02 And it's important
+for you, but it
+23:04 can be sometimes
+tedious for your users.
+23:07 So we think Gemini
+Nano can actually
+23:10 be super helpful for that.
+23:12 But you also need
+to have this feature
+23:14 available on devices that don't
+support Gemini Nano just yet.
+23:19 So in the Jetpacker app,
+earlier, the chatbot museum
+23:24 recommended restaurants.
+23:26 And so what if we were to
+implement a restaurant review
+23:30 feature in the app?
+23:32 So here, you can
+see that we have
+23:33 a list of topics to
+choose from about how
+23:36 we felt about the restaurant.
+23:39 And we will let the model
+draft the short review for us.
+23:43 And the user is always going
+to be able to edit it later
+23:45 before posting it.
+23:47 So here, you can see we
+are selecting some topics.
+23:51 And once we are
+done, we are clicking
+23:53 on generating the review.
+23:56 And basically, if Gemini Nano
+is available on the device,
+24:00 the review will be
+generated by Gemini Nano.
+24:04 But if not, it will default to
+Gemini Flash Lite in the cloud.
+24:08 So it's completely
+transparent for the users,
+24:10 and it's also very easy for
+you to build as a developer.
+24:15 So to build this,
+we are actually
+24:16 using the latest API
+from Firebase AI Logic.
+24:21 So to do that, you need to
+add the on-device Gradle app
+24:25 dependency to your project.
+24:28 And then-- so you can see
+here that we basically
+24:30 generate a review with a
+prompt that is interpolating
+24:34 the selected topics.
+24:38 And then when we
+instantiate the model,
+24:40 you can see that we are passing
+an onDeviceConfig object, where
+24:44 we define the inference
+mode that we want to use.
+24:48 So here, you see that we
+are saying prefer on-device,
+24:51 so we will prioritize
+on-device inference.
+24:55 So this API supports
+four inference modes.
+24:60 So there is prefer on
+device, prefer Cloud.
+25:02 And there is also only
+on device and only cloud.
+25:07 And it's actually available
+today, so you can try it out
+25:11 and you can learn more about it
+in the Firebase documentation.
+25:17 So we just talked about a
+very simple routing logic.
+25:21 Here, it's basically
+two criteria.
+25:23 Is Gemini Nano
+available on the device?
+25:26 And is the device online?
+25:29 But sometimes you want
+to build something
+25:31 that is a little
+bit more complex,
+25:33 so you can imagine having a
+pretty advanced custom routing
+25:37 logic.
+25:39 So for instance, you can monitor
+the system health of the device,
+25:44 and you can decide
+to use a cloud
+25:45 model if, let's say,
+the CPU is overloaded
+25:50 or if the battery of the device
+is below a specific threshold.
+25:56 And another thing worth
+checking is also the latency.
+25:60 So if the latency is above
+a specific threshold,
+26:03 you can decide to
+focus on on-device.
+26:06 Another thing, too,
+to keep in mind,
+26:08 is that not every
+single query requires
+26:11 a very advanced model running
+in the cloud, and some do.
+26:18 So it can be
+interesting sometimes
+26:19 to use a lightweight LLM,
+like for instance, the Gemma 3
+26:24 model that is only 270
+million parameters,
+26:28 to basically route those queries
+based on their complexity.
+26:32 And at the end of the day, I'm
+just listing three criterias
+26:35 here, but there are
+many other criteria
+26:37 that you want to take into
+account based on your app's
+26:42 needs or also the user
+experience that you
+26:44 want to provide.
+26:47 So if we go back to
+the Jetpacker app,
+26:50 let's say that we now want to
+implement instant messaging
+26:53 translation for a chat
+feature between the hotel
+26:56 staff and the customers.
+26:58 So the customers
+and the hotel staff
+27:00 will basically use their
+own language to chat,
+27:03 and we'll use the
+AI for translation.
+27:06 So let's see how we
+can use hybrid here.
+27:10 So let's imagine that we want
+to prioritize on-device to save
+27:14 on inference costs.
+27:16 We also want low latency.
+27:18 So we provide a really real-time
+experience to the users.
+27:23 And we also want to make
+sure that we basically
+27:26 support as many languages
+on as many devices possible.
+27:33 So we know that on-device
+translation capabilities are
+27:36 getting better with
+Gemini Nano models,
+27:40 but we also want to be able
+to fall back to the cloud
+27:43 if the model doesn't
+support the language.
+27:46 And so in this case,
+we'll use TranslateGemma,
+27:48 which is an open-weight
+model based off
+27:51 of the Gemma model that can be
+potentially fine-tuned if you
+27:55 want.
+27:57 And so here is the inference
+stack that we are going to use.
+28:00 So for on-device inference,
+we will use Gemini Nano models
+28:04 through the ML Kit Prompt API.
+28:07 And for the cloud inference,
+we will use TranslateGemma that
+28:10 will be hosted on Google Cloud.
+28:13 And we will also use the
+on-device ML Kit Language
+28:16 Identification API that will be
+able to detect the language used
+28:20 in the conversation.
+28:23 So we will implement the
+appropriate routing logic
+28:27 based on the version
+of the model that
+28:29 is available on the device,
+the language that is used,
+28:32 and also the latency
+of the network.
+28:35 And so here, in this diagram,
+we are basically implementing
+28:39 the routing logic in code.
+28:41 But there are
+already experiments
+28:43 to use AI to actually
+define the routing.
+28:46 And in a minute,
+Jolanda is going
+28:48 to show us how the agentic
+approach can help us with that.
+28:53 So let's see the translation
+feature in action.
+28:55 So let's say that
+I'm typing in Dutch,
+28:59 but I'm basically talking
+to a hotel in France,
+29:02 and the staff speaks
+mainly in French.
+29:05 So I will send my
+message and I will
+29:08 receive a response
+that basically
+29:12 enables me to translate--
+29:15 using hybrid inference,
+translate the message in Dutch.
+29:19 And on the other end, the staff
+can also have the same setup,
+29:23 where they can
+basically translate
+29:26 the message that was sent by
+the user to their language.
+29:29 And so here, the translation
+will either be on the device
+29:32 or on the cloud,
+based on the criteria
+29:35 that we talked about before.
+29:37 It will be, again, completely
+transparent for the users,
+29:40 but we'll have a very
+high-quality translation
+29:42 feature that is running
+via hybrid inference.
+29:48 So this custom hybrid
+inference approach
+29:50 is already used by several
+applications in production.
+29:54 For instance, the Gboard
+app is using that.
+29:57 It's also used in the Pixel
+Screenshots application.
+29:60 And the Kakao mobility
+app also started using it.
+30:05 And so with that, I will
+pass it back to Jolanda
+30:07 to talk about agentic systems.
+30:11 JOLANDA VERHOEF:
+Thank you, Thomas.
+30:12 [APPLAUSE]
+30:15 OK.
+30:16 For our next feature, we want to
+take our app to the next level
+30:20 and we want to connect
+it to our cloud backend.
+30:25 So we have a Jetpacker
+backend running
+30:27 in the cloud that is able
+to reserve flights, hotels
+30:30 and activities on
+our user's behalf.
+30:33 Now, in our app, we
+simply want the user
+30:36 to be able to go to
+the booking screen
+30:38 and then automatically kick
+off that booking process.
+30:40 And it will automatically
+book all the things
+30:42 that that user wants to do.
+30:45 And then the
+booking process will
+30:46 be running fully autonomously.
+30:48 And our Android
+app is just showing
+30:50 the progress of all of these
+different booking agents
+30:53 working.
+30:54 And it will let the user
+provide input when needed.
+30:58 So before we show how
+we can build this, let's
+31:02 go back to the phone and
+look at it in action.
+31:06 So in order to run this, let me
+first turn off my airplane mode,
+31:09 because we have a
+backend this time around.
+31:13 So we have internet
+going on, I hope.
+31:16 And we'll open our
+Jetpacker app again,
+31:18 and we'll turn on the
+Booking Assistant.
+31:21 There we go.
+31:22 Now, if I open my current app,
+let's say, or my current trip,
+31:27 I can go to the booking screen
+and I can start our booking.
+31:31 And as you can see,
+it is connecting
+31:33 to our booking server.
+31:35 Now, while this is
+connecting, as you can see,
+31:37 this is taking a
+little while because I
+31:40 need to connect to this
+server that is running that is
+31:42 doing a whole bunch of stuff.
+31:44 I do hope it will
+connect in time,
+31:47 before the end of the talk.
+31:48 It might be that my
+Wi-Fi is not as strong
+31:51 as I was hoping it would be.
+31:52 Look, there it is.
+31:53 OK, amazing.
+31:54 So as you can see, what
+we did is we basically
+31:56 just sent our itinerary
+to that server
+31:58 and it started up
+a session for us.
+32:01 And it's then kicking off all
+of these different booking
+32:03 agents for me.
+32:04 So it's kicking off four
+agents to book activities.
+32:08 So here, I see my lunch and my
+dinner and all kinds of bookings
+32:13 there.
+32:13 Same for my hotel, and then
+the same for the flights.
+32:17 But all of those need some
+kind of information from me.
+32:20 So for example, let's say that
+for my SFO to Amsterdam flight,
+32:24 I will confirm that indeed that
+is the right time frame for me.
+32:28 I can confirm the selection
+and I get to choose a chair.
+32:32 However, in the meantime,
+while all of these agents
+32:34 are running, if I'm not doing
+anything else, I quit the app.
+32:38 I go do something else,
+and I come back tomorrow.
+32:40 And I come back into the app.
+32:41 I can reconnect to
+that existing session.
+32:44 So now if I go back to
+my ongoing connection,
+32:47 as you can see, it
+will just reconnect
+32:49 and it will find all of those
+agents that were running.
+32:53 And surely, it should
+show all of them.
+32:57 It is, again, maybe not
+the fastest Wi-Fi here.
+32:60 But in the meantime,
+as you can see,
+33:01 it's still asking me--
+it still remembers
+33:03 where I was in the
+process, so it's still
+33:05 asking me for that seat number.
+33:07 So I can confirm
+that seat number.
+33:09 I can say I confirm
+my whole booking.
+33:11 And there we go.
+33:13 As you can see, I think my
+internet is fully out now,
+33:16 but this would normally
+show the full confirmation
+33:19 and we'd be done.
+33:21 There's not a full talk that you
+can do without having one demo
+33:23 hiccup, right?
+33:24 So this is the one.
+33:26 [APPLAUSE]
+33:29 I already assumed it would
+be the one where I'm actually
+33:32 using the internet.
+33:34 So this is why we have
+on-device inference, people.
+33:37 [LAUGHS] OK.
+33:39 So before, Thomas was
+already speaking to you
+33:42 about Firebase using
+a managed backend.
+33:45 And this is ideal
+for getting started
+33:47 or when, as a mobile team, you
+want to develop in isolation.
+33:51 And it provides and focuses
+on direct client-to-model
+33:54 inference, which makes it kind
+of, fundamentally, stateless.
+33:58 And so for our trip
+booking, we instead
+34:00 use a custom
+self-hosted backend.
+34:03 This server, which we
+fully control and gives us
+34:06 full flexibility.
+34:07 And so when we book
+sessions, even when
+34:10 the user closes the
+app, that system
+34:12 can just continue
+running in the cloud.
+34:14 It also gives us complex
+multi-step orchestration.
+34:17 And because it's running
+in our own backend,
+34:19 it gives us access to
+our company's data.
+34:23 So how would we architect
+such a solution?
+34:26 Well, if we go and take it
+all the way back to its core,
+34:29 we basically have
+a cloud backend
+34:31 and we have an Android
+app, and they somehow
+34:33 communicate with each other.
+34:34 Now, we want that
+to be, basically,
+34:36 a server or an
+event-driven communication
+34:40 that goes both directions.
+34:42 So some ways of doing
+that transportation
+34:44 would be to use server-sent
+events or to use WebSockets.
+34:48 Then, we have our connection
+set up between the two, but then
+34:50 what do we run in the backend?
+34:52 So we wanted to have a complex,
+multi-agent booking system,
+34:56 and we chose to use the Google
+build ADK, or Agent Development
+34:60 Kit, which is a flexible
+and open-source framework
+35:03 for developing and
+deploying AI agents.
+35:07 Now, for Android
+developers like you and I,
+35:09 it might be a little bit scary
+to look at backend systems,
+35:13 and it might be a
+little bit intimidating.
+35:15 But just to give
+you an idea, let's
+35:16 actually look at the
+implementation of the backend
+35:19 that we wrote.
+35:21 So we can define an agent
+by setting their name,
+35:24 giving them the model that
+they should communicate with,
+35:27 giving them an instruction, and
+then giving them a set of tools.
+35:31 That's all we need to set up
+one simple agent using ADK.
+35:36 Then we can make a
+top-level orchestrator
+35:38 that can delegate work
+to several subagents.
+35:41 So here, for the
+restaurants, for the hotels
+35:43 and for the museums, I'm making
+a bunch of different subagents.
+35:48 So when we have such
+a backend set up,
+35:50 there's one question
+that remains.
+35:52 It's running in the clouds.
+35:53 We have an Android app.
+35:55 How do we communicate?
+35:56 What kind of messaging
+protocol do we use?
+35:59 Now, we could be making our own.
+36:00 We could set up our own kind
+of communication pattern,
+36:04 decide what are the
+requests that we're sending,
+36:06 what are the responses?
+36:07 However, once you start
+adding more complexities
+36:10 to such a backend
+system, it can become
+36:13 quite unwieldy and
+difficult to deal with.
+36:16 So instead, we can use
+the AG-UI protocol.
+36:20 This standardizes communication
+between agents and UI clients.
+36:24 So the protocol predefines
+a set of message types
+36:28 that have been designed
+to best represent
+36:30 agent-to-client interactions.
+36:33 So the agent can inform the
+client about, for example,
+36:36 its lifecycle events,
+text messages, tool calls,
+36:38 state management, et cetera.
+36:40 And the other way around,
+we can have our Android app
+36:43 that is sending text messages,
+providing tool call results,
+36:46 and sending custom events.
+36:50 Now, most agent frameworks
+have an AG-UI adapter module.
+36:54 So that allows them to interact
+using that AG-UI protocol.
+36:58 And similarly, there's also
+several AG-UI libraries
+37:00 for clients.
+37:02 So for example, for
+Android, there's
+37:04 a Kotlin SDK that gives
+you a great Kotlin
+37:06 API to communicate with
+any AG-UI-enabled backends.
+37:11 So as an Android
+developer, at that point,
+37:13 all that you need to do
+is set up the connection
+37:16 to your backend
+and then decide how
+37:19 you want to visualize
+those AG-UI messages that
+37:22 are coming in from your server.
+37:24 So in our use
+case, we're parsing
+37:26 the messages that are
+coming in and we're
+37:28 showing them in our nice UI.
+37:32 This is already quite great,
+but I believe we can do better.
+37:37 So if we're
+deciding-- so the step
+37:39 two that we just
+mentioned, deciding
+37:41 how to visualize the
+events coming in,
+37:43 that is actually quite a
+lot of work and quite a lot
+37:46 of kind of figuring out, right?
+37:49 It doesn't really
+scale that well
+37:51 and there's some version
+dependency complexities.
+37:54 Like, what if my backend
+is updated but my Android
+37:56 app is still older, et cetera?
+37:59 So what if, instead, we
+could have our app describe
+38:02 a set of UI components that it
+is able to render, and then let
+38:06 our AI model speak UI instead?
+38:11 So what do I mean with that?
+38:12 So A2UI is a protocol
+that allows agents
+38:15 to render UI in a client.
+38:18 It works really well
+together with AG-UI
+38:20 as a transfer protocol,
+but the client simply
+38:23 informs the agent which
+components it can render,
+38:26 and then the agent that's
+running on the server decides,
+38:29 what is the best
+UI component that I
+38:31 can use, the best tree,
+the best hierarchy,
+38:34 to then do what I want to do,
+or ask the user for input,
+38:37 or to reach my goal, basically?
+38:41 And as an Android
+developer, that
+38:42 means that the only thing
+that we still have to do
+38:44 is define our set of components,
+which might be composables
+38:48 that you already
+have in your app,
+38:49 provide them to your server,
+and then render them.
+38:54 So let's have a look
+of an example of what
+38:57 that communication looks like.
+38:59 You can see the component tree
+being passed from the server
+39:01 to the client to be rendered
+at a given point in time.
+39:04 And you can see that A2UI
+supports both basic components,
+39:08 like we have column
+and text here,
+39:10 but it also supports
+custom components.
+39:12 So for example,
+here, I added support
+39:14 for a my progress spinner.
+39:17 You can also see that
+we're not actually passing
+39:19 actual data at this point.
+39:21 Instead, the server is just
+passing variable names.
+39:25 And then in a separate message,
+after it's sent the components,
+39:28 it can actually gives you data
+associated with those variables.
+39:32 So all of this is pretty cool.
+39:34 But at this point, we're
+just passing JSON, right?
+39:37 It's just JSON coming
+in, JSON going out.
+39:39 What does that actually mean?
+39:40 That's not UI on a screen yet.
+39:43 So how are we going to render
+that, specifically on Android?
+39:47 So on Android, we are currently
+building a Jetpack Compose
+39:51 Renderer.
+39:52 It will allow you to
+automatically render
+39:55 those A2UI messages that are
+coming in from your server.
+39:60 [APPLAUSE]
+40:03 This A2UI renderer has a
+set of basic components
+40:06 that will give you great
+out of the box experiences,
+40:08 so you don't have to do
+anything special here.
+40:11 And when needed,
+you will also be
+40:13 able to provide your own
+custom components based
+40:16 on the composables in your app.
+40:18 So that's what we did in the
+app to constrain our model
+40:21 to generate our custom
+booking-related components.
+40:24 So now we can build
+beautiful UI and let
+40:27 the agent show specific
+components when, for example,
+40:29 we're choosing a seat.
+40:32 Now, in our code, we create
+an A2UI message processor
+40:35 and pass our custom
+catalog to it.
+40:38 From that processor, we then
+retrieve active surfaces.
+40:42 And in our UI, we
+simply retrieve
+40:44 the surfaces that are
+coming in and display them
+40:46 in a column using the material
+A2UI surface composable.
+40:52 So to summarize, we have
+A2UI on the one hand, which
+40:54 is our transport layer
+communication protocol,
+40:56 and it provides an event-based
+communication pipeline
+40:60 between agents and clients.
+41:02 And A2UI is our
+independent protocol
+41:05 that helps an agent
+speak UI, which
+41:07 can then be rendered into native
+components on the client side.
+41:11 Now, A2UI is just
+message passing
+41:13 and it works over any transport.
+41:14 So it could also use
+REST, MCP, A2A, or AG-UI.
+41:19 Now, we're at the start of
+these protocols, so please,
+41:22 please do give a look at
+a2ui.org to learn more and stay
+41:26 posted.
+41:29 OK, let's get to our
+final, final feature.
+41:32 So we already saw how we can
+connect to an agent running
+41:35 in the cloud.
+41:35 What if we want to instead run
+an agentic system on our device?
+41:41 Now, this is very, very,
+very early and experimental,
+41:43 but I did want to give you a
+heads-up of what we're thinking
+41:46 about and what we're
+developing and what we're
+41:48 moving towards as Android.
+41:51 So let's see if we can
+build an agentic system that
+41:53 hosts multiple agents
+that all communicate
+41:56 with each other, orchestrated
+from within our Android app.
+41:60 Let's switch to our app and
+quickly show it in action.
+42:04 Hoping that the Wi-Fi
+is fixed by this point.
+42:07 So I'll turn the feature on.
+42:09 This is called the
+Genius Assistant.
+42:11 And our Genius
+Assistant is going
+42:12 to help us during our trip to
+understand what's going on.
+42:16 Now, it will first
+go to our cloud,
+42:19 and it will go and
+try to understand
+42:21 what's going on in the trip.
+42:22 So it parses the
+itinerary, and then it
+42:24 understands that I have a
+hotel and a car reservation.
+42:27 So let me check my
+hotel reservation.
+42:30 What it will do is
+it will actually
+42:32 understand that there is
+multiple agents running,
+42:35 and it can understand that it
+can transfer to our hotel agent.
+42:40 Now, our hotel
+agent is a subagent
+42:42 that runs on-device, because I
+have my personal data running
+42:47 on my device as well.
+42:48 So I have some personal
+information here.
+42:50 I have my passport and I
+have the hotel reservation.
+42:53 And the model will
+actually compare the two.
+42:56 So here, there's
+multiple agents running.
+42:58 And I'll show you later
+how this is set up.
+43:00 But this is pretty cool.
+43:01 And we have a way to understand
+that for my hotel reservation,
+43:05 actually, I provided the
+wrong passport number.
+43:09 So there's a lot going on here.
+43:10 And I'll show you how
+that actually works.
+43:13 So let's go back to the
+slides and dive into it.
+43:18 So one way of doing
+this on Android
+43:20 is using ADK for Androids.
+43:24 [APPLAUSE]
+43:27 This is a brand-new library.
+43:29 We just released
+version 0.1 this week.
+43:32 And it takes all the
+learnings that we had from ADK
+43:35 on the cloud, which we've
+seen in our previous section,
+43:38 and it applies them to Androids.
+43:41 ADK manages all the complex
+orchestration, context handling,
+43:44 and error handling for you.
+43:46 It allows you to build an agent
+with just a few lines of code,
+43:50 easily swap out
+models, et cetera.
+43:53 Now, for our trip
+assistant feature,
+43:55 we first designed
+a main orchestrator
+43:57 that uses Cloud Intelligence.
+43:59 It then calls tools to get
+information about the trip,
+44:02 chooses to offload
+work to a subagent
+44:04 that we run fully on-device,
+and then each of the subagents
+44:09 runs a set of agents in
+a sequence and shares
+44:12 the data between them.
+44:14 So we only ever return
+the final results
+44:16 to the orchestrator
+that are stripped
+44:18 of any privacy-sensitive data.
+44:21 So in our code, what this
+looks like is we have our trip
+44:24 assistant orchestrator,
+which uses a cloud
+44:27 model for its intelligence
+and has a set of subagents.
+44:32 And we give it a tool,
+as we saw before,
+44:34 and we give it some
+top-level instructions
+44:37 so it knows when to
+offload to which agent.
+44:40 Then each subagent is defined as
+an on-device sequential agent,
+44:45 and we have various
+retrieval agents
+44:47 that can use the
+device Nano model
+44:50 to retrieve the correct data
+from our user's document.
+44:53 Separately, we have that
+last validation agent
+44:56 that we saw that can
+compare the data coming in
+44:58 from those retrieval agents.
+44:60 And together, we
+have a whole set
+45:01 of agents set up with
+just a few lines of code,
+45:05 using both on-device
+and cloud, working
+45:08 to build something
+that is highly
+45:10 intelligent for your user.
+45:13 Now, as I said, ADK for
+Android is just starting,
+45:15 and we're looking forward to
+see what you build with it.
+45:18 Check out adk.dev for more.
+45:21 Now, with that, we
+completed all seven features
+45:24 and we made our app
+so much more useful.
+45:27 So while we're working on
+making the Jetpacker source code
+45:30 available to you
+soon, in the meantime,
+45:32 please go to
+developer.android.com/ai
+45:34 to learn more.
+45:36 And with that, thank you for
+joining, and have a great I/O.
+45:39 [APPLAUSE]
+45:40 [MUSIC PLAYING]

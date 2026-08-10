@@ -1,0 +1,1559 @@
+00:00 [MUSIC PLAYING]
+00:07 JAMAL EASON: Welcome to What's
+New in Android Development
+00:09 Tools.
+00:11 [CHEERING]
+00:15 I'm Jamal, prog developer
+of developer experience.
+00:18 TOR NORBYE: And I'm Tor.
+00:19 And I lead engineering for
+Android developer tools
+00:21 and libraries.
+00:23 JAMAL EASON: Today, we're going
+to talk about the evolution
+00:25 of Android Development Tools.
+00:27 So if you fully aligned to using
+AI agents as your primary way
+00:31 of developing, or if you're
+rolling up your sleeves
+00:35 and architecting every
+detail of your app,
+00:39 or perhaps you operate
+somewhere in between,
+00:41 we're going to touch
+on the latest updates
+00:43 to make you successful
+Android developers,
+00:45 no matter how you develop.
+00:48 For this talk, I will
+cover our recent roadmap,
+00:51 then Tor will go over a live
+demo of the latest tools.
+00:54 And then I'll come back
+for some latest updates.
+00:57 First, let me talk
+about our recent changes
+00:59 to our product roadmap
+you may have missed.
+01:03 Last year at Google I/O,
+we introduced Agent Mode,
+01:06 which jumped you from
+a development flow
+01:08 from just an AI assistant to
+a semi-autonomous agent that
+01:12 can generate code for you
+using the latest AI models.
+01:16 Since then, we've got a ton
+of positive feedback from you.
+01:20 And based on this, the
+Android DevTools team
+01:22 has shifted how we create
+features going forward.
+01:26 We now create features for both
+you as the Android developer
+01:29 to be productive, plus
+the AI agents that you
+01:32 deploy in your code base.
+01:36 We know that for the majority
+of professional app developers,
+01:40 the goal is to publish your
+app or game onto Google Play
+01:43 and get it into the hands of
+the consumers around the world.
+01:46 We are continuing to
+invest in Android DevTools
+01:49 to help you be productive
+towards this goal.
+01:54 As an Android developer,
+you are ultimately
+01:56 accountable for
+your app code works.
+01:58 If your coding agent makes a
+mistake or goes off course,
+02:01 it impacts your business.
+02:03 We know this responsibility
+lies with you.
+02:06 So it's a trade-off.
+02:07 On one hand, you can
+have speed, where
+02:09 you're weighing how fast can
+your coding agent generate code.
+02:13 And on the other hand,
+you're balancing accuracy.
+02:15 Meaning, how can you constantly
+test and validate your app code,
+02:18 and not create technical debt?
+02:22 When making this trade-off
+between speed and accuracy,
+02:25 we believe Android
+Studio is still
+02:26 the best place to
+handle both agent
+02:28 workflows and in-depth
+technical app development.
+02:32 While there are now
+many new ways to get
+02:34 started with
+Android development,
+02:35 which we'll show you today,
+using Android Studio is
+02:38 our recommended path for
+professional developers
+02:40 to scale your app across all
+devices in the ecosystem.
+02:45 So let's talk about a few
+feature updates you may have
+02:47 missed in Android Studio Otter.
+02:50 Off the top, we're
+making it easier
+02:52 to access the latest in Gemini
+models right in Android Studio.
+02:56 For some time, we have supported
+enterprise accounts now
+02:59 called Gemini Enterprise.
+03:02 Right in Android
+Studio, you can log in
+03:03 with your Google Workspace
+or federated corporate email
+03:06 address and gain access to
+corporate approved and managed
+03:10 models via Gemini Enterprise.
+03:13 In Android Studio Otter,
+we now also support
+03:16 Google One when
+you're developing
+03:17 on your personal Google account.
+03:20 So if you have a Google
+AI Pro or Ultra plan,
+03:23 you can log into Android Studio
+and access data model capacity
+03:26 and Gemini models above the
+limited no cost default tier.
+03:32 For those AI power
+users who require
+03:34 even more quota above
+the Google AI plan usage
+03:37 limits, or need even more
+flexibility in model selection,
+03:40 you can also provide a Gemini
+API key from Google AI Studio
+03:44 into Android Studio.
+03:48 Now, we understand that we
+have a wide range of AI needs.
+03:50 And we're committed to making
+sure the tools of Android Studio
+03:53 are available to all
+Android developers.
+03:56 So in Android
+Studio Otter, we now
+03:57 allow you to bring your own
+model into Android Studio,
+03:60 choosing between a
+local or a remote model.
+04:04 A remote model selection
+feature is handy.
+04:06 Or perhaps you might
+have a corporate mandated
+04:08 policy to use an LLM model.
+04:10 You can bring those right
+into Android Studio.
+04:14 Speaking of model
+selection, we now
+04:16 know that model capabilities
+are changing almost
+04:18 on a weekly basis.
+04:19 So we recently
+published Android Bench
+04:22 to help you decide
+which model to use.
+04:24 This benchmark does
+a couple of things.
+04:26 One, instead of relying on
+generic coding puzzles or coding
+04:30 challenges, Android
+Bench is built
+04:32 using real-world Android tasks
+that you use day in and day out.
+04:36 Two, it drives developer choice.
+04:39 As LLM makers improve
+their benchmarks
+04:41 against Android
+Bench, it also drives
+04:43 a wider selection
+of models for you
+04:44 to choose for
+Android development.
+04:48 In addition to
+proprietary models,
+04:50 this week, we also added
+open models to Android Bench.
+04:53 This gives you even more
+choice when choosing
+04:55 the best model for you.
+04:59 Soon, we'll be adding
+long-running tasks, tasks
+05:01 that might take you
+a day or two, as well
+05:04 as agent evaluations.
+05:06 This way, you can evaluate how
+various agent models perform
+05:10 across different other models.
+05:13 Learn more about Agent Bench
+and see the latest leaderboard
+05:15 by going to d.android.com/bench.
+05:20 Now, once you've checked
+out Android Bench
+05:22 and you need to
+use a local model
+05:23 on your laptop or a
+local area network,
+05:25 Android Studio has the option
+to point to a local LLM runner,
+05:28 such as Ollama or LLM Studio.
+05:31 This allows you to download a
+variety of open, weighted models
+05:34 from the community.
+05:37 A local model we recommend
+with Android Studio,
+05:39 if your laptop can support
+it, is Gemma 4 from Google.
+05:43 It offers a couple of things.
+05:45 One, it has native agentic
+tool calling, meaning
+05:47 it has built-in reasoning that
+makes it compatible with things
+05:50 like Agent Mode.
+05:52 Two, it's Android optimized.
+05:54 This model is trained on Android
+APIs and Kotlin programming.
+05:59 And three, it's integrated.
+06:01 We ensure this model
+works with popular runners
+06:03 such as Ollama and LLM Studio.
+06:07 And like other
+open source models,
+06:08 you can run this local
+model completely offline
+06:11 and leverage your
+laptop security.
+06:14 Based on Android Bench Gemma
+4 provides very solid results
+06:17 in comparison to the
+top proprietary models.
+06:21 Now, once you connect to
+either a remote or local model,
+06:24 it appears in the Model
+Picker in Android Studio,
+06:26 giving you the flexibility
+to switch between models
+06:28 while developing.
+06:30 In addition to model
+provider selection,
+06:33 we introduced features
+specifically focused
+06:35 on Android workflows
+and aspects that are
+06:37 unique to Android, such as UI.
+06:41 Now, many times,
+it's hard to describe
+06:43 to a coding engine exactly
+what is wrong with your UI,
+06:46 especially visual elements.
+06:48 So now in Android
+Studio, you can right
+06:50 click on a Compose Preview and
+trigger a transformation right
+06:54 on the design surface to get
+the right context for the agent.
+06:59 For those of you who develop
+direct web links into your app,
+07:02 we have a new
+AI-powered app links
+07:04 assistant that helps you
+orchestrate the links.
+07:07 And then the tool uses AI
+to validate and connect
+07:10 those URLs to make sure
+they're working out of the box.
+07:14 Next, we added support
+for MCP servers,
+07:17 allowing you to integrate third
+party tools into Android Studio
+07:19 AI.
+07:21 We have a built in gallery of
+some of the most popular MCP
+07:24 servers.
+07:25 So we're able to get
+input designs from Figma
+07:27 or connect to your
+Firebase database.
+07:29 You can directly connect the
+agent to those MCP servers
+07:32 inside of Android Studio.
+07:35 Also built into Android Studio
+is the Android Knowledge Base.
+07:39 This feature offers
+a few things.
+07:41 Number one, updated
+documentation.
+07:43 So as we release and
+document new Android APIs,
+07:46 you populate those in
+right into Android Studio.
+07:49 Two, it's agent focused.
+07:51 You don't have to take any
+sort of extra work at all.
+07:53 Based your question, the
+agent will figure out
+07:55 what context to use to
+answer your questions
+07:58 or execute on results.
+08:00 And lastly, it's
+not only Android.
+08:02 We actually included Kotlin
+and Firebase knowledge
+08:05 into the knowledge base as well.
+08:08 Android Otter spans the
+four small releases,
+08:10 plus a host of new features
+and stability fixes.
+08:13 OK, onto Android Studio Panda.
+08:17 In this release, we spent
+time on the Getting Started
+08:19 experience.
+08:20 First, we added a new template
+for Android Automotive
+08:23 that streamlines the
+creation of driving
+08:25 optimized apps for Android
+Auto and Android Automotive.
+08:30 We also updated the
+Gemma API template,
+08:33 which is used to add
+Gemini APIs into your app.
+08:36 This template update
+includes integration
+08:38 with Firebase AI logic,
+which handles backend setup,
+08:41 and also minimizes the risk of
+leaking API key within your app.
+08:46 What is great about using
+built-in templates is that you
+08:48 can get up and running
+right out of the box
+08:50 without using any AI tokens.
+08:53 Now, if you want to take
+this a step further,
+08:55 we launched an agent-based
+new project wizard.
+08:57 With just a prompt combined
+with a paid plan or API key,
+09:01 you can create a
+custom Android project
+09:03 that's adaptive, designed
+nicely with Gemini Nano Banana,
+09:06 with all the right dependencies.
+09:08 Once the app is
+generated, you can
+09:09 continue to iterate that with an
+Android Gemini agent built in.
+09:14 This release also
+includes Android Skills.
+09:17 Now, this is important.
+09:18 Even with the latest model
+training and documentation,
+09:20 sometimes, the agent
+needs a little bit more
+09:22 steering to execute
+on the right action.
+09:24 This is where Android
+Skills comes in.
+09:27 We include about 10 or so
+skills on key developer tasks
+09:30 that our current models
+fall a little short on,
+09:32 such as integrating the
+latest adaptive APIs,
+09:35 or converting from
+XML to Compose.
+09:40 To learn more about skills, go
+to github.com/android/skills.
+09:46 Lastly, we added Agent
+Planning Mode in this release.
+09:48 This is helpful when you need
+a little bit more pre-thinking
+09:51 for the API model
+to work through
+09:52 for complex problems
+or multi-stage issues.
+09:55 In this model, the agent will
+create an implementation plan
+09:58 that you can review.
+09:59 And then the agent will
+execute on that plan.
+10:03 OK, so that touches on the
+latest updates in Android Studio
+10:05 Panda.
+10:06 Similar to Otter, we
+have four releases
+10:08 and a myriad of consumer
+Canary releases in between.
+10:12 I will note, this release also
+includes a new permission model,
+10:14 but I'll save that for the
+live demo in just a bit.
+10:17 And this brings us to
+Android Studio Quail,
+10:19 which strikes a balance of the
+latest and intelligent platform
+10:22 enhancements, as well as
+refinements and productivity
+10:24 features that you'll see in
+the live demo in just a bit.
+10:27 Now, in addition
+to Android Studio,
+10:28 I'm also excited about the talk
+about the launch of Android
+10:31 Command Line Interface.
+10:33 We built it to be
+Android agent first.
+10:35 We found that LLMs had
+difficulty getting things right
+10:38 when building and
+creating Android apps.
+10:40 So we created this app
+to solve that problem.
+10:44 As a command line
+tool, it is lightweight
+10:46 and acts as a
+programmatic interface
+10:48 from other processes
+on your system,
+10:49 including other LLMs and
+also connecting right
+10:52 into Android Studio.
+10:55 The CLI also exposes Android
+Skills and Knowledge Base,
+10:58 allowing LLMs to
+leverage the latest best
+10:60 practices and documentation.
+11:03 Lastly, you can
+seamlessly update CLI
+11:05 without the need of an
+external SDK manager.
+11:10 Now, when using Android CLI
+to support our workflows,
+11:12 we're already seeing notable
+improvements in the model
+11:16 so far.
+11:17 Based on internal testing,
+Android development tasks
+11:20 were completed
+three times faster
+11:22 than when agents attempted the
+same task using only generic LLM
+11:24 tools.
+11:26 And we saw a reduction of
+LLM tokens by more than 70%
+11:30 when using Android CLI to
+create new projects when
+11:32 compared to using other
+generic LLM tools.
+11:35 So the skills package
+bundled into Android CLI,
+11:37 it's easy to add CLI to
+support a wide range of LLMs.
+11:43 Now, while Android
+Studio is still
+11:44 the best place for
+professional app development,
+11:46 we're using the Android
+CLI to extend and add
+11:50 new services for both
+developers and creators
+11:53 to build Kotlin Android apps.
+11:56 So for example, we just
+launched Android app creation
+11:58 on Google AI Studio,
+which enables
+12:01 you to create a quick
+prototype or personal app.
+12:03 With just a prompt, you can
+create a high quality Android
+12:06 app that can deploy
+right to your device.
+12:08 Now, behind the scenes,
+we actually ported
+12:10 the new project wizard
+from Android Studio
+12:13 and added CLI skills to
+power this new experience.
+12:18 And for those coming from
+other development backgrounds,
+12:20 Google Antigravity is also
+a great place to start,
+12:22 since you're now bundling in the
+Android CLI and Android Skills.
+12:27 As your app grows through
+either AI Studio or Antigravity,
+12:30 the Android CLI ensures you
+have an Android project that
+12:33 is easily importable
+into Android Studio,
+12:35 allowing you to easily use
+Android Studio's Android
+12:38 Developer Tools to polish
+and [INAUDIBLE] the app
+12:40 to reach the whole
+Android device ecosystem.
+12:44 OK, with these updates, we're
+ready to jump into some demos.
+12:47 Tor, take it away.
+12:49 TOR NORBYE: All
+right, thank you.
+12:50 So yesterday, in the
+developer keynote,
+12:54 Florina and Aadharsh
+showed eight new features
+12:56 for Android developers.
+12:58 And I can't top their demos.
+12:59 So instead, I'm going to
+show you something different
+13:02 that we're also working on.
+13:03 But be sure to check
+out those demos,
+13:05 so you don't miss something new.
+13:07 All right, so I'm going to
+start on the command line.
+13:09 And we've had command
+line tools for Android
+13:12 since the very beginning with
+ADB, ADPT, Dex Dump, and so on.
+13:16 But we now have a new one.
+13:18 And it's basically a single
+command called Android.
+13:21 And like Git, it has a
+number of subcommands.
+13:24 So for example, android info
+will tell a calling tool
+13:28 where the SDK is installed.
+13:30 The Android SDK tool will
+let it list or install SDKs.
+13:35 Here's a interesting command,
+a couple of commands.
+13:39 The emulator start
+command, it's been
+13:41 easy to start the
+emulator before,
+13:43 but this one will actually
+wait until the emulator is
+13:46 up and running before it
+exits, so you can chain it
+13:48 to something that
+then, for example,
+13:50 runs a shell command
+on the device.
+13:52 And yeah, sorry.
+13:56 And now, I'm going to
+run Android Studio.
+13:58 Any guesses what running
+Android Studio will do?
+14:01 No it's not going to
+launch Android Studio.
+14:03 This actually talks to a running
+instance of Android Studio.
+14:06 So you can expose
+all the cool features
+14:08 we have in Studio
+from other agents.
+14:11 And speaking of other agents,
+we now have the Antigravity CLI.
+14:15 So what I've done here is I've
+created some journey tests.
+14:20 I just had Antigravity
+do this as well.
+14:22 This is a list of
+steps to try in an app.
+14:25 And now I'm going to ask
+Antigravity-- actually,
+14:28 I'm going to grab this prompt.
+14:30 I'm going to ask Antigravity
+CLI to basically look
+14:36 at the files in that
+folder, try to run
+14:39 and verify that this works,
+and if it doesn't work,
+14:42 tell us what's wrong.
+14:43 So we'll start that.
+14:44 This is going to run
+in the background
+14:46 while we do some other stuff.
+14:47 We'll check back in later.
+14:48 So we're branching out
+to support more surfaces
+14:52 for Android developers and
+new Android developers.
+14:55 So the next thing I'm going
+to show you is in the browser.
+14:58 So AI Studio, J
+already mentioned this,
+15:01 we can start creating
+native Android apps.
+15:03 So what I did here is I
+asked it to create a currency
+15:06 converter, which figures out
+the target currency based
+15:10 on where you are.
+15:11 I thought that was
+a really good idea.
+15:13 It's probably been done before.
+15:15 So this is now going to create
+a native Android app built
+15:18 with Gradle, Kotlin, all of it.
+15:21 It usually asks me in about
+10 seconds to pick a design.
+15:27 And it's going to run
+it on an emulator.
+15:30 I've already done
+this in advance.
+15:32 So here, we got to
+restart the emulator.
+15:35 It goes to sleep after a while.
+15:37 But you can actually drill
+through all the code.
+15:40 And let me see if it
+wants the design approved.
+15:43 Yes, here's the design approval.
+15:45 So we'll do that and
+we'll let it keep going.
+15:47 This is not really a place to
+keep iterating on your app.
+15:50 You have the idea,
+it makes the app,
+15:52 and you can publish
+to the Play Store.
+15:53 If you want to keep iterating,
+you can now export the code.
+15:57 So you can get it
+all as a zip file
+15:59 and install in Android Studio.
+16:01 Or you can export
+to Antigravity.
+16:03 So I'm going to do that.
+16:05 It's going to offer to create
+a bundle that has everything.
+16:09 And it's packaging it up.
+16:10 And it should send a launch
+command to my local Antigravity
+16:14 install any second now.
+16:16 There it is, open
+in Antigravity.
+16:20 So here is the project
+that it has imported.
+16:23 So now, we can, for example,
+say critique this app,
+16:28 find bugs, fix them.
+16:31 All right, so that's
+going to go too.
+16:35 So we have AI Studio,
+we have Antigravity,
+16:38 we have anti-gravity CLI, and of
+course, we have Android Studio.
+16:42 So this week, we launched
+Android Studio Quail 2 Canary,
+16:46 packed with features.
+16:47 We have completely
+rewritten the agent.
+16:50 We're calling it Agent V2.
+16:53 As you can see here, we have
+subagents and parallel tool
+16:56 calls and all of that.
+16:57 And we are in the process
+of switching out the bottom
+16:60 to the Antigravity SDK.
+17:02 So I've used a new
+project agent here
+17:03 to build my currency converter.
+17:06 And let me take you through
+some of the new features.
+17:08 So first of all, we have
+support for Gemma 4.
+17:13 So you can now go into
+the model provider.
+17:16 You don't have to install a
+third party tool to use it.
+17:19 There's a new
+model provider, you
+17:20 can click to download
+the models that you want.
+17:23 I've installed several here.
+17:25 And now I can choose Gemma.
+17:27 And so we're going to
+set it to work on a task.
+17:30 So here is a screenshot
+from my currency app.
+17:33 There's this placeholder
+label, which is hard to read.
+17:35 So it'll say please make
+the "Placeholder Data Only"
+17:42 label red and bigger.
+17:46 All right, so that's Gemma.
+17:47 It's working already.
+17:49 Another new feature
+we have is support
+17:50 for running multiple
+things in parallel.
+17:52 So we can start a
+new conversation.
+17:54 Actually, we can also open it
+up in a separate tab, new agent
+18:00 tab.
+18:02 So we can give ourselves
+some more room.
+18:03 And I'll have this one show
+what we're already doing.
+18:05 That's Gemma on the right.
+18:07 So I'm going to say where is the
+URI Handler defined and used?
+18:14 So this is using Gemma 3.5
+Flash, released yesterday.
+18:18 And so in a second
+here, it should
+18:22 be calling some semantic
+tools to find the code.
+18:26 You can see we now
+automatically pick topics
+18:28 for your conversations.
+18:31 And I guess the
+servers are strained.
+18:34 It looks like Gemma's
+already done, actually.
+18:36 That's cool.
+18:37 So we can take a
+look at what it did.
+18:41 So now, we can see the
+label is red and bigger.
+18:46 So what we have for the
+screenshot test now,
+18:50 we officially support
+screenshots with a new library.
+18:53 We have instructions over
+here telling you all the steps
+18:56 you have to follow.
+18:58 Now, if you're lazy, you
+don't have to do that.
+19:01 So what I did was I
+actually had Gemma 4
+19:05 do the conversion for me.
+19:06 You can see the
+conversation here.
+19:08 This was 31.B It
+trawled through,
+19:11 updated all my build files,
+created the tests, and so on.
+19:14 So we have these screenshots.
+19:15 And we now have--
+19:16 I have tests set up
+for this project.
+19:18 And we have a new feature
+to update the golden files.
+19:20 So all I have to do is say
+add update reference images.
+19:24 This now runs a rendering
+of the current behavior
+19:28 and shows a visual diff
+between the reference
+19:31 image and the new image.
+19:32 So we can see, yeah, we
+expected this label difference.
+19:35 I'm going to check this
+in as my new golden image.
+19:38 And now, the test
+should keep passing.
+19:41 All right, let's check in on
+our-- oh, it's really not happy.
+19:45 Try again.
+19:50 This is going to be a very short
+demo of the AI is not working.
+19:56 Well, maybe I'll get
+myself a new task.
+19:58 Maybe I'll try a
+different model.
+20:01 Where is the URI Handler
+defined and used?
+20:06 And I will try
+our default model.
+20:12 This one's happy.
+20:13 All right, so you can see
+here that a couple of things,
+20:17 we have find usages
+and find declaration.
+20:20 So these are using
+the language smarts
+20:23 that understands that just
+because two things are called
+20:25 the same doesn't
+mean they're actually
+20:26 pointing to the same thing.
+20:28 Now these are fast operations
+and a small project like this,
+20:31 but I used this
+agent on a code base
+20:32 with 15 million lines of code.
+20:34 And having an index
+makes a huge difference.
+20:36 You don't want to grep
+through all of that.
+20:38 One other thing to see
+is that we actually
+20:40 linkify symbols now too.
+20:42 So there's a pointer
+directly to the class,
+20:44 not just file names like before.
+20:46 So I can say please
+implement this.
+20:50 So this is a class that is
+kind of unfinished, right?
+20:56 It has a big to do in it.
+20:57 So I just asked the agent
+to finish implementing it.
+21:00 And so you can see
+that it did that.
+21:03 But we had this
+little warning here.
+21:05 And so the AI fixed the code.
+21:09 But then we, the agent,
+yelled at it and said,
+21:12 you introduced some new
+warnings in this code.
+21:14 There's a better
+method than what you
+21:16 called from the KTX library.
+21:18 Use that instead.
+21:19 So the AI immediately went,
+my bad, let me fix it.
+21:23 And so it's now corrected the
+code to the more canonical rule
+21:27 and fixed it.
+21:28 So that's pretty nice.
+21:31 Agents love to call
+shell commands.
+21:35 And so if I say what's
+the current commit,
+21:41 this is probably going
+to run a shell command.
+21:43 It did.
+21:44 It called git rev-parse.
+21:46 And notice that it didn't
+ask me for permission
+21:48 to run the git command.
+21:50 And that's not because I've
+given it control of my computer.
+21:54 I haven't.
+21:54 It's not because I've already
+allow listed anything starting
+21:57 with git or anything
+starting with git rev,
+21:60 it's because we basically
+parse lots and lots
+22:03 of commands, dozens of them.
+22:05 We know about hundreds of flags.
+22:06 And we've taught it
+what commands are safe
+22:08 and which ones are not.
+22:09 So here, I can hover
+and say this one
+22:11 was actually approved
+because we know
+22:13 it's a read operation in a
+folder we've already approved.
+22:15 If I were to say check in
+the current changes, that's
+22:21 going to run some more
+git commands, some of them
+22:24 safe, like git status.
+22:26 Git commit, not so safe.
+22:27 And so that one, I have not
+asked it to proceed with.
+22:30 So I think that makes it
+easier to work with this.
+22:32 For all the little things
+the AI likes to do,
+22:34 it's not going to bother me.
+22:37 And so I showed you the
+file critic earlier.
+22:42 And I want to show
+you something cool.
+22:43 This is a hidden mode we have
+for development, toggle show
+22:48 mapped tool calls.
+22:50 Now, we can actually see
+that what the AI did here,
+22:55 it actually called
+a shell command.
+22:58 It was actually a cat with a
+heredoc piped into a new file.
+23:02 But we gave it the
+full IDE treatment
+23:05 with patches with file critic.
+23:06 That's because, again, we
+parse the shell commands.
+23:08 And so when we see shell
+commands, sed, awk, perl, cat,
+23:13 LS, we actually translate
+them back into native calls
+23:17 so that we get that
+nicer integration.
+23:19 And we can get, in
+particular, the file critic,
+23:21 because there's almost 3,000
+inspections that we have
+23:25 in the IDE from Lint and
+IntelliJ inspections.
+23:27 And they're running before
+and after every file write.
+23:29 So that we're constantly guiding
+the AI to do the right thing.
+23:33 One last note on the permission
+model is we have a sandbox.
+23:38 And so we support various
+sandbox environments.
+23:41 But one cool thing here is that
+if you try to run a sandbox
+23:45 and you try to have
+the sandbox run Gradle,
+23:47 it's going to fail
+because Gradle wants
+23:48 to touch dot Gradle in
+your home folder, which
+23:51 isn't in your sandbox.
+23:53 Well here, you can
+click on Show Command.
+23:55 Here, we show you all the
+folders we've mounted.
+23:58 That includes the folders
+you've manually approved,
+24:01 but also things like
+the Android SDK.
+24:03 We put comments
+in to explain why.
+24:05 And the really cool bit
+is that you can edit this.
+24:08 So you can go in and add
+additional commands on folders
+24:12 if you want to read or
+write them, and then
+24:13 click Save As Custom Command.
+24:16 Now, we run that instead.
+24:17 So you can have the sandbox more
+customized to do what you want.
+24:21 All right, so I find myself
+reviewing more and more code,
+24:29 whether it's from
+coworkers who are getting
+24:31 more stuff done with the
+agent or my own iterations
+24:33 with the agent.
+24:35 But I got to say, I don't
+love reviewing code file
+24:38 by file in file system order.
+24:40 And so we set out
+to make this better.
+24:43 And so what I did now was I
+clicked in the change drawer
+24:47 action on a review this code.
+24:49 So that starts a
+new conversation
+24:50 with the agent, where it's
+asked to review the work.
+24:53 It's a new conversation, so
+it's not influenced and biased
+24:56 by assumptions it already made.
+24:57 And this is not just for
+reviewing what the agent did.
+25:03 You can also use it to review
+CLs from random Git check-ins.
+25:08 And this is what I do now.
+25:09 When I get a long code
+review from a coworker,
+25:11 I cherry pick it, and
+I use the review tool
+25:13 because it's so much nicer.
+25:14 So what I've done here is
+I go into the Git view.
+25:16 And I can click on
+this Review button.
+25:19 And then I get this report.
+25:21 So what this is is the AI is
+reviewing the whole commit
+25:25 and summarizing what it is.
+25:26 This is not just a summary
+of the commit message.
+25:28 This is what the commit does.
+25:30 And if it finds problems, it's
+going to list them for me.
+25:34 And so when I'm
+in that early loop
+25:36 of I ask the AI to
+do something and I'm
+25:38 asking it to be reviewed, I'm
+not going to start reading this.
+25:42 I'm going to go through several
+cycles of this of, oh, yeah,
+25:45 well, you didn't do this?
+25:45 I want you to fix that.
+25:46 So I can choose to fix this
+I want and have it iterate.
+25:50 But when it is proud and it
+says this is a good commit,
+25:53 that's when I start
+reviewing individual diffs,
+25:56 because my reputation
+is on the line
+25:58 if this is going
+to go to production
+25:60 or be sent to coworkers.
+26:01 So I want to look.
+26:02 So now, what we've done is
+we've taken all the diff chunks,
+26:06 because I'm going to sign
+off on every diff chunk,
+26:09 we take all the diff
+chunks, but we reorder them
+26:11 into logical groups.
+26:14 And then we them in an order
+that makes logical sense.
+26:17 So you start where
+it makes sense.
+26:18 And so you can see, I get a tour
+here explaining what's going on.
+26:22 I can check off on
+each one of these,
+26:25 work my way through the diff.
+26:27 And I do this with a really nice
+semantic syntax highlighting
+26:31 we have in the IDE
+that understands
+26:33 the difference between a local
+variable and a parameter,
+26:35 for example, plus
+word by word diffs.
+26:38 And so to me, this
+review experience
+26:39 is so much better than
+doing it in a browser.
+26:44 All right, let me show
+you a couple more agents
+26:46 we're working on.
+26:48 We have the migration wizard.
+26:52 This was something
+we showed yesterday.
+26:56 This basically is
+a agent that has
+26:59 a combination of tools, and
+skills, and planning strategies.
+27:03 Now, importing an app like
+this takes a long time.
+27:05 I think this is over an hour,
+so it cannot be shown live.
+27:08 But I'll just highlight
+again that there's
+27:12 a bunch of subagents
+that makes a plan.
+27:15 And I get this really long
+walk through at the end
+27:17 of all the things that it did.
+27:19 And so we try to preserve
+comments and the source
+27:23 structure.
+27:24 So that you can keep these
+things in sync, if you
+27:26 intend to keep developing both.
+27:29 Another migration
+wizard we're working on,
+27:31 which is arguably
+harder, is the Jetpack--
+27:36 it's the Views to
+Compose migration wizard.
+27:40 This is extremely
+important to us
+27:42 because we want you to stop
+writing code for Views.
+27:45 Views are in maintenance mode.
+27:47 Compose is great, please use it.
+27:49 But we know that it's
+really hard to switch.
+27:51 This is not like
+the Java to Kotlin
+27:53 migration, when
+there was a button
+27:54 to convert one file at a time.
+27:56 So what I've done here is I've
+invoked migrate to Compose.
+27:60 You can also go to
+a particular layout
+28:02 and right click and say
+AI, migrate to Compose.
+28:05 And I'm in the middle
+of the migration here.
+28:08 It produces this report
+that we're looking at.
+28:11 And you can see here,
+it's highlighting
+28:14 a quick win and some high ROI.
+28:17 It's basically identifying
+all the things that
+28:19 have to be done to this app.
+28:20 You can actually see parallel
+tool calls on the right
+28:23 because it's now
+asking me things
+28:25 like, hey, which screens
+do you want to start?
+28:27 Should you directly replace it?
+28:29 Or do you want to put a
+feature flag behind it?
+28:31 You want to rip out the XML?
+28:33 So that's the migration wizard.
+28:35 I keep saying wizard.
+28:36 That's the migration agent.
+28:39 And we're working
+with internal teams
+28:42 to make sure that all the
+Google Apps are pure Compose.
+28:44 And so they're giving us
+a lot of useful feedback.
+28:46 And we hope to have
+this out very soon.
+28:49 I'm an optimist, but
+really, we want this out as
+28:52 soon as possible.
+28:54 All right, changing gears a bit,
+let's talk about performance.
+28:59 So we have a brand new profiler.
+29:02 This is a standalone profiler.
+29:04 It's called the Android
+Performance Analyzer.
+29:06 And it is a really, really
+powerful system profiler.
+29:11 Handles huge bulk
+data and all kinds
+29:14 of detail information
+for investigation.
+29:17 This system trace profiler is
+also available inside of Studio.
+29:20 So let me show you some
+analysis over there.
+29:24 So let's see-- where's
+the Now in Android?
+29:29 Here we go.
+29:30 Here is the--
+29:33 I recorded four
+seconds of startup time
+29:35 in Now in the Android app.
+29:37 With the Jank and Startup
+Time plugins, here they are.
+29:43 And so we can see here that
+we have a really long startup,
+29:47 over 1 second.
+29:48 And so I could dig into the
+information, but I'm lazy--
+29:53 I mean, I'm busy.
+29:54 So what I'm going to do is
+click on this button and say,
+29:59 why is my app startup so slow?
+30:03 It's over 1 second.
+30:06 And then we'll launch
+off an agent [INAUDIBLE]
+30:08 to analyze this.
+30:10 And so what this should
+do is activate a skill.
+30:16 It's going to activate
+a skill, hopefully.
+30:18 Yeah, wow.
+30:20 It's going to activate
+a skill that knows how
+30:22 to do Perfetto trace analysis.
+30:24 It's going to download
+a trace processor.
+30:27 And it's going to then
+test out theories.
+30:31 We'll leave this running
+for a bit in the background
+30:33 and see if things get better.
+30:37 Meanwhile, I'll
+show you a couple
+30:38 more things in the
+system profiler.
+30:40 So the trace capture here is way
+more powerful than in Studio.
+30:46 Here, you can set up a number
+of different CPU probes
+30:50 to be recorded, a huge number of
+GPU counters, and Vulkan layers.
+30:57 So one of the
+interesting options,
+30:58 which I'm connected to the
+emulator that doesn't have it,
+31:00 but on newer devices, they
+can capture screenshots.
+31:04 So if we zoom in a bit here,
+you can see we actually
+31:08 have-- let me zoom out a bit.
+31:10 We have screenshots recorded.
+31:12 This is a game.
+31:13 So you can see what's
+going on in the app.
+31:15 So if you're wondering why
+there was a dropped frame,
+31:17 you go like, oh, that's when
+we loaded this massive model.
+31:20 It helps orient where you are.
+31:22 So this is a system trace.
+31:24 We're going to have a
+frame profiler coming out
+31:26 very soon too in this
+standalone profiler.
+31:30 All right, let's see if--
+31:32 no, we're not having
+luck with the AI today.
+31:40 So a second feature
+we're working on
+31:42 is related to memory profiling.
+31:44 It's finally going here.
+31:45 Perfetto trace
+analysis got loaded.
+31:48 We're also working
+on memory tools.
+31:49 Memory is in very
+high demand right now
+31:51 if you've read the news.
+31:52 And so it's very important,
+as developers, for us
+31:54 not to waste it.
+31:56 So we've integrated the popular
+and powerful LeakCanary tool.
+32:02 So what I can do now
+is start running my app
+32:05 under LeakCanary analysis.
+32:08 So you can see it
+launches my app.
+32:11 And there's this counter
+here, zero retained objects.
+32:14 No leaks so far.
+32:15 That's good.
+32:16 Now, I've inserted the leak.
+32:17 That was the commit
+we reviewed earlier.
+32:20 And so when I rotate
+the device, we're
+32:23 going to start seeing LeakCanary
+detecting some leaked objects.
+32:30 And you can see, yeah,
+it's already found three.
+32:33 So we're going to go
+ahead and force a dump.
+32:35 So now, the leak
+analysis happens.
+32:38 And we fetch a report.
+32:40 And I can now start drilling
+into the LeakCanary data
+32:44 and figuring out
+what the leak is.
+32:46 Or you guessed it,
+click Fix with Agent.
+32:52 All right, so now we're
+kicking off an agent run.
+32:54 So we have multiple
+running in parallel
+32:56 here, start analysis
+and leak analysis.
+32:59 This is going to try to
+figure out what the leak is
+33:01 and hopefully fix it.
+33:03 So while that's
+working, let me show you
+33:05 that we're done something
+else for memory.
+33:07 And that is the new R8
+configuration analyzer.
+33:10 So when you build your
+projects with the latest AGP,
+33:13 9.30 alpha something, we are
+going to have R8 emit this
+33:19 report.
+33:20 And what this report does
+is it tells us about all the
+33:23 keep rules, not just the ones
+that you have in your project,
+33:26 but the ones you inherit from
+all the libraries you're using.
+33:29 Because some
+library dependencies
+33:30 are going to bring
+in these super broad
+33:32 keep rules that are going
+to keep lots of classes.
+33:35 And so we see right
+here that we have
+33:38 some-- this rule is actually
+responsible for keeping
+33:41 a lot of classes.
+33:42 I can click on it to see
+exactly all the classes that
+33:45 are brought in.
+33:46 And I can also see which
+library brought this in.
+33:49 Now in this case, this
+was actually a local rule
+33:52 in the Androidify project.
+33:53 So we should definitely
+rip that out,
+33:55 although it makes
+for a good demo.
+33:57 All right, let's
+check back in on the--
+34:03 so it looks like it
+has diagnosed the leak.
+34:06 We can take a look at its fix.
+34:09 And we can review it here.
+34:11 Or we can use the
+change review tool.
+34:14 Looks reasonable to me.
+34:16 Startup analysis is still going.
+34:19 That's OK.
+34:20 Let's also check in on
+the Antigravity job.
+34:26 And it looks like
+Antigravity CLI has actually
+34:28 done a bunch of verification.
+34:30 And it has found
+some key findings.
+34:33 And I'm a bad reader.
+34:35 Let's put my glasses on.
+34:39 Yeah, it found some stuff
+that we should probably fix.
+34:45 And let's also check
+in on AI Studio.
+34:50 That was the old one
+that we exported.
+34:55 This is the new one.
+34:58 OK, yeah, I'm not
+sure where it went.
+35:03 All right, so the last thing
+I want to show you today
+35:07 is to give you a sneak preview
+at something we're working on.
+35:12 It's called Light Build.
+35:14 And it's a new build experience
+for simple Android apps.
+35:19 So what I'm going to do
+is create a new project.
+35:22 And in the template here, I
+have this option, Light Build
+35:26 Preview.
+35:27 So I'm going to press Finish.
+35:28 I'm going to count to three.
+35:31 One, two-- and
+that's it, actually.
+35:33 It's done.
+35:34 So yeah.
+35:35 [APPLAUSE]
+35:39 If you created a
+project in Studio
+35:40 before, it wasn't quite
+that fast, I can tell you.
+35:43 So this is still using
+Maven dependencies.
+35:46 So we can look at them,
+Maven dependencies.
+35:49 But the difference here
+is that we actually also
+35:52 have all the
+resolved dependencies
+35:55 checked into the project.
+35:56 This is a bit like a lock file.
+35:58 It's not enforced, but
+you can enforce it.
+35:60 And that means
+that the IDE and--
+36:03 the IDE can instantly
+download or check
+36:08 all the transitive dependencies.
+36:09 It doesn't have to
+gradually discover
+36:11 as it inspects pom
+files down the line.
+36:13 It's also nice that when
+you add a new dependency,
+36:15 you can see exactly how
+much you just pulled in.
+36:18 Now, this is fully declarative.
+36:22 There are no
+executable build files.
+36:25 It's all data.
+36:26 And that's really
+great for tools.
+36:28 That's how we can have this
+kind of a project experience.
+36:31 We don't have to run the
+build in dry run mode
+36:35 to see where things are what
+we used to call-- what we still
+36:38 call Gradle sync.
+36:39 With a Turing complete build
+language, this is hard.
+36:42 But this is all data.
+36:43 So we can do it.
+36:44 It also means that we can
+do compatible updates.
+36:47 It's just data.
+36:48 We can read older versions.
+36:49 So we're going to do that.
+36:50 And of course, it's
+good for agents.
+36:52 That's why we did it.
+36:54 Now, I will say that this is
+not meant for Pro developers.
+36:60 This is meant for the
+kinds of simple apps
+37:02 that people are
+creating and that you've
+37:04 seen me create today.
+37:05 Let's also do a
+command line build just
+37:07 to prove that it works.
+37:08 I'm going to wipe the
+cache, just so we can see
+37:10 some of the downloads again.
+37:12 Android, build.
+37:16 And so this is actually
+running a Gradle
+37:17 build behind the
+scenes, although that's
+37:20 an implementation detail.
+37:21 We can always invoke
+it with the right setup
+37:23 to make sure that it's
+fast and incremental.
+37:26 And this is going into
+closed preview today.
+37:30 But we're going to
+hopefully open it up,
+37:32 based on their thumbs up,
+to public Canary very soon.
+37:35 I'm hoping a matter of weeks.
+37:38 And with that, I think we're
+going to do some more updates.
+37:42 [APPLAUSE]
+37:50 JAMAL EASON: All
+right, thanks, Tor.
+37:51 So it's great to see how these
+suite of Android DevTools
+37:54 continues to evolve to meet
+your development needs, from AI
+37:57 Studio to Android
+Studio, there are even
+37:60 more places than before to
+create a great Android app.
+38:02 All right, before we wrap
+up, I have a few more updates
+38:04 to share.
+38:06 So in Android Studio
+Quail, we also
+38:08 added Android developer
+verification support.
+38:10 When you get ready to
+publish your app bundle,
+38:13 we'll go check
+your app namespace
+38:15 and validate it and make sure
+it's registered before you
+38:17 publish it to Google Play.
+38:21 Now for wireless
+debugging 2.0, we
+38:24 are continuing to invest
+in reliability when using
+38:26 ADB over your Wi-Fi network.
+38:29 So with the Android 17 device
+and Android Studio Quail,
+38:33 you can now change networks,
+restart your laptop,
+38:36 and your Android device
+will still stay connected.
+38:39 Pretty cool.
+38:41 [APPLAUSE]
+38:45 With the latest version
+of Android Studio,
+38:47 we now bundle in the R8 skill.
+38:49 All you have to do is ask
+the agent in Android Studio
+38:51 to create and optimize
+R8 in your app.
+38:53 And that's it.
+38:54 They will then
+suggest code changes
+38:56 to make sure you have the
+most optimal R8 configuration.
+39:00 Using R8 is not just useful
+for obfuscating code,
+39:03 it also streamlines your
+code and reduces ANRs.
+39:06 So for example, Monzo reduced
+over 35% of thier ANRs
+39:10 just by updating their
+R8 configuration.
+39:14 And lastly, with the latest
+update of Jetpack Compose,
+39:18 we now have a new debugging
+mode for you manually to tweak--
+39:21 tweak and manually inspect your
+shared element transitions.
+39:26 As we head into recap,
+we show [INAUDIBLE]
+39:29 features that are agent first
+workflows and workflows that
+39:32 require even more hands-on
+architecting and intervention,
+39:36 but ultimately end up making you
+more productive as an Android
+39:39 app developer.
+39:41 So if you're prototyping a
+brand new app on Google AI
+39:43 Studio with this
+new Kotlin support,
+39:46 or if you're using the Android
+CLI to automate and accelerate
+39:49 LLM work in the terminal,
+or using the new agent
+39:52 manager in Google
+Antigravity 2.0
+39:55 to orchestrate
+multiple agents, we
+39:57 are extending the services where
+you can create Android apps.
+40:01 And as you take your app
+and refine and target
+40:03 the ecosystem of
+Android devices,
+40:05 Android Studio is more enhanced
+to enable your productivity
+40:08 than ever before.
+40:10 With the new AI agent mode
+skills, and performance tools,
+40:13 migration tools, and a new
+sneak preview of a brand new
+40:16 build system, you're equipped to
+balance both speed and accuracy
+40:19 in creating high
+quality Android apps.
+40:22 No matter what surface
+you started on,
+40:24 we are focusing on
+making it easier for you
+40:26 and more efficient to develop
+great apps across the Android
+40:29 ecosystem.
+40:31 OK, on behalf of me, Tor, thanks
+for watching and feedback.
+40:36 [MUSIC PLAYING]
